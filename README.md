@@ -16,15 +16,16 @@ This repository is the authoritative source for both code and accumulated projec
 
 1. [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) — where the project stands now.
 2. [`docs/PRODUCT.md`](docs/PRODUCT.md) — problem, users, MVP, validation and scope.
-3. [`docs/ROUTING.md`](docs/ROUTING.md) — graph formulation, station search, comfort model and multi-objective direction.
-4. [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) — OSM, Swiss transport data, bicycle rules, elevation and data risks.
-5. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — prototype architecture and engineering principles.
-6. [`docs/DECISIONS.md`](docs/DECISIONS.md) — important decisions and their rationale.
-7. [`docs/RESEARCH_LOG.md`](docs/RESEARCH_LOG.md) — accumulated research questions and findings.
-8. [`docs/USER_RESEARCH.md`](docs/USER_RESEARCH.md) — interview and validation plan.
-9. [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — technical/product experiments and regression journeys.
-10. [`docs/BACKLOG.md`](docs/BACKLOG.md) — later ideas that are intentionally not current priorities.
-11. [`CHATGPT_PROJECT_SETTING.md`](CHATGPT_PROJECT_SETTING.md) — short stable instruction block to paste into a ChatGPT Project.
+3. [`docs/INITIAL_MATHEMATICAL_MODEL.md`](docs/INITIAL_MATHEMATICAL_MODEL.md) — the original graph/optimization formulation, fixed-radius failure mode, adaptive-radius idea, and early Pareto concerns.
+4. [`docs/ROUTING.md`](docs/ROUTING.md) — current graph formulation, station search, comfort model and multi-objective direction.
+5. [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) — OSM, Swiss transport data, bicycle rules, elevation and data risks.
+6. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — prototype architecture and engineering principles.
+7. [`docs/DECISIONS.md`](docs/DECISIONS.md) — important decisions and their rationale.
+8. [`docs/RESEARCH_LOG.md`](docs/RESEARCH_LOG.md) — accumulated research questions and findings.
+9. [`docs/USER_RESEARCH.md`](docs/USER_RESEARCH.md) — interview and validation plan.
+10. [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — technical/product experiments and regression journeys.
+11. [`docs/BACKLOG.md`](docs/BACKLOG.md) — later ideas that are intentionally not current priorities.
+12. [`CHATGPT_PROJECT_SETTING.md`](CHATGPT_PROJECT_SETTING.md) — short stable instruction block to paste into a ChatGPT Project.
 
 ## Documentation semantics
 
