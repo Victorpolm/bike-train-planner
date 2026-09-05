@@ -1,0 +1,83 @@
+export const BIKE_SPEED_KMH = 15;
+export const MAX_BIKE_MINUTES = 20;
+export const MAX_BIKE_DISTANCE_KM =
+  (BIKE_SPEED_KMH * MAX_BIKE_MINUTES) / 60;
+export const STATION_BUFFER_MINUTES = 3;
+
+export type Point = {
+  lat: number;
+  lon: number;
+};
+
+export type Place = Point & {
+  label: string;
+};
+
+export type Station = Point & {
+  id: string;
+  name: string;
+  distanceKm: number;
+  bikeMinutes: number;
+};
+
+export type Journey = {
+  id: string;
+  originStation: Station;
+  destinationStation: Station;
+  departure: Date;
+  arrival: Date;
+  trainMinutes: number;
+  waitMinutes: number;
+  totalMinutes: number;
+  changes: number;
+  services: string[];
+};
+
+export function haversineKm(a: Point, b: Point): number {
+  const radiusKm = 6371;
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const dLat = toRadians(b.lat - a.lat);
+  const dLon = toRadians(b.lon - a.lon);
+  const lat1 = toRadians(a.lat);
+  const lat2 = toRadians(b.lat);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+  return 2 * radiusKm * Math.asin(Math.sqrt(h));
+}
+
+export function cyclingMinutes(distanceKm: number): number {
+  return Math.max(1, Math.round((distanceKm / BIKE_SPEED_KMH) * 60));
+}
+
+export function samplePoints(point: Point): Point[] {
+  const radiusKm = 2.5;
+  const latDelta = radiusKm / 111.32;
+  const lonDelta = radiusKm / (111.32 * Math.cos((point.lat * Math.PI) / 180));
+
+  return [
+    point,
+    { lat: point.lat + latDelta, lon: point.lon },
+    { lat: point.lat - latDelta, lon: point.lon },
+    { lat: point.lat, lon: point.lon + lonDelta },
+    { lat: point.lat, lon: point.lon - lonDelta },
+  ];
+}
+
+export function formatMinutes(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  return remainder ? `${hours} h ${remainder} min` : `${hours} h`;
+}
+
+export function parseDurationMinutes(duration: string): number {
+  const match = duration.match(/(?:(\d+)d)?(\d{2}):(\d{2}):(\d{2})/);
+  if (!match) return 0;
+  return (
+    Number(match[1] ?? 0) * 24 * 60 +
+    Number(match[2]) * 60 +
+    Number(match[3]) +
+    Math.round(Number(match[4]) / 60)
+  );
+}

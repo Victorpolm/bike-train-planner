@@ -1,6 +1,6 @@
 # Project state
 
-_Last consolidated from prior project discussions: 2026-09-04._
+_Last consolidated: 2026-09-05._
 
 ## Current objective
 
@@ -14,13 +14,29 @@ The immediate milestone is not a polished app. It is a working set of real journ
 
 The bicycle should be treated as accompanying the traveller through the journey, not merely as a first/last-mile mode that is parked before transit.
 
+## Current implementation
+
+**Fact:** The first runnable web prototype is preserved under `prototype-v0/`.
+
+It currently:
+
+- geocodes Swiss origin and destination text;
+- enumerates up to five candidate stations near each endpoint;
+- approximates a 20-minute bicycle catchment using straight-line distance and 15 km/h;
+- queries current public-transport connections for station pairs;
+- ranks alternatives by estimated final arrival time;
+- displays the candidates and selected combination on a map.
+
+It does not yet use routed cycling paths, bicycle-carriage rules, an adaptive catchment, comfort scoring or multicriteria/Pareto selection. See `docs/FIRST_PROTOTYPE.md` for provenance and limitations.
+
 ## Current technical direction
 
 - Responsive web prototype first.
+- Preserve v0 before refactoring it.
 - OpenStreetMap for road/cycling network and many cycling POIs.
 - Swiss GTFS/open transport data for public-transport schedules.
 - OpenTripPlanner as the first serious routing-engine candidate rather than writing the entire multimodal router from scratch.
-- MapLibre for map presentation.
+- MapLibre is the likely serious map direction; v0 currently uses Leaflet.
 - PostgreSQL/PostGIS when custom spatial storage/querying becomes useful.
 - Swiss elevation data later for slope-aware routing.
 - Bicycle carriage rules likely need a separate structured subsystem because timetable data alone may be insufficient.
@@ -80,13 +96,14 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
 
-1. Select a small test region and 3–6 “golden journeys.”
-2. Audit OSM and Swiss transit data on those journeys.
-3. Run OpenTripPlanner locally with Swiss data.
-4. Compare generated routes with routes selected by real cyclists.
-5. Document every failure in `EXPERIMENTS.md`.
-6. Investigate bicycle-carriage and reservation data separately.
-7. Conduct user interviews before major frontend investment.
+1. Clone and run `prototype-v0/` in a fresh local environment.
+2. Select 3–6 golden journeys and record current v0 behaviour in `docs/EXPERIMENTS.md`.
+3. Separate journey generation, feasibility, route metrics, ranking and explanation in the code.
+4. Implement and compare adaptive candidate-station strategies with an explicit maximum/fallback.
+5. Audit OSM and Swiss transit data on the golden journeys.
+6. Investigate bicycle-carriage and reservation data as a separate subsystem.
+7. Compare the custom prototype direction with OpenTripPlanner before building a full router.
+8. Conduct user interviews before major frontend investment.
 
 ## What is explicitly not a priority yet
 

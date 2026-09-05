@@ -1,58 +1,77 @@
 # First runnable prototype — preservation status
 
-This document records an important historical artifact of the project: we had already moved beyond product discussion and mathematical modelling into a **first runnable implementation/prototype**.
+This document records the first runnable implementation of the project.
 
-## What is known with confidence
+## Status
 
-- We worked on a first implementation before this repository was created.
-- The implementation was intended as an early web prototype, not a production system.
-- Local setup involved Node/npm; during the earlier work, a Windows setup issue arose because Node and npm were not available on the machine.
-- The implementation belonged to the same early MVP effort described elsewhere in this repository: get a simple bike + public-transport workflow running before building the final mathematical/algorithmic architecture.
-
-## Source-code status
-
-**The exact source files of that first prototype are not currently present in this repository and are not available in the files accessible to the current ChatGPT session.**
-
-They have therefore **not been reconstructed from memory**. Reconstructing them and presenting the result as the original would destroy the historical value of preserving the actual first version.
-
-When the original local project folder or archive is available, it should be imported verbatim under a historical path such as:
+**Fact:** The original source archive available from the first implementation session was imported on 2026-09-05 under:
 
 `prototype-v0/`
 
-or, if development continues directly from it, placed in the normal application structure while preserving a git tag such as:
+It is preserved as the historical starting point. Refactoring should happen through later commits rather than by pretending that the first version was cleaner or more complete than it was.
 
-`v0-original-prototype`
+## What v0 does
 
-## Why preserving v0 matters
+1. Geocodes Swiss departure and arrival points.
+2. Finds up to five candidate stations near each endpoint using nearby-stop queries plus a small list of major Swiss rail hubs.
+3. Approximates a 20-minute bicycle catchment as five kilometres at 15 km/h using straight-line distance.
+4. Requests live public-transport connections for candidate station pairs.
+5. Adds bicycle access/egress and waiting time.
+6. Ranks options by estimated arrival time.
+7. Displays stations and selected explanatory lines on a map.
 
-The first implementation is useful even if technically poor. It records:
+The app is a React/TypeScript/Vite web prototype and runs locally with Node.js and npm.
 
-- what we originally thought was necessary to build;
-- which parts were easy or difficult in practice;
-- early architecture choices;
-- early UI assumptions;
-- dependencies and setup friction;
-- the gap between the initial prototype and the later mathematical model;
-- which ideas arose only after interacting with a concrete implementation.
+## Known limitations
 
-Future work should not silently rewrite this history.
+- Straight-line cycling estimates rather than routed bicycle paths
+- Fixed 20-minute/five-kilometre candidate catchment
+- Heuristic station detection
+- Unofficial, rate-limited community transport API
+- No bicycle-carriage or reservation rules
+- No cycling-comfort model
+- No adaptive fallback when the initial catchment has no feasible journey
+- No Pareto or multicriteria route selection
+- Explanatory map lines rather than turn-by-turn routes
 
-## Import procedure when source becomes available
+These limitations are evidence about what to build next, not defects to conceal in the project history.
 
-1. Copy the original files without redesigning or cleaning them first.
-2. Exclude only generated dependencies/build outputs such as `node_modules` if present.
-3. Preserve the original package/dependency manifests (`package.json`, lock file, etc.).
-4. Add a short `prototype-v0/README.md` describing how it was run and what worked.
-5. Commit it as a historical import.
-6. Tag the corresponding commit `v0-original-prototype` if appropriate.
-7. Only after that should refactoring or migration begin in later commits.
+## Verification history
 
-## Relationship to other documentation
+The original implementation session reported passing unit tests, TypeScript compilation and a production build before packaging the archive.
 
-- `INITIAL_MATHEMATICAL_MODEL.md` preserves the initial mathematical reasoning.
-- `ROUTING.md` contains the cleaner current routing formulation.
-- This file exists to ensure the **actual first software version** is also treated as part of the project memory and is not forgotten.
+When the repository is cloned in a fresh environment, verify again with:
 
-## Open preservation task
+```bash
+cd prototype-v0
+npm install
+npm test
+npm run build
+```
 
-**Import the exact original v0 source code once the local folder/archive is available.**
+Do not treat the earlier report as a substitute for current verification after dependencies or code change.
+
+## Next technical move
+
+Before adding advanced routing, separate:
+
+1. candidate journey generation;
+2. feasibility constraints;
+3. route metrics;
+4. dominance/ranking;
+5. user-facing explanation.
+
+Then add adaptive station search with an explicit maximum and a clear fallback. This preserves a path toward multicriteria/Pareto routing without requiring a full Pareto engine in v0.
+
+## Historical importance
+
+The prototype records:
+
+- original implementation assumptions;
+- early UI choices;
+- API and dependency choices;
+- setup friction on Fedora and Windows;
+- the fixed-radius failure mode that motivated adaptive station search;
+- the gap between a runnable demo and the intended multimodal model.
+
+`INITIAL_MATHEMATICAL_MODEL.md` preserves the corresponding early graph and optimization reasoning.

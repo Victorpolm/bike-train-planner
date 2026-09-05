@@ -20,12 +20,27 @@ This repository is the authoritative source for both code and accumulated projec
 4. [`docs/ROUTING.md`](docs/ROUTING.md) — current graph formulation, station search, comfort model and multi-objective direction.
 5. [`docs/DATA_SOURCES.md`](docs/DATA_SOURCES.md) — OSM, Swiss transport data, bicycle rules, elevation and data risks.
 6. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — prototype architecture and engineering principles.
-7. [`docs/DECISIONS.md`](docs/DECISIONS.md) — important decisions and their rationale.
-8. [`docs/RESEARCH_LOG.md`](docs/RESEARCH_LOG.md) — accumulated research questions and findings.
-9. [`docs/USER_RESEARCH.md`](docs/USER_RESEARCH.md) — interview and validation plan.
-10. [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — technical/product experiments and regression journeys.
-11. [`docs/BACKLOG.md`](docs/BACKLOG.md) — later ideas that are intentionally not current priorities.
-12. [`CHATGPT_PROJECT_SETTING.md`](CHATGPT_PROJECT_SETTING.md) — short stable instruction block to paste into a ChatGPT Project.
+7. [`docs/FIRST_PROTOTYPE.md`](docs/FIRST_PROTOTYPE.md) — provenance, limitations and preservation of the first runnable implementation.
+8. [`docs/DECISIONS.md`](docs/DECISIONS.md) — important decisions and their rationale.
+9. [`docs/RESEARCH_LOG.md`](docs/RESEARCH_LOG.md) — accumulated research questions and findings.
+10. [`docs/USER_RESEARCH.md`](docs/USER_RESEARCH.md) — interview and validation plan.
+11. [`docs/EXPERIMENTS.md`](docs/EXPERIMENTS.md) — technical/product experiments and regression journeys.
+12. [`docs/BACKLOG.md`](docs/BACKLOG.md) — later ideas that are intentionally not current priorities.
+13. [`CHATGPT_PROJECT_SETTING.md`](CHATGPT_PROJECT_SETTING.md) — stable instruction block to paste into a dedicated ChatGPT Project.
+14. [`docs/CHATGPT_PROJECT_SETUP.md`](docs/CHATGPT_PROJECT_SETUP.md) — exact setup and working routine for that Project.
+15. [`AGENTS.md`](AGENTS.md) — repository rules for coding agents.
+
+## Runnable prototype
+
+The preserved first implementation is in [`prototype-v0/`](prototype-v0/).
+
+```bash
+cd prototype-v0
+npm install
+npm run dev
+```
+
+It is a deliberately simple local prototype, not the final routing architecture. See its README and `docs/FIRST_PROTOTYPE.md` before changing it.
 
 ## Documentation semantics
 
