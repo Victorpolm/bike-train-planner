@@ -74,6 +74,16 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Evidence / open question:** The user reports no result for Zürich → Laax. At the start of this change, the hosted application matched the current GitHub implementation, which still used a fixed five-kilometre catchment and rail-only connection requests. The exact cause of that failed search remains unverified.
 
+
+## 2026-09-05 — Compare zero versus at most one intermediate cycling leg
+
+**Decision (explicit user agreement):** The next mathematical experiment compares (A) cycling only before and after transit with (B) the same model allowing at most one intermediate cycling leg between transit rides. B includes A; an intermediate cycling leg is permitted, not compulsory. Ordinary transit changes may occur in either variant.
+
+**Reason / hypothesis:** Intermediate cycling may connect useful services and improve arrival time or other trade-offs, but its practical benefit relative to search cost is not yet established.
+
+**Scope:** This approves the experiment direction. It does not select an implementation algorithm, numerical budgets, or a deployment change. A proposed comparison protocol and remaining parameters are in `EXPERIMENTS.md`.
+
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

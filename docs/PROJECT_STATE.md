@@ -97,6 +97,8 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
 
+**Agreed next mathematical experiment (2026-09-05):** Compare cycling only before/after transit against the same model allowing at most one intermediate cycling leg. The expanded model includes all baseline journeys. Hold time, cycling and boarding budgets and data fixed; compare feasibility, the `(total time, total cycling, boardings)` frontier and later computational cost. The experiment is not yet run; numerical budgets and cases remain open. See `docs/EXPERIMENTS.md`.
+
 **2026-09-05 update:** Journey decomposition is implemented and covered by 11 passing automated tests; TypeScript and the production build pass. The user reported no result for Zürich → Laax. Its exact failure has not been reproduced; the fixed catchment and rail-only station search remain unchanged. Discuss the user's mathematical model before changing routing behavior. See `docs/EXPERIMENTS.md`.
 
 1. Clone and run `prototype-v0/` in a fresh local environment.
