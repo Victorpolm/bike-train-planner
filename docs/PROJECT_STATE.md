@@ -16,19 +16,19 @@ The bicycle should be treated as accompanying the traveller through the journey,
 
 ## Current implementation
 
-**Fact:** The first runnable web prototype is preserved under `prototype-v0/`.
+**Fact:** `prototype-v0/` now implements the user-approved Baseline/Extended mathematical experiment.
 
-It currently:
+- **Baseline:** cycling before and after public transport, with ordinary transit/walking transfers.
+- **Extended:** the same constraints and timetable graph, with at most one intermediate cycling leg; includes Baseline.
+- A model switch appears before search results. Three categories select fastest, least cycling and fewest changes; an optional fourth minimizes initial or final cycling. Duplicate winners share a card.
+- All proposals require public transport and obey explicit cycling, boarding and duration budgets. Exact timetable readiness is checked after cycling and before each boarding.
+- Public-transport discovery includes buses and trams; departure and arrival catchments expand independently in 20-minute bands within configurable limits.
+- Clicking a card opens every cycling, transit, walking and waiting leg with available service IDs, stops, scheduled times and platforms. The map includes intermediate cycling.
+- The app reports partial searches and supports cancellation. Address lookup falls back to timetable stop-name lookup.
 
-- geocodes Swiss origin and destination text;
-- enumerates up to five candidate stations near each endpoint;
-- approximates a 20-minute bicycle catchment using straight-line distance and 15 km/h;
-- queries current public-transport connections for station pairs;
-- ranks alternatives by estimated final arrival time;
-- displays the candidates and selected combination on a map;
-- opens a detailed plan when a journey is clicked: cycling endpoints, boarding/waiting time, individual transit sections with service identifiers, stops, scheduled times and available platforms, transfers, and final cycling.
+The solver uses Pareto labels on a finite, sampled timetable graph. It is not a complete Swiss routing engine. Cycling is still estimated from straight-line distance at 15 km/h. For this experiment, bicycle availability after transit is assumed and carriage/reservation constraints are explicitly deferred.
 
-It does not yet use routed cycling paths, bicycle-carriage rules, an adaptive catchment, comfort scoring or multicriteria/Pareto selection. See `docs/FIRST_PROTOTYPE.md` for provenance and limitations.
+See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominance, defaults, API limits and implementation boundaries, and [EXPERIMENTS.md](EXPERIMENTS.md) for verification.
 
 ## Current technical direction
 
@@ -42,17 +42,13 @@ It does not yet use routed cycling paths, bicycle-carriage rules, an adaptive ca
 - Swiss elevation data later for slope-aware routing.
 - Bicycle carriage rules likely need a separate structured subsystem because timetable data alone may be insufficient.
 
-## Current routing ideas
+## Current routing model
 
-**Decision:** A simple generalized-cost model is acceptable for the prototype.
+**Decision (2026-09-05):** Implement and compare zero versus at most one intermediate cycling leg. Use the `(total time, total cycling, boardings)` frontier and a small set of category winners. Preserve endpoint cycling separately for optional preferences.
 
-**Hypothesis:** The final problem is genuinely multi-objective, with trade-offs between total time, cycling time, comfort, transfers, elevation, waiting and bicycle-rule complexity. Pareto-efficient alternatives may eventually be better than a single weighted optimum.
+**Fact:** This is implemented with shared constraints and paired searches over the same observed timetable graph. The live data adapter samples stops and departures; exact national optimality and globally minimal feasible catchments are not claimed.
 
-**Open question:** How much of the multimodal search and candidate-station logic OpenTripPlanner already solves adequately.
-
-**Open question:** How best to generate candidate stations when a fixed cycling radius yields no feasible bicycle-compatible transit journey.
-
-A discussed fallback is adaptive station search: expand the cycling catchment until feasible journeys exist. This is not yet a final algorithmic decision.
+**Open:** Whether the practical benefit of intermediate cycling justifies its extra discovery/search cost across representative real journeys. OpenTripPlanner remains the first production-engine candidate.
 
 ## Current cycling-comfort direction
 
@@ -97,18 +93,16 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
 
-**Agreed next mathematical experiment (2026-09-05):** Compare cycling only before/after transit against the same model allowing at most one intermediate cycling leg. The expanded model includes all baseline journeys. Hold time, cycling and boarding budgets and data fixed; compare feasibility, the `(total time, total cycling, boardings)` frontier and later computational cost. The experiment is not yet run; numerical budgets and cases remain open. See `docs/EXPERIMENTS.md`.
+**2026-09-05 update:** The user has authorized implementation and app changes after the mathematical discussion. This supersedes the earlier pause on routing changes. The Baseline/Extended switch, categories, bounded graph solver and bus-inclusive discovery are implemented.
 
-**2026-09-05 update:** Journey decomposition is implemented and covered by 11 passing automated tests; TypeScript and the production build pass. The user reported no result for Zürich → Laax. Its exact failure has not been reproduced; the fixed catchment and rail-only station search remain unchanged. Discuss the user's mathematical model before changing routing behavior. See `docs/EXPERIMENTS.md`.
+**Verification:** 35 automated tests pass, including exhaustive comparison of 54 toy-graph/budget/model configurations and a recorded Zürich HB → Chur → Laax train/walk/bus journey. TypeScript and production build pass. A live Zürich HB–Laax search returned category proposals in both models, with explicit warnings because upstream requests timed out. See the experiment log for its exact departure time, results and limits. Browser interaction is not tested.
 
-1. Clone and run `prototype-v0/` in a fresh local environment.
-2. Select 3–6 golden journeys and record current v0 behaviour in `docs/EXPERIMENTS.md`.
-3. Separate journey generation, feasibility, route metrics, ranking and explanation in the code.
-4. Implement and compare adaptive candidate-station strategies with an explicit maximum/fallback.
-5. Audit OSM and Swiss transit data on the golden journeys.
-6. Investigate bicycle-carriage and reservation data as a separate subsystem.
-7. Compare the custom prototype direction with OpenTripPlanner before building a full router.
-8. Conduct user interviews before major frontend investment.
+1. Try both models on 3–6 fixed real journeys and judge whether category trade-offs are useful.
+2. Capture exact endpoints, departure times, returned legs, failures and search cost for those cases.
+3. Compare the sampled prototype with OpenTripPlanner and complete Swiss timetable/street data.
+4. Replace straight-line cycling with routed cycling before claiming practical transfer feasibility.
+5. Introduce bicycle carriage and reservation constraints after this mathematical experiment, as requested by the user.
+6. Continue user interviews before major frontend investment.
 
 ## What is explicitly not a priority yet
 

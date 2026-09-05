@@ -32,7 +32,7 @@ This repository is the authoritative source for both code and accumulated projec
 
 ## Runnable prototype
 
-The preserved first implementation is in [`prototype-v0/`](prototype-v0/).
+The runnable prototype is in [`prototype-v0/`](prototype-v0/).
 
 ```bash
 cd prototype-v0
@@ -40,7 +40,7 @@ npm install
 npm run dev
 ```
 
-It is a deliberately simple local prototype, not the final routing architecture. See its README and `docs/FIRST_PROTOTYPE.md` before changing it.
+It now compares Baseline (cycling before/after transit) and Extended (at most one intermediate cycling leg), with category winners, buses and expandable journey plans. See [the implemented mathematical model](docs/MATHEMATICAL_MODEL.md), its README and `docs/EXPERIMENTS.md`. The sampled prototype is not the final routing architecture.
 
 ## Documentation semantics
 

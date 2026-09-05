@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
-import type { Journey, Place, Station } from "./routing";
+import type { Journey, Place, Station, Point } from "./routing";
 
 type MapViewProps = {
   origin: Place | null;
@@ -8,6 +8,8 @@ type MapViewProps = {
   originStations: Station[];
   destinationStations: Station[];
   selectedJourney: Journey | null;
+  accessMinutes: number;
+  egressMinutes: number;
 };
 
 const COLORS = {
@@ -30,7 +32,7 @@ export default function MapView({
   destination,
   originStations,
   destinationStations,
-  selectedJourney,
+  selectedJourney, accessMinutes, egressMinutes,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -63,10 +65,11 @@ export default function MapView({
     layer.clearLayers();
     const bounds = L.latLngBounds([]);
 
-    const addEndpoint = (place: Place, color: string, label: string) => {
+    const tooltip = (text: string) => { const node = document.createElement("span"); node.textContent = text; return node; };
+    const addEndpoint = (place: Place, color: string, label: string, minutes: number) => {
       const point: L.LatLngExpression = [place.lat, place.lon];
       L.circle(point, {
-        radius: 5000,
+        radius: Number.isFinite(minutes) ? minutes * 250 : 0,
         color,
         fillColor: color,
         fillOpacity: 0.045,
@@ -74,13 +77,13 @@ export default function MapView({
         dashArray: "5 7",
       }).addTo(layer);
       L.marker(point, { icon: markerIcon(color, label) })
-        .bindTooltip(place.label)
+        .bindTooltip(tooltip(place.label))
         .addTo(layer);
       bounds.extend(point);
     };
 
-    if (origin) addEndpoint(origin, COLORS.origin, "A");
-    if (destination) addEndpoint(destination, COLORS.destination, "B");
+    if (origin) addEndpoint(origin, COLORS.origin, "A", accessMinutes);
+    if (destination) addEndpoint(destination, COLORS.destination, "B", egressMinutes);
 
     const allStations = [
       ...originStations.map((station) => ({ station, side: "origin" })),
@@ -98,7 +101,7 @@ export default function MapView({
         fillOpacity: selected ? 1 : 0.7,
       })
         .bindTooltip(
-          `${station.name} · ${station.bikeMinutes} min by bike from ${side}`,
+          tooltip(`${station.name} · ${station.bikeMinutes} min by bike from ${side}`),
         )
         .addTo(layer);
       bounds.extend([station.lat, station.lon]);
@@ -114,13 +117,15 @@ export default function MapView({
         ],
         { color: COLORS.origin, weight: 4, dashArray: "4 7" },
       ).addTo(layer);
-      L.polyline(
-        [
-          [first.lat, first.lon],
-          [last.lat, last.lon],
-        ],
-        { color: COLORS.train, weight: 5 },
-      ).addTo(layer);
+      for (const leg of selectedJourney.transitLegs) {
+        const points = leg.geometry ?? [leg.fromPoint, leg.toPoint].filter((p): p is Point => !!p);
+        if (points.length < 2) continue;
+        const coordinates = points.map(p => [p.lat, p.lon] as [number, number]);
+        L.polyline(coordinates, { color: leg.mode === "bike" ? COLORS.origin : leg.mode === "walk" ? "#6f7b75" : COLORS.train,
+          weight: leg.mode === "transit" ? 5 : 4, dashArray: leg.mode === "transit" ? undefined : "4 7" })
+          .bindTooltip(tooltip(`${leg.service}: ${leg.from} → ${leg.to}`)).addTo(layer);
+        coordinates.forEach(point => bounds.extend(point));
+      }
       L.polyline(
         [
           [last.lat, last.lon],
@@ -131,14 +136,14 @@ export default function MapView({
     }
 
     if (bounds.isValid()) map.fitBounds(bounds.pad(0.16), { maxZoom: 12 });
-  }, [origin, destination, originStations, destinationStations, selectedJourney]);
+  }, [origin, destination, originStations, destinationStations, selectedJourney, accessMinutes, egressMinutes]);
 
   return (
     <div className="map-shell">
       <div ref={containerRef} className="map" aria-label="Journey map" />
       <div className="map-legend" aria-hidden="true">
         <span><i className="legend-bike" />Bike estimate</span>
-        <span><i className="legend-train" />Train</span>
+        <span><i className="legend-train" />Public transport</span>
       </div>
       {!origin && (
         <div className="map-empty">

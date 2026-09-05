@@ -84,6 +84,26 @@ This file records important project choices. Do not silently rewrite old decisio
 **Scope:** This approves the experiment direction. It does not select an implementation algorithm, numerical budgets, or a deployment change. A proposed comparison protocol and remaining parameters are in `EXPERIMENTS.md`.
 
 
+## 2026-09-05 — Implement the model and category-based application
+
+**New authorization:** After agreeing to the zero-versus-one-intermediate-leg experiment, the user explicitly requested implementation, a Baseline/Extended control before results, category proposals and documentation on GitHub.
+
+**Decision:** Implement a bounded multi-label timetable graph over the existing live data adapter. Include buses/trams in both models; preserve Baseline within Extended; keep initial, intermediate and final cycling budgets separate and also enforce their shared sum. Fewest changes requires public transport and the same cycling limits.
+
+**Presentation:** Three main categories (fastest, least cycling, fewest changes), optional fourth for shorter initial or final cycling. Merge duplicate winners. Apply a configurable extra-time allowance to category display, independently of the common absolute horizon.
+
+**Experiment defaults:** 15 km/h estimated cycling, 60 minutes per endpoint, 20 minutes intermediate cycling, 90 minutes cumulative cycling, four boardings, eight-hour horizon and three minutes before each boarding. These are configurable implementation defaults, not validated behavioral preferences.
+
+**Catchments:** Expand the endpoints independently in 20-minute bands up to their hard bounds. Scan those bands rather than asserting that a sampled first feasible pair is the globally minimal radius. API stop/service caps remain explicit.
+
+**Deferred:** Bicycle carriage and reservation constraints, at the user's request. Bicycle availability after transit is an idealization, not an allowed-carriage state. Routed cycling and platform/infrastructure feasibility remain future work.
+
+**Architecture:** This small experimental solver does not replace the decision to evaluate OpenTripPlanner for comprehensive routing. The adapter, solver, ranking and presentation are separated. The precise model and limitations are recorded in `MATHEMATICAL_MODEL.md`.
+
+**Repository identity:** The user's requested `bike-travel-app` name was checked; the existing project is `Victorpolm/bike-train-planner`, and no repository of the former name was found. Continue the existing repository without creating or renaming one.
+
+**User confirmation:** The user explicitly confirmed `Victorpolm/bike-train-planner` as the destination for the prepared code and mathematical documentation after the repository-name mismatch was explained.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

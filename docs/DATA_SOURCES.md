@@ -184,3 +184,12 @@ Eventually maintain a structured table or machine-readable registry with:
 `source | fields | geography | licence | freshness | reliability | known gaps | access | notes`
 
 The initial audit should focus on Zurich plus one nearby corridor rather than all of Switzerland.
+
+
+## Prototype adapter update — 2026-09-05
+
+The implemented experiment uses GeoAdmin address geocoding, with Transport API place/stop lookup as fallback. The public [Transport API](https://transport.opendata.ch/docs.html) supplies nearby stops, scheduled connection sections and departure-board pass lists. Requests no longer restrict transportations to trains: buses, trams and other returned public transport are considered in both models.
+
+Only known timed sections enter the graph. Recorded pass-list exits require a valid arrival time; untimed passage points are excluded. Delay/prognosis data, carriage permissions, capacity and reservations are not interpreted. Cycling and map geometry remain schematic. See `MATHEMATICAL_MODEL.md` for sampling, rate limits and the difference between an observed schedule graph and comprehensive network coverage.
+
+A small recorded 2026-09-05 Zürich–Laax schedule fixture is included for regression testing, with its source URL. It is an observation of scheduled data, not a promise that those services will run on another date.

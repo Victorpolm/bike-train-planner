@@ -1,7 +1,7 @@
-import type { Journey, Place, TransitLeg } from "./routing";
+import type { Journey, Place, TransitLeg } from "./routing.ts";
 
-type TransportStop = {
-  station?: { name?: string | null } | null;
+export type TransportStop = {
+  station?: { id?: string | null; name?: string | null; coordinate?: { x: number | null; y: number | null } } | null;
   departure?: string | null;
   departureTimestamp?: number | null;
   arrival?: string | null;
@@ -15,13 +15,14 @@ export type TransportSection = {
     number?: string | number | null;
     name?: string | null;
     to?: string | null;
+    passList?: TransportStop[];
   } | null;
   walk?: unknown;
   departure?: TransportStop | null;
   arrival?: TransportStop | null;
 };
 
-function stopTime(stop: TransportStop | null | undefined, event: "arrival" | "departure") {
+export function stopTime(stop: TransportStop | null | undefined, event: "arrival" | "departure") {
   const timestamp = stop?.[`${event}Timestamp`];
   const raw = stop?.[event];
   const date = typeof timestamp === "number" && Number.isFinite(timestamp)
@@ -54,6 +55,8 @@ export function transitLegsFromSections(sections?: TransportSection[] | null): T
         : mode === "walk" ? "Transfer on foot" : "Transfer details unavailable",
       serviceName: service?.name || null,
       direction: service?.to || null,
+      fromId: section.departure?.station?.id ?? undefined,
+      toId: section.arrival?.station?.id ?? undefined,
     };
   });
 }

@@ -188,3 +188,60 @@ h1 { margin: 0; max-width: 560px; font-family: Georgia, "Times New Roman", serif
   .legs { gap: 7px; }
   .legs b { font-size: 11px; }
 }
+
+/* Baseline / extended experiment controls and category proposals. */
+.search-form { grid-template-columns: 1fr; gap: 18px; }
+.place-inputs { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.swap-button { left: calc(50% - 17px); }
+.search-form label span { font-size: 14px; text-transform: none; letter-spacing: 0; color: #53645b; }
+.model-picker { min-width: 0; padding: 0; margin: 0; border: 0; }
+.model-picker legend { font-size: 14px; font-weight: 650; margin-bottom: 10px; }
+.model-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.model-buttons button { display: grid; gap: 7px; padding: 16px; border: 1px solid #bbc7bf; background: white; border-radius: 10px; text-align: left; cursor: pointer; }
+.model-buttons button[aria-pressed="true"] { background: #e8f1ec; border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+.model-buttons strong { font-size: 16px; }
+.model-buttons span { font-size: 14px; line-height: 1.45; color: #53645b; }
+.model-picker p, .preferences p, .result-explanation, .comparison-note, .search-coverage p { font-size: 14px; line-height: 1.55; color: #53645b; }
+.model-picker p { margin: 10px 0 0; }
+.preferences, .search-coverage { padding: 15px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 14px; }
+.preferences summary, .search-coverage summary { cursor: pointer; font-weight: 650; padding: 2px 0; }
+.preference-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-top: 18px; }
+.preference-grid label { align-content: start; }
+.preference-grid select { width: 100%; height: 52px; padding: 0 10px; font: inherit; color: var(--ink); background: white; border: 1px solid #cfd4cc; border-radius: 9px; }
+.search-button { width: 100%; }
+button:focus-visible, summary:focus-visible, select:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+button:disabled { cursor: default; opacity: .65; }
+.assumptions span { font-size: 12px; color: #53645b; }
+.cancel-button { display: block; margin-top: 14px; border: 1px solid var(--green); background: transparent; padding: 9px 14px; border-radius: 8px; cursor: pointer; }
+.category-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+.category-badges > span { font-size: 14px; padding: 5px 9px; border-radius: 6px; color: var(--green-dark); background: #eaf2ed; font-weight: 650; }
+.journey-topline > span { font-size: 12px; text-transform: none; }
+.arrival-summary, .cycling-summary, .route-stops, .route-services, .tradeoff { display: block; font-size: 14px; line-height: 1.55; margin-top: 9px; color: #53645b; }
+.route-services { color: var(--ink); font-weight: 600; overflow-wrap: anywhere; }
+.cycling-summary { margin-top: 12px; }
+.route-stops { margin-top: 4px; }
+.tradeoff { color: #74432f; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; }
+.middle-badge { display: inline-block; margin-top: 10px; font-size: 12px; background: #f9ebdf; padding: 4px 8px; border-radius: 5px; color: #74432f; }
+.comparison-note { background: #eaf2ed; border-radius: 9px; padding: 13px; }
+.search-notice { padding: 14px; background: #fbede7; border: 1px solid #ebc7b6; border-radius: 9px; margin-bottom: 15px; font-size: 14px; }
+.search-notice p { line-height: 1.5; margin: 8px 0 0; }
+.empty-results { line-height: 1.6; }
+.search-coverage { margin-top: 24px; }
+.search-coverage .candidate-stations { margin-top: 14px; }
+.station-list small { font-size: 14px; line-height: 1.5; }
+.station-list > span { font-size: 12px; }
+.model-note strong { font-size: 12px; }
+.model-note p { font-size: 14px; color: #53645b; }
+.model-note { height: auto; min-height: 98px; }
+@media (max-width: 680px) {
+  .search-form { grid-template-columns: 1fr; }
+  .place-inputs { grid-template-columns: 1fr; }
+  .model-buttons button { padding: 13px 11px; }
+  .preference-grid { grid-template-columns: 1fr; }
+  .journey-topline strong { font-size: 26px; }
+  .prototype-badge { max-width: 140px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

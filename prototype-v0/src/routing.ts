@@ -11,6 +11,8 @@ export type Point = {
 
 export type Place = Point & {
   label: string;
+  stopId?: string;
+  kind?: string;
 };
 
 export type Station = Point & {
@@ -18,6 +20,7 @@ export type Station = Point & {
   name: string;
   distanceKm: number;
   bikeMinutes: number;
+  kind?: string;
 };
 
 export type Journey = {
@@ -36,7 +39,7 @@ export type Journey = {
 };
 
 export type TransitLeg = {
-  mode: "transit" | "walk" | "unknown";
+  mode: "transit" | "walk" | "unknown" | "bike";
   from: string | null;
   to: string | null;
   departure: Date | null;
@@ -46,6 +49,11 @@ export type TransitLeg = {
   service: string;
   serviceName: string | null;
   direction: string | null;
+  fromId?: string;
+  toId?: string;
+  fromPoint?: Point;
+  toPoint?: Point;
+  geometry?: Point[];
 };
 
 export function haversineKm(a: Point, b: Point): number {
@@ -62,7 +70,7 @@ export function haversineKm(a: Point, b: Point): number {
 }
 
 export function cyclingMinutes(distanceKm: number): number {
-  return Math.max(1, Math.round((distanceKm / BIKE_SPEED_KMH) * 60));
+  return distanceKm <= 0.001 ? 0 : Math.ceil((distanceKm / BIKE_SPEED_KMH) * 60);
 }
 
 export function samplePoints(point: Point): Point[] {
@@ -80,6 +88,7 @@ export function samplePoints(point: Point): Point[] {
 }
 
 export function formatMinutes(minutes: number): string {
+  minutes = Math.ceil(minutes);
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;

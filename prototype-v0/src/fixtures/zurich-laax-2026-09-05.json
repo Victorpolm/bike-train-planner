@@ -1,0 +1,721 @@
+{
+  "source": "https://transport.opendata.ch/v1/connections?from=Z%C3%BCrich%20HB&to=Laax%2C%20Posta&limit=1",
+  "capturedDate": "2026-09-05",
+  "description": "Recorded scheduled train, walking transfer and bus. Not a live service promise.",
+  "sections": [
+    {
+      "departure": {
+        "station": {
+          "id": "8503000",
+          "name": "Zürich HB",
+          "score": null,
+          "coordinate": {
+            "type": "WGS84",
+            "x": 47.377847,
+            "y": 8.540502
+          },
+          "distance": null
+        },
+        "arrival": null,
+        "arrivalTimestamp": null,
+        "departure": "2026-09-05T13:38:00+0200",
+        "departureTimestamp": 1788608280,
+        "platform": "13"
+      },
+      "arrival": {
+        "station": {
+          "id": "8509000",
+          "name": "Chur",
+          "score": null,
+          "coordinate": {
+            "type": "WGS84",
+            "x": 46.853078,
+            "y": 9.528926
+          },
+          "distance": null
+        },
+        "arrival": "2026-09-05T14:52:00+0200",
+        "arrivalTimestamp": 1788612720,
+        "departure": null,
+        "departureTimestamp": null,
+        "platform": "9"
+      },
+      "walk": null,
+      "journey": {
+        "name": "000571",
+        "category": "IC",
+        "number": "3",
+        "operator": "SBB",
+        "to": "Chur",
+        "passList": [
+          {
+            "station": {
+              "id": "8503000",
+              "name": "Zürich HB",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 47.377847,
+                "y": 8.540502
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": "2026-09-05T13:38:00+0200",
+            "departureTimestamp": 1788608280,
+            "platform": "13"
+          },
+          {
+            "station": {
+              "id": "0000176",
+              "name": "Zimmerberg-Basistunnel",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 47.351666,
+                "y": 8.52196
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": null,
+            "departureTimestamp": null,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509411",
+              "name": "Sargans",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 47.044816,
+                "y": 9.446258
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T14:32:00+0200",
+            "arrivalTimestamp": 1788611520,
+            "departure": "2026-09-05T14:33:00+0200",
+            "departureTimestamp": 1788611580,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509002",
+              "name": "Landquart",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.967428,
+                "y": 9.554043
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T14:41:00+0200",
+            "arrivalTimestamp": 1788612060,
+            "departure": "2026-09-05T14:42:00+0200",
+            "departureTimestamp": 1788612120,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509000",
+              "name": "Chur",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.853078,
+                "y": 9.528926
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T14:52:00+0200",
+            "arrivalTimestamp": 1788612720,
+            "departure": null,
+            "departureTimestamp": null,
+            "platform": "9"
+          }
+        ]
+      }
+    },
+    {
+      "departure": {
+        "station": {
+          "id": "8509000",
+          "name": "Chur",
+          "score": null,
+          "coordinate": {
+            "type": "WGS84",
+            "x": 46.853078,
+            "y": 9.528926
+          },
+          "distance": null
+        },
+        "arrival": "2026-09-05T14:52:00+0200",
+        "arrivalTimestamp": 1788612720,
+        "departure": "2026-09-05T14:52:00+0200",
+        "departureTimestamp": 1788612720,
+        "platform": null
+      },
+      "arrival": {
+        "station": {
+          "id": "8575112",
+          "name": "Chur, Postautostation",
+          "score": null,
+          "coordinate": {
+            "type": "WGS84",
+            "x": 46.852875,
+            "y": 9.527724
+          },
+          "distance": null
+        },
+        "arrival": "2026-09-05T14:55:00+0200",
+        "arrivalTimestamp": 1788612900,
+        "departure": null,
+        "departureTimestamp": null,
+        "platform": null
+      },
+      "walk": {
+        "duration": 180
+      },
+      "journey": null
+    },
+    {
+      "departure": {
+        "station": {
+          "id": "8575112",
+          "name": "Chur, Postautostation",
+          "score": null,
+          "coordinate": {
+            "type": "WGS84",
+            "x": 46.852875,
+            "y": 9.527724
+          },
+          "distance": null
+        },
+        "arrival": "2026-09-05T14:55:00+0200",
+        "arrivalTimestamp": 1788612900,
+        "departure": "2026-09-05T14:58:00+0200",
+        "departureTimestamp": 1788613080,
+        "platform": "N"
+      },
+      "arrival": {
+        "station": {
+          "id": "8509786",
+          "name": "Laax GR, posta",
+          "score": null,
+          "coordinate": {
+            "type": "WGS84",
+            "x": 46.806492,
+            "y": 9.258086
+          },
+          "distance": null
+        },
+        "arrival": "2026-09-05T15:48:00+0200",
+        "arrivalTimestamp": 1788616080,
+        "departure": null,
+        "departureTimestamp": null,
+        "platform": ""
+      },
+      "walk": null,
+      "journey": {
+        "name": "881061",
+        "category": "B",
+        "number": "81",
+        "operator": "PAG",
+        "to": "Falera, center",
+        "passList": [
+          {
+            "station": {
+              "id": "8575112",
+              "name": "Chur, Postautostation",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.852875,
+                "y": 9.527724
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T14:55:00+0200",
+            "arrivalTimestamp": 1788612900,
+            "departure": "2026-09-05T14:58:00+0200",
+            "departureTimestamp": 1788613080,
+            "platform": "N"
+          },
+          {
+            "station": {
+              "id": "8574493",
+              "name": "Chur, Malteser",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.848402,
+                "y": 9.529243
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": "2026-09-05T15:00:00+0200",
+            "departureTimestamp": 1788613200,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574666",
+              "name": "Chur, Brambrüeschb./Stadthalle",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.847487,
+                "y": 9.525626
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": "2026-09-05T15:01:00+0200",
+            "departureTimestamp": 1788613260,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574667",
+              "name": "Chur, Kaserne/Kornquader",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.84694,
+                "y": 9.519126
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": "2026-09-05T15:02:00+0200",
+            "departureTimestamp": 1788613320,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574668",
+              "name": "Chur, Strassenverkehrsamt",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.846707,
+                "y": 9.516573
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": "2026-09-05T15:02:00+0200",
+            "departureTimestamp": 1788613320,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574669",
+              "name": "Chur, Kalchbühl",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.846305,
+                "y": 9.510957
+              },
+              "distance": null
+            },
+            "arrival": null,
+            "arrivalTimestamp": null,
+            "departure": "2026-09-05T15:03:00+0200",
+            "departureTimestamp": 1788613380,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509730",
+              "name": "Tamins, Unterdorf",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.827878,
+                "y": 9.40855
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:11:00+0200",
+            "arrivalTimestamp": 1788613860,
+            "departure": "2026-09-05T15:12:00+0200",
+            "departureTimestamp": 1788613920,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509726",
+              "name": "Trin, Platta",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.827306,
+                "y": 9.382034
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:15:00+0200",
+            "arrivalTimestamp": 1788614100,
+            "departure": "2026-09-05T15:15:00+0200",
+            "departureTimestamp": 1788614100,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8581027",
+              "name": "Trin, Quadris",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.828809,
+                "y": 9.366631
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:16:00+0200",
+            "arrivalTimestamp": 1788614160,
+            "departure": "2026-09-05T15:16:00+0200",
+            "departureTimestamp": 1788614160,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509895",
+              "name": "Trin, Dorf",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.828256,
+                "y": 9.361538
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:19:00+0200",
+            "arrivalTimestamp": 1788614340,
+            "departure": "2026-09-05T15:19:00+0200",
+            "departureTimestamp": 1788614340,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8583228",
+              "name": "Trin, Portalavanda",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.828147,
+                "y": 9.358387
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:19:00+0200",
+            "arrivalTimestamp": 1788614340,
+            "departure": "2026-09-05T15:19:00+0200",
+            "departureTimestamp": 1788614340,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509731",
+              "name": "Trin, Porclis",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.826805,
+                "y": 9.350972
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:20:00+0200",
+            "arrivalTimestamp": 1788614400,
+            "departure": "2026-09-05T15:20:00+0200",
+            "departureTimestamp": 1788614400,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509896",
+              "name": "Trin, Mulin",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.834088,
+                "y": 9.342092
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:23:00+0200",
+            "arrivalTimestamp": 1788614580,
+            "departure": "2026-09-05T15:23:00+0200",
+            "departureTimestamp": 1788614580,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509723",
+              "name": "Trin Mulin, Crestasee",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.834314,
+                "y": 9.327939
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:24:00+0200",
+            "arrivalTimestamp": 1788614640,
+            "departure": "2026-09-05T15:24:00+0200",
+            "departureTimestamp": 1788614640,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8579809",
+              "name": "Flims Dorf, Auas sparsas",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.836254,
+                "y": 9.317767
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:25:00+0200",
+            "arrivalTimestamp": 1788614700,
+            "departure": "2026-09-05T15:25:00+0200",
+            "departureTimestamp": 1788614700,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574679",
+              "name": "Flims Dorf, Vallorca",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.835564,
+                "y": 9.296122
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:27:00+0200",
+            "arrivalTimestamp": 1788614820,
+            "departure": "2026-09-05T15:27:00+0200",
+            "departureTimestamp": 1788614820,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509773",
+              "name": "Flims Dorf, Post",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.836647,
+                "y": 9.287597
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:29:00+0200",
+            "arrivalTimestamp": 1788614940,
+            "departure": "2026-09-05T15:29:00+0200",
+            "departureTimestamp": 1788614940,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574680",
+              "name": "Flims Dorf, Bergbahnen",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.834439,
+                "y": 9.28229
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:31:00+0200",
+            "arrivalTimestamp": 1788615060,
+            "departure": "2026-09-05T15:33:00+0200",
+            "departureTimestamp": 1788615180,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574681",
+              "name": "Flims Waldhaus, Promenada",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.829774,
+                "y": 9.28584
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:33:00+0200",
+            "arrivalTimestamp": 1788615180,
+            "departure": "2026-09-05T15:33:00+0200",
+            "departureTimestamp": 1788615180,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574876",
+              "name": "Flims Waldhaus, Segnes",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.827876,
+                "y": 9.288069
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:34:00+0200",
+            "arrivalTimestamp": 1788615240,
+            "departure": "2026-09-05T15:34:00+0200",
+            "departureTimestamp": 1788615240,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509774",
+              "name": "Flims Waldhaus, Caumasee",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.825913,
+                "y": 9.28871
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:36:00+0200",
+            "arrivalTimestamp": 1788615360,
+            "departure": "2026-09-05T15:36:00+0200",
+            "departureTimestamp": 1788615360,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574682",
+              "name": "Flims Waldhaus, Camping",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.824901,
+                "y": 9.281151
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:37:00+0200",
+            "arrivalTimestamp": 1788615420,
+            "departure": "2026-09-05T15:37:00+0200",
+            "departureTimestamp": 1788615420,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8580859",
+              "name": "Laax GR, Staderas",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.821783,
+                "y": 9.270269
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:38:00+0200",
+            "arrivalTimestamp": 1788615480,
+            "departure": "2026-09-05T15:38:00+0200",
+            "departureTimestamp": 1788615480,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509983",
+              "name": "Laax GR, Bergbahnen",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.820011,
+                "y": 9.265162
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:41:00+0200",
+            "arrivalTimestamp": 1788615660,
+            "departure": "2026-09-05T15:42:00+0200",
+            "departureTimestamp": 1788615720,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509727",
+              "name": "Laax GR, Rancho",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.815771,
+                "y": 9.266421
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:43:00+0200",
+            "arrivalTimestamp": 1788615780,
+            "departure": "2026-09-05T15:43:00+0200",
+            "departureTimestamp": 1788615780,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8574683",
+              "name": "Laax GR, Marcau",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.812732,
+                "y": 9.263447
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:44:00+0200",
+            "arrivalTimestamp": 1788615840,
+            "departure": "2026-09-05T15:44:00+0200",
+            "departureTimestamp": 1788615840,
+            "platform": null
+          },
+          {
+            "station": {
+              "id": "8509786",
+              "name": "Laax GR, posta",
+              "score": null,
+              "coordinate": {
+                "type": "WGS84",
+                "x": 46.806492,
+                "y": 9.258086
+              },
+              "distance": null
+            },
+            "arrival": "2026-09-05T15:48:00+0200",
+            "arrivalTimestamp": 1788616080,
+            "departure": null,
+            "departureTimestamp": null,
+            "platform": ""
+          }
+        ]
+      }
+    }
+  ]
+}

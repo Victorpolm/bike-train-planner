@@ -154,3 +154,70 @@ Keep the user-reported Zurich–Laax failure as a candidate real case, with exac
 **Open:** numerical budgets, exact cases and dates, criterion for a materially useful improvement, and which existing engine/method to use. Inspect existing-engine support before custom implementation.
 
 **Result:** Not run. No feasibility, speedup or route-quality claim yet.
+
+
+## 2026-09-05 — Implemented comparison and regression results
+
+**Status:** The later user request authorized implementation and the app changes. This supersedes the earlier “planned / not run” status above for the deterministic model experiment. The complete mathematical definition and defaults are now in [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md).
+
+**Method:** A pure multi-label solver on finite synthetic timed graphs, an independent exhaustive path enumerator, mocked API responses for data/control behavior, and one small timetable response retrieved from the live Transport API. No browser interaction or visual QA was performed.
+
+### Deterministic outcomes
+
+| Case | Baseline | Extended | Verified implication |
+|---|---|---|---|
+| Useful cycling transfer | 80 min, 0 cycling, 2 boardings | 50 min, 10 cycling, 2 boardings | 30-minute gain at a cycling cost |
+| Earlier direct service added | 25 min | 25 min | No intermediate benefit; a bike leg is optional |
+| Baseline onward rides removed | No journey | 50 min | Intermediate cycling can rescue feasibility |
+| Total or intermediate cycling limit below 10 min | No intermediate route | No intermediate route | Shared cycling budgets are enforced |
+| 49-minute horizon | No journey | No journey | Absolute horizon excludes the 50-minute route |
+| 50-minute horizon | No journey | 50 min | Equality at a hard limit is accepted |
+| Two separate intermediate legs required | No journey | No journey | Extended is bounded to one intermediate block |
+| Later interchange arrival with fewer boardings | Useful label retained | Same state discipline | Earliest-arrival-only station pruning is invalid |
+| Resource cap | Explicit truncation | Baseline candidates retained | No silent completeness claim |
+
+The independent enumerator matches the solver's non-dominated `(time, cycling, boardings)` vectors for **54 combinations** of model, cycling budget, boarding limit and horizon. Further cases verify boarding exactly at bike arrival plus buffer, rejecting one second too early, adding access and egress into the cycling sum, and not accepting final arrival immediately after an intermediate ride without further transit.
+
+Category tests select the 50-minute fastest route, the 80-minute least-cycling route and the 90-minute one-boarding/fewest-changes route in the toy network. Duplicate winners merge; zero extra-time allowance collapses to the fastest option. Pure cycling cannot win a mixed category. Optional endpoint preferences retain candidates that would be dominated under only the three main objectives.
+
+### Recorded Zürich–Laax journey
+
+**Source:** [Transport API connection request](https://transport.opendata.ch/v1/connections?from=Z%C3%BCrich%20HB&to=Laax%2C%20Posta&limit=1), retrieved 2026-09-05. Selected schedule fields are preserved in `prototype-v0/src/fixtures/zurich-laax-2026-09-05.json`.
+
+**Exact endpoints:** Zürich HB (47.377847, 8.540502) → Laax GR, posta (46.806492, 9.258086). The deterministic test uses a 2026-09-05 13:30 Europe/Zurich departure, zero endpoint cycling limits and a four-hour horizon.
+
+The recorded connection is:
+
+- IC 3, service 000571: Zürich HB 13:38 → Chur 14:52.
+- Walking transfer: Chur 14:52 → Chur, Postautostation 14:55.
+- Bus 81, service 881061: Chur, Postautostation 14:58, platform N → Laax GR, posta 15:48.
+
+**Result:** Both models find the 138-minute journey with two vehicle boardings in this recorded graph. It does not need an intermediate cycling transfer. The platform and service details survive normalization and the full decomposition. Untimed passage points are not treated as alighting stops, and pass-list exits do not add boardings.
+
+**Interpretation:** Bus inclusion addresses a concrete limitation of the earlier rail-only adapter. This does not establish the exact cause of the user's original failed search, whose endpoints, date and API responses were not recorded.
+
+### Live adapter checks and remaining uncertainty
+
+Direct live requests returned a Zürich–Laax train-and-bus connection. GeoAdmin requests later timed out; the new timetable place/stop fallback successfully resolved Zürich HB and Laax GR, posta to the coordinates above. The fallback retains a resolved stop ID as a candidate if nearby-stop lookup fails.
+
+A full live comparison encountered slow or timed-out nearby-stop and connection requests and reached a 240-second diagnostic timeout before completion. This exposed a usability issue in sequential discovery. The adapter was then bounded to at most two additional geographic probes per endpoint, prioritizes shorter endpoint cycling pairs, applies eight-second request timeouts and a 90-second budget to each Baseline/Extended acquisition phase. Exhausting a time budget gives an incomplete-search notice. These changes bound waiting; they do not make the upstream service reliable.
+
+**Follow-up live result after adding the bounds:** A Zürich HB → Laax GR, posta search completed for a captured departure of **2026-09-05 13:35:55.670 Europe/Zurich**. It took about **194 seconds** including geocoding and both acquisition phases. Of 34 timetable requests, 16 failed or timed out; the interface correctly receives both incomplete-request and time-limit warnings. The observed graph contained 41 stops and 221 timed edges.
+
+On that shared graph, Baseline retained 24 journey candidates and Extended 48 (including the Baseline union). Baseline explored/retained 34 labels; Extended explored/retained 80. Neither hit its label cap. Both produced the same two distinct category cards: fastest/fewest changes at about **159 minutes, 18 minutes cycling, two boardings**, and least cycling at about **162 minutes, zero cycling, two boardings**. Both use IC 3 and bus 81; no intermediate-cycling improvement is established by this case.
+
+This verifies that the live adapter can produce proposals and the paired model/category flow runs end to end, **with partial upstream data**. It does not establish complete timetable coverage, the cause of the user's original failed search, practical bicycle feasibility, or a real-world quality/speed benefit from Extended. The final implementation also retains geocoded stop IDs against subsequent nearby-lookup failures. Search latency across representative journeys and peak memory remain unbenchmarked.
+
+### Verification
+
+**Result:** All **35 automated tests** pass on Node.js 24, including the original decomposition checks. TypeScript compilation and the Vite production build pass. Equivalent offline commands were used in this environment:
+
+```bash
+node --test src/*.test.ts
+node node_modules/typescript/bin/tsc -b
+node node_modules/vite/bin/vite.js build
+```
+
+The repository's `npm test` and `npm run build` scripts invoke these same checks. Dependency versions and the existing lockfile are preserved; no new package is required.
+
+**Next experiment:** Fix 3–6 Swiss endpoint/time pairs, compare the category trade-offs with actual traveler choices, and compare candidate coverage with OpenTripPlanner using complete schedule and street data. Introduce routed cycling before claiming practical transfer feasibility, then add bicycle-carriage constraints as a separate experiment.

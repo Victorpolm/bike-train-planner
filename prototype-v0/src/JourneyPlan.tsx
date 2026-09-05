@@ -58,7 +58,7 @@ export default function JourneyPlan({
           );
         })}
       </ol>
-      <p className="plan-caution">Bicycle carriage and reservations have not been checked. Times and platforms are as returned by the timetable service.</p>
+      <p className="plan-caution">This experiment assumes a bicycle is available after transit; carriage and reservation rules are deferred. Times and platforms come from the timetable service.</p>
     </section>
   );
 }
