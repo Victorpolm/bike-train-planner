@@ -104,6 +104,20 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **User confirmation:** The user explicitly confirmed `Victorpolm/bike-train-planner` as the destination for the prepared code and mathematical documentation after the repository-name mismatch was explained.
 
+## 2026-09-05 — Return proposals promptly and simplify input
+
+**User report:** Searches stop before proposing routes even for easy journeys; filling many parameters is burdensome; partial address suggestions are requested.
+
+**Evidence:** Live provider responses took about 13 seconds, exceeding the previous eight-second request timeout. The old UI waited for all endpoint pairs and, in Extended mode, all additional discovery before showing any results. Seven required numeric controls lived inside a collapsed section; clearing one could block native form submission. The recorded graph solver was small (34/80 explored labels), so the measured bottleneck is data acquisition, not proof that the mathematical experiment is too complex.
+
+**Decision:** Keep the agreed solver, categories, bus support and full decomposition. Query selected stops first, publish proposals after every usable response, limit initial sampling to three pairs, allow 20 seconds per request and retain valid proposals after cancellation or failed additional requests. Outward stop probing becomes a fallback when initial requests return no feasible route without service failures. Extended publishes results on the current shared graph immediately, then samples one departure board and at most two transfer stops with two onward queries. The reduced sampling trades candidate coverage for earlier usable results; it does not establish global optimality.
+
+**Input:** From and To are cancellable address/stop comboboxes with local known hubs, live GeoAdmin/Transport suggestions, 350 ms debounce, keyboard selection and preserved coordinates/stop IDs. Replace mandatory numeric controls with optional Less / Balanced / More cycling presets and the optional fourth category. Keep the form before the map on mobile.
+
+**Precision correction:** A selected stop and the same provider stop ID have zero endpoint cycling even when different datasets give slightly different coordinates for that station.
+
+**Validation:** New live Zürich–Bern and Zürich–Laax checks publish proposals in approximately 15 and 12 seconds respectively; Extended completes later without hiding those proposals. This is a small observation, not an availability or latency guarantee. Browser interaction is untested.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

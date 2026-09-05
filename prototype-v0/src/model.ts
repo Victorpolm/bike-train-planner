@@ -23,7 +23,7 @@ export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
 export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge> };
 export const emptyNetwork = (): Network => ({ stops: new Map(), edges: new Map() });
 export const atEndpoint = (stop: Stop, point: Place): Station => {
-  const distanceKm = haversineKm(stop, point);
+  const distanceKm = point.stopId === stop.id ? 0 : haversineKm(stop, point);
   return { ...stop, distanceKm, bikeMinutes: cyclingMinutes(distanceKm) };
 };
 

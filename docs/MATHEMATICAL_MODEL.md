@@ -80,37 +80,45 @@ These numbers are implementation defaults for the experiment, not empirically ca
 | Absolute journey horizon | 480 min |
 | Extra arrival allowance for category alternatives | 60 min |
 
-All budgets and the optional endpoint category are exposed under **Cycling limits & preferences**. Speed and boarding buffer are currently fixed in the interface. Cycling estimates round positive durations up to whole minutes. Coincident points within one metre get zero minutes. The API query time rounds up to a Swiss local minute and the solver rechecks exact catchability against timestamps, including seconds and midnight.
+The form now exposes only **From**, **To**, and **Baseline / Extended**. Optional preferences select one of the following cycling presets and an endpoint category; there are no required numeric controls. Other budgets remain the defaults above.
+
+| Cycling preference | Total cycling | Initial / final, each | Intermediate |
+|---|---:|---:|---:|
+| Less | 40 min | 20 min | 10 min |
+| Balanced | 90 min | 60 min | 20 min |
+| More | 150 min | 90 min | 30 min |
+
+Cycling estimates round positive durations up to whole minutes. Coincident points within one metre, or matching selected/provider stop IDs, get zero minutes. Identity avoids adding fictitious cycling for slight coordinate differences between datasets. The API query time rounds up to a Swiss local minute and the solver rechecks exact catchability against timestamps, including seconds and midnight.
 
 ## Catchment expansion and live candidate sampling
 
-Departure and arrival are handled separately. Each starts with nearby public-transport stops plus a small existing list of Swiss rail hubs. Discovery scans outward in 20-minute bands to the respective hard limit, retaining earlier discoveries. A centre with existing stops can skip additional sampling inside its initial band. At most two additional geographic probes per endpoint sample outward bands, rotating directions; this is not an entire cycling isochrone. Known stops and rail hubs remain eligible through the hard radius bound even when the discovery probe cap is reached. A stop successfully resolved during geocoding is retained as a candidate even if nearby lookup later fails.
+Departure and arrival are handled separately. A selected stop retains its ID and coordinates and can be queried without geocoding or nearby lookup. An address initially uses a known rail hub within 20 cycling minutes if one exists; otherwise it requests nearby public-transport stops. If no candidate is available, or initial successful connection requests yield no feasible journey, additional discovery samples outward in 20-minute bands within each hard limit. At most two extra probes per endpoint are made (north/south). Earlier candidates and known rail hubs remain eligible through their hard bounds; this is not a complete isochrone.
 
-At most six query stops per endpoint retain the closest two stops, up to two rail hubs, and representatives from the radius bands before filling remaining slots by distance. Buses and trams are not rejected by name, punctuation or icon. All returned public-transport modes are available in **both** models. The same cumulative budget removes impossible endpoint pairs before requesting connections.
+At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, are available in both models. Pairs exceeding the cumulative cycling budget are rejected before HTTP. The first three eligible pairs, ordered by endpoint cycling time, request four upcoming connections each; after fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
 
-The user's minimal-feasible-radius-plus-20 idea motivates this search. There may be several incomparable minimal `(start radius, arrival radius)` pairs, so independent scalar minima need not form a feasible pair. **This prototype scans all bands within the hard limits instead of claiming to identify an exact global minimum or stopping at the first connection.** Sampling and the six-stop cap mean it can still miss a useful station or a better journey. This is an explicit bounded approximation of adaptive discovery.
+The user's minimal-feasible-radius-plus-20 idea remains the motivation for adaptive discovery. There can be incomparable minimal `(start radius, arrival radius)` pairs, so separate scalar minima need not form a feasible pair. This implementation does not prove a globally minimal feasible radius. Fewer pair queries and deferred outward probes intentionally prioritize early results; they can miss better connections, including ones in the extra band after initial success.
 
-Baseline requests up to six upcoming API connections per eligible endpoint pair and keeps all usable timed sections, not just the earliest-arriving returned connection. The graph may expose additional usable stops through those sections and pass-list exits.
+Extended first compares both models on the graph already obtained, then additionally:
 
-Extended additionally:
-
-- seeds up to three departure boards, with six services each, even when Baseline has no complete journey;
+- seeds one departure board with six services even if Baseline has no complete journey;
 - finds reachable alighting stops without intermediate cycling;
-- samples six such stops, ordered by geographic proximity to the destination, for up to two nearby cycling-transfer targets each;
-- requests at most 18 onward connections to up to two sampled arrival stops, starting from the earliest feasible readiness at each target;
-- constructs positive cycling links within the intermediate limit between reached stops and observed boarding stops in the graph.
+- samples two such stops, ordered by proximity to the destination, for one nearby cycling-transfer target each;
+- requests at most two onward connections to the nearest sampled arrival stop from the earliest feasible target readiness;
+- constructs positive cycling links within the intermediate limit between reached stops and observed boarding stops.
 
-The suffix queries only return a finite next-service window; later low-boarding/low-cycling possibilities can still be absent. Geographic ordering is a heuristic, not a proof of optimality. A full Swiss timetable graph or an existing routing engine remains the route toward comprehensive search.
+After each data-producing query, both models are recomputed on the same graph and proposals are published. The solver still keeps lower-cycling/lower-boarding labels; provider windows and geographic sampling can omit useful later services. Comprehensive coverage remains a future routing-engine experiment.
 
 ## Fair comparison, failures and cancellation
 
-One departure instant and one set of budgets are captured per search. Switching to Extended reuses the in-memory timetable responses, discovers its additional edges, and recomputes **both** solutions on the same expanded graph. Subsequent toggling reuses those paired results. Baseline category winners may improve after this data expansion. Editing an address or a budget invalidates old results and starts a new comparison.
+One departure instant and one set of budgets are captured per search. Switching to Extended reuses the in-memory timetable responses, discovers its additional edges, and recomputes **both** solutions on the same expanded graph. Subsequent toggling reuses completed paired results. An explicit completion flag distinguishes a provisional Extended solution from completed acquisition. Baseline category winners may improve after this data expansion. Editing an address or a budget invalidates old results and starts a new comparison.
 
 The graph is a per-search collection of API responses, not an atomic nationwide timetable snapshot. Real-time delay/prognosis fields are not used; the experiment compares scheduled times. This is shown as a dated Swiss-time search, not a continuously refreshed departure board.
 
-Transport requests are serialized, spaced by at least 400 ms, cached within the search, limited to 100 and given timeouts of at most eight seconds. Each acquisition phase has a 90-second wall-clock budget; requesting Extended starts a new phase while retaining the total request cap and any rate-limit stop. Endpoint pairs with less cycling are queried first so useful local connections are considered early. Stop-name geocoding fallback requests are separate from this routing budget (five seconds for the primary address lookup, then at most ten seconds for fallback). A rate-limit response stops further timetable requests. Errors, timeouts, rejected sections and resource caps produce a visible partial-search notice. Cancellation aborts active and queued requests. An empty candidate set is described as no journey **found among sampled connections**, not proof that travel is impossible.
+Transport requests are serialized, spaced by at least 400 ms and limited to 18 per search. A deadline of at most 20 seconds covers both HTTP and reading the response body; each acquisition phase has a 90-second wall-clock budget. Requesting Extended starts a new phase while retaining the total cap and any rate-limit stop. Successful responses are cached in the search; failed queries are not cached as valid empty results. A rate-limit response stops further timetable requests.
 
-GeoAdmin address lookup falls back to the Transport API's place/stop lookup on missing results, service failure or timeout. Resolved place names appear with the results so the user can check the interpretation.
+Errors, rejected sections and resource caps generate an incomplete-search notice. The first proposals remain interactive while more data loads; cancellation aborts active/queued requests and keeps published proposals. A cancelled session must start a fresh search to acquire more data, rather than reuse an aborted controller. Empty results with upstream failures say the search is incomplete; an empty successful sample is not proof travel is impossible.
+
+Address and stop suggestions appear after two typed characters, using immediate accent-insensitive known-hub matches and independently published GeoAdmin/Transport results. A 350 ms debounce, cancellation and a generation guard reject stale queries. Each live lookup has a 20-second deadline; successful combined suggestions use a bounded 50-query in-memory cache. Selection preserves coordinates and stop IDs. Searching unselected text proceeds on the first valid match and cancels the slower provider; resolved labels are shown for checking. These lookup requests are separate from the timetable acquisition budget. There is no persisted address history.
 
 ## Implementation boundaries and next experiment
 
@@ -118,7 +126,10 @@ GeoAdmin address lookup falls back to the Transport API's place/stop lookup on m
 |---|---|
 | `src/routing.ts` | Shared types, distance and formatting helpers |
 | `src/timetable.ts` | Normalize timed API sections and departure-board exits |
-| `src/api.ts` | Geocoding, sampling, throttling, caching and live graph acquisition |
+| `src/api.ts` | Progressive timetable acquisition, stop sampling, throttling and per-search caching |
+| `src/http.ts` | Portable cancellation and full-response deadlines |
+| `src/places.ts`, `src/PlaceInput.tsx` | Address/stop suggestions, selected places and stale-query handling |
+| `src/preferences.ts` | User cycling preferences mapped to mathematical budgets |
 | `src/model.ts` | Feasibility, multi-label graph search, Pareto filtering and categories |
 | `src/App.tsx` | Model switch, preferences, categories, empty/partial/cancel states |
 | `src/itinerary.ts`, `src/JourneyPlan.tsx` | Full chronological journey decomposition |
@@ -130,6 +141,7 @@ OpenTripPlanner remains the production-engine candidate. Its documented access/e
 
 Primary references consulted:
 
+- [GeoAdmin search service](https://docs.geo.admin.ch/access-data/search.html)
 - [Transport API schema and request limits](https://transport.opendata.ch/docs.html)
 - [OpenTripPlanner route-request controls](https://docs.opentripplanner.org/en/latest/RouteRequest/)
 - [RAPTOR / multicriteria transit routing paper](https://www.microsoft.com/en-us/research/wp-content/uploads/2012/01/raptor_alenex.pdf)

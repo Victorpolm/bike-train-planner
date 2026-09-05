@@ -5,12 +5,15 @@ import { addSections, addStationboard, readStop, type BoardJourney } from "./tim
 import { atEndpoint, compareModels, emptyNetwork, solve, validateOptions,
   type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 
+import { fetchJson, HttpError } from "./http.ts";
+import { geocode, type TransportLocation } from "./places.ts";
+export { geocode } from "./places.ts";
+
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
-export const SEARCH_LIMITS = { stopsPerSide: 6, connectionsPerPair: 6, transferStops: 6,
-  neighborsPerTransfer: 2, suffixQueries: 18, stationboards: 3, requests: 100, locationProbesPerSide: 2, phaseMilliseconds: 90_000 };
+export const SEARCH_LIMITS = { stopsPerSide: 4, connectionsPerPair: 4, baselinePairs: 3, transferStops: 2,
+  neighborsPerTransfer: 1, suffixQueries: 2, stationboards: 1, requests: 18,
+  locationProbesPerSide: 2, phaseMilliseconds: 90_000, requestMilliseconds: 20_000 };
 export type Progress = (message: string) => void;
-export type TransportLocation = { id: string | null; name: string; icon?: string | null;
-  coordinate?: { x: number | null; y: number | null } };
 type ConnectionResponse = { connections?: { sections?: TransportSection[] }[]; errors?: unknown[] };
 
 export function swissDateParts(date: Date) {
@@ -59,17 +62,16 @@ export class TimetableClient {
       this.signal.throwIfAborted();
       this.requests++; this.lastRequest = Date.now();
       try {
-        const response = await this.fetcher(url, { signal: AbortSignal.any([this.signal, AbortSignal.timeout(Math.max(1, Math.min(8_000, this.deadline - Date.now())))]) });
-        if (response.status === 429) {
-          this.stopped = true;
-          throw new Error("The timetable service is busy; this search is incomplete. Try again later.");
-        }
-        if (!response.ok) throw new Error(`Some timetable requests failed (HTTP ${response.status}).`);
-        const data = await response.json();
+        const data = await fetchJson<{ errors?: unknown[] }>(url, this.signal,
+          Math.max(1, Math.min(SEARCH_LIMITS.requestMilliseconds, this.deadline - Date.now())), this.fetcher);
         if (data.errors?.length) throw new Error("The timetable service rejected some queries; this search is incomplete.");
         return data as T;
       } catch (error) {
         this.signal.throwIfAborted();
+        if (error instanceof HttpError && error.status === 429) {
+          this.stopped = true;
+          error = new Error("The timetable service is busy. Try again later for more options.");
+        }
         this.failures++;
         this.warnings.add(error instanceof Error && !["TimeoutError", "TypeError"].includes(error.name)
           ? error.message : "Some timetable requests timed out or could not connect; this search is incomplete.");
@@ -77,45 +79,10 @@ export class TimetableClient {
       }
     });
     this.cache.set(url, task); this.queue = task.catch(() => undefined);
+    // A transient failure is not a reusable empty result.
+    void task.then(value => { if (value === null) this.cache.delete(url); }, () => this.cache.delete(url));
     return task;
   }
-}
-
-export async function geocode(searchText: string, signal?: AbortSignal, fetcher: typeof fetch = fetch): Promise<Place> {
-  const url = new URL("https://api3.geo.admin.ch/rest/services/ech/SearchServer");
-  url.search = new URLSearchParams({ searchText, type: "locations", origins: "address,gazetteer,zipcode,gg25", limit: "8", sr: "4326" }).toString();
-  const request = (target: URL, timeout: number) => fetcher(target, {
-    signal: AbortSignal.any([...(signal ? [signal] : []), AbortSignal.timeout(timeout)]),
-  });
-  try {
-    const response = await request(url, 5_000);
-    if (!response.ok) throw new Error("Location service unavailable.");
-    const data = await response.json() as { results?: { attrs?: { lat?: number; lon?: number; label?: string; detail?: string } }[] };
-    const attrs = data.results?.find(r => Number.isFinite(r.attrs?.lat) && Number.isFinite(r.attrs?.lon))?.attrs;
-    if (attrs?.lat !== undefined && attrs.lon !== undefined) {
-      const html = attrs.label || attrs.detail || searchText;
-      const label = typeof DOMParser === "undefined" ? html.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&")
-        : new DOMParser().parseFromString(html, "text/html").body.textContent || searchText;
-      return { lat: attrs.lat, lon: attrs.lon, label: label.replace(/\s+/g, " ").trim() };
-    }
-  } catch { signal?.throwIfAborted(); }
-  // Timetable stop names (for example “Laax GR, posta”) are not always indexed
-  // by address geocoding. The provider can resolve those names directly.
-  const fallback = new URL(`${TRANSPORT_URL}/locations`);
-  fallback.search = new URLSearchParams({ query: searchText, type: "all" }).toString();
-  try {
-    const response = await request(fallback, 10_000);
-    if (!response.ok) throw new Error("Location service unavailable.");
-    const data = await response.json() as { stations?: TransportLocation[] };
-    const location = data.stations?.find(s => s.name && typeof s.coordinate?.x === "number" &&
-      Number.isFinite(s.coordinate.x) && typeof s.coordinate?.y === "number" && Number.isFinite(s.coordinate.y));
-    if (location) return { label: location.name, lat: location.coordinate!.x!, lon: location.coordinate!.y!,
-      stopId: location.id ?? undefined, kind: location.icon ?? undefined };
-  } catch {
-    signal?.throwIfAborted();
-    throw new Error("Location lookup is unavailable. Please try again, or enter a nearby station or bus-stop name.");
-  }
-  throw new Error(`No Swiss location found for “${searchText}”. Try a station, stop or full address.`);
 }
 
 export function candidateBands(maxMinutes: number): number[] {
@@ -143,23 +110,26 @@ async function nearby(point: Point, client: TimetableClient): Promise<Stop[]> {
   }).filter((s): s is Stop => s !== null);
 }
 
-export async function findCandidateStations(point: Place, maxMinutes: number, client: TimetableClient, progress: Progress): Promise<Station[]> {
+export async function findCandidateStations(point: Place, maxMinutes: number, client: TimetableClient,
+  progress: Progress, expand = false): Promise<Station[]> {
   const stops: Stop[] = MAJOR_STATIONS.map(s => ({ ...s, kind: "train" }));
   if (point.stopId) stops.push({ id: point.stopId, name: point.label, lat: point.lat, lon: point.lon, kind: point.kind });
-  stops.push(...await nearby(point, client));
-  // Expand independently at each endpoint. Retain earlier discoveries and scan
-  // every band within the bound, even after finding a feasible local stop.
-  let probes = 0;
-  for (const band of candidateBands(maxMinutes)) {
-    if (band <= 20 && stops.some(s => cyclingMinutes(haversineKm(point, s)) <= band)) continue;
-    if (probes >= SEARCH_LIMITS.locationProbesPerSide) break;
-    progress(`Looking for stops within ${band} cycling minutes of ${point.label}…`);
-    const radiusKm = Math.max(0, band - 10) / 4;
-    const dLat = radiusKm / 111.32, dLon = radiusKm / (111.32 * Math.cos(point.lat * Math.PI / 180));
-    const samples = [{ lat: point.lat + dLat, lon: point.lon }, { lat: point.lat, lon: point.lon + dLon },
-      { lat: point.lat - dLat, lon: point.lon }, { lat: point.lat, lon: point.lon - dLon }];
-    stops.push(...await nearby(samples[probes % samples.length], client));
-    probes++;
+  // A selected stop is already a valid endpoint. Do not delay its first connection
+  // with nearby lookups; an address can initially use a known hub within 20 minutes.
+  if (expand || (!point.stopId && !stops.some(s => atEndpoint(s, point).bikeMinutes <= Math.min(20, maxMinutes)))) {
+    progress(`Finding stops near ${point.label}…`);
+    stops.push(...await nearby(point, client));
+  }
+  if (expand || !selectStations(stops, point, maxMinutes).length) {
+    let probes = 0;
+    for (const band of candidateBands(maxMinutes)) {
+      if (band <= 20 || probes >= SEARCH_LIMITS.locationProbesPerSide) continue;
+      progress(`Looking farther from ${point.label}…`);
+      const radiusKm = Math.max(0, band - 10) / 4;
+      const offset = radiusKm / 111.32;
+      stops.push(...await nearby({ lat: point.lat + (probes % 2 ? -offset : offset), lon: point.lon }, client));
+      probes++;
+    }
   }
   return selectStations(stops, point, maxMinutes);
 }
@@ -176,7 +146,7 @@ async function connections(network: Network, client: TimetableClient, from: Stop
 
 export type SearchSession = {
   origin: Place; destination: Place; start: Date; options: Options; network: Network; client: TimetableClient;
-  originStations: Station[]; destinationStations: Station[]; baseline: Solution; extended: Solution | null;
+  originStations: Station[]; destinationStations: Station[]; baseline: Solution; extended: Solution | null; extendedComplete?: boolean;
 };
 export function searchWarnings(session: SearchSession): string[] {
   const warnings = [...session.client.warnings];
@@ -185,37 +155,60 @@ export function searchWarnings(session: SearchSession): string[] {
   return warnings;
 }
 
-export async function plan(fromText: string, toText: string, mode: ModelMode, options: Options,
-  signal: AbortSignal, progress: Progress): Promise<SearchSession> {
+export type SearchUpdate = (session: SearchSession) => void;
+function refresh(session: SearchSession, extended: boolean, publish: SearchUpdate) {
+  if (extended) {
+    const compared = compareModels(session.network, session.origin, session.destination, session.start, session.options);
+    session.baseline = compared.baseline; session.extended = compared.extended;
+  } else session.baseline = solve(session.network, session.origin, session.destination, session.start, session.options, "baseline");
+  publish({ ...session });
+}
+// Dependency injection keeps the actual async acquisition flow testable without live HTTP.
+export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
+  signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
+  dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number } = {}): Promise<SearchSession> {
   validateOptions(options);
-  // One fixed departure instant for the entire search and later mode switching.
-  const start = new Date();
+  const start = dependencies.start ?? new Date();
   progress("Finding both places…");
-  const [origin, destination] = await Promise.all([geocode(fromText, signal), geocode(toText, signal)]);
-  const client = new TimetableClient(signal), network = emptyNetwork();
-  progress("Finding train, bus and tram stops…");
+  const resolve = (value: string | Place) => typeof value === "string" ? geocode(value, signal, dependencies.fetcher) : value;
+  const [origin, destination] = await Promise.all([resolve(from), resolve(to)]);
+  const client = new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
   const originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress);
   const destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress);
   if (!originStations.length || !destinationStations.length) throw new Error(
-    client.failures ? "Stop lookup was incomplete. Please try again." : "No stop was found within your cycling limits. Increase the start or arrival limit and try again.");
-  for (const s of [...originStations, ...destinationStations]) network.stops.set(s.id, s);
-  const pairs = originStations.flatMap(a => destinationStations.filter(b => a.id !== b.id && a.bikeMinutes + b.bikeMinutes <= options.maxBikeMinutes).map(b => [a, b] as const))
-    .sort(([a, b], [c, d]) => a.bikeMinutes + b.bikeMinutes - c.bikeMinutes - d.bikeMinutes);
-  for (let i = 0; i < pairs.length; i++) {
-    progress(`Comparing public transport connections ${i + 1}/${pairs.length}…`);
-    const [a, b] = pairs[i];
-    await connections(network, client, a, b, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000));
-  }
-  signal.throwIfAborted();
-  const baseline = solve(network, origin, destination, start, options, "baseline");
+    client.failures ? "Stop lookup was incomplete. Please try again." : "No stop was found within your cycling preference. Try More cycling, or a nearby stop.");
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
-    originStations, destinationStations, baseline, extended: null };
-  if (mode === "extended") await extend(session, progress);
-  return session;
+    originStations, destinationStations, baseline: solve(network, origin, destination, start, options, "baseline"), extended: null };
+  const queried = new Set<string>();
+  const queryPairs = async () => {
+    for (const s of [...session.originStations, ...session.destinationStations]) network.stops.set(s.id, s);
+    const pairs = session.originStations.flatMap(a => session.destinationStations
+      .filter(b => a.id !== b.id && a.bikeMinutes + b.bikeMinutes <= options.maxBikeMinutes).map(b => [a, b] as const))
+      .sort(([a, b], [c, d]) => a.bikeMinutes + b.bikeMinutes - c.bikeMinutes - d.bikeMinutes)
+      .filter(([a, b]) => !queried.has(`${a.id}:${b.id}`)).slice(0, SEARCH_LIMITS.baselinePairs);
+    for (const [a, b] of pairs) {
+      progress(session.baseline.journeys.length ? "Your first options are ready. Checking a few alternatives…" : `Finding connections from ${a.name} to ${b.name}…`);
+      queried.add(`${a.id}:${b.id}`);
+      await connections(network, client, a, b, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000));
+      signal.throwIfAborted();
+      refresh(session, mode === "extended", publish);
+    }
+  };
+  await queryPairs();
+  if (!session.baseline.journeys.length && !session.extended?.journeys.length && !client.failures) {
+    // Expensive catchment discovery is a fallback, not a prerequisite for easy trips.
+    session.originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress, true);
+    session.destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress, true);
+    await queryPairs();
+  }
+  if (mode === "extended") return extend(session, progress, publish);
+  refresh(session, false, publish);
+  return { ...session };
 }
 
-export async function extend(session: SearchSession, progress: Progress): Promise<SearchSession> {
-  if (session.extended) return session;
+export async function extend(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
+  if (session.extendedComplete) return session;
+  refresh(session, true, publish);
   const { network, client, options: o, origin, destination, start } = session;
   client.beginPhase();
   if (o.maxBoardings >= 2 && o.maxIntermediateMinutes > 0) {
@@ -228,6 +221,7 @@ export async function extend(session: SearchSession, progress: Progress): Promis
         id: station.id, datetime: `${dt.date} ${dt.time}`, limit: "6",
       }));
       client.rejectedSections += addStationboard(network, data?.stationboard ?? []);
+      refresh(session, true, publish);
     }
     const reach = solve(network, origin, destination, start, o, "baseline");
     const exits = reach.reachable.filter(l => l.boardings > 0 && l.boardings < o.maxBoardings && !l.needsTransit)
@@ -250,10 +244,11 @@ export async function extend(session: SearchSession, progress: Progress): Promis
         if (!feasibleLabels.length) continue;
         network.stops.set(neighbor.id, neighbor);
         const ready = new Date(Math.min(...feasibleLabels.map(l => l.time)) + (minutes + o.boardingMinutes) * 60_000);
-        for (const end of session.destinationStations.slice(0, 2)) {
+        for (const end of session.destinationStations.slice(0, 1)) {
           if (queries >= SEARCH_LIMITS.suffixQueries) break;
           queries++;
           await connections(network, client, neighbor, end, ready);
+          refresh(session, true, publish);
         }
       }
     }
@@ -261,7 +256,7 @@ export async function extend(session: SearchSession, progress: Progress): Promis
   client.signal.throwIfAborted();
   progress("Selecting useful trade-offs in both models…");
   // Refresh BOTH solutions on the identical expanded graph. No data/mode confound.
-  const compared = compareModels(network, origin, destination, start, o);
-  session.baseline = compared.baseline; session.extended = compared.extended;
+  session.extendedComplete = true;
+  refresh(session, true, publish);
   return { ...session };
 }

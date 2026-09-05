@@ -22,9 +22,9 @@ The bicycle should be treated as accompanying the traveller through the journey,
 - **Extended:** the same constraints and timetable graph, with at most one intermediate cycling leg; includes Baseline.
 - A model switch appears before search results. Three categories select fastest, least cycling and fewest changes; an optional fourth minimizes initial or final cycling. Duplicate winners share a card.
 - All proposals require public transport and obey explicit cycling, boarding and duration budgets. Exact timetable readiness is checked after cycling and before each boarding.
-- Public-transport discovery includes buses and trams; departure and arrival catchments expand independently in 20-minute bands within configurable limits.
+- Public-transport discovery includes buses and trams; selected stops are queried first, with independent outward catchment discovery in 20-minute bands used when initial queries return no feasible journey.
 - Clicking a card opens every cycling, transit, walking and waiting leg with available service IDs, stops, scheduled times and platforms. The map includes intermediate cycling.
-- The app reports partial searches and supports cancellation. Address lookup falls back to timetable stop-name lookup.
+- The app displays the first usable proposals while alternatives load, reports incomplete searches and keeps proposals when stopped. Debounced address/stop suggestions preserve selected coordinates; the form needs only From, To and the model choice, with optional cycling presets.
 
 The solver uses Pareto labels on a finite, sampled timetable graph. It is not a complete Swiss routing engine. Cycling is still estimated from straight-line distance at 15 km/h. For this experiment, bicycle availability after transit is assumed and carriage/reservation constraints are explicitly deferred.
 
@@ -95,7 +95,7 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 **2026-09-05 update:** The user has authorized implementation and app changes after the mathematical discussion. This supersedes the earlier pause on routing changes. The Baseline/Extended switch, categories, bounded graph solver and bus-inclusive discovery are implemented.
 
-**Verification:** 35 automated tests pass, including exhaustive comparison of 54 toy-graph/budget/model configurations and a recorded Zürich HB → Chur → Laax train/walk/bus journey. TypeScript and production build pass. A live Zürich HB–Laax search returned category proposals in both models, with explicit warnings because upstream requests timed out. See the experiment log for its exact departure time, results and limits. Browser interaction is not tested.
+**Verification after usability repair:** 43 automated tests pass, including the original 54 toy-graph comparisons and recorded train/walk/bus journey, plus delayed responses, progressive publication, cancellation, place suggestions and valid presets. TypeScript and production build pass. New live checks returned first proposals in 15.2 seconds for Zürich–Bern and 12.0 seconds for Zürich–Laax; neither completed search had a timetable failure. Partial street typing returned a real address. The earlier eight-second timeout rejected responses taking about 13 seconds, and the UI previously hid all results until a large batch completed. See the experiment log for exact inputs and limits. Browser interaction is not tested.
 
 1. Try both models on 3–6 fixed real journeys and judge whether category trade-offs are useful.
 2. Capture exact endpoints, departure times, returned legs, failures and search cost for those cases.

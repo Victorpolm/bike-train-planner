@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it, mock } from "node:test";
-import { candidateBands, extend, geocode, selectStations, swissDateParts, TimetableClient, type SearchSession } from "./api.ts";
-import { DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
+import { candidateBands, extend, geocode, plan, selectStations, swissDateParts, TimetableClient, type SearchSession } from "./api.ts";
+import { atEndpoint, DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
+import { KNOWN_PLACES } from "./places.ts";
 
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 describe("live data boundaries", () => {
@@ -11,7 +12,7 @@ describe("live data boundaries", () => {
   });
   it("falls back from failed or empty address geocoding to actual timetable stop coordinates", async () => {
     for (const empty of [true, false]) {
-      const place = await geocode("Laax GR, posta", new AbortController().signal, async input => {
+      const place = await geocode("Laax, Posta", new AbortController().signal, async input => {
         if (String(input).includes("geo.admin.ch")) {
           if (empty) return response({ results: [] });
           throw new Error("Service unavailable");
@@ -78,6 +79,47 @@ describe("live data boundaries", () => {
     const client = new TimetableClient(abort.signal, 0, async () => { calls++; return response({}); });
     abort.abort(); await assert.rejects(client.get("locations", new URLSearchParams()));
     assert.equal(calls, 0);
+  });
+  it("accepts a 13-second timetable response that the old 8-second timeout discarded", async t => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const client = new TimetableClient(new AbortController().signal, 0, (_input, init) => new Promise((resolve, reject) => {
+      init!.signal!.addEventListener("abort", () => reject(init!.signal!.reason));
+      setTimeout(() => resolve(response({ connections: [] })), 13_000);
+    }));
+    const task = client.get("connections", new URLSearchParams({ from: "a" }));
+    await new Promise(resolve => setImmediate(resolve));
+    t.mock.timers.tick(13_000);
+    assert.deepEqual(await task, { connections: [] });
+    assert.equal(client.failures, 0);
+  });
+  it("uses stop identity for zero cycling despite coordinate differences between providers", () => {
+    const point = KNOWN_PLACES.find(p => p.stopId === "8503000")!;
+    assert.equal(atEndpoint({ id: point.stopId!, name: point.label, lat: 47.377847, lon: 8.540502 }, point).bikeMinutes, 0);
+  });
+  it("publishes the first route before a stalled alternative, skips selected-place lookups, and preserves that snapshot after cancel", async () => {
+    const origin = KNOWN_PLACES.find(p => p.stopId === "8503000")!, destination = KNOWN_PLACES.find(p => p.stopId === "8507000")!;
+    const start = new Date("2026-09-05T08:00:00+02:00"), time = (m: number) => new Date(start.getTime() + m * 60000).toISOString();
+    const stop = (p: typeof origin) => ({ id: p.stopId!, name: p.label, coordinate: { x: p.lat, y: p.lon } });
+    const abort = new AbortController(), urls: URL[] = [], updates: SearchSession[] = [];
+    let stalled!: () => void;
+    const pending = new Promise<void>(resolve => { stalled = resolve; });
+    const task = plan(origin, destination, "baseline", DEFAULT_OPTIONS, abort.signal, () => {}, s => updates.push(s), {
+      start, gapMs: 0, fetcher: async (input, init) => {
+        urls.push(new URL(String(input)));
+        if (urls.length === 1) return response({ connections: [{ sections: [{ journey: { name: "IC1", category: "IC", number: "1" },
+          departure: { station: stop(origin), departure: time(10) }, arrival: { station: stop(destination), arrival: time(70) } }] }] });
+        stalled();
+        return new Promise((_resolve, reject) => init!.signal!.addEventListener("abort", () => reject(init!.signal!.reason), { once: true }));
+      },
+    });
+    const rejected = assert.rejects(task, { name: "AbortError" });
+    await pending;
+    assert.ok(updates[0].baseline.journeys.length > 0);
+    assert.equal(updates[0].baseline.journeys[0].totalMinutes, 70);
+    assert.ok(urls.every(u => u.pathname.endsWith("connections")));
+    const ids = updates[0].baseline.journeys.map(j => j.id);
+    abort.abort(); await rejected;
+    assert.deepEqual(updates[0].baseline.journeys.map(j => j.id), ids);
   });
   it("seeds Extended from a departure board even with no Baseline solution", async () => {
     const start = new Date("2026-09-05T08:00:00+02:00"), time = (m: number) => new Date(start.getTime() + m * 60000).toISOString();

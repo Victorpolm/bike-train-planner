@@ -40,7 +40,7 @@ npm install
 npm run dev
 ```
 
-It now compares Baseline (cycling before/after transit) and Extended (at most one intermediate cycling leg), with category winners, buses and expandable journey plans. See [the implemented mathematical model](docs/MATHEMATICAL_MODEL.md), its README and `docs/EXPERIMENTS.md`. The sampled prototype is not the final routing architecture.
+It now compares Baseline (cycling before/after transit) and Extended (at most one intermediate cycling leg), with category winners, buses and expandable journey plans. Address/stop suggestions and three optional cycling presets simplify input. Proposals appear progressively, and stopping further exploration keeps existing routes visible. See [the implemented mathematical model](docs/MATHEMATICAL_MODEL.md), its README and `docs/EXPERIMENTS.md`. The sampled prototype is not the final routing architecture.
 
 ## Documentation semantics
 

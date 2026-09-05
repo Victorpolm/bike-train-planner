@@ -221,3 +221,33 @@ node node_modules/vite/bin/vite.js build
 The repository's `npm test` and `npm run build` scripts invoke these same checks. Dependency versions and the existing lockfile are preserved; no new package is required.
 
 **Next experiment:** Fix 3–6 Swiss endpoint/time pairs, compare the category trade-offs with actual traveler choices, and compare candidate coverage with OpenTripPlanner using complete schedule and street data. Introduce routed cycling before claiming practical transfer feasibility, then add bicycle-carriage constraints as a separate experiment.
+
+
+## 2026-09-05 — Repair missing proposals, reduce input and add autocomplete
+
+**User report:** Even easy searches stop before displaying proposals; the parameter form is too complicated; typing should suggest addresses.
+
+**Diagnosis:** Read-only Transport API probes returned after 12.7 seconds for Zürich–Bern and 13.9 seconds for a Zürich location query, exceeding the old eight-second timeout. The connection probe reached a JSON body but its diagnostic printer then attempted to slice a non-array `stations` field; this was a probe logging error, not an application parsing error. Successful live application calls below verify the repaired acquisition flow. Independently, code inspection found that the old app awaited all endpoint pairs and Extended discovery before setting result state, hid all cards during loading, and discarded them on cancellation. Seven required numeric inputs were hidden in an optional details section. These are concrete usability faults; the exact user's browser/network failure is not recorded.
+
+**Change:** Twenty-second HTTP/body deadlines; three initial endpoint-pair queries instead of up to 36; four services per pair; selected-place coordinates and IDs bypass unnecessary lookups; immediate result publication; retained cards during further acquisition and cancellation; bounded outward discovery only when needed. Extended compares the current graph immediately and then explores a smaller set of extra services. A selected stop ID implies zero endpoint cycling even when provider coordinates differ slightly. Form input is From, To and Baseline/Extended, with optional cycling presets and endpoint category. Debounced independent address/stop suggestions support selection and preserve resolved coordinates.
+
+### Automated regression checks
+
+**Result:** **43 tests pass**, including all previous model/decomposition checks. New regressions cover a simulated 13-second provider response, first-route publication before a deliberately stalled alternative, retaining the published snapshot after cancellation, selected-stop searches avoiding location requests, coordinate/stop-ID identity, accent-insensitive suggestions, live-address normalization, ignoring replies after cancellation, offline local suggestions, first-valid geocoding with cancellation of the slower provider, and validity of all preference combinations. No new dependency was added. TypeScript and the production build pass using the same commands recorded above.
+
+### Live data checks
+
+Direct calls to the app's actual `plan` adapter with selected places and default Balanced options (not a browser test):
+
+| Journey and model | Captured departure (Europe/Zurich) | First proposals | Acquisition complete | HTTP requests / failures |
+|---|---|---:|---:|---:|
+| Zürich HB → Bern, Baseline | 2026-09-05 15:06:27.496 | 15.239 s | 39.032 s | 3 / 0 |
+| Zürich HB → Laax GR, posta, Extended | 2026-09-05 15:07:06.529 | 11.985 s | 82.283 s | 7 / 0 |
+
+Bern produced one distinct card winning all three categories, using IC service 000904, with total elapsed time approximately 81.54 minutes. Laax produced two distinct cards using IR 35 and bus 81: fastest/fewest changes at approximately 157.89 minutes and least cycling at 160.89 minutes. On the final shared Laax graph, Baseline has 21 journey candidates and Extended has 42 including the explicit Baseline union. Neither search reported a warning. This case again does not establish a material benefit from an intermediate bike leg; it verifies that Extended exploration no longer delays first publication.
+
+A live `suggestPlaces` request for partial text `Stauffacherstrasse 6 Zürich` returned `Stauffacherstrasse 60 8004 Zürich` at coordinates (47.375526428222656, 8.527169227600098) in 11.290 seconds. Known rail-hub suggestions are immediate; remote address suggestions still depend on upstream latency. Selecting the suggestion avoids repeating that lookup when planning.
+
+**Limits:** These are two current schedules and one address lookup, not a reliability guarantee or a controlled same-departure speed benchmark against the old run. Reduced sampling can miss category alternatives. Local adapter/test/build checks passed; browser layout, keyboard and touch interaction are not exercised. The app still uses straight-line cycling and defers bicycle carriage restrictions.
+
+**Next check:** Have the user retry their failed journey in the published version, record exact endpoints and whether a suggestion was selected, and collect any displayed error if it still fails. Evaluate wider timetable coverage after responsiveness is acceptable.

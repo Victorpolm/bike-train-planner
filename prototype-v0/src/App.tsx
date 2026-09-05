@@ -1,9 +1,12 @@
 import { type FormEvent, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, type SearchSession } from "./api";
-import { categorize, DEFAULT_OPTIONS, metrics, type ModelMode, type Options, type Proposal } from "./model";
+import { categorize, metrics, type ModelMode, type EndpointPreference, type Proposal } from "./model";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
 import { formatMinutes } from "./routing";
+import PlaceInput, { type PlaceValue } from "./PlaceInput";
+import { KNOWN_PLACES } from "./places";
+import { preferenceOptions, type CyclingPreference } from "./preferences";
 
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit" });
 const day = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", day: "numeric", month: "short" });
@@ -32,10 +35,15 @@ function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
 }
 
 export default function App() {
-  const [fromInput, setFromInput] = useState("Stauffacherstrasse 60, Zürich");
-  const [toInput, setToInput] = useState("Laax GR, posta");
+  const initial = (stopId: string): PlaceValue => {
+    const place = KNOWN_PLACES.find(p => p.stopId === stopId)!; return { text: place.label, place };
+  };
+  const [fromInput, setFromInput] = useState<PlaceValue>(() => initial("8503000"));
+  const [toInput, setToInput] = useState<PlaceValue>(() => initial("8509786"));
   const [mode, setMode] = useState<ModelMode>("baseline");
-  const [options, setOptions] = useState<Options>({ ...DEFAULT_OPTIONS });
+  const [cycling, setCycling] = useState<CyclingPreference>("balanced");
+  const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
+  const options = useMemo(() => preferenceOptions(cycling, endpoint), [cycling, endpoint]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -44,25 +52,25 @@ export default function App() {
   const [error, setError] = useState("");
   const controller = useRef<AbortController | null>(null);
   const runId = useRef(0);
-  const solution = mode === "extended" ? session?.extended : session?.baseline;
+  const solution = mode === "extended" ? session?.extended ?? session?.baseline : session?.baseline;
   const proposals = useMemo(() => categorize(solution?.journeys ?? [], session?.options ?? options), [solution, session, options]);
   const selected = proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
   const warnings = session ? searchWarnings(session) : [];
 
   function invalidate() { setSession(null); setSelectedId(null); setExpandedId(null); setError(""); setProgress(""); }
-  function changeOption<K extends keyof Options>(key: K, value: Options[K]) { invalidate(); setOptions(o => ({ ...o, [key]: value })); }
   function cancel() {
-    runId.current++; controller.current?.abort(); setLoading(false); invalidate(); setProgress("Search cancelled.");
+    runId.current++; controller.current?.abort(); setLoading(false); setProgress(proposals.length ? "Search stopped. The proposals already found are kept below." : "Search stopped. You can try again.");
   }
   async function search(event: FormEvent) {
     event.preventDefault();
-    if (loading || !fromInput.trim() || !toInput.trim()) return;
+    if (loading || !fromInput.text.trim() || !toInput.text.trim()) return;
     invalidate(); controller.current?.abort();
     const id = ++runId.current, abort = new AbortController(); controller.current = abort;
     setLoading(true);
     try {
-      const next = await plan(fromInput.trim(), toInput.trim(), mode, options, abort.signal,
-        message => { if (id === runId.current) setProgress(message); });
+      const next = await plan(fromInput.place ?? fromInput.text.trim(), toInput.place ?? toInput.text.trim(), mode, options, abort.signal,
+        message => { if (id === runId.current) setProgress(message); },
+        result => { if (id === runId.current) setSession(result); });
       if (id === runId.current) { setSession(next); setProgress(""); }
     } catch (e) {
       if (id === runId.current && !abort.signal.aborted) setError(e instanceof Error ? e.message : "Search failed. Please try again.");
@@ -71,20 +79,18 @@ export default function App() {
   async function changeMode(next: ModelMode) {
     if (loading || next === mode) return;
     setMode(next); setExpandedId(null); setSelectedId(null); setError("");
-    if (next === "extended" && session && !session.extended) {
+    if (next === "extended" && session && !session.extendedComplete) {
+      if (session.client.signal.aborted) { setProgress("Search again to explore cycling transfers. Your existing proposals are kept below."); return; }
       const id = ++runId.current; setLoading(true);
       try {
-        const result = await extend(session, message => { if (id === runId.current) setProgress(message); });
+        const result = await extend(session, message => { if (id === runId.current) setProgress(message); },
+          result => { if (id === runId.current) setSession(result); });
         if (id === runId.current) { setSession(result); setProgress(""); }
       } catch (e) {
         if (id === runId.current) setError(e instanceof Error ? e.message : "The extended search failed.");
       } finally { if (id === runId.current) setLoading(false); }
     }
   }
-  const numeric = (label: string, key: keyof Pick<Options, "maxBikeMinutes" | "maxAccessMinutes" | "maxEgressMinutes" |
-    "maxIntermediateMinutes" | "extraTimeMinutes" | "horizonMinutes" | "maxBoardings">, min: number, max: number) =>
-    <label><span>{label}</span><input type="number" min={min} max={max} step="1" required disabled={loading}
-      value={Number.isFinite(options[key]) ? options[key] : ""} onChange={e => changeOption(key, e.target.valueAsNumber)} /></label>;
   const best = (journeys: { totalMinutes: number }[]) => Math.min(...journeys.map(j => j.totalMinutes));
   const baselineFastest = session ? best(session.baseline.journeys) : Infinity;
   const extendedFastest = session?.extended ? best(session.extended.journeys) : Infinity;
@@ -94,60 +100,56 @@ export default function App() {
       <span className="brand-mark">B<span>+</span>T</span><span><strong>Bike + Train</strong><small>Swiss route experiment</small></span>
     </a><span className="prototype-badge">Baseline + Extended</span></header>
     <main id="top"><section className="planner-panel">
-      <div className="intro"><p className="eyebrow">More ways to make the journey</p>
-        <h1>A little cycling.<br />More possibilities.</h1>
-        <p>Combine your bike with trains, buses and trams. Compare a quicker arrival, less cycling and fewer changes.</p>
+      <div className="intro"><h1>Where are you going?</h1>
+        <p>Find your way with a bike, trains, buses and trams.</p>
       </div>
       <form onSubmit={search} className="search-form">
         <div className="place-inputs">
-          <label><span>Departure point</span><input value={fromInput} required disabled={loading} autoComplete="off"
-            onChange={e => { invalidate(); setFromInput(e.target.value); }} placeholder="Street, place or station" /></label>
+          <PlaceInput label="From" value={fromInput} disabled={loading} onChange={value => { invalidate(); setFromInput(value); }} />
           <button className="swap-button" type="button" disabled={loading} aria-label="Swap departure and arrival"
             onClick={() => { invalidate(); setFromInput(toInput); setToInput(fromInput); }}>⇅</button>
-          <label><span>Arrival point</span><input value={toInput} required disabled={loading} autoComplete="off"
-            onChange={e => { invalidate(); setToInput(e.target.value); }} placeholder="Street, place or station" /></label>
+          <PlaceInput label="To" value={toInput} disabled={loading} onChange={value => { invalidate(); setToInput(value); }} />
         </div>
         <fieldset className="model-picker" disabled={loading}>
-          <legend>Choose your routing model</legend>
+          <legend>Journey options</legend>
           <div className="model-buttons">
             <button type="button" aria-pressed={mode === "baseline"} onClick={() => void changeMode("baseline")}>
               <strong>Baseline</strong><span>Cycle before and after transit</span></button>
             <button type="button" aria-pressed={mode === "extended"} onClick={() => void changeMode("extended")}>
               <strong>Extended</strong><span>Also allow one cycling transfer</span></button>
           </div>
-          <p>Both allow ordinary public transport changes. Extended keeps the Baseline options.</p>
         </fieldset>
-        <details className="preferences"><summary>Cycling limits & preferences</summary>
+        <details className="preferences"><summary>Preferences · optional</summary>
           <div className="preference-grid">
-            {numeric("Total cycling limit (min)", "maxBikeMinutes", 0, 240)}
-            {numeric("Cycling at start (max min)", "maxAccessMinutes", 0, 120)}
-            {numeric("Cycling at arrival (max min)", "maxEgressMinutes", 0, 120)}
-            {numeric("Cycling transfer (max min)", "maxIntermediateMinutes", 0, 60)}
-            {numeric("Public transport boardings (max)", "maxBoardings", 1, 8)}
-            {numeric("Journey duration (max min)", "horizonMinutes", 30, 1440)}
-            {numeric("Extra time for alternatives (min)", "extraTimeMinutes", 0, 1440)}
-            <label><span>Optional fourth category</span><select disabled={loading} value={options.endpointPreference}
-              onChange={e => changeOption("endpointPreference", e.target.value as Options["endpointPreference"])}>
-              <option value="none">Three main categories</option><option value="start">Shorter ride at start</option><option value="end">Shorter ride at arrival</option>
+            <label><span>How much cycling?</span><select disabled={loading} value={cycling}
+              onChange={e => { invalidate(); setCycling(e.target.value as CyclingPreference); }}>
+              <option value="less">Less · up to 40 min total</option><option value="balanced">Balanced · up to 90 min total</option>
+              <option value="more">More · up to 150 min total</option>
+            </select></label>
+            <label><span>Extra category</span><select disabled={loading} value={endpoint}
+              onChange={e => { invalidate(); setEndpoint(e.target.value as EndpointPreference); }}>
+              <option value="none">Just the three main categories</option><option value="start">Shorter ride at start</option><option value="end">Shorter ride at arrival</option>
             </select></label>
           </div>
-          <p>Least cycling and fewest changes stay within your extra-time allowance of the fastest journey. Every proposal includes public transport.</p>
+          <p>Up to {options.maxAccessMinutes} minutes cycling at each end{mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.
+            We handle the other settings for you.</p>
         </details>
-        <button className="search-button" type="submit" disabled={loading}>{loading ? "Calculating…" : `Find ${mode === "baseline" ? "Baseline" : "Extended"} journeys`}</button>
+        <button className="search-button" type="submit" disabled={loading}>{loading ? "Finding journeys…" : "Find journeys"}</button>
       </form>
       <div className="assumptions"><span><b>15 km/h</b> cycling estimate</span><span><b>3 min</b> before each boarding</span>
         <span><b>{session ? `${day.format(session.start)}, ${clock.format(session.start)}` : "Leave now"}</b> · Swiss time</span></div>
       {loading && <div className="loading-block" role="status"><div className="progress-track"><i /></div>
-        <p>{progress}</p><small>We compare several stops and services. Extended can take a little longer.</small>
-        <button type="button" className="cancel-button" onClick={cancel}>Cancel search</button></div>}
+        <p>{progress}</p><small>{proposals.length ? "You can open a travel plan while we check more options." : "The timetable service can take around 20 seconds to respond."}</small>
+        <button type="button" className="cancel-button" onClick={cancel}>{proposals.length ? "Stop looking · keep these options" : "Stop search"}</button></div>}
       {!loading && progress && <p role="status">{progress}</p>}
       {error && <div className="error-block" role="alert"><strong>We could not complete this search.</strong><p>{error}</p></div>}
-      {!loading && session && <section className="results" aria-live="polite" aria-busy={loading}>
+      {session && (proposals.length > 0 || !loading) && <section className="results" aria-live="polite">
         <p className="resolved-places">{session.origin.label} → {session.destination.label}</p>
-        <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>{proposals.length ? "Your journey options" : "No journey found"}</h2></div></div>
-        {warnings.length > 0 && <div className="search-notice" role="status"><strong>Partial search</strong>{warnings.map(w => <p key={w}>{w}</p>)}</div>}
-        {!proposals.length && <p className="empty-results">No journey was found among the sampled connections within these limits.
-          {mode === "baseline" ? " Try Extended, or increase your cycling or journey-time limits." : " Try increasing your cycling or journey-time limits."}</p>}
+        <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>{proposals.length ? "Your journey options" : warnings.length ? "Search incomplete" : "No journey found"}</h2></div></div>
+        {warnings.length > 0 && <details className="search-notice"><summary>Some alternatives could not be checked</summary>{warnings.map(w => <p key={w}>{w}</p>)}</details>}
+        {!proposals.length && <p className="empty-results">{warnings.length
+          ? "The timetable service did not return enough usable data. Please try this journey again."
+          : "No connection was found within your cycling preference. Try More cycling, Extended, or a nearby stop."}</p>}
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
           {!Number.isFinite(baselineFastest) ? "Extended found a journey where Baseline found none in this search."
             : extendedFastest < baselineFastest ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
@@ -161,9 +163,8 @@ export default function App() {
             expanded={expanded} planId={planId} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); }} />
             {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination} />}</div>;
         })}</div>
-        <details className="search-coverage"><summary>Stops explored & search limits</summary>
-          <p>Catchments expand in 20-minute steps, up to {session.options.maxAccessMinutes} minutes at departure and {session.options.maxEgressMinutes} at arrival.
-            Stop and timetable sampling can miss useful journeys.</p>
+        <details className="search-coverage"><summary>Stops explored</summary>
+          <p>We start with nearby stops and check a few alternatives. If needed, we look farther within your cycling preference. This search can miss useful journeys.</p>
           <div className="candidate-stations">{[["Near departure", session.originStations], ["Near arrival", session.destinationStations]].map(([title, list]) =>
             <div className="station-list" key={String(title)}><span>{String(title)}</span><div>{(list as SearchSession["originStations"]).map(s =>
               <small key={s.id}>{s.name}<b>{s.bikeMinutes} min</b></small>)}</div></div>)}</div>
