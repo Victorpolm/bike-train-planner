@@ -22,6 +22,7 @@ export type Station = Point & {
 
 export type Journey = {
   id: string;
+  startTime: Date;
   originStation: Station;
   destinationStation: Station;
   departure: Date;
@@ -31,6 +32,20 @@ export type Journey = {
   totalMinutes: number;
   changes: number;
   services: string[];
+  transitLegs: TransitLeg[];
+};
+
+export type TransitLeg = {
+  mode: "transit" | "walk" | "unknown";
+  from: string | null;
+  to: string | null;
+  departure: Date | null;
+  arrival: Date | null;
+  departurePlatform: string | null;
+  arrivalPlatform: string | null;
+  service: string;
+  serviceName: string | null;
+  direction: string | null;
 };
 
 export function haversineKm(a: Point, b: Point): number {

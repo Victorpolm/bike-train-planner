@@ -68,6 +68,12 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Decision:** For pilots, prioritize repeat journey planning and routes users would actually take over downloads, map views or positive comments.
 
+## 2026-09-05 — Explain journeys before revisiting the routing model
+
+**User instruction / decision:** First make each result open its bike → transit sections → bike decomposition. Discuss the user's mathematical model afterwards, before changing station selection or ranking.
+
+**Evidence / open question:** The user reports no result for Zürich → Laax. At the start of this change, the hosted application matched the current GitHub implementation, which still used a fixed five-kilometre catchment and rail-only connection requests. The exact cause of that failed search remains unverified.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

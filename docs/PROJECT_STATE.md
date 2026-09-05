@@ -25,7 +25,8 @@ It currently:
 - approximates a 20-minute bicycle catchment using straight-line distance and 15 km/h;
 - queries current public-transport connections for station pairs;
 - ranks alternatives by estimated final arrival time;
-- displays the candidates and selected combination on a map.
+- displays the candidates and selected combination on a map;
+- opens a detailed plan when a journey is clicked: cycling endpoints, boarding/waiting time, individual transit sections with service identifiers, stops, scheduled times and available platforms, transfers, and final cycling.
 
 It does not yet use routed cycling paths, bicycle-carriage rules, an adaptive catchment, comfort scoring or multicriteria/Pareto selection. See `docs/FIRST_PROTOTYPE.md` for provenance and limitations.
 
@@ -95,6 +96,8 @@ Previous heuristic targets:
 For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
+
+**2026-09-05 update:** Journey decomposition is implemented and covered by 11 passing automated tests; TypeScript and the production build pass. The user reported no result for Zürich → Laax. Its exact failure has not been reproduced; the fixed catchment and rail-only station search remain unchanged. Discuss the user's mathematical model before changing routing behavior. See `docs/EXPERIMENTS.md`.
 
 1. Clone and run `prototype-v0/` in a fresh local environment.
 2. Select 3–6 golden journeys and record current v0 behaviour in `docs/EXPERIMENTS.md`.

@@ -10,6 +10,7 @@ import {
   type Station,
 } from "./routing";
 import { MAJOR_STATIONS } from "./majorStations";
+import { transitLegsFromSections, type TransportSection } from "./itinerary";
 
 const GEO_ADMIN_URL =
   "https://api3.geo.admin.ch/rest/services/ech/SearchServer";
@@ -49,13 +50,7 @@ type TransportConnection = {
     arrival: string;
     arrivalTimestamp?: number;
   };
-  sections?: Array<{
-    journey?: {
-      category?: string;
-      number?: string;
-      name?: string;
-    } | null;
-  }>;
+  sections?: TransportSection[];
 };
 
 function stripHtml(value: string): string {
@@ -277,9 +272,11 @@ async function fetchStationPair(
     (best.arrival.getTime() - startTime.getTime()) / 60_000 +
       destination.bikeMinutes,
   );
+  const transitLegs = transitLegsFromSections(best.connection.sections);
 
   return {
     id: `${origin.id}-${destination.id}-${best.departure.getTime()}`,
+    startTime,
     originStation: origin,
     destinationStation: destination,
     departure: best.departure,
@@ -287,8 +284,9 @@ async function fetchStationPair(
     trainMinutes,
     waitMinutes,
     totalMinutes,
-    changes: Math.max(0, serviceLabels(best.connection).length - 1),
+    changes: Math.max(0, transitLegs.filter((leg) => leg.mode === "transit").length - 1),
     services: serviceLabels(best.connection),
+    transitLegs,
   };
 }
 

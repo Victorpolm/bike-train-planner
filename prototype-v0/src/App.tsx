@@ -1,6 +1,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { findCandidateStations, findJourneys, geocode } from "./api";
 import MapView from "./MapView";
+import JourneyPlan from "./JourneyPlan";
 import {
   BIKE_SPEED_KMH,
   MAX_BIKE_MINUTES,
@@ -56,10 +57,14 @@ function StationList({ title, stations }: { title: string; stations: Station[] }
 function JourneyCard({
   journey,
   selected,
+  expanded,
+  planId,
   onSelect,
 }: {
   journey: Journey;
   selected: boolean;
+  expanded: boolean;
+  planId: string;
   onSelect: () => void;
 }) {
   return (
@@ -67,11 +72,12 @@ function JourneyCard({
       type="button"
       className={`journey-card${selected ? " selected" : ""}`}
       onClick={onSelect}
-      aria-pressed={selected}
+      aria-expanded={expanded}
+      aria-controls={planId}
     >
       <div className="journey-topline">
         <strong>{formatMinutes(journey.totalMinutes)}</strong>
-        <span>{journey.changes ? `${journey.changes} change` : "Direct train"}</span>
+        <span>{!journey.transitLegs.length ? "Transit connection" : journey.changes ? `${journey.changes} change${journey.changes === 1 ? "" : "s"}` : "Direct connection"}</span>
       </div>
       <div className="timeline" aria-hidden="true">
         <i className="bike-line" />
@@ -90,7 +96,7 @@ function JourneyCard({
             {timeFormatter.format(journey.departure)}–
             {timeFormatter.format(journey.arrival)}
           </b>
-          <span>{journey.trainMinutes} min on train</span>
+          <span>{journey.trainMinutes} min including transfers</span>
         </div>
         <div>
           <small>Bike</small>
@@ -98,6 +104,7 @@ function JourneyCard({
           <span>{journey.destinationStation.name}</span>
         </div>
       </div>
+      <span className="journey-plan-toggle">{expanded ? "Hide travel plan −" : "View travel plan +"}</span>
     </button>
   );
 }
@@ -111,6 +118,7 @@ export default function App() {
   const [destinationStations, setDestinationStations] = useState<Station[]>([]);
   const [journeys, setJourneys] = useState<Journey[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>({ phase: "idle" });
 
   const selectedJourney = useMemo(
@@ -124,6 +132,7 @@ export default function App() {
     if (!fromInput.trim() || !toInput.trim() || loading) return;
     setJourneys([]);
     setSelectedId(null);
+    setExpandedId(null);
     setOriginStations([]);
     setDestinationStations([]);
 
@@ -176,7 +185,7 @@ export default function App() {
           <span className="brand-mark">B<span>+</span>T</span>
           <span><strong>Bike + Train</strong><small>Swiss route experiment</small></span>
         </a>
-        <span className="prototype-badge">Local prototype · live data</span>
+        <span className="prototype-badge">Prototype · journey details</span>
       </header>
 
       <main id="top">
@@ -265,14 +274,27 @@ export default function App() {
                 <small>Ranked by arrival at destination</small>
               </div>
               <div className="journey-list">
-                {journeys.map((journey) => (
-                  <JourneyCard
-                    key={journey.id}
-                    journey={journey}
-                    selected={journey.id === selectedJourney?.id}
-                    onSelect={() => setSelectedId(journey.id)}
-                  />
-                ))}
+                {journeys.map((journey, index) => {
+                  const expanded = expandedId === journey.id;
+                  const planId = `journey-plan-${index}`;
+                  return (
+                    <div key={journey.id} className="journey-option">
+                      <JourneyCard
+                        journey={journey}
+                        selected={journey.id === selectedJourney?.id}
+                        expanded={expanded}
+                        planId={planId}
+                        onSelect={() => {
+                          setSelectedId(journey.id);
+                          setExpandedId(expanded ? null : journey.id);
+                        }}
+                      />
+                      {expanded && origin && destination && (
+                        <JourneyPlan id={planId} journey={journey} origin={origin} destination={destination} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </section>
           )}

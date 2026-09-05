@@ -75,3 +75,11 @@ The prototype records:
 - the gap between a runnable demo and the intended multimodal model.
 
 `INITIAL_MATHEMATICAL_MODEL.md` preserves the corresponding early graph and optimization reasoning.
+
+## 2026-09-05 — Journey decomposition
+
+The preserved original remains in Git history. The current implementation adds expandable journey plans to each result. It retains individual API sections, including repeated service labels, walking transfers, stop names, scheduled times, available platforms, service identifiers and train direction. Access and egress cycling estimates include the resolved origin and destination. Positive time gaps between sections are shown as connection time; unavailable details are labelled rather than invented. Swiss local dates are shown when a leg crosses midnight.
+
+Candidate generation and fastest-arrival ranking are unchanged. Displayed change counts now use the number of transit sections rather than unique service labels. The summary describes transit duration as including transfers. No bicycle-carriage permission is inferred.
+
+Verification: 11 tests passed (4 original routing helpers and 7 decomposition cases), TypeScript compilation passed, and the production build passed. Automated fixtures are synthetic and do not establish real-world journey feasibility. No browser QA or live Zürich–Laax reproduction was performed in this change.
