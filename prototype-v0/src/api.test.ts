@@ -114,12 +114,32 @@ describe("live data boundaries", () => {
     });
     const rejected = assert.rejects(task, { name: "AbortError" });
     await pending;
-    assert.ok(updates[0].baseline.journeys.length > 0);
-    assert.equal(updates[0].baseline.journeys[0].totalMinutes, 70);
+    assert.equal(updates[0].baseline.journeys.length, 0);
+    assert.equal(updates[0].origin, origin);
+    assert.equal(updates[0].start, start);
+    const published = updates.find(s => s.baseline.journeys.length > 0)!;
+    assert.ok(published);
+    assert.equal(published.baseline.journeys[0].totalMinutes, 70);
     assert.ok(urls.every(u => u.pathname.endsWith("connections")));
-    const ids = updates[0].baseline.journeys.map(j => j.id);
+    const ids = published.baseline.journeys.map(j => j.id);
     abort.abort(); await rejected;
-    assert.deepEqual(updates[0].baseline.journeys.map(j => j.id), ids);
+    assert.deepEqual(published.baseline.journeys.map(j => j.id), ids);
+  });
+  it("publishes resolved endpoints before the first request and keeps the cycling comparison available after failures", async () => {
+    const origin = KNOWN_PLACES.find(p => p.stopId === "8503000")!, destination = KNOWN_PLACES.find(p => p.stopId === "8509786")!;
+    const updates: SearchSession[] = [];
+    const result = await plan(origin, destination, "baseline", DEFAULT_OPTIONS, new AbortController().signal, () => {}, s => updates.push(s), {
+      gapMs: 0, fetcher: async () => {
+        assert.ok(updates.length > 0);
+        assert.equal(updates[0].origin, origin);
+        assert.equal(updates[0].destination, destination);
+        return response({}, 503);
+      },
+    });
+    assert.ok(result.client.failures > 0);
+    assert.equal(result.baseline.journeys.length, 0);
+    assert.equal(result.origin, origin);
+    assert.equal(result.destination, destination);
   });
   it("seeds Extended from a departure board even with no Baseline solution", async () => {
     const start = new Date("2026-09-05T08:00:00+02:00"), time = (m: number) => new Date(start.getTime() + m * 60000).toISOString();

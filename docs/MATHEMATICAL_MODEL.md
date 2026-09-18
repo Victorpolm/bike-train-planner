@@ -1,12 +1,12 @@
 # Implemented baseline and extended model
 
-_Status: implemented on 2026-09-05 following explicit user approval. Experimental, bounded live search; bicycle carriage rules are postponed._
+_Status: implemented on 2026-09-05; active-travel objectives and map/comparison presentation updated on 2026-09-18 following explicit user approval. Experimental, bounded live search; bicycle carriage rules are postponed._
 
 ## Product behavior
 
 Select **Baseline** or **Extended** before searching. Baseline permits cycling only before and after public transport. Extended permits **at most one positive-duration cycling leg between public-transport rides** and includes Baseline. Either transit portion may contain several trains, buses, trams and ordinary walking transfers. Extended does not require an intermediate ride and is not limited to two vehicle rides.
 
-Results represent three main preferences: fastest, least cycling, fewest changes. An optional fourth preference minimizes cycling at the start or arrival. A journey winning multiple categories gets multiple badges on one card. Every card expands to the full timed sequence, including any intermediate cycling, service identifiers, stops, directions, available platforms, waiting and walking.
+Results first show a separate cycling-only estimate, then transit preferences: fastest, fewest boardings, and least cycling or walking. An optional fourth minimizes active time at the start or arrival. A transit journey winning multiple categories gets multiple badges on one card. Transit cards expand to the full timed sequence, including any intermediate cycling, service identifiers, stops, directions, available platforms, waiting and walking. Numbered map pins identify actual boarding/alighting events; candidate and observed timetable stops are shown separately. See [RESULTS_AND_MAP.md](RESULTS_AND_MAP.md).
 
 ## Graph and feasible paths
 
@@ -18,10 +18,16 @@ For a path P define:
 
 - T(P): destination arrival minus the common requested departure time, including all waiting.
 - B(P) = B_start(P) + B_middle(P) + B_end(P): total cycling minutes.
+- W(P): sum of timed walking-leg durations; waiting is excluded.
+- A(P) = B(P) + W(P): total active travel minutes, the quantity minimized by "least cycling or walking".
+- A_start(P): initial cycling plus walking before the first boarding.
+- A_end(P): final cycling plus walking after the last alighting.
 - k(P): number of actual vehicle boardings; changes = k(P) - 1.
 - m(P): number of positive intermediate cycling blocks between rides.
 
 The common feasible set requires k >= 1, k <= K_max, T <= H, B <= B_max, endpoint cycling within its separate limits, and intermediate cycling within its own limit. Walking and cycling are not vehicle boardings. Pure cycling never competes for fewest changes.
+
+Cycling budgets remain constraints on B, not A. Walking currently has no separate resource limit beyond the overall horizon; it is limited by the sampled timed transfer edges and now penalized in the active-time objective. A dedicated walking budget remains future work.
 
 Let P_0 be this set with m = 0 and P_1 the same set with m <= 1. Then P_0 is a subset of P_1. In particular, the fastest Extended arrival cannot be later than the fastest Baseline arrival on the same graph and constraints. Pareto frontiers themselves need not be nested: new paths can dominate old ones.
 
@@ -29,25 +35,27 @@ The mathematical experiment assumes the bicycle is available after every transit
 
 ## Objectives, dominance and categories
 
-The main vector to minimize is F(P) = (T(P), B(P), k(P)). P dominates Q when every component is no larger and at least one is smaller. Equal vectors are tied, not strictly dominant. Incomparable vectors express different user trade-offs.
+The main vector to minimize is F(P) = (T(P), A(P), k(P)). This supersedes the 2026-09-05 cycling-only objective. P dominates Q when every component is no larger and at least one is smaller. Equal vectors are tied, not strictly dominant. Incomparable vectors express different user trade-offs. Raw B and W remain separately available.
 
-The selected endpoint duration is added as a fourth objective when an endpoint preference is active; otherwise filtering only on the three main objectives could wrongly remove its best candidate.
+The selected endpoint's active duration is added as a fourth objective when an endpoint preference is active; otherwise filtering only on the three main objectives could wrongly remove its best candidate. The UI still offers one optional endpoint category at a time.
 
 | Category | Lexicographic minimization |
 |---|---|
-| Fastest | (T, B, k) |
-| Least cycling | (B, T, k) |
-| Fewest changes | (k, T, B) |
-| Optional shorter ride at start | (B_start, T, B, k) |
-| Optional shorter ride at arrival | (B_end, T, B, k) |
+| Fastest | (T, A, k) |
+| Fewest boardings | (k, T, A) |
+| Least cycling or walking | (A, T, k) |
+| Optional least cycling or walking at start | (A_start, T, A, k) |
+| Optional least cycling or walking at arrival | (A_end, T, A, k) |
 
 Candidates for display must arrive within the configurable extra-time allowance of that model's fastest journey. This is a **presentation filter**. It does not change the absolute feasibility horizon or the underlying comparison. Ties are resolved by a stable journey identifier. Multiple category wins are merged; the interface shows at most four distinct cards, and sometimes fewer than three.
+
+These are transit cards; the cycling-only reference is an additional first card. It uses the same ready-to-leave time and `ceil(60 * haversine_km / 15)` minutes (zero for coincident points or identical stop IDs). It stays outside the feasible transit set, Pareto comparison and extra-time filter. It remains visible when above the cycling budget, with an explicit notice. Both its time and line are geometric estimates, not a road route or a guarantee of feasibility. The comparison appears once endpoints resolve, before stop/timetable acquisition, and survives later failures or cancellation.
 
 ## Multi-label search
 
 `prototype-v0/src/model.ts` contains the pure solver. A label records:
 
-`(stop, arrival time, cumulative cycling, boardings, intermediate blocks used, needsTransit, initial cycling, leg sequence)`
+`(stop, arrival time, cumulative cycling, cumulative walking, initial active time, walking since last alighting, boardings, intermediate blocks used, needsTransit, initial station, leg sequence)`
 
 `needsTransit` is true after initial cycling or intermediate cycling and becomes false on boarding a transit ride. The destination can only be accepted when it is false. This prevents a second cycling segment being misclassified as an intermediate leg without subsequent transit.
 
@@ -55,11 +63,11 @@ Transitions are:
 
 1. Initial estimated cycling to an observed boarding stop within the start limit.
 2. A scheduled transit ride if departure >= current time + boarding buffer; increment boardings.
-3. A supplied timed walking transfer if its departure is reachable; preserve the phase.
+3. A supplied timed walking transfer if its departure is reachable; preserve the phase and add its duration to walking. Before any boarding, add it to initial active time. Track walking since the most recent alighting; boarding resets that trailing amount to zero.
 4. In Extended, cycling from a reached transit stop to another observed boarding stop if no intermediate leg has been used; increment m and require another transit ride.
 5. Final estimated cycling after transit, within arrival and cumulative limits.
 
-Only labels with the **same stop, intermediate count and needsTransit phase** are compared for pruning. A label can replace another if it is no later and has no more cumulative cycling, boardings or initial cycling. Initial cycling is retained for optional endpoint ranking. Final cycling is determined by the current stop. Keeping only one earliest-arrival label per station would lose useful low-cycling or low-boarding journeys.
+Only labels with the **same stop, intermediate count and needsTransit phase** are compared for pruning. A label can replace another if it is no later and has no more cumulative cycling, total active time, boardings, initial active time or trailing walking. Cycling must remain a separate dominance coordinate because it consumes a hard budget: a path with less active time but more cycling may not afford a later cycling leg. Initial active time and trailing walking preserve endpoint preferences. Final cycling is determined by the current stop, while final walking depends on the path history. Keeping only earliest arrival, or adding walking only after the search, could discard the desired result.
 
 With no resource truncation, the solver finds the relevant non-dominated objective vectors on its supplied finite graph. It is a label-correcting enumerator, not an implementation of RAPTOR, McRAPTOR or ULTRA. Its cost depends on the number of incomparable labels: a conservative bound is O(L(E + V^2 + L)), with L labels, E timed edges and V stops. This is not a claim of nationwide interactive scalability. The implementation caps generated labels at 50,000 per solve and reports truncation. Baseline candidates are explicitly unioned into Extended to preserve the inclusion check even at that cap.
 
@@ -134,6 +142,7 @@ Address and stop suggestions appear after two typed characters, using immediate 
 | `src/App.tsx` | Model switch, preferences, categories, empty/partial/cancel states |
 | `src/itinerary.ts`, `src/JourneyPlan.tsx` | Full chronological journey decomposition |
 | `src/MapView.tsx` | Schematic transit, walking and cycling legs |
+| `src/mapData.ts` | Distinct explored stops and ordered boarding/alighting events for map pins |
 
 Cycling lines are straight-line estimates, not navigable roads. Walking transfers are only the observed timed edges. Stops are station-level rather than a platform/infrastructure graph; the three-minute buffer does not certify real-world transfer feasibility. Departure times can become stale while a long search runs. No bike permission, route-safety or national optimality claims are made.
 

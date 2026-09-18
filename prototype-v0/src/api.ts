@@ -172,13 +172,19 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   progress("Finding both places…");
   const resolve = (value: string | Place) => typeof value === "string" ? geocode(value, signal, dependencies.fetcher) : value;
   const [origin, destination] = await Promise.all([resolve(from), resolve(to)]);
+  signal.throwIfAborted();
   const client = new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
-  const originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress);
-  const destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress);
-  if (!originStations.length || !destinationStations.length) throw new Error(
-    client.failures ? "Stop lookup was incomplete. Please try again." : "No stop was found within your cycling preference. Try More cycling, or a nearby stop.");
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
-    originStations, destinationStations, baseline: solve(network, origin, destination, start, options, "baseline"), extended: null };
+    originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null };
+  // Show the cycling-only reference as soon as the places resolve, including
+  // while stop/timetable requests are pending or ultimately fail.
+  publish({ ...session });
+  session.originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress);
+  publish({ ...session });
+  session.destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress);
+  publish({ ...session });
+  if (!session.originStations.length || !session.destinationStations.length) throw new Error(
+    client.failures ? "Stop lookup was incomplete. Please try again." : "No stop was found within your cycling preference. Try More cycling, or a nearby stop.");
   const queried = new Set<string>();
   const queryPairs = async () => {
     for (const s of [...session.originStations, ...session.destinationStations]) network.stops.set(s.id, s);

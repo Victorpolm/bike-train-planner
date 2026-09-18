@@ -1,5 +1,6 @@
 import { journeySteps } from "./itinerary";
 import { formatMinutes, type Journey, type Place } from "./routing";
+import { journeyStops } from "./mapData";
 
 const clock = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit",
@@ -19,6 +20,7 @@ function PlanTime({ date, start }: { date: Date | null; start: Date }) {
 export default function JourneyPlan({
   id, journey, origin, destination,
 }: { id: string; journey: Journey; origin: Place; destination: Place }) {
+  const stopNumbers = new Map(journeyStops(journey).map(stop => [stop.id, stop.number]));
   return (
     <section id={id} className="journey-plan" aria-labelledby={`${id}-heading`}>
       <div className="plan-heading">
@@ -43,13 +45,13 @@ export default function JourneyPlan({
               {extraServiceName && <p className="plan-service">Service {leg.serviceName}</p>}
               <div className="plan-stop">
                 <PlanTime date={step.departure} start={journey.startTime} />
-                <div><span className="plan-stop-label">From </span><strong>{step.from ?? "Departure stop unavailable"}</strong>
+                <div><span className="plan-stop-label">From {leg?.fromId && stopNumbers.has(leg.fromId) && `(map ${stopNumbers.get(leg.fromId)})`} </span><strong>{step.from ?? "Departure stop unavailable"}</strong>
                   {leg?.departurePlatform && <small>Platform {leg.departurePlatform}</small>}
                 </div>
               </div>
               <div className="plan-stop">
                 <PlanTime date={step.arrival} start={journey.startTime} />
-                <div><span className="plan-stop-label">To </span><strong>{step.to ?? "Arrival stop unavailable"}</strong>
+                <div><span className="plan-stop-label">To {leg?.toId && stopNumbers.has(leg.toId) && `(map ${stopNumbers.get(leg.toId)})`} </span><strong>{step.to ?? "Arrival stop unavailable"}</strong>
                   {leg?.arrivalPlatform && <small>Platform {leg.arrivalPlatform}</small>}
                 </div>
               </div>

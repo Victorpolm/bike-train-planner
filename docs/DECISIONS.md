@@ -118,6 +118,22 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Validation:** New live Zürich–Bern and Zürich–Laax checks publish proposals in approximately 15 and 12 seconds respectively; Extended completes later without hiding those proposals. This is a small observation, not an availability or latency guarantee. Browser interaction is untested.
 
+## 2026-09-18 — Include walking, compare cycling only, and explain stops on the map
+
+**User instruction:** Replace "least cycling" with "least cycling or walking"; show a cycling-only path before the fastest transit option; expose the stations investigated and pinpoint boarding/change locations. Implement and document this in the existing GitHub repository.
+
+**Decision:** Minimize active time A = cycling minutes + walking minutes. Keep the raw quantities separate and preserve cycling as a constrained resource during dominance checks. Optional endpoint categories use active time before the first boarding or after the final alighting. Waiting remains part of total elapsed time, not active time. Label pruning must retain these quantities; a text-only category rename is insufficient.
+
+**Counting:** Display actual public-transport boardings, including the first. Retain conventional changes = boardings - 1 as supplementary information. Staying aboard through passage stops does not add a boarding.
+
+**Comparison:** Show a separate cycling-only estimate first, followed by fastest transit and other category winners. Use the same departure instant and existing straight-line/15 km/h assumption. Keep it available before timetable replies and after timetable failure/cancellation. It cannot win fewest boardings or establish the transit extra-time cutoff. If it exceeds the chosen cycling budget, show that explicitly rather than hide the reference.
+
+**Map:** Show the union of endpoint candidate stops and observed timetable-network stops, deduplicated by provider stop ID. Distinguish these small markers from numbered boarding/alighting pins on the selected itinerary. Merge repeat events at the same station while keeping service, time, platform and boarding number. Different train/bus stop IDs remain separate across a walking transfer. Passing stations can be observed candidates but are not falsely labelled as changes. Add explored-stop visibility and Fit all stops controls; preserve user zoom during background timetable updates.
+
+**Limits:** Lines are schematic and cycling is not routed. Candidate presence implies neither a complete service search nor bicycle-carriage permission. Carriage/reservation checks, rentals, a dedicated walking budget and an OTP deployment remain open work. This is an incremental change on main, not an engine migration.
+
+**Design record:** [RESULTS_AND_MAP.md](RESULTS_AND_MAP.md) preserves the product tree, implemented behavior and OTP compatibility questions.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

@@ -133,14 +133,57 @@ describe("bounded multimodal model", () => {
   });
 });
 
+describe("active travel objectives", () => {
+  it("retains a later interchange arrival with less walking for the same onward ride", () => {
+    const n = fixture(); n.edges.clear();
+    ride(n, "A", "C", 5, 20); ride(n, "C", "B", 20, 35, "walk");
+    ride(n, "A", "B", 15, 36); ride(n, "B", "D", 40, 60);
+    const result = solve(n, origin, destination, start, limits, "baseline");
+    const best = categorize(result.journeys, limits).find(p => p.categories.includes("Least cycling or walking"))!;
+    assert.equal(best.journey.totalMinutes, 60);
+    assert.equal(metrics(best.journey).walk, 0);
+    assert.equal(metrics(best.journey).boardings, 2);
+  });
+  it("preserves a higher-active label with less cycling when only it can afford an intermediate leg", () => {
+    const n = fixture(); n.edges.clear();
+    n.stops.set("E", { id: "E", name: "Cycling access", lat: 47, lon: 8.013 });
+    n.stops.set("W", { id: "W", name: "Walking access", lat: 47.6, lon: 8 });
+    ride(n, "E", "B", 10, 18);
+    ride(n, "A", "W", 5, 20); ride(n, "W", "B", 20, 30, "walk");
+    ride(n, "C", "D", 45, 60);
+    const bike = cyclingMinutes(haversineKm(stops[1], stops[2]));
+    const result = solve(n, origin, destination, start, { ...limits, maxAccessMinutes: 6, maxBikeMinutes: bike }, "extended");
+    assert.ok(result.journeys.some(j => j.totalMinutes === 60 && metrics(j).walk === 10 && metrics(j).bike === bike));
+  });
+  it("counts walking at both endpoints and excludes waiting from active time", () => {
+    const j = solve(fixture(), origin, destination, start, limits, "baseline").journeys[0];
+    const walk = { ...j.transitLegs[0], mode: "walk" as const };
+    const m = metrics({ ...j, originStation: { ...j.originStation, bikeMinutes: 2 }, destinationStation: { ...j.destinationStation, bikeMinutes: 3 },
+      transitLegs: [{ ...walk, departure: time(0), arrival: time(4) }, ...j.transitLegs,
+        { ...walk, departure: time(100), arrival: time(106) }] });
+    assert.equal(m.walk, 10); assert.equal(m.bike, 5); assert.equal(m.active, 15);
+    assert.equal(m.activeStart, 6); assert.equal(m.activeEnd, 9);
+  });
+  it("selects five minutes cycling over twenty minutes walking for the active-time category", () => {
+    const j = solve(fixture(), origin, destination, start, limits, "baseline").journeys[0];
+    const cycling = { ...j, id: "cycling", totalMinutes: 85, originStation: { ...j.originStation, bikeMinutes: 5 } };
+    const walking = { ...j, id: "walking", totalMinutes: 80, transitLegs: [...j.transitLegs,
+      { ...j.transitLegs[0], mode: "walk" as const, departure: time(60), arrival: time(80) }] };
+    const cards = categorize([walking, cycling], limits);
+    assert.equal(cards[0].journey.id, "walking");
+    assert.equal(cards.find(c => c.categories.includes("Least cycling or walking"))!.journey.id, "cycling");
+    assert.equal(cards.find(c => c.journey.id === "cycling")!.activeSaved, 15);
+  });
+});
+
 describe("category selection", () => {
   it("selects distinct trade-offs and merges duplicate winners", () => {
     const { extended } = compareModels(fixture(), origin, destination, start, limits);
     const cards = categorize(extended.journeys, limits);
     assert.equal(cards.length, 3);
     assert.equal(cards.find(c => c.categories.includes("Fastest"))!.journey.totalMinutes, 50);
-    assert.equal(cards.find(c => c.categories.includes("Least cycling"))!.journey.totalMinutes, 80);
-    assert.equal(cards.find(c => c.categories.includes("Fewest changes"))!.journey.totalMinutes, 90);
+    assert.equal(cards.find(c => c.categories.includes("Least cycling or walking"))!.journey.totalMinutes, 80);
+    assert.equal(cards.find(c => c.categories.includes("Fewest boardings"))!.journey.totalMinutes, 90);
     const one = categorize([extended.journeys[0]], limits);
     assert.equal(one.length, 1); assert.equal(one[0].categories.length, 3);
   });
@@ -156,7 +199,7 @@ describe("category selection", () => {
     const a = { ...j, id: "a", totalMinutes: 80, originStation: { ...j.originStation, bikeMinutes: 10 } };
     const b = { ...j, id: "b", totalMinutes: 85, originStation: { ...j.originStation, bikeMinutes: 0 }, destinationStation: { ...j.destinationStation, bikeMinutes: 15 } };
     assert.equal(pareto([a, b]).length, 1);
-    assert.equal(categorize([a, b], { ...limits, endpointPreference: "start" }).find(c => c.categories.includes("Shorter ride at start"))!.journey.id, "b");
+    assert.equal(categorize([a, b], { ...limits, endpointPreference: "start" }).find(c => c.categories.includes("Least cycling or walking at start"))!.journey.id, "b");
     assert.ok(categorize([a, b], { ...limits, endpointPreference: "end" }).length <= 4);
   });
 });
@@ -172,6 +215,9 @@ describe("recorded timetable normalization", () => {
     assert.deepEqual(j.transitLegs.map(l => l.mode), ["transit", "walk", "transit"]);
     assert.deepEqual(j.services, ["IC 3", "B 81"]);
     assert.equal(j.changes, 1);
+    assert.equal(metrics(j).walk, 3);
+    assert.equal(metrics(j).active, 3);
+    assert.equal(metrics(j).boardings, 2);
     assert.equal(j.transitLegs[2].departurePlatform, "N");
     assert.equal(fastest(result.extended.journeys), 138);
   });

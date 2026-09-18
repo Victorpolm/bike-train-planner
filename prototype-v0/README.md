@@ -7,8 +7,11 @@ A Swiss journey-planning experiment comparing cycling and scheduled public trans
 1. Type into **From** and **To**, then choose a suggested address, town or public-transport stop. Arrow keys and Enter also select suggestions; typing without selecting remains supported.
 2. Choose **Baseline** (cycle before/after transit) or **Extended** (also allow at most one intermediate cycling leg).
 3. Optionally open **Preferences** to choose Less / Balanced / More cycling and an extra endpoint category. No numeric parameters are required.
-4. Search. Results select **Fastest**, **Least cycling**, and **Fewest changes**. An optional fourth category prefers a shorter ride at the start or arrival. One route can win several categories.
-5. Click a card to see every bike, train/bus/tram, walking and waiting leg with available timetable details.
+4. Search. A **Cycling only · estimate** card appears first as soon as the places resolve. Transit results follow with **Fastest**, **Fewest boardings**, and **Least cycling or walking**. An optional fourth minimizes cycling plus walking at the start or arrival. One route can win several categories. The first vehicle counts as a boarding.
+5. Click a card to select its map route. Transit cards also open every bike, train/bus/tram, walking and waiting leg. Numbered map pins mark boarding/alighting stops and show available services, times and platforms; those numbers also appear in the travel plan.
+6. Use **Explored stops** to show/hide candidate and observed timetable stops, and **Fit all stops** to see the whole observed area. These include buses/trams and intermediate stops, not only endpoint railway stations.
+
+The cycling-only comparison uses the same departure instant and a straight-line estimate at 15 km/h. It does not follow roads or include hills/barriers. It remains visible if transit requests fail or are stopped, is explicitly marked when above the selected cycling budget, and does not compete for transit-category winners. Its purple dashed line remains a faint reference behind a selected transit route; selecting its card shows that estimate on its own.
 
 Switching to Extended after a Baseline search keeps the same departure time and limits, expands the timetable data, then compares both models on that same graph. Once both results are available, switching is immediate. Address or budget edits invalidate the old results. Stopping an active search keeps proposals already found visible. After stopping, press Find journeys for a fresh search; an incomplete Extended phase is not silently presented as complete.
 
@@ -41,11 +44,12 @@ Tests use deterministic synthetic timetables and one small recorded Zürich–La
 - Maximum four public-transport boardings and eight hours overall.
 - Three minutes before every boarding, including after an intermediate ride.
 - Alternatives arrive within 60 minutes of the fastest result by default.
-- Every category requires at least one public-transport ride. Ordinary transit changes are possible in both models.
+- Every transit category requires at least one public-transport ride. The cycling-only reference is separate. Ordinary transit changes are possible in both models.
+- Active time is cycling plus timed walking, excluding waiting. Walking before the first boarding and after the last alighting contributes to the corresponding endpoint preference. Existing cycling budgets remain cycling budgets; there is no separate walking cap yet beyond the overall horizon.
 
 ## Implementation
 
-`src/places.ts` and `src/PlaceInput.tsx` implement debounced, cancellable address/stop suggestions, with known Swiss hubs available immediately. `src/preferences.ts` maps three cycling preferences to valid budgets; `src/http.ts` handles portable cancellation and response-body deadlines. `src/model.ts` implements the time-dependent graph, state-compatible Pareto labels, constraints and category selection. `src/api.ts` acquires a finite timetable graph; `src/timetable.ts` normalizes sections and pass-list exits. React presents the model control, preferences, category cards and full plans; Leaflet draws schematic leg geometry.
+`src/places.ts` and `src/PlaceInput.tsx` implement debounced, cancellable address/stop suggestions, with known Swiss hubs available immediately. `src/preferences.ts` maps three cycling preferences to valid budgets; `src/http.ts` handles portable cancellation and response-body deadlines. `src/model.ts` implements the time-dependent graph, state-compatible Pareto labels, constraints and category selection. `src/api.ts` acquires a finite timetable graph; `src/timetable.ts` normalizes sections and pass-list exits. `src/mapData.ts` deduplicates explored stops and collects ordered boarding/alighting events. React presents the comparison, model control, preferences, category cards and full plans; Leaflet draws schematic leg geometry and interactive stop markers.
 
 The authoritative repository documentation is [the mathematical model](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/MATHEMATICAL_MODEL.md), [project state](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/PROJECT_STATE.md) and [experiment log](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/EXPERIMENTS.md).
 

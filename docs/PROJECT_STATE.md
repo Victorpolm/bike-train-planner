@@ -1,6 +1,6 @@
 # Project state
 
-_Last consolidated: 2026-09-05._
+_Last consolidated: 2026-09-18._
 
 ## Current objective
 
@@ -20,13 +20,13 @@ The bicycle should be treated as accompanying the traveller through the journey,
 
 - **Baseline:** cycling before and after public transport, with ordinary transit/walking transfers.
 - **Extended:** the same constraints and timetable graph, with at most one intermediate cycling leg; includes Baseline.
-- A model switch appears before search results. Three categories select fastest, least cycling and fewest changes; an optional fourth minimizes initial or final cycling. Duplicate winners share a card.
-- All proposals require public transport and obey explicit cycling, boarding and duration budgets. Exact timetable readiness is checked after cycling and before each boarding.
+- A model switch appears before search results. A cycling-only reference estimate appears first, then transit categories select fastest, fewest boardings (including the first), and least cycling or walking. An optional fourth minimizes active time at the start or arrival. Duplicate winners share a card.
+- Transit categories require public transport and obey explicit cycling, boarding and duration budgets. The cycling-only reference stays separate, even when it exceeds the transit journey's cycling budget. Exact timetable readiness is checked after cycling and before each boarding.
 - Public-transport discovery includes buses and trams; selected stops are queried first, with independent outward catchment discovery in 20-minute bands used when initial queries return no feasible journey.
-- Clicking a card opens every cycling, transit, walking and waiting leg with available service IDs, stops, scheduled times and platforms. The map includes intermediate cycling.
+- Clicking a transit card opens every cycling, transit, walking and waiting leg. The map shows the selected route, a cycling-only comparison line, candidate/observed timetable stops and numbered boarding/alighting pins with available services, times and platforms. Pins match numbers in the plan. A toggle and Fit all stops control expose search coverage.
 - The app displays the first usable proposals while alternatives load, reports incomplete searches and keeps proposals when stopped. Debounced address/stop suggestions preserve selected coordinates; the form needs only From, To and the model choice, with optional cycling presets.
 
-The solver uses Pareto labels on a finite, sampled timetable graph. It is not a complete Swiss routing engine. Cycling is still estimated from straight-line distance at 15 km/h. For this experiment, bicycle availability after transit is assumed and carriage/reservation constraints are explicitly deferred.
+The solver uses Pareto labels on a finite, sampled timetable graph. Walking now contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. It is not a complete Swiss routing engine. Cycling, including the cycling-only comparison, is still estimated from straight-line distance at 15 km/h. The comparison is published before timetable acquisition and remains available after service failures. For this experiment, bicycle availability after transit is assumed and carriage/reservation constraints are explicitly deferred.
 
 See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominance, defaults, API limits and implementation boundaries, and [EXPERIMENTS.md](EXPERIMENTS.md) for verification.
 
@@ -44,7 +44,7 @@ See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominan
 
 ## Current routing model
 
-**Decision (2026-09-05):** Implement and compare zero versus at most one intermediate cycling leg. Use the `(total time, total cycling, boardings)` frontier and a small set of category winners. Preserve endpoint cycling separately for optional preferences.
+**Decision (updated 2026-09-18):** Compare zero versus at most one intermediate cycling leg. Use the `(total time, cycling + walking time, boardings)` frontier and a small set of category winners, adding the selected endpoint's active time when requested. Preserve raw cycling and walking separately. The cycling-only estimate does not participate in transit-category dominance or the extra-time allowance. The earlier cycling-only objective is superseded; see the dated decision log.
 
 **Fact:** This is implemented with shared constraints and paired searches over the same observed timetable graph. The live data adapter samples stops and departures; exact national optimality and globally minimal feasible catchments are not claimed.
 
@@ -95,9 +95,9 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 **2026-09-05 update:** The user has authorized implementation and app changes after the mathematical discussion. This supersedes the earlier pause on routing changes. The Baseline/Extended switch, categories, bounded graph solver and bus-inclusive discovery are implemented.
 
-**Verification after usability repair:** 43 automated tests pass, including the original 54 toy-graph comparisons and recorded train/walk/bus journey, plus delayed responses, progressive publication, cancellation, place suggestions and valid presets. TypeScript and production build pass. New live checks returned first proposals in 15.2 seconds for Zürich–Bern and 12.0 seconds for Zürich–Laax; neither completed search had a timetable failure. Partial street typing returned a real address. The earlier eight-second timeout rejected responses taking about 13 seconds, and the UI previously hid all results until a large batch completed. See the experiment log for exact inputs and limits. Browser interaction is not tested.
+**Verification (2026-09-18):** 53 automated tests, TypeScript and the production build pass. New cases cover active-time pruning, cycling resource constraints, the cycling-only reference and boarding/alighting markers, including the recorded Zürich–Laax walking transfer. Desktop/mobile browser checks with controlled timetable data verify result order, stop popups, map controls, selection, failure fallback and responsive framing; marker collisions and mobile cropping found during inspection were fixed. See [EXPERIMENTS.md](EXPERIMENTS.md) for inputs and limits. Earlier 2026-09-05 live latency observations remain in that log; this change does not establish a new live performance result.
 
-1. Try both models on 3–6 fixed real journeys and judge whether category trade-offs are useful.
+1. Try both models on 3–6 fixed real journeys and judge whether the cycling comparison, active-time trade-offs and boarding/alighting map pins are useful.
 2. Capture exact endpoints, departure times, returned legs, failures and search cost for those cases.
 3. Compare the sampled prototype with OpenTripPlanner and complete Swiss timetable/street data.
 4. Replace straight-line cycling with routed cycling before claiming practical transfer feasibility.

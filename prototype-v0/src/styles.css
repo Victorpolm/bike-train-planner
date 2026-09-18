@@ -154,6 +154,25 @@ h1 { margin: 0; max-width: 560px; font-family: Georgia, "Times New Roman", serif
 .map-legend span { display: flex; align-items: center; gap: 5px; }
 .map-legend i { width: 16px; height: 3px; display: inline-block; }
 .legend-bike { border-top: 3px dashed var(--orange); }.legend-train { background: var(--blue); }
+.legend-bike-only { border-top: 3px dashed #76558e; }
+.legend-walk { border-top: 3px dashed #647269; }
+.map-legend { flex-wrap: wrap; max-width: calc(100% - 80px); gap: 7px 12px; }
+.map-legend .legend-stop { width: 9px; height: 9px; background: #71839a; border-radius: 50%; }
+.legend-pin { display: grid; place-items: center; width: 16px; height: 16px; background: var(--blue); border-radius: 50%; color: white; }
+.candidate-marker { display: grid; place-items: center; }
+.candidate-dot { width: 12px; height: 12px; border: 2px solid white; border-radius: 50%; background: #71839a; box-shadow: 0 1px 4px #35485c66; }
+.map-controls { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 500; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; pointer-events: none; }
+.map-controls label, .map-controls button { pointer-events: auto; background: white; border: 1px solid var(--line); border-radius: 7px; min-height: 36px; padding: 7px 10px; color: var(--ink); font-size: 12px; }
+.map-controls label { display: flex; align-items: center; gap: 6px; }
+.map-controls input { margin: 0; }
+.map-controls button { cursor: pointer; }
+.map-controls button:disabled { opacity: .6; cursor: default; }
+.map-controls :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.leaflet-popup-content p { margin: 8px 0 0; }
+.comparison-caution { display: block; margin-top: 7px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.cycling-only-card .category-badges span { color: #65427c; background: #f2edf5; }
+.observed-stops { overflow-wrap: anywhere; }
+.journey-topline { flex-wrap: wrap; gap: 8px; }
 .map-empty { position: absolute; z-index: 450; inset: 0; display: grid; place-content: center; justify-items: center; pointer-events: none; background: rgba(226,232,225,.62); text-align: center; }
 .map-empty span { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: 13px; border-radius: 50%; color: white; background: var(--green-dark); font-family: Georgia, serif; font-size: 20px; }
 .map-empty strong { font-family: Georgia, serif; font-size: 22px; font-weight: 500; }

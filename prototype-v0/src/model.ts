@@ -43,23 +43,31 @@ export function validateOptions(o: Options) {
 }
 
 export function metrics(j: Journey) {
+  const duration = (l: TransitLeg) => l.departure && l.arrival
+    ? Math.max(0, (l.arrival.getTime() - l.departure.getTime()) / 60_000) : 0;
   const middle = j.transitLegs.filter(l => l.mode === "bike")
-    .reduce((sum, l) => sum + (l.arrival!.getTime() - l.departure!.getTime()) / 60_000, 0);
+    .reduce((sum, l) => sum + duration(l), 0);
   const boardings = j.transitLegs.filter(l => l.mode === "transit").length;
-  return { time: j.totalMinutes, bike: j.originStation.bikeMinutes + middle + j.destinationStation.bikeMinutes,
-    start: j.originStation.bikeMinutes, end: j.destinationStation.bikeMinutes, middle, boardings };
+  const first = j.transitLegs.findIndex(l => l.mode === "transit");
+  const last = j.transitLegs.reduce((found, l, i) => l.mode === "transit" ? i : found, -1);
+  const walking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "walk").reduce((sum, l) => sum + duration(l), 0);
+  const walk = walking(j.transitLegs), bike = j.originStation.bikeMinutes + middle + j.destinationStation.bikeMinutes;
+  return { time: j.totalMinutes, bike, walk, active: bike + walk,
+    start: j.originStation.bikeMinutes, end: j.destinationStation.bikeMinutes, middle, boardings,
+    activeStart: j.originStation.bikeMinutes + walking(j.transitLegs.slice(0, Math.max(0, first))),
+    activeEnd: j.destinationStation.bikeMinutes + walking(j.transitLegs.slice(last + 1)) };
 }
 export const dominates = (a: number[], b: number[]) => a.every((v, i) => v <= b[i]) && a.some((v, i) => v < b[i]);
 export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none"): Journey[] {
   const vector = (j: Journey) => {
     const m = metrics(j);
-    return [m.time, m.bike, m.boardings, ...(endpoint === "none" ? [] : [m[endpoint]])];
+    return [m.time, m.active, m.boardings, ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
   };
   const unique = [...new Map(journeys.map(j => [j.id, j])).values()];
   const vectors = unique.map(vector);
   return unique.filter((_, i) => !vectors.some((v, k) => k !== i && dominates(v, vectors[i])));
 }
-export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number };
+export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number; activeSaved: number };
 export function categorize(journeys: Journey[], o: Options): Proposal[] {
   // Pure cycling never competes for the mixed-journey categories.
   const mixed = journeys.filter(j => metrics(j).boardings >= 1);
@@ -69,16 +77,16 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
     for (const key of keys) if (am[key] !== bm[key]) return am[key] - bm[key];
     return a.id.localeCompare(b.id);
   };
-  const fastest = [...mixed].sort(compare(["time", "bike", "boardings"]))[0];
+  const fastest = [...mixed].sort(compare(["time", "active", "boardings"]))[0];
   const frontier = pareto(mixed.filter(j => j.totalMinutes <= fastest.totalMinutes + o.extraTimeMinutes), o.endpointPreference);
   const definitions: [string, (keyof ReturnType<typeof metrics>)[]][] = [
-    ["Fastest", ["time", "bike", "boardings"]],
-    ["Least cycling", ["bike", "time", "boardings"]],
-    ["Fewest changes", ["boardings", "time", "bike"]],
+    ["Fastest", ["time", "active", "boardings"]],
+    ["Fewest boardings", ["boardings", "time", "active"]],
+    ["Least cycling or walking", ["active", "time", "boardings"]],
   ];
   if (o.endpointPreference !== "none") definitions.push([
-    o.endpointPreference === "start" ? "Shorter ride at start" : "Shorter ride at arrival",
-    [o.endpointPreference, "time", "bike", "boardings"],
+    o.endpointPreference === "start" ? "Least cycling or walking at start" : "Least cycling or walking at arrival",
+    [o.endpointPreference === "start" ? "activeStart" : "activeEnd", "time", "active", "boardings"],
   ]);
   const proposals = new Map<string, Proposal>();
   for (const [category, keys] of definitions) {
@@ -87,13 +95,14 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
     if (existing) existing.categories.push(category);
     else proposals.set(winner.id, { journey: winner, categories: [category],
       extraMinutes: winner.totalMinutes - fastest.totalMinutes,
-      cyclingSaved: metrics(fastest).bike - metrics(winner).bike });
+      cyclingSaved: metrics(fastest).bike - metrics(winner).bike,
+      activeSaved: metrics(fastest).active - metrics(winner).active });
   }
   return [...proposals.values()];
 }
 
 export type Label = {
-  stop: string; time: number; bike: number; boardings: number; middle: number;
+  stop: string; time: number; bike: number; walk: number; accessActive: number; egressWalk: number; boardings: number; middle: number;
   needsTransit: boolean; access: Station; legs: TransitLeg[]; alive: boolean;
 };
 export type Solution = { journeys: Journey[]; reachable: Label[]; explored: number; retained: number; limited: boolean };
@@ -124,7 +133,10 @@ export function solve(network: Network, origin: Place, destination: Place, start
     if (label.time > horizon || label.bike > o.maxBikeMinutes || label.boardings > o.maxBoardings) return;
     const key = `${label.stop}|${label.middle}|${label.needsTransit}`;
     const bucket = labels.get(key) ?? [];
-    const vector = (l: Label) => [l.time, l.bike, l.boardings, l.access.bikeMinutes];
+    // Keep cycling as a resource as well as total active travel as an objective.
+    // A lower active total can use more cycling and leave less budget for later.
+    // Endpoint attributes must also survive pruning for optional categories.
+    const vector = (l: Label) => [l.time, l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk];
     const v = vector(label);
     if (bucket.some(l => vector(l).every((x, i) => x <= v[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -135,6 +147,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const access = atEndpoint(stop, origin);
     if (access.bikeMinutes <= o.maxAccessMinutes) add({ stop: stop.id,
       time: start.getTime() + access.bikeMinutes * 60_000, bike: access.bikeMinutes,
+      walk: 0, accessActive: access.bikeMinutes, egressWalk: 0,
       boardings: 0, middle: 0, needsTransit: true, access, legs: [], alive: true });
   }
   let explored = 0;
@@ -146,7 +159,11 @@ export function solve(network: Network, origin: Place, destination: Place, start
       const ride = edge.leg.mode === "transit";
       const ready = current.time + (ride ? o.boardingMinutes * 60_000 : 0);
       if (edge.leg.departure!.getTime() < ready || edge.leg.arrival!.getTime() > horizon) continue;
+      const walking = ride ? 0 : (edge.leg.arrival!.getTime() - edge.leg.departure!.getTime()) / 60_000;
       add({ ...current, stop: edge.to, time: edge.leg.arrival!.getTime(),
+        walk: current.walk + walking,
+        accessActive: current.accessActive + (current.boardings === 0 ? walking : 0),
+        egressWalk: ride ? 0 : current.egressWalk + walking,
         boardings: current.boardings + Number(ride), needsTransit: ride ? false : current.needsTransit,
         legs: [...current.legs, edge.leg], alive: true });
     }

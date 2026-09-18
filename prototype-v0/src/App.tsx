@@ -3,33 +3,53 @@ import { extend, plan, searchWarnings, type SearchSession } from "./api";
 import { categorize, metrics, type ModelMode, type EndpointPreference, type Proposal } from "./model";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
-import { formatMinutes } from "./routing";
+import { cyclingOnly, formatMinutes, type CyclingComparison } from "./routing";
+import { exploredStops } from "./mapData";
 import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES } from "./places";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit" });
 const day = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", day: "numeric", month: "short" });
+const BIKE_ONLY_ID = "cycling-only-reference";
+
+function CyclingCard({ comparison, selected, start, maxBikeMinutes, onSelect }: {
+  comparison: CyclingComparison; selected: boolean; start: Date; maxBikeMinutes: number; onSelect: () => void;
+}) {
+  return <button type="button" className={`journey-card cycling-only-card${selected ? " selected" : ""}`}
+    onClick={onSelect} aria-pressed={selected}>
+    <span className="category-badges"><span>Cycling only · estimate</span></span>
+    <span className="journey-topline"><strong>≈ {formatMinutes(comparison.minutes)}</strong><span>0 boardings</span></span>
+    <span className="arrival-summary">Estimated arrival <b>{clock.format(comparison.arrival)}</b>
+      {day.format(comparison.arrival) !== day.format(start) && ` · ${day.format(comparison.arrival)}`}</span>
+    <span className="cycling-summary">{comparison.distanceKm.toFixed(1)} km straight-line distance · 15 km/h</span>
+    <span className="comparison-caution">Reference only: roads, hills and barriers are not included.</span>
+    {comparison.minutes > maxBikeMinutes && <span className="comparison-caution">Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.</span>}
+    <span className="journey-plan-toggle">{selected ? "Shown on the map" : "Show cycling estimate on map"}</span>
+  </button>;
+}
 
 function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
   proposal: Proposal; selected: boolean; expanded: boolean; planId: string; onSelect: () => void;
 }) {
-  const { journey: j, categories, extraMinutes, cyclingSaved } = proposal;
+  const { journey: j, categories, extraMinutes, activeSaved } = proposal;
   const m = metrics(j), finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
   return <button type="button" className={`journey-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
     <span className="category-badges">{categories.map(c => <span key={c}>{c}</span>)}</span>
     <span className="journey-topline"><strong>{formatMinutes(j.totalMinutes)}</strong>
-      <span>{j.changes === 0 ? "No changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
+      <span>{m.boardings} boarding{m.boardings === 1 ? "" : "s"} · {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
     <span className="arrival-summary">Arrive at your destination at <b>{clock.format(finalArrival)}</b>
       {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}</span>
     <span className="route-services">{j.services.join(" → ")}</span>
-    <span className="cycling-summary"><b>{m.bike} min cycling</b> · start {m.start}
-      {m.middle > 0 && ` · between services ${m.middle}`} · arrival {m.end}</span>
+    <span className="cycling-summary"><b>{formatMinutes(m.active)} cycling or walking</b>
+      {" "}· cycling ≈ {formatMinutes(m.bike)} · walking {formatMinutes(m.walk)}</span>
+    <span className="cycling-summary">Active time at start {formatMinutes(m.activeStart)} · arrival {formatMinutes(m.activeEnd)}
+      {m.middle > 0 && ` · cycling between services ${formatMinutes(m.middle)}`}</span>
     <span className="route-stops">{j.originStation.name} → {j.destinationStation.name}</span>
     {m.middle > 0 && <span className="middle-badge">One cycling transfer</span>}
     {extraMinutes > 0 && <span className="tradeoff">{formatMinutes(extraMinutes)} longer than the fastest
-      {cyclingSaved > 0 ? ` · ${formatMinutes(cyclingSaved)} less cycling` : ""}</span>}
+      {activeSaved > 0 ? ` · ${formatMinutes(activeSaved)} less cycling or walking` : ""}</span>}
     <span className="journey-plan-toggle">{expanded ? "Hide travel plan −" : "View travel plan +"}</span>
   </button>;
 }
@@ -54,12 +74,15 @@ export default function App() {
   const runId = useRef(0);
   const solution = mode === "extended" ? session?.extended ?? session?.baseline : session?.baseline;
   const proposals = useMemo(() => categorize(solution?.journeys ?? [], session?.options ?? options), [solution, session, options]);
-  const selected = proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
+  const selected = selectedId === BIKE_ONLY_ID ? null : proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
+  const bikeOnlySelected = !!session && selected === null;
+  const cyclingReference = useMemo(() => session ? cyclingOnly(session.origin, session.destination, session.start) : null, [session]);
+  const stops = useMemo(() => session ? exploredStops(session.network.stops.values(), session.originStations, session.destinationStations) : [], [session]);
   const warnings = session ? searchWarnings(session) : [];
 
   function invalidate() { setSession(null); setSelectedId(null); setExpandedId(null); setError(""); setProgress(""); }
   function cancel() {
-    runId.current++; controller.current?.abort(); setLoading(false); setProgress(proposals.length ? "Search stopped. The proposals already found are kept below." : "Search stopped. You can try again.");
+    runId.current++; controller.current?.abort(); setLoading(false); setProgress(session ? "Search stopped. The cycling estimate and any transit proposals are kept below." : "Search stopped. You can try again.");
   }
   async function search(event: FormEvent) {
     event.preventDefault();
@@ -128,7 +151,7 @@ export default function App() {
             </select></label>
             <label><span>Extra category</span><select disabled={loading} value={endpoint}
               onChange={e => { invalidate(); setEndpoint(e.target.value as EndpointPreference); }}>
-              <option value="none">Just the three main categories</option><option value="start">Shorter ride at start</option><option value="end">Shorter ride at arrival</option>
+              <option value="none">Just the three main categories</option><option value="start">Less cycling or walking at start</option><option value="end">Less cycling or walking at arrival</option>
             </select></label>
           </div>
           <p>Up to {options.maxAccessMinutes} minutes cycling at each end{mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.
@@ -143,36 +166,43 @@ export default function App() {
         <button type="button" className="cancel-button" onClick={cancel}>{proposals.length ? "Stop looking · keep these options" : "Stop search"}</button></div>}
       {!loading && progress && <p role="status">{progress}</p>}
       {error && <div className="error-block" role="alert"><strong>We could not complete this search.</strong><p>{error}</p></div>}
-      {session && (proposals.length > 0 || !loading) && <section className="results" aria-live="polite">
+      {session && cyclingReference && <section className="results" aria-live="polite">
         <p className="resolved-places">{session.origin.label} → {session.destination.label}</p>
-        <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>{proposals.length ? "Your journey options" : warnings.length ? "Search incomplete" : "No journey found"}</h2></div></div>
+        <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>Your journey options</h2></div></div>
         {warnings.length > 0 && <details className="search-notice"><summary>Some alternatives could not be checked</summary>{warnings.map(w => <p key={w}>{w}</p>)}</details>}
-        {!proposals.length && <p className="empty-results">{warnings.length
+        {!proposals.length && !loading && <p className="empty-results">{warnings.length
           ? "The timetable service did not return enough usable data. Please try this journey again."
-          : "No connection was found within your cycling preference. Try More cycling, Extended, or a nearby stop."}</p>}
+          : "No transit connection was found within your cycling preference. Try More cycling, Extended, or a nearby stop."}</p>}
+        {!proposals.length && loading && <p className="comparison-note">Cycling estimate ready. Transit options will appear as they are found.</p>}
+        {proposals.length > 0 && <p className="comparison-note">Fastest transit option: {proposals[0].journey.totalMinutes === cyclingReference.minutes
+          ? "the same estimated time as cycling only."
+          : `${formatMinutes(Math.abs(proposals[0].journey.totalMinutes - cyclingReference.minutes))} ${proposals[0].journey.totalMinutes < cyclingReference.minutes ? "faster" : "slower"} than the cycling-only estimate.`}</p>}
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
           {!Number.isFinite(baselineFastest) ? "Extended found a journey where Baseline found none in this search."
             : extendedFastest < baselineFastest ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
               : "Both models have the same fastest arrival in this search."}
           {" "}Same departure time and limits.</p>}
-        {proposals.length > 0 && <p className="result-explanation">Best by category among the connections explored. A route can win several categories.
+        {proposals.length > 0 && <p className="result-explanation">Transit categories compare the connections explored. Boardings include the first vehicle. A route can win several categories.
           {" "}Alternatives arrive at most {session.options.extraTimeMinutes} minutes after the fastest.</p>}
-        <div className="journey-list">{proposals.map((proposal, index) => {
+        <div className="journey-list"><CyclingCard comparison={cyclingReference} selected={bikeOnlySelected} start={session.start}
+          maxBikeMinutes={session.options.maxBikeMinutes} onSelect={() => { setSelectedId(BIKE_ONLY_ID); setExpandedId(null); }} />
+          {proposals.map((proposal, index) => {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
           return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
             expanded={expanded} planId={planId} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); }} />
             {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination} />}</div>;
         })}</div>
-        <details className="search-coverage"><summary>Stops explored</summary>
-          <p>We start with nearby stops and check a few alternatives. If needed, we look farther within your cycling preference. This search can miss useful journeys.</p>
+        <details className="search-coverage"><summary>Stops explored ({stops.length})</summary>
+          <p>Small dots mark candidate and observed timetable stops. Numbered pins mark where you board and alight on the selected journey. Click a pin for service, time and platform details. Use Fit all stops to see the whole search area. This search can miss useful journeys.</p>
           <div className="candidate-stations">{[["Near departure", session.originStations], ["Near arrival", session.destinationStations]].map(([title, list]) =>
             <div className="station-list" key={String(title)}><span>{String(title)}</span><div>{(list as SearchSession["originStations"]).map(s =>
               <small key={s.id}>{s.name}<b>{s.bikeMinutes} min</b></small>)}</div></div>)}</div>
+          <p className="observed-stops">All observed stops: {stops.map(s => s.name).join(" · ")}</p>
         </details>
       </section>}
     </section><aside className="map-panel">
-      <MapView origin={session?.origin ?? null} destination={session?.destination ?? null} originStations={session?.originStations ?? []}
-        destinationStations={session?.destinationStations ?? []} selectedJourney={selected}
+      <MapView origin={session?.origin ?? null} destination={session?.destination ?? null} stops={stops}
+        selectedJourney={selected} cycling={cyclingReference} bikeOnlySelected={bikeOnlySelected}
         accessMinutes={session?.options.maxAccessMinutes ?? options.maxAccessMinutes} egressMinutes={session?.options.maxEgressMinutes ?? options.maxEgressMinutes} />
       <div className="model-note"><strong>Experimental model</strong><p>Cycling uses straight-line estimates; map lines are schematic.
         Bicycle availability after transit is assumed. Carriage and reservation rules are deferred.</p></div>

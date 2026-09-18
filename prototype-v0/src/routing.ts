@@ -73,6 +73,20 @@ export function cyclingMinutes(distanceKm: number): number {
   return distanceKm <= 0.001 ? 0 : Math.ceil((distanceKm / BIKE_SPEED_KMH) * 60);
 }
 
+export type CyclingComparison = {
+  distanceKm: number;
+  minutes: number;
+  arrival: Date;
+};
+
+// A reference estimate, independent of transit budgets and category selection.
+// This is deliberately not represented as a public-transport Journey.
+export function cyclingOnly(origin: Place, destination: Place, start: Date): CyclingComparison {
+  const distanceKm = origin.stopId && origin.stopId === destination.stopId ? 0 : haversineKm(origin, destination);
+  const minutes = cyclingMinutes(distanceKm);
+  return { distanceKm, minutes, arrival: new Date(start.getTime() + minutes * 60_000) };
+}
+
 export function samplePoints(point: Point): Point[] {
   const radiusKm = 2.5;
   const latDelta = radiusKm / 111.32;

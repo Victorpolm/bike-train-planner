@@ -251,3 +251,35 @@ A live `suggestPlaces` request for partial text `Stauffacherstrasse 6 Zürich` r
 **Limits:** These are two current schedules and one address lookup, not a reliability guarantee or a controlled same-departure speed benchmark against the old run. Reduced sampling can miss category alternatives. Local adapter/test/build checks passed; browser layout, keyboard and touch interaction are not exercised. The app still uses straight-line cycling and defers bicycle carriage restrictions.
 
 **Next check:** Have the user retry their failed journey in the published version, record exact endpoints and whether a suggestion was selected, and collect any displayed error if it still fails. Evaluate wider timetable coverage after responsiveness is acceptable.
+
+## 2026-09-18 — Active travel, cycling-only comparison and station map
+
+**User request:** Show cycling only before the fastest transit option, show stations considered in the search and pinpoint the train/bus boarding and interchange stops. Apply the preceding correction from least cycling to least cycling or walking.
+
+**Implementation:** A separate geometric cycling reference; early endpoint publication; active-time metrics and state-compatible dominance that also retains the cycling resource; numbered boarding/alighting events; distinct explored-stop markers; stop visibility and fit controls. Full behavior and limitations are in [RESULTS_AND_MAP.md](RESULTS_AND_MAP.md).
+
+### Regression outcomes
+
+| Case | Verified result |
+|---|---|
+| Recorded Zürich HB → Chur → Laax, 2026-09-05 13:30 Swiss time | Still 138 minutes, two boardings, three minutes walking and zero cycling; active time is three minutes. |
+| Map for that recorded journey | Four numbered stops: Zürich HB, Chur, Chur Postautostation and Laax. The bus boarding retains service B 81, 14:58 and platform N. Passage stops do not become change pins. |
+| Repeated boarding/alighting at one station ID | One pin keeps both events and their distinct boarding numbers/platforms. Separate train and bus stop IDs remain separate. |
+| Earlier interchange arrival with 15 minutes walking versus a later arrival with no walking | Both can catch the same onward ride; the desired 60-minute, zero-walking result survives pruning. |
+| Lower active time but more cycling before an intermediate leg | Retaining the cycling resource preserves the feasible route with 10 minutes walking and the 10-minute cycling leg, arriving in 60 minutes. |
+| Five minutes cycling versus twenty minutes walking | The five-minute active route wins least cycling or walking even when it arrives five minutes later; the earlier walking route remains fastest. |
+| Walking at endpoints | Walking before the first boarding and after the last alighting enters the corresponding active-time objective; waiting does not. |
+| Cycling-only reference | Uses the common departure instant, rounds cycling up, handles identical stop IDs, stays outside transit categories and persists after timetable failures. |
+| Existing experiment | All previous Baseline/Extended constraints, golden journeys and the 54 exhaustive toy-graph comparisons still pass. |
+
+**Automated verification:** `npm test` passes **53 tests**. `npm run build` passes TypeScript and the Vite production build. `git diff --check` passes. No application dependency or lockfile change was needed.
+
+### Browser verification
+
+**Method:** Headless Chromium against the local application at desktop 1280×1000 and mobile 390×844. Fix the browser's clock to the recorded journey's departure. Mock timetable responses with the recorded train/walk/bus sections (pass lists omitted to isolate its four main stops), plus an explicitly synthetic slower direct service to exercise a distinct fewest-boardings card. Map tiles were mocked; this is a UI check, not a new live timetable or basemap availability test.
+
+**Verified:** The cycling card appears before releasing a pending timetable response. Card order is cycling only, fastest transit, then the other category winner. Switching cards changes map geometry and selected pins. The Chur bus popup displays the service, boarding number, scheduled time and platform. Toggling explored stops leaves selected pins intact; Fit all stops restores the explored layer. The full plan carries matching map numbers. When timetable replies return HTTP 503, the cycling reference remains and the incomplete-search notice appears. No application runtime exceptions occurred.
+
+**Visual corrections:** Initial inspection found overlapping Chur train/bus pins and a cropped route after resizing. Pins now use screen-space separation with geographic leader lines, recomputed on zoom/resize. Resizing refits the current view with padding for controls and the legend. Subsequent browser assertions verify no marker overlap, no mobile horizontal overflow, all selected pins inside the map, and no overlap with map controls or legend; screenshots were visually inspected after the fixes.
+
+**Remaining uncertainty:** Cycling geometry, hills and barriers are still absent; carriage/reservation/capacity data remains deferred. No OTP deployment or nationwide completeness claim is made. The next field check is the same Zürich–Laax journey in the updated app, inspecting the Chur walking connection and whether the displayed trade-offs are useful.
