@@ -134,6 +134,14 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Design record:** [RESULTS_AND_MAP.md](RESULTS_AND_MAP.md) preserves the product tree, implemented behavior and OTP compatibility questions.
 
+## 2026-09-18 — Publish the existing private Site and link it from GitHub
+
+**User instruction:** Make the updated website accessible here, keep it private, and explain how to open it from Git.
+
+**Decision:** Reuse the existing Bike + Train Site and preserve its verified owner-only access. GitHub remains the authoritative source; add the Site identity to the app's hosting manifest and a direct website link plus local Git instructions to the repository documentation.
+
+**Publication:** The Site has a separate source repository. GitHub pushes do not automatically deploy; publish the tested application revision explicitly and verify deployment success. Do not create a second website or enable public access.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

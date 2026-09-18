@@ -2,6 +2,14 @@
 
 Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.
 
+## Open the private website
+
+[**Open private website**](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site)
+
+Sign in with the ChatGPT account that owns the Site. Access is restricted to that account; the link does not make the website public. You can always return here and click this link to use the planner without installing anything.
+
+For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website.
+
 ## Core question
 
 > Given an origin, destination, departure time, bicycle and user preferences, what are the most useful practical journeys combining cycling and public transport?

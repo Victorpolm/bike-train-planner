@@ -18,6 +18,8 @@ The bicycle should be treated as accompanying the traveller through the journey,
 
 **Fact:** `prototype-v0/` now implements the user-approved Baseline/Extended mathematical experiment.
 
+**Access:** The [private website](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site) is restricted to its owning ChatGPT account. The repository README links to it. [Website access and development](WEBSITE.md) explains how to open it from GitHub, run a local clone and republish; GitHub pushes do not automatically update the Site.
+
 - **Baseline:** cycling before and after public transport, with ordinary transit/walking transfers.
 - **Extended:** the same constraints and timetable graph, with at most one intermediate cycling leg; includes Baseline.
 - A model switch appears before search results. A cycling-only reference estimate appears first, then transit categories select fastest, fewest boardings (including the first), and least cycling or walking. An optional fourth minimizes active time at the start or arrival. Duplicate winners share a card.

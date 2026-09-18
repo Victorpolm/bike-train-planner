@@ -4,6 +4,8 @@ A Swiss journey-planning experiment comparing cycling and scheduled public trans
 
 ## Use the app
 
+[**Open private website**](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site) and sign in with the owning ChatGPT account. See [website access and development](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/WEBSITE.md) for Git/local setup and publication details.
+
 1. Type into **From** and **To**, then choose a suggested address, town or public-transport stop. Arrow keys and Enter also select suggestions; typing without selecting remains supported.
 2. Choose **Baseline** (cycle before/after transit) or **Extended** (also allow at most one intermediate cycling leg).
 3. Optionally open **Preferences** to choose Less / Balanced / More cycling and an extra endpoint category. No numeric parameters are required.
