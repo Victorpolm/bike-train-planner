@@ -85,10 +85,10 @@ These numbers are implementation defaults for the experiment, not empirically ca
 | Maximum total cycling | 90 min |
 | Maximum vehicle boardings | 4 (3 changes) |
 | Boarding buffer before every vehicle ride | 3 min |
-| Absolute journey horizon | 480 min |
+| Absolute journey horizon | 1,440 min (includes waiting) |
 | Extra arrival allowance for category alternatives | 60 min |
 
-The form now exposes only **From**, **To**, and **Baseline / Extended**. Optional preferences select one of the following cycling presets and an endpoint category; there are no required numeric controls. Other budgets remain the defaults above.
+The form exposes **From**, **To**, **Departure** (Leave now by default, or a chosen Swiss date/time), and **Baseline / Extended**. Optional preferences select one of the following cycling presets and an endpoint category; there are no required numeric controls. Other budgets remain the defaults above. The 24-hour horizon replaces the implicit eight-hour default after the recorded Libingen–EPFL failure; it includes overnight waiting, which remains part of elapsed time. Next-day arrival dates are explicit.
 
 | Cycling preference | Total cycling | Initial / final, each | Intermediate |
 |---|---:|---:|---:|
@@ -102,7 +102,7 @@ Cycling estimates round positive durations up to whole minutes. Coincident point
 
 Departure and arrival are handled separately. A selected stop retains its ID and coordinates and can be queried without geocoding or nearby lookup. An address initially uses a known rail hub within 20 cycling minutes if one exists; otherwise it requests nearby public-transport stops. If no candidate is available, or initial successful connection requests yield no feasible journey, additional discovery samples outward in 20-minute bands within each hard limit. At most two extra probes per endpoint are made (north/south). Earlier candidates and known rail hubs remain eligible through their hard bounds; this is not a complete isochrone.
 
-At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, are available in both models. Pairs exceeding the cumulative cycling budget are rejected before HTTP. The first three eligible pairs, ordered by endpoint cycling time, request four upcoming connections each; after fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
+At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, are available in both models. Pairs exceeding the cumulative cycling budget are rejected before HTTP. Up to three pairs request four upcoming connections each. The first pair minimizes endpoint cycling; remaining slots first cover rail departure candidates, choosing the nearest feasible rail arrival when available, then rail arrival candidates and other pairs. Duplicate/already-queried pairs are excluded. This prevents several adjacent bus stops consuming all query slots before a feasible rail hub is tried. After fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
 
 The user's minimal-feasible-radius-plus-20 idea remains the motivation for adaptive discovery. There can be incomparable minimal `(start radius, arrival radius)` pairs, so separate scalar minima need not form a feasible pair. This implementation does not prove a globally minimal feasible radius. Fewer pair queries and deferred outward probes intentionally prioritize early results; they can miss better connections, including ones in the extra band after initial success.
 
@@ -118,7 +118,7 @@ After each data-producing query, both models are recomputed on the same graph an
 
 ## Fair comparison, failures and cancellation
 
-One departure instant and one set of budgets are captured per search. Switching to Extended reuses the in-memory timetable responses, discovers its additional edges, and recomputes **both** solutions on the same expanded graph. Subsequent toggling reuses completed paired results. An explicit completion flag distinguishes a provisional Extended solution from completed acquisition. Baseline category winners may improve after this data expansion. Editing an address or a budget invalidates old results and starts a new comparison.
+One departure instant and one set of budgets are captured per search. Leave now captures the current instant; a selected date/time is parsed in Europe/Zurich independently of device timezone. Invalid dates and the nonexistent spring clock-change hour are rejected; the first occurrence of a repeated autumn hour is used. The form rejects past selected departures. Switching to Extended reuses the in-memory timetable responses, discovers its additional edges, and recomputes **both** solutions on the same expanded graph. Subsequent toggling reuses completed paired results. An explicit completion flag distinguishes a provisional Extended solution from completed acquisition. Baseline category winners may improve after this data expansion. Editing an address, departure or budget invalidates old results and starts a new comparison.
 
 The graph is a per-search collection of API responses, not an atomic nationwide timetable snapshot. Real-time delay/prognosis fields are not used; the experiment compares scheduled times. This is shown as a dated Swiss-time search, not a continuously refreshed departure board.
 
@@ -138,6 +138,7 @@ Address and stop suggestions appear after two typed characters, using immediate 
 | `src/http.ts` | Portable cancellation and full-response deadlines |
 | `src/places.ts`, `src/PlaceInput.tsx` | Address/stop suggestions, selected places and stale-query handling |
 | `src/preferences.ts` | User cycling preferences mapped to mathematical budgets |
+| `src/departure.ts` | Swiss-time form values and timezone-independent departure parsing |
 | `src/model.ts` | Feasibility, multi-label graph search, Pareto filtering and categories |
 | `src/App.tsx` | Model switch, preferences, categories, empty/partial/cancel states |
 | `src/itinerary.ts`, `src/JourneyPlan.tsx` | Full chronological journey decomposition |

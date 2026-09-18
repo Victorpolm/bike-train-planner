@@ -7,7 +7,7 @@ A Swiss journey-planning experiment comparing cycling and scheduled public trans
 [**Open private website**](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site) and sign in with the owning ChatGPT account. See [website access and development](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/WEBSITE.md) for Git/local setup and publication details.
 
 1. Type into **From** and **To**, then choose a suggested address, town or public-transport stop. Arrow keys and Enter also select suggestions; typing without selecting remains supported.
-2. Choose **Baseline** (cycle before/after transit) or **Extended** (also allow at most one intermediate cycling leg).
+2. Leave **Departure** on **Leave now**, or choose a date and time in Switzerland. Choose **Baseline** (cycle before/after transit) or **Extended** (also allow at most one intermediate cycling leg).
 3. Optionally open **Preferences** to choose Less / Balanced / More cycling and an extra endpoint category. No numeric parameters are required.
 4. Search. A **Cycling only · estimate** card appears first as soon as the places resolve. Transit results follow with **Fastest**, **Fewest boardings**, and **Least cycling or walking**. An optional fourth minimizes cycling plus walking at the start or arrival. One route can win several categories. The first vehicle counts as a boarding.
 5. Click a card to select its map route. Transit cards also open every bike, train/bus/tram, walking and waiting leg. Numbered map pins mark boarding/alighting stops and show available services, times and platforms; those numbers also appear in the travel plan.
@@ -15,9 +15,13 @@ A Swiss journey-planning experiment comparing cycling and scheduled public trans
 
 The cycling-only comparison uses the same departure instant and a straight-line estimate at 15 km/h. It does not follow roads or include hills/barriers. It remains visible if transit requests fail or are stopped, is explicitly marked when above the selected cycling budget, and does not compete for transit-category winners. Its purple dashed line remains a faint reference behind a selected transit route; selecting its card shows that estimate on its own.
 
-Switching to Extended after a Baseline search keeps the same departure time and limits, expands the timetable data, then compares both models on that same graph. Once both results are available, switching is immediate. Address or budget edits invalidate the old results. Stopping an active search keeps proposals already found visible. After stopping, press Find journeys for a fresh search; an incomplete Extended phase is not silently presented as complete.
+Switching to Extended after a Baseline search keeps the same departure time and limits, expands the timetable data, then compares both models on that same graph. Once both results are available, switching is immediate. Address, departure or budget edits invalidate the old results. Stopping an active search keeps proposals already found visible. After stopping, press Find journeys for a fresh search; an incomplete Extended phase is not silently presented as complete.
 
-Proposals appear after the first usable response, while a small number of alternatives are checked. Easy station journeys skip address and nearby-stop lookups. A live check returned Zürich–Bern proposals in 15.2 seconds and Zürich–Laax in 12.0 seconds; upstream latency varies. Extended exploration can continue for a minute or more, but it no longer hides existing results. The displayed departure time is the time captured when the search began; results do not continuously refresh.
+The arrival window is **24 hours from your chosen departure**, including waiting. Late-evening searches can therefore show next-morning services. Cards mark next-day arrivals; the full plan retains overnight waiting. A chosen date/time always means Europe/Zurich, even on a device in another timezone.
+
+For **Libingen → EPFL**, Balanced includes nearby bus stops and Wil. To consider cycling to **Rapperswil**, choose **More cycling**: the present straight-line model estimates 78 minutes to Rapperswil, beyond Balanced's 60-minute per-end limit. Rapperswil is then queried, but a better route can win the displayed categories. In the recorded daytime case, a route through Wil arrives at the same time with less cycling and fewer boardings.
+
+Proposals appear after the first usable response, while a small number of alternatives are checked. Easy station journeys skip address and nearby-stop lookups. A live check returned Zürich–Bern proposals in 15.2 seconds and Zürich–Laax in 12.0 seconds; upstream latency varies. Extended exploration can continue for a minute or more, but it no longer hides existing results. The displayed departure is either the time captured when a Leave now search began or the chosen Swiss date/time; results do not continuously refresh.
 
 ## Run locally
 
@@ -43,7 +47,7 @@ Tests use deterministic synthetic timetables and one small recorded Zürich–La
 - Cycling: straight-line estimate at 15 km/h, rounded up to minutes.
 - Balanced preference: up to 60 minutes cycling at each end; additional stop discovery is a fallback in bounded 20-minute bands.
 - Intermediate cycling: up to 20 minutes; total cycling: up to 90 minutes.
-- Maximum four public-transport boardings and eight hours overall.
+- Maximum four public-transport boardings and 24 hours overall, including overnight waiting.
 - Three minutes before every boarding, including after an intermediate ride.
 - Alternatives arrive within 60 minutes of the fastest result by default.
 - Every transit category requires at least one public-transport ride. The cycling-only reference is separate. Ordinary transit changes are possible in both models.
@@ -61,7 +65,7 @@ The authoritative repository documentation is [the mathematical model](https://g
 - The community [Swiss Transport API](https://transport.opendata.ch/docs.html) for stops, scheduled connections and departure boards. Both models admit buses, trams and other returned public transport.
 - Existing Swiss rail-hub seed list and OpenStreetMap map tiles.
 
-This is a sampled experiment, not a complete national routing engine. Up to four candidate stops per endpoint, three initial endpoint-pair queries with four connections each, and limited Extended discovery can miss good routes. If the initial connections are valid but infeasible, bounded outward stop discovery permits up to three further pair queries. Requests have 20-second timeouts, a 90-second budget per acquisition phase and an 18-request overall cap. API failures and request/label caps produce an incomplete-search notice. A result of no journey found is not proof that no journey exists.
+This is a sampled experiment, not a complete national routing engine. Up to four candidate stops per endpoint, three initial endpoint-pair queries with four connections each, and limited Extended discovery can miss good routes. The shortest cycling pair is queried first; remaining slots prioritize rail access before neighboring bus alternatives. If the initial connections are valid but infeasible, bounded outward stop discovery permits up to three further pair queries. Requests have 20-second timeouts, a 90-second budget per acquisition phase and an 18-request overall cap. API failures and request/label caps produce an incomplete-search notice. A result of no journey found is not proof that no journey exists.
 
 Cycling distances do not follow roads, and map lines are not navigation instructions. Station-level buffers do not validate platform access. The experiment assumes a bicycle is available after transit; carriage permissions, capacity and reservations are deliberately deferred. No operator permission or route-safety claim is made.
 

@@ -8,6 +8,7 @@ import { exploredStops } from "./mapData";
 import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES } from "./places";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
+import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit" });
 const day = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", day: "numeric", month: "short" });
@@ -41,6 +42,7 @@ function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
       <span>{m.boardings} boarding{m.boardings === 1 ? "" : "s"} · {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
     <span className="arrival-summary">Arrive at your destination at <b>{clock.format(finalArrival)}</b>
       {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}</span>
+    {day.format(finalArrival) !== day.format(j.startTime) && <span className="comparison-caution">Next-day arrival. Total time includes waiting.</span>}
     <span className="route-services">{j.services.join(" → ")}</span>
     <span className="cycling-summary"><b>{formatMinutes(m.active)} cycling or walking</b>
       {" "}· cycling ≈ {formatMinutes(m.bike)} · walking {formatMinutes(m.walk)}</span>
@@ -63,6 +65,8 @@ export default function App() {
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
+  const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
+  const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date(Date.now() + 60 * 60_000)));
   const options = useMemo(() => preferenceOptions(cycling, endpoint), [cycling, endpoint]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -91,9 +95,13 @@ export default function App() {
     const id = ++runId.current, abort = new AbortController(); controller.current = abort;
     setLoading(true);
     try {
+      const start = departureMode === "now" ? new Date() : parseSwissDateTime(departureInput);
+      if (departureMode === "scheduled" && start.getTime() < Date.now() - 60_000) {
+        throw new Error("Choose a future departure time, or select Leave now.");
+      }
       const next = await plan(fromInput.place ?? fromInput.text.trim(), toInput.place ?? toInput.text.trim(), mode, options, abort.signal,
         message => { if (id === runId.current) setProgress(message); },
-        result => { if (id === runId.current) setSession(result); });
+        result => { if (id === runId.current) setSession(result); }, { start });
       if (id === runId.current) { setSession(next); setProgress(""); }
     } catch (e) {
       if (id === runId.current && !abort.signal.aborted) setError(e instanceof Error ? e.message : "Search failed. Please try again.");
@@ -133,6 +141,17 @@ export default function App() {
             onClick={() => { invalidate(); setFromInput(toInput); setToInput(fromInput); }}>⇅</button>
           <PlaceInput label="To" value={toInput} disabled={loading} onChange={value => { invalidate(); setToInput(value); }} />
         </div>
+        <div className="departure-controls">
+          <label><span>Departure · Swiss time</span><select disabled={loading} value={departureMode}
+            onChange={e => { invalidate(); setDepartureMode(e.target.value as "now" | "scheduled"); }}>
+            <option value="now">Leave now</option><option value="scheduled">Choose date and time</option>
+          </select></label>
+          {departureMode === "scheduled" && <label><span>Date and time in Switzerland</span>
+            <input type="datetime-local" required disabled={loading} value={departureInput}
+              min={swissDateTimeInput(new Date())}
+              onChange={e => { invalidate(); setDepartureInput(e.target.value); }} />
+          </label>}
+        </div>
         <fieldset className="model-picker" disabled={loading}>
           <legend>Journey options</legend>
           <div className="model-buttons">
@@ -155,12 +174,13 @@ export default function App() {
             </select></label>
           </div>
           <p>Up to {options.maxAccessMinutes} minutes cycling at each end{mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.
-            We handle the other settings for you.</p>
+            {" "}Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours overall, including waiting.</p>
         </details>
         <button className="search-button" type="submit" disabled={loading}>{loading ? "Finding journeys…" : "Find journeys"}</button>
       </form>
       <div className="assumptions"><span><b>15 km/h</b> cycling estimate</span><span><b>3 min</b> before each boarding</span>
-        <span><b>{session ? `${day.format(session.start)}, ${clock.format(session.start)}` : "Leave now"}</b> · Swiss time</span></div>
+        <span><b>{session ? `${day.format(session.start)}, ${clock.format(session.start)}` : departureMode === "now" ? "Leave now" : "Chosen departure"}</b> · Swiss time</span>
+        <span>Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight waiting</span></div>
       {loading && <div className="loading-block" role="status"><div className="progress-track"><i /></div>
         <p>{progress}</p><small>{proposals.length ? "You can open a travel plan while we check more options." : "The timetable service can take around 20 seconds to respond."}</small>
         <button type="button" className="cancel-button" onClick={cancel}>{proposals.length ? "Stop looking · keep these options" : "Stop search"}</button></div>}
@@ -172,7 +192,7 @@ export default function App() {
         {warnings.length > 0 && <details className="search-notice"><summary>Some alternatives could not be checked</summary>{warnings.map(w => <p key={w}>{w}</p>)}</details>}
         {!proposals.length && !loading && <p className="empty-results">{warnings.length
           ? "The timetable service did not return enough usable data. Please try this journey again."
-          : "No transit connection was found within your cycling preference. Try More cycling, Extended, or a nearby stop."}</p>}
+          : `No transit journey was found within your cycling limits and ${session.options.horizonMinutes / 60}-hour arrival window. Try a different departure time or More cycling. This limited search can miss connections.`}</p>}
         {!proposals.length && loading && <p className="comparison-note">Cycling estimate ready. Transit options will appear as they are found.</p>}
         {proposals.length > 0 && <p className="comparison-note">Fastest transit option: {proposals[0].journey.totalMinutes === cyclingReference.minutes
           ? "the same estimated time as cycling only."

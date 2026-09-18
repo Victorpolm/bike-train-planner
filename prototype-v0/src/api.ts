@@ -102,6 +102,32 @@ export function selectStations(stops: Stop[], point: Place, maxMinutes: number, 
   return [...chosen.values()].sort((a, b) => a.bikeMinutes - b.bikeMinutes || a.id.localeCompare(b.id));
 }
 
+// Reserve queries for rail access: several adjacent bus stops must not consume
+// every query before a farther, feasible railway station is tried.
+export function selectStationPairs(origins: Station[], destinations: Station[], maxBikeMinutes: number,
+  queried: ReadonlySet<string> = new Set(), limit = SEARCH_LIMITS.baselinePairs): (readonly [Station, Station])[] {
+  const pairs = origins.flatMap(a => destinations
+    .filter(b => a.id !== b.id && a.bikeMinutes + b.bikeMinutes <= maxBikeMinutes).map(b => [a, b] as const))
+    .sort(([a, b], [c, d]) => a.bikeMinutes + b.bikeMinutes - c.bikeMinutes - d.bikeMinutes
+      || a.id.localeCompare(c.id) || b.id.localeCompare(d.id))
+    .filter(([a, b]) => !queried.has(`${a.id}:${b.id}`));
+  const chosen = new Map<string, readonly [Station, Station]>();
+  const add = (pair?: readonly [Station, Station]) => {
+    if (pair && chosen.size < limit) chosen.set(`${pair[0].id}:${pair[1].id}`, pair);
+  };
+  add(pairs[0]);
+  for (const origin of origins.filter(s => s.kind === "train")) {
+    add(pairs.find(([a, b]) => a.id === origin.id && b.kind === "train")
+      ?? pairs.find(([a]) => a.id === origin.id));
+  }
+  for (const destination of destinations.filter(s => s.kind === "train")) {
+    add(pairs.find(([a, b]) => a.kind === "train" && b.id === destination.id)
+      ?? pairs.find(([, b]) => b.id === destination.id));
+  }
+  pairs.forEach(add);
+  return [...chosen.values()];
+}
+
 async function nearby(point: Point, client: TimetableClient): Promise<Stop[]> {
   const data = await client.get<{ stations?: TransportLocation[] }>("locations", new URLSearchParams({ x: String(point.lat), y: String(point.lon) }));
   return (data?.stations ?? []).map((value): Stop | null => {
@@ -188,10 +214,7 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   const queried = new Set<string>();
   const queryPairs = async () => {
     for (const s of [...session.originStations, ...session.destinationStations]) network.stops.set(s.id, s);
-    const pairs = session.originStations.flatMap(a => session.destinationStations
-      .filter(b => a.id !== b.id && a.bikeMinutes + b.bikeMinutes <= options.maxBikeMinutes).map(b => [a, b] as const))
-      .sort(([a, b], [c, d]) => a.bikeMinutes + b.bikeMinutes - c.bikeMinutes - d.bikeMinutes)
-      .filter(([a, b]) => !queried.has(`${a.id}:${b.id}`)).slice(0, SEARCH_LIMITS.baselinePairs);
+    const pairs = selectStationPairs(session.originStations, session.destinationStations, options.maxBikeMinutes, queried);
     for (const [a, b] of pairs) {
       progress(session.baseline.journeys.length ? "Your first options are ready. Checking a few alternatives…" : `Finding connections from ${a.name} to ${b.name}…`);
       queried.add(`${a.id}:${b.id}`);

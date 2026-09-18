@@ -15,7 +15,7 @@ export type Options = {
 };
 export const DEFAULT_OPTIONS: Options = {
   maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60,
-  maxIntermediateMinutes: 20, maxBoardings: 4, horizonMinutes: 480,
+  maxIntermediateMinutes: 20, maxBoardings: 4, horizonMinutes: 1440,
   boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none",
 };
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };

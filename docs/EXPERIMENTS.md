@@ -283,3 +283,43 @@ A live `suggestPlaces` request for partial text `Stauffacherstrasse 6 Zürich` r
 **Visual corrections:** Initial inspection found overlapping Chur train/bus pins and a cropped route after resizing. Pins now use screen-space separation with geographic leader lines, recomputed on zoom/resize. Resizing refits the current view with padding for controls and the legend. Subsequent browser assertions verify no marker overlap, no mobile horizontal overflow, all selected pins inside the map, and no overlap with map controls or legend; screenshots were visually inspected after the fixes.
 
 **Remaining uncertainty:** Cycling geometry, hills and barriers are still absent; carriage/reservation/capacity data remains deferred. No OTP deployment or nationwide completeness claim is made. The next field check is the same Zürich–Laax journey in the updated app, inspecting the Chur walking connection and whether the displayed trade-offs are useful.
+
+
+## 2026-09-18 — Libingen–EPFL: late departures and missed rail queries
+
+**User report:** No result for **Populated Place Libingen (SG) - Mosnang** → **Schul Hochschulareal EPFL (VD) - Ecublens (VD)**, although a journey via Rapperswil and Renens should be considered. The user's exact search instant was not provided; the reproductions below use explicitly fixed departure times.
+
+**Endpoints:** GeoAdmin matches the selected places to Libingen `(47.328453063964844, 9.023324966430664)` and EPFL Ecublens `(46.521400451660156, 6.566524505615234)`. Selection preserves these coordinates; the EPFL entry in Neuchâtel is a different place and was not used.
+
+### Reproduction and diagnosis
+
+- At **2026-09-21 08:00 Europe/Zurich**, the previous implementation already returned a journey: Libingen Dorf → Bütschwil → Wil → Zürich → Renens, followed by eight estimated cycling minutes to EPFL. Arrival is 12:26, total 266 minutes, nine cycling minutes, one walking minute and four boardings. A second category uses Wil–Renens with one boarding. First proposals took 21.658 seconds; acquisition completed in 43.454 seconds with four requests and no failures.
+- At **2026-09-18 23:20 Europe/Zurich**, the old search returned **no journeys**. The three connection requests all started at adjacent Libingen bus stops and ended at Renens. Their first departure was next morning around 05:54, arriving at Renens 10:18 and EPFL about 10:26. The eight-hour arrival cutoff was 07:20, so the solver correctly rejected these edges under that implicit default. It never queried Wil directly, where earlier overnight services were available. Further location probing consumed the 90-second phase and prevented fallback connection queries.
+- Rapperswil is 19.38 km from the selected Libingen point in the straight-line model: **78 estimated cycling minutes**. Balanced permits at most 60 minutes at either end; More permits 90 per end and 150 total. Under More, Rapperswil was selected as a candidate but still omitted by the old three-pair ordering. Nearby bus pairs consumed the batch.
+
+**Repair:** A 24-hour default arrival window, including waiting; an explicit Swiss-time departure control; next-day labels; and station-pair selection that tries the nearest pair first, then prioritizes feasible rail access. Cycling and boarding limits remain unchanged. The default does not suppress waiting from elapsed time or silently alter a selected departure. Request count, HTTP deadlines, phase limit and progressive publication remain bounded.
+
+### Live verification after the repair
+
+Direct calls through the application's actual `plan` adapter, using the same selected coordinates and live Transport API responses:
+
+| Departure in Switzerland | Preference | First proposals | Complete | Requests / failures | Result |
+|---|---|---:|---:|---:|---|
+| 18 Sep 2026, 23:20 | Balanced | 23.506 s | 49.127 s | 4 / 0 | Three category winners; fastest 426 minutes, arrival 06:26 next day. |
+| 21 Sep 2026, 08:00 | More | 14.707 s | 31.384 s | 4 / 0 | Two category cards; Rapperswil–Renens explicitly queried and four connections returned. |
+
+The late-evening fastest option cycles to Wil, uses night services through Winterthur/Bern and a bus/walking connection to Biel, then IC 5 to Renens and cycling to EPFL. It has four boardings, 68 estimated cycling minutes and 11 walking minutes. Fewest boardings arrives in 440 minutes with three boardings; least cycling or walking in 460 minutes with 68 active minutes. No acquisition or label-limit warnings occurred. These timings are small live observations, not a reliability guarantee or a claim of practical bicycle-carriage feasibility.
+
+For the More cycling daytime search, the Rapperswil query is made at **09:21**, respecting 78 minutes access plus the three-minute boarding buffer from the chosen 08:00 departure. The recorded service via S 15 and IC 1 reaches Renens at 12:52 and EPFL at 13:00: 300 minutes elapsed, 86 cycling minutes and two boardings. It is feasible in that response's graph. In the combined graph, a Wil–Renens option has the same arrival, 68 cycling minutes and one boarding, so it dominates the Rapperswil option; this explains why querying a station does not guarantee a category card for it.
+
+### Regression and build checks
+
+Selected, unmodified schedule fields from three real responses and the nearby-stop result are stored in `prototype-v0/src/fixtures/libingen-epfl-2026-09-18.json`; each sample records its source request URL. The fixture includes the initial daytime route, the next-morning route and Rapperswil–Renens. No synthetic timetable is presented as a live observation.
+
+**58 automated tests pass.** New checks cover the recorded 266-minute daytime and 666-minute overnight village routes, show that the old eight-hour window excludes the latter, preserve the Baseline routes in Extended, publish overnight results before fallback probing, and require an actual Rapperswil query under More when neighboring requests return no journeys. The Rapperswil acquisition regression uses the recorded two-boarding connection. Swiss date parsing is checked across summer/winter offsets, midnight, invalid dates, the spring skipped hour and autumn repeated hour.
+
+TypeScript and the production build pass; no dependency or lockfile changed. The managed browser-preview service was unavailable, so the new departure input has **not** been visually or interactively verified in this session. This is distinct from the successful live adapter checks and the previous map browser checks. No replacement preview service was started.
+
+**Remaining limits:** Cycling still follows straight-line estimates; carriage/reservations are deferred. Only four candidate stops per side and three initial station pairs are sampled, with bounded fallback/Extended exploration. Feasible routes can be missed, and dominated journeys need not be shown as category winners. The exact cause of an unrecorded user search is not asserted beyond the reproduced case.
+
+**Next field check:** Refresh the private website, select these two suggestions, choose the desired Swiss departure time, and use More cycling when expecting Rapperswil to be considered. Compare the returned Wil and Rapperswil trade-offs against a practical routed cycling journey.

@@ -142,6 +142,16 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Publication:** The Site has a separate source repository. GitHub pushes do not automatically deploy; publish the tested application revision explicitly and verify deployment success. Do not create a second website or enable public access.
 
+## 2026-09-18 — Keep overnight connections and actually query feasible rail access
+
+**User report:** No result for the selected Libingen (Mosnang) and EPFL (Ecublens VD) places, despite an expected rail journey through Rapperswil and Renens.
+
+**Evidence:** The exact endpoints return daytime journeys. Repeating the old search at 23:20 returned next-morning connections but zero proposals: the implicit eight-hour arrival horizon discarded that sample. Its three initial queries also all started at neighboring Libingen bus stops, omitting feasible rail access through Wil. The subsequent location expansion exhausted the 90-second acquisition budget. Rapperswil is estimated at 78 cycling minutes, outside Balanced's 60-minute per-end constraint; even under More cycling, the previous pair order failed to query it.
+
+**Decision:** Default to a 24-hour arrival horizon, count all waiting in elapsed travel time, label next-day arrivals, and offer an explicit departure date/time in Europe/Zurich. Keep cycling and boarding constraints unchanged. Query the nearest eligible pair first, then reserve remaining query slots for rail access before neighboring bus alternatives. Preserve the finite three-query batch, progressive results, request/label caps and Baseline/Extended comparison.
+
+**Result:** The repeated late-evening live search returns three category winners. A separate More cycling daytime search explicitly queries Rapperswil–Renens and returns four connections. That route is feasible when examined independently; Wil dominates it in the combined graph for the recorded departure, so Rapperswil need not win a category. This is still a sampled search, not proof of complete timetable coverage. See [EXPERIMENTS.md](EXPERIMENTS.md).
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

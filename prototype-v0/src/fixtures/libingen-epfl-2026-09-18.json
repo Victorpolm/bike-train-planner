@@ -1,0 +1,1634 @@
+{
+  "recordedOn": "2026-09-18",
+  "origin": {
+    "label": "Populated Place Libingen (SG) - Mosnang",
+    "lat": 47.328453063964844,
+    "lon": 9.023324966430664,
+    "kind": "address"
+  },
+  "destination": {
+    "label": "Schul Hochschulareal EPFL (VD) - Ecublens (VD)",
+    "lat": 46.521400451660156,
+    "lon": 6.566524505615234,
+    "kind": "address"
+  },
+  "originLocations": {
+    "stations": [
+      {
+        "id": null,
+        "name": "Schäfliwiese 9, Libingen",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": null,
+          "y": null
+        },
+        "distance": 11.157865456276902,
+        "icon": null
+      },
+      {
+        "id": "8506786",
+        "name": "Libingen, Dorf",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.329498,
+          "y": 9.022909
+        },
+        "distance": 121,
+        "icon": "bus"
+      },
+      {
+        "id": "8573996",
+        "name": "Libingen, Hinterhofen",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.333744,
+          "y": 9.028765
+        },
+        "distance": 718,
+        "icon": "bus"
+      },
+      {
+        "id": "8573995",
+        "name": "Libingen, Vorderhofen",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.337987,
+          "y": 9.03621
+        },
+        "distance": 1440,
+        "icon": "bus"
+      },
+      {
+        "id": "8573994",
+        "name": "Libingen, Lindenboden",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.342345,
+          "y": 9.043712
+        },
+        "distance": 2182,
+        "icon": "bus"
+      },
+      {
+        "id": "8574006",
+        "name": "Krinau, Rössli",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.317313,
+          "y": 9.049812
+        },
+        "distance": 2354,
+        "icon": "bus"
+      },
+      {
+        "id": "8573998",
+        "name": "Mosnang, Dietenwil",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.347668,
+          "y": 9.039994
+        },
+        "distance": 2481,
+        "icon": "bus"
+      },
+      {
+        "id": "8574005",
+        "name": "Krinau, Mühle",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.317333,
+          "y": 9.053557
+        },
+        "distance": 2598,
+        "icon": "bus"
+      },
+      {
+        "id": "8506616",
+        "name": "Krinau, Fabrik Feldmoos",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.318365,
+          "y": 9.059515
+        },
+        "distance": 2956,
+        "icon": "bus"
+      },
+      {
+        "id": "8573997",
+        "name": "Mosnang, Aufeld",
+        "score": null,
+        "coordinate": {
+          "type": "WGS84",
+          "x": 47.35554,
+          "y": 9.036762
+        },
+        "distance": 3179,
+        "icon": "bus"
+      }
+    ]
+  },
+  "day": {
+    "url": "https://transport.opendata.ch/v1/connections?from=8506786&to=8501118&date=2026-09-21&time=08%3A04&limit=4",
+    "connections": [
+      {
+        "sections": [
+          {
+            "departure": {
+              "arrival": null,
+              "departure": "2026-09-21T08:24:00+0200",
+              "platform": "",
+              "station": {
+                "id": "8506786",
+                "name": "Libingen, Dorf",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.329498,
+                  "y": 9.022909
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T08:39:00+0200",
+              "departure": null,
+              "platform": "",
+              "station": {
+                "id": "8573979",
+                "name": "Bütschwil, Bahnhof",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.359503,
+                  "y": 9.074945
+                }
+              }
+            },
+            "journey": {
+              "name": "876509",
+              "category": "B",
+              "number": "765",
+              "to": "Bütschwil, Bahnhof",
+              "passList": [
+                {
+                  "arrival": null,
+                  "departure": "2026-09-21T08:24:00+0200",
+                  "platform": "",
+                  "station": {
+                    "id": "8506786",
+                    "name": "Libingen, Dorf",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.329498,
+                      "y": 9.022909
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:25:00+0200",
+                  "departure": "2026-09-21T08:25:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573996",
+                    "name": "Libingen, Hinterhofen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.333744,
+                      "y": 9.028765
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:26:00+0200",
+                  "departure": "2026-09-21T08:26:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573995",
+                    "name": "Libingen, Vorderhofen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.337987,
+                      "y": 9.03621
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:27:00+0200",
+                  "departure": "2026-09-21T08:27:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573994",
+                    "name": "Libingen, Lindenboden",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.342345,
+                      "y": 9.043712
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:28:00+0200",
+                  "departure": "2026-09-21T08:28:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573998",
+                    "name": "Mosnang, Dietenwil",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.347668,
+                      "y": 9.039994
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:30:00+0200",
+                  "departure": "2026-09-21T08:30:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573997",
+                    "name": "Mosnang, Aufeld",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.35554,
+                      "y": 9.036762
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:33:00+0200",
+                  "departure": "2026-09-21T08:33:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573984",
+                    "name": "Mosnang, Dorf",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.362459,
+                      "y": 9.040558
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:33:00+0200",
+                  "departure": "2026-09-21T08:33:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573983",
+                    "name": "Mosnang, Grütli",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.362034,
+                      "y": 9.044583
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:34:00+0200",
+                  "departure": "2026-09-21T08:34:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573982",
+                    "name": "Mosnang, Weiher",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.363435,
+                      "y": 9.052503
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:35:00+0200",
+                  "departure": "2026-09-21T08:35:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573981",
+                    "name": "Mosnang, Schreinersberg",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.362431,
+                      "y": 9.059967
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:36:00+0200",
+                  "departure": "2026-09-21T08:36:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573980",
+                    "name": "Bütschwil, Pflegeheim",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.361171,
+                      "y": 9.070216
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:39:00+0200",
+                  "departure": null,
+                  "platform": "",
+                  "station": {
+                    "id": "8573979",
+                    "name": "Bütschwil, Bahnhof",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.359503,
+                      "y": 9.074945
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-21T08:39:00+0200",
+              "departure": "2026-09-21T08:39:00+0200",
+              "platform": null,
+              "station": {
+                "id": "8573979",
+                "name": "Bütschwil, Bahnhof",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.359503,
+                  "y": 9.074945
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T08:40:00+0200",
+              "departure": null,
+              "platform": null,
+              "station": {
+                "id": "8506203",
+                "name": "Bütschwil",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.359581,
+                  "y": 9.075146
+                }
+              }
+            },
+            "walk": {
+              "duration": 60
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-21T08:40:00+0200",
+              "departure": "2026-09-21T08:44:00+0200",
+              "platform": "2",
+              "station": {
+                "id": "8506203",
+                "name": "Bütschwil",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.359581,
+                  "y": 9.075146
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T08:58:00+0200",
+              "departure": null,
+              "platform": "3",
+              "station": {
+                "id": "8506206",
+                "name": "Wil SG",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.462409,
+                  "y": 9.040979
+                }
+              }
+            },
+            "journey": {
+              "name": "011933",
+              "category": "S",
+              "number": "9",
+              "to": "Wil SG",
+              "passList": [
+                {
+                  "arrival": "2026-09-21T08:40:00+0200",
+                  "departure": "2026-09-21T08:44:00+0200",
+                  "platform": "2",
+                  "station": {
+                    "id": "8506203",
+                    "name": "Bütschwil",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.359581,
+                      "y": 9.075146
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:47:00+0200",
+                  "departure": "2026-09-21T08:47:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8506204",
+                    "name": "Lütisburg",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.384819,
+                      "y": 9.071086
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:51:00+0200",
+                  "departure": "2026-09-21T08:51:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8506205",
+                    "name": "Bazenheid",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.410118,
+                      "y": 9.069052
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T08:58:00+0200",
+                  "departure": null,
+                  "platform": "3",
+                  "station": {
+                    "id": "8506206",
+                    "name": "Wil SG",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.462409,
+                      "y": 9.040979
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-21T08:58:00+0200",
+              "departure": "2026-09-21T09:04:00+0200",
+              "platform": "2",
+              "station": {
+                "id": "8506206",
+                "name": "Wil SG",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.462409,
+                  "y": 9.040979
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T09:52:00+0200",
+              "departure": null,
+              "platform": "6",
+              "station": {
+                "id": "8503000",
+                "name": "Zürich HB",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.377847,
+                  "y": 8.540502
+                }
+              }
+            },
+            "journey": {
+              "name": "003260",
+              "category": "IR",
+              "number": "13",
+              "to": "St. Gallen",
+              "passList": [
+                {
+                  "arrival": "2026-09-21T08:58:00+0200",
+                  "departure": "2026-09-21T09:04:00+0200",
+                  "platform": "2",
+                  "station": {
+                    "id": "8506206",
+                    "name": "Wil SG",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.462409,
+                      "y": 9.040979
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:22:00+0200",
+                  "departure": "2026-09-21T09:24:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8506000",
+                    "name": "Winterthur",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.500322,
+                      "y": 8.723808
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:37:00+0200",
+                  "departure": "2026-09-21T09:39:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503016",
+                    "name": "Zürich Flughafen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.450379,
+                      "y": 8.562398
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:44:00+0200",
+                  "departure": "2026-09-21T09:45:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503006",
+                    "name": "Zürich Oerlikon",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.411526,
+                      "y": 8.54414
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:52:00+0200",
+                  "departure": null,
+                  "platform": "6",
+                  "station": {
+                    "id": "8503000",
+                    "name": "Zürich HB",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.377847,
+                      "y": 8.540502
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-21T09:52:00+0200",
+              "departure": "2026-09-21T10:04:00+0200",
+              "platform": "32",
+              "station": {
+                "id": "8503000",
+                "name": "Zürich HB",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.377847,
+                  "y": 8.540502
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T12:18:00+0200",
+              "departure": null,
+              "platform": "4",
+              "station": {
+                "id": "8501118",
+                "name": "Renens VD",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 46.537046,
+                  "y": 6.57892
+                }
+              }
+            },
+            "journey": {
+              "name": "000516",
+              "category": "IC",
+              "number": "5",
+              "to": "Lausanne",
+              "passList": [
+                {
+                  "arrival": "2026-09-21T09:52:00+0200",
+                  "departure": "2026-09-21T10:04:00+0200",
+                  "platform": "32",
+                  "station": {
+                    "id": "8503000",
+                    "name": "Zürich HB",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.377847,
+                      "y": 8.540502
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T10:28:00+0200",
+                  "departure": "2026-09-21T10:30:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8502113",
+                    "name": "Aarau",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.391352,
+                      "y": 8.05127
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T10:39:00+0200",
+                  "departure": "2026-09-21T10:41:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8500218",
+                    "name": "Olten",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.351927,
+                      "y": 7.907693
+                    }
+                  }
+                },
+                {
+                  "arrival": null,
+                  "departure": null,
+                  "platform": null,
+                  "station": {
+                    "id": "0000132",
+                    "name": "Bahn-2000-Strecke",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.196371,
+                      "y": 7.689354
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T10:58:00+0200",
+                  "departure": "2026-09-21T10:59:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8500207",
+                    "name": "Solothurn",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.204189,
+                      "y": 7.542692
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T11:14:00+0200",
+                  "departure": "2026-09-21T11:18:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504300",
+                    "name": "Biel/Bienne",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.132893,
+                      "y": 7.242918
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T11:37:00+0200",
+                  "departure": "2026-09-21T11:39:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504221",
+                    "name": "Neuchâtel",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.996727,
+                      "y": 6.9357
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T11:58:00+0200",
+                  "departure": "2026-09-21T11:59:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504200",
+                    "name": "Yverdon-les-Bains",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.78155,
+                      "y": 6.640943
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T12:18:00+0200",
+                  "departure": null,
+                  "platform": "4",
+                  "station": {
+                    "id": "8501118",
+                    "name": "Renens VD",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.537046,
+                      "y": 6.57892
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "night": {
+    "url": "https://transport.opendata.ch/v1/connections?from=8506786&to=8501118&date=2026-09-18&time=23%3A24&limit=4",
+    "connections": [
+      {
+        "sections": [
+          {
+            "departure": {
+              "arrival": null,
+              "departure": "2026-09-19T05:54:00+0200",
+              "platform": "",
+              "station": {
+                "id": "8506786",
+                "name": "Libingen, Dorf",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.329498,
+                  "y": 9.022909
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-19T06:09:00+0200",
+              "departure": null,
+              "platform": "",
+              "station": {
+                "id": "8573979",
+                "name": "Bütschwil, Bahnhof",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.359503,
+                  "y": 9.074945
+                }
+              }
+            },
+            "journey": {
+              "name": "876501",
+              "category": "B",
+              "number": "765",
+              "to": "Bütschwil, Bahnhof",
+              "passList": [
+                {
+                  "arrival": null,
+                  "departure": "2026-09-19T05:54:00+0200",
+                  "platform": "",
+                  "station": {
+                    "id": "8506786",
+                    "name": "Libingen, Dorf",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.329498,
+                      "y": 9.022909
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T05:55:00+0200",
+                  "departure": "2026-09-19T05:55:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573996",
+                    "name": "Libingen, Hinterhofen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.333744,
+                      "y": 9.028765
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T05:56:00+0200",
+                  "departure": "2026-09-19T05:56:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573995",
+                    "name": "Libingen, Vorderhofen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.337987,
+                      "y": 9.03621
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T05:57:00+0200",
+                  "departure": "2026-09-19T05:57:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573994",
+                    "name": "Libingen, Lindenboden",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.342345,
+                      "y": 9.043712
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T05:58:00+0200",
+                  "departure": "2026-09-19T05:58:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573998",
+                    "name": "Mosnang, Dietenwil",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.347668,
+                      "y": 9.039994
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:00:00+0200",
+                  "departure": "2026-09-19T06:00:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573997",
+                    "name": "Mosnang, Aufeld",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.35554,
+                      "y": 9.036762
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:03:00+0200",
+                  "departure": "2026-09-19T06:03:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573984",
+                    "name": "Mosnang, Dorf",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.362459,
+                      "y": 9.040558
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:03:00+0200",
+                  "departure": "2026-09-19T06:03:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573983",
+                    "name": "Mosnang, Grütli",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.362034,
+                      "y": 9.044583
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:04:00+0200",
+                  "departure": "2026-09-19T06:04:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573982",
+                    "name": "Mosnang, Weiher",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.363435,
+                      "y": 9.052503
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:05:00+0200",
+                  "departure": "2026-09-19T06:05:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573981",
+                    "name": "Mosnang, Schreinersberg",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.362431,
+                      "y": 9.059967
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:06:00+0200",
+                  "departure": "2026-09-19T06:06:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8573980",
+                    "name": "Bütschwil, Pflegeheim",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.361171,
+                      "y": 9.070216
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:09:00+0200",
+                  "departure": null,
+                  "platform": "",
+                  "station": {
+                    "id": "8573979",
+                    "name": "Bütschwil, Bahnhof",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.359503,
+                      "y": 9.074945
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-19T06:09:00+0200",
+              "departure": "2026-09-19T06:23:00+0200",
+              "platform": "",
+              "station": {
+                "id": "8573979",
+                "name": "Bütschwil, Bahnhof",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.359503,
+                  "y": 9.074945
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-19T06:47:00+0200",
+              "departure": null,
+              "platform": "F",
+              "station": {
+                "id": "8573602",
+                "name": "Wil SG, Bahnhof",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.462735,
+                  "y": 9.04148
+                }
+              }
+            },
+            "journey": {
+              "name": "272339",
+              "category": "EV",
+              "number": "EV1",
+              "to": "Wil SG, Bahnhof",
+              "passList": [
+                {
+                  "arrival": "2026-09-19T06:09:00+0200",
+                  "departure": "2026-09-19T06:23:00+0200",
+                  "platform": "",
+                  "station": {
+                    "id": "8573979",
+                    "name": "Bütschwil, Bahnhof",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.359503,
+                      "y": 9.074945
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:28:00+0200",
+                  "departure": "2026-09-19T06:28:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8510949",
+                    "name": "Lütisburg Station, Wilerstr.",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.385583,
+                      "y": 9.073083
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:32:00+0200",
+                  "departure": "2026-09-19T06:32:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8510935",
+                    "name": "Bazenheid, Bahnhof/Wilerstrasse",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.410974,
+                      "y": 9.069582
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T06:47:00+0200",
+                  "departure": null,
+                  "platform": "F",
+                  "station": {
+                    "id": "8573602",
+                    "name": "Wil SG, Bahnhof",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.462735,
+                      "y": 9.04148
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-19T06:47:00+0200",
+              "departure": "2026-09-19T06:47:00+0200",
+              "platform": null,
+              "station": {
+                "id": "8573602",
+                "name": "Wil SG, Bahnhof",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.462735,
+                  "y": 9.04148
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-19T06:50:00+0200",
+              "departure": null,
+              "platform": null,
+              "station": {
+                "id": "8506206",
+                "name": "Wil SG",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.462409,
+                  "y": 9.040979
+                }
+              }
+            },
+            "walk": {
+              "duration": 180
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-19T06:50:00+0200",
+              "departure": "2026-09-19T07:04:00+0200",
+              "platform": "2",
+              "station": {
+                "id": "8506206",
+                "name": "Wil SG",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.462409,
+                  "y": 9.040979
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-19T07:22:00+0200",
+              "departure": null,
+              "platform": "3",
+              "station": {
+                "id": "8506000",
+                "name": "Winterthur",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.500322,
+                  "y": 8.723808
+                }
+              }
+            },
+            "journey": {
+              "name": "003256",
+              "category": "IR",
+              "number": "13",
+              "to": "St. Gallen",
+              "passList": [
+                {
+                  "arrival": "2026-09-19T06:50:00+0200",
+                  "departure": "2026-09-19T07:04:00+0200",
+                  "platform": "2",
+                  "station": {
+                    "id": "8506206",
+                    "name": "Wil SG",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.462409,
+                      "y": 9.040979
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T07:22:00+0200",
+                  "departure": null,
+                  "platform": "3",
+                  "station": {
+                    "id": "8506000",
+                    "name": "Winterthur",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.500322,
+                      "y": 8.723808
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-19T07:22:00+0200",
+              "departure": "2026-09-19T07:33:00+0200",
+              "platform": "3",
+              "station": {
+                "id": "8506000",
+                "name": "Winterthur",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.500322,
+                  "y": 8.723808
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-19T10:18:00+0200",
+              "departure": null,
+              "platform": "4",
+              "station": {
+                "id": "8501118",
+                "name": "Renens VD",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 46.537046,
+                  "y": 6.57892
+                }
+              }
+            },
+            "journey": {
+              "name": "000512",
+              "category": "IC",
+              "number": "5",
+              "to": "Lausanne",
+              "passList": [
+                {
+                  "arrival": "2026-09-19T07:22:00+0200",
+                  "departure": "2026-09-19T07:33:00+0200",
+                  "platform": "3",
+                  "station": {
+                    "id": "8506000",
+                    "name": "Winterthur",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.500322,
+                      "y": 8.723808
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T07:47:00+0200",
+                  "departure": "2026-09-19T07:49:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503016",
+                    "name": "Zürich Flughafen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.450379,
+                      "y": 8.562398
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T07:58:00+0200",
+                  "departure": "2026-09-19T08:04:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503000",
+                    "name": "Zürich HB",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.377847,
+                      "y": 8.540502
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T08:28:00+0200",
+                  "departure": "2026-09-19T08:30:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8502113",
+                    "name": "Aarau",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.391352,
+                      "y": 8.05127
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T08:39:00+0200",
+                  "departure": "2026-09-19T08:41:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8500218",
+                    "name": "Olten",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.351927,
+                      "y": 7.907693
+                    }
+                  }
+                },
+                {
+                  "arrival": null,
+                  "departure": null,
+                  "platform": null,
+                  "station": {
+                    "id": "0000132",
+                    "name": "Bahn-2000-Strecke",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.196371,
+                      "y": 7.689354
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T08:58:00+0200",
+                  "departure": "2026-09-19T08:59:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8500207",
+                    "name": "Solothurn",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.204189,
+                      "y": 7.542692
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T09:14:00+0200",
+                  "departure": "2026-09-19T09:18:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504300",
+                    "name": "Biel/Bienne",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.132893,
+                      "y": 7.242918
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T09:37:00+0200",
+                  "departure": "2026-09-19T09:39:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504221",
+                    "name": "Neuchâtel",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.996727,
+                      "y": 6.9357
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T09:58:00+0200",
+                  "departure": "2026-09-19T09:59:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504200",
+                    "name": "Yverdon-les-Bains",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.78155,
+                      "y": 6.640943
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-19T10:18:00+0200",
+                  "departure": null,
+                  "platform": "4",
+                  "station": {
+                    "id": "8501118",
+                    "name": "Renens VD",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.537046,
+                      "y": 6.57892
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "rapperswil": {
+    "url": "https://transport.opendata.ch/v1/connections?from=8503110&to=8501118&date=2026-09-21&time=09%3A21&limit=4",
+    "connections": [
+      {
+        "sections": [
+          {
+            "departure": {
+              "arrival": null,
+              "departure": "2026-09-21T09:44:00+0200",
+              "platform": "4",
+              "station": {
+                "id": "8503110",
+                "name": "Rapperswil SG",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.224876,
+                  "y": 8.816742
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T10:20:00+0200",
+              "departure": null,
+              "platform": "41/42",
+              "station": {
+                "id": "8503000",
+                "name": "Zürich HB",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.377847,
+                  "y": 8.540502
+                }
+              }
+            },
+            "journey": {
+              "name": "019536",
+              "category": "S",
+              "number": "15",
+              "to": "Niederweningen",
+              "passList": [
+                {
+                  "arrival": null,
+                  "departure": "2026-09-21T09:44:00+0200",
+                  "platform": "4",
+                  "station": {
+                    "id": "8503110",
+                    "name": "Rapperswil SG",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.224876,
+                      "y": 8.816742
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:46:00+0200",
+                  "departure": "2026-09-21T09:46:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503120",
+                    "name": "Jona",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.230967,
+                      "y": 8.83461
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:51:00+0200",
+                  "departure": "2026-09-21T09:51:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503121",
+                    "name": "Rüti ZH",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.260479,
+                      "y": 8.854066
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:54:00+0200",
+                  "departure": "2026-09-21T09:54:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503122",
+                    "name": "Bubikon",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.270837,
+                      "y": 8.822713
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T09:59:00+0200",
+                  "departure": "2026-09-21T10:00:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503123",
+                    "name": "Wetzikon ZH",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.318021,
+                      "y": 8.792281
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T10:05:00+0200",
+                  "departure": "2026-09-21T10:06:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503125",
+                    "name": "Uster",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.350364,
+                      "y": 8.7187
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T10:17:00+0200",
+                  "departure": "2026-09-21T10:17:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8503003",
+                    "name": "Zürich Stadelhofen",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.366598,
+                      "y": 8.548478
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T10:20:00+0200",
+                  "departure": null,
+                  "platform": "41/42",
+                  "station": {
+                    "id": "8503000",
+                    "name": "Zürich HB",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.377847,
+                      "y": 8.540502
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "departure": {
+              "arrival": "2026-09-21T10:20:00+0200",
+              "departure": "2026-09-21T10:32:00+0200",
+              "platform": "32",
+              "station": {
+                "id": "8503000",
+                "name": "Zürich HB",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 47.377847,
+                  "y": 8.540502
+                }
+              }
+            },
+            "arrival": {
+              "arrival": "2026-09-21T12:52:00+0200",
+              "departure": null,
+              "platform": "5",
+              "station": {
+                "id": "8501118",
+                "name": "Renens VD",
+                "coordinate": {
+                  "type": "WGS84",
+                  "x": 46.537046,
+                  "y": 6.57892
+                }
+              }
+            },
+            "journey": {
+              "name": "000714",
+              "category": "IC",
+              "number": "1",
+              "to": "Genève-Aéroport",
+              "passList": [
+                {
+                  "arrival": "2026-09-21T10:20:00+0200",
+                  "departure": "2026-09-21T10:32:00+0200",
+                  "platform": "32",
+                  "station": {
+                    "id": "8503000",
+                    "name": "Zürich HB",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.377847,
+                      "y": 8.540502
+                    }
+                  }
+                },
+                {
+                  "arrival": null,
+                  "departure": null,
+                  "platform": null,
+                  "station": {
+                    "id": "0000132",
+                    "name": "Bahn-2000-Strecke",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 47.196371,
+                      "y": 7.689354
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T11:28:00+0200",
+                  "departure": "2026-09-21T11:34:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8507000",
+                    "name": "Bern",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.948823,
+                      "y": 7.439123
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T11:56:00+0200",
+                  "departure": "2026-09-21T11:57:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8504100",
+                    "name": "Fribourg/Freiburg",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.803142,
+                      "y": 7.151039
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T12:43:00+0200",
+                  "departure": "2026-09-21T12:46:00+0200",
+                  "platform": null,
+                  "station": {
+                    "id": "8501120",
+                    "name": "Lausanne",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.516795,
+                      "y": 6.629087
+                    }
+                  }
+                },
+                {
+                  "arrival": "2026-09-21T12:52:00+0200",
+                  "departure": null,
+                  "platform": "5",
+                  "station": {
+                    "id": "8501118",
+                    "name": "Renens VD",
+                    "coordinate": {
+                      "type": "WGS84",
+                      "x": 46.537046,
+                      "y": 6.57892
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
