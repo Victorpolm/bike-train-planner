@@ -1,6 +1,6 @@
 # Journey comparison and map
 
-_Updated 2026-09-18. Facts and implemented decisions are distinguished from future product scope._
+_Updated 2026-09-20. Facts and implemented decisions are distinguished from future product scope._
 
 ## Product objective and tree
 
@@ -26,14 +26,14 @@ flowchart TD
     ACTIVE --> END["Optional minimum at arrival"]
 ```
 
-The three inputs under own bicycle are jointly required, not competing journey types. This is a product decomposition, not an algorithm execution graph. The current experiment uses geometric cycling and assumes a bicycle remains available; the tree's full restrictions layer is a target, not a claim of verified carriage feasibility. Both optional endpoint categories are shown in the product tree; the current interface enables one at a time.
+The three inputs under own bicycle are jointly required, not competing journey types. This is a product decomposition, not an algorithm execution graph. The current experiment uses routed cycling and assumes a bicycle remains available; the tree's full restrictions layer is a target, not a claim of verified carriage feasibility. Both optional endpoint categories are shown in the product tree; the current interface enables one at a time.
 
 **Decision:** A cycling-only reference is shown alongside this transit tree, before the fastest transit card. It is not a member of the transit Pareto set. Category winners can coincide and then share one card. They do not exhaust the frontier; showing additional compromise journeys remains an open product question.
 
 ## Implemented comparison behavior
 
-- Compute a cycling-only straight-line estimate at 15 km/h, using the same ready-to-leave instant as transit. Mark it as an estimate; roads, elevation and barriers are absent.
-- Publish the reference once endpoints resolve. It survives slow or failed timetable requests and cancellation. A failed geocode cannot produce a reference because the endpoints are unknown.
+- Compute a road-following cycling-only route through the requested stops using the same departure instant. Its terrain-aware estimated times also govern mixed-journey feasibility; unavailable links have no geometric fallback.
+- Publish the reference when all its road stages are ready, independently of timetable acquisition. A completed reference survives timetable failure and cancellation; pending/unavailable states are explicit.
 - List cycling only first, then fastest transit, fewest boardings and least cycling-or-walking winners; merge duplicate transit winners.
 - Minimize A = cycling + timed walking for the active category. Count endpoint walking before the first boarding / after the last alighting for optional endpoint preferences. Preserve cycling and walking individually.
 - Retain the same cycling budgets and Baseline/Extended semantics. Mark an over-budget cycling reference without treating it as an eligible transit alternative. Walking currently has no separate cap beyond the journey horizon.
@@ -47,15 +47,18 @@ The three inputs under own bicycle are jointly required, not competing journey t
 | Small stop marker | Endpoint candidate or observed timetable stop in this sampled search |
 | Numbered pin | Boarding or alighting on the selected journey; number matches the travel plan |
 | Blue line | Selected transit leg; geometry is schematic |
-| Orange / green dashed line | Estimated cycling within the selected transit journey |
-| Grey dashed line | Timed walking leg |
-| Purple dashed line | Cycling-only straight-line reference; emphasized when selected |
+| Green line | Routed cycling within the selected transit journey |
+| Orange / light-blue cycling segment | Sustained steep climb / descent |
+| Grey dashed line | Timed walking leg or explicitly unverified short path connector |
+| Purple line | Routed cycling-only reference; emphasized when selected |
 
 A numbered pin opens the available service, scheduled time, platform and boarding number. One physical stop ID can hold both an arrival and an onward boarding, or repeat visits. A train station and nearby bus station with different IDs keep separate pins, showing the walking connection between them. Missing coordinates never produce invented pin positions. Text from transport data is inserted as text rather than interpreted as HTML.
 
 The explored-stop toggle leaves selected journey pins visible. Fit all stops reveals candidates outside the current route view. Nearby numbered pins are separated in screen space, with leader lines retaining their exact geographic anchors; the layout updates on zoom. Background results update markers without repeatedly resetting the user's zoom. Container resizing refits the current route or all-stop view with room for controls and the legend. All observed stop names also appear under Stops explored.
 
-**Limit:** The layer does not show every Swiss station or certify exhaustive service exploration, accessibility, bicycle permission, reservations or capacity. It adds no new data requests.
+The selected cycling leg has a linked elevation profile, pointer/keyboard/touch inspection and distance, time, ascent/descent, final-climb, surface, infrastructure and posted-speed-band summaries. Unknown data stays visible. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
+
+**Limit:** The layer does not show every Swiss station or certify exhaustive service exploration, accessibility, bicycle permission, reservations or capacity. Cycling data uses a separate bounded road service; stop pins reuse timetable data.
 
 ## OpenTripPlanner assessment
 

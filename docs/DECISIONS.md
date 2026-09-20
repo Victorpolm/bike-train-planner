@@ -166,6 +166,20 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Reconsider if:** Actual stopovers need dwell durations, pass-through waypoints are desired instead of visits, or the bounded stage acquisition misses useful journeys. Replace geometric cycling before treating the resulting transfers as practically feasible.
 
+## 2026-09-20 — Route cycling before determining train reachability
+
+**Request:** Real cycling distance/time, ascent/descent, a map-linked elevation profile, steep/final climbs, infrastructure, surfaces and posted road limits; routed durations must determine which trains are reachable.
+
+**Decision:** Add a directed BRouter touring adapter to the existing prototype. Use every accepted road duration in station readiness, solver edges, ordered visits, automatic transfers, budgets and final metrics. Keep the same observed timetable graph for Baseline/Extended. An unavailable link is excluded; old geometric helpers remain only for explicitly selected legacy tests. This is not an OTP implementation or an engine superiority claim.
+
+**Profile and data:** Start with a touring bicycle at moderate effort and a 25 km/h model cap. Retain geometry and raw available road tags. Compute the displayed elevation metrics on one sampled/smoothed profile, preserve missingness and expose final-two-kilometre positive climbing. BRouter normalizes speed tags: show explicit bands rather than pretend they are exact posted limits or measured traffic speeds. Infrastructure is descriptive, not a safety grade.
+
+**Exact coordinates:** Preserve selected points, reject snaps over 75 m at either end, and add estimated walking time for smaller dotted gaps. Station identity still implies zero endpoint cycling, with platform access unverified. These connectors are included in the cycling-leg budget and disclosed separately.
+
+**Latency:** Route the first feasible access/egress before querying timetables, publish supported proposals immediately, then check more candidates. Compute the full cycling-only reference on a separate bounded stream. Finite road/timetable budgets can miss journeys; stop/cancellation keeps valid proposals.
+
+**Validation and remaining work:** Recorded real road geometry plus synthetic missed-train, reverse-direction, ordered-stop, transfer, missing-data and cancellation regressions are in `cycling.test.ts`; live results and preview limitations are in [EXPERIMENTS.md](EXPERIMENTS.md). Calibrate times and inspect road/entrance access in the field, obtain exact speed/conditional-access attributes and benchmark OTP. Carriage, amenities and user modes remain separate roadmap work.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

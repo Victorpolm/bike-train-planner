@@ -3,7 +3,9 @@ import { extend, plan, searchWarnings, type SearchSession } from "./api";
 import { categorize, metrics, type ModelMode, type EndpointPreference, type Proposal } from "./model";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
-import { cyclingOnly, formatMinutes, type CyclingComparison, type Point } from "./routing";
+import CyclingDetails, { type CycleFocus, type NamedCycleRoute } from "./CyclingDetails";
+import { formatMinutes, type CyclingComparison, type Point } from "./routing";
+import { journeySteps } from "./itinerary";
 import { exploredStops } from "./mapData";
 import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
@@ -19,14 +21,14 @@ function CyclingCard({ comparison, selected, start, maxBikeMinutes, onSelect }: 
 }) {
   return <button type="button" className={`journey-card cycling-only-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-pressed={selected}>
-    <span className="category-badges"><span>Cycling only · estimate</span></span>
+    <span className="category-badges"><span>Cycling only · routed</span></span>
     <span className="journey-topline"><strong>≈ {formatMinutes(comparison.minutes)}</strong><span>0 boardings</span></span>
     <span className="arrival-summary">Estimated arrival <b>{clock.format(comparison.arrival)}</b>
       {day.format(comparison.arrival) !== day.format(start) && ` · ${day.format(comparison.arrival)}`}</span>
-    <span className="cycling-summary">{comparison.distanceKm.toFixed(1)} km straight-line distance · 15 km/h</span>
-    <span className="comparison-caution">Reference only: roads, hills and barriers are not included.</span>
+    <span className="cycling-summary">{comparison.distanceKm.toFixed(1)} km along roads and paths</span>
+    <span className="comparison-caution">Estimated touring-bike time, including short walking access to the path. Select to explore elevation and surfaces.</span>
     {comparison.minutes > maxBikeMinutes && <span className="comparison-caution">Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.</span>}
-    <span className="journey-plan-toggle">{selected ? "Shown on the map" : "Show cycling estimate on map"}</span>
+    <span className="journey-plan-toggle">{selected ? "Shown on the map" : "Show cycling route on map"}</span>
   </button>;
 }
 
@@ -67,6 +69,7 @@ export default function App() {
   const nextViaId = useRef(0);
   const naming = useRef(new Map<string, AbortController>());
   const [pointNotice, setPointNotice] = useState("");
+  const [cycleFocus, setCycleFocus] = useState<CycleFocus | null>(null);
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
@@ -85,7 +88,12 @@ export default function App() {
   const proposals = useMemo(() => categorize(solution?.journeys ?? [], session?.options ?? options), [solution, session, options]);
   const selected = selectedId === BIKE_ONLY_ID ? null : proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
   const bikeOnlySelected = !!session && selected === null;
-  const cyclingReference = useMemo(() => session ? cyclingOnly(session.origin, session.destination, session.start, session.waypoints) : null, [session]);
+  const cyclingReference = session?.cyclingComparison ?? null;
+  const cyclingRoutes = useMemo<NamedCycleRoute[]>(() => selected && session
+    ? journeySteps(selected, session.origin, session.destination).flatMap(step => step.cyclingRoute && step.cyclingRoute.distanceKm > 0
+      ? [{ label: `${step.from} → ${step.to}`, route: step.cyclingRoute }] : [])
+    : (cyclingReference?.routes ?? []).flatMap((route, index) => route.distanceKm > 0 ? [{ label: `Cycling stage ${index + 1}`, route }] : []), [selected, session, cyclingReference]);
+  const focusedRoute = cyclingRoutes.find(r => r.route.id === cycleFocus?.routeId);
   const mapWaypoints = useMemo(() => viaInputs.flatMap((input, index) => {
     const place = input.value.place ?? session?.waypoints?.[index];
     return place ? [{ id: input.id, place, number: index + 1 }] : [];
@@ -93,7 +101,7 @@ export default function App() {
   const stops = useMemo(() => session ? exploredStops(session.network.stops.values(), session.originStations, session.destinationStations) : [], [session]);
   const warnings = session ? searchWarnings(session) : [];
 
-  function invalidate() { setSession(null); setSelectedId(null); setExpandedId(null); setError(""); setProgress(""); }
+  function invalidate() { setSession(null); setSelectedId(null); setExpandedId(null); setCycleFocus(null); setError(""); setProgress(""); }
   useEffect(() => () => {
     controller.current?.abort();
     for (const abort of naming.current.values()) abort.abort();
@@ -245,7 +253,7 @@ export default function App() {
         </details>
         <button className="search-button" type="submit" disabled={loading}>{loading ? "Finding journeys…" : "Find journeys"}</button>
       </form>
-      <div className="assumptions"><span><b>15 km/h</b> cycling estimate</span><span><b>3 min</b> before each boarding</span>
+      <div className="assumptions"><span><b>Touring bicycle</b> · routed times</span><span><b>3 min</b> before each boarding</span>
         <span><b>{session ? `${day.format(session.start)}, ${clock.format(session.start)}` : departureMode === "now" ? "Leave now" : "Chosen departure"}</b> · Swiss time</span>
         <span>Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight waiting</span></div>
       {loading && <div className="loading-block" role="status"><div className="progress-track"><i /></div>
@@ -253,15 +261,15 @@ export default function App() {
         <button type="button" className="cancel-button" onClick={cancel}>{proposals.length ? "Stop looking · keep these options" : "Stop search"}</button></div>}
       {!loading && progress && <p role="status">{progress}</p>}
       {error && <div className="error-block" role="alert"><strong>We could not complete this search.</strong><p>{error}</p></div>}
-      {session && cyclingReference && <section className="results" aria-live="polite">
+      {session && <section className="results">
         <p className="resolved-places">{[session.origin, ...session.waypoints ?? [], session.destination].map(p => p.label).join(" → ")}</p>
         <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>Your journey options</h2></div></div>
         {warnings.length > 0 && <details className="search-notice"><summary>Some alternatives could not be checked</summary>{warnings.map(w => <p key={w}>{w}</p>)}</details>}
         {!proposals.length && !loading && <p className="empty-results">{warnings.length
-          ? "The timetable service did not return enough usable data. Please try this journey again."
+          ? "Some timetable or cycling data was unavailable. Please try this journey again."
           : `No transit journey was found within your cycling limits and ${session.options.horizonMinutes / 60}-hour arrival window. Try a different departure time or More cycling. This limited search can miss connections.`}</p>}
-        {!proposals.length && loading && <p className="comparison-note">Cycling estimate ready. Transit options will appear as they are found.</p>}
-        {proposals.length > 0 && <p className="comparison-note">Fastest transit option: {proposals[0].journey.totalMinutes === cyclingReference.minutes
+        {!proposals.length && loading && <p className="comparison-note">Checking cycling paths and train connections. Options appear as they are found.</p>}
+        {proposals.length > 0 && cyclingReference && <p className="comparison-note">Fastest transit option: {proposals[0].journey.totalMinutes === cyclingReference.minutes
           ? "the same estimated time as cycling only."
           : `${formatMinutes(Math.abs(proposals[0].journey.totalMinutes - cyclingReference.minutes))} ${proposals[0].journey.totalMinutes < cyclingReference.minutes ? "faster" : "slower"} than the cycling-only estimate.`}</p>}
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
@@ -271,14 +279,17 @@ export default function App() {
           {" "}Same departure time and limits.</p>}
         {proposals.length > 0 && <p className="result-explanation">Transit categories compare the connections explored. Boardings include the first vehicle. A route can win several categories.
           {" "}Alternatives arrive at most {session.options.extraTimeMinutes} minutes after the fastest.</p>}
-        <div className="journey-list"><CyclingCard comparison={cyclingReference} selected={bikeOnlySelected} start={session.start}
-          maxBikeMinutes={session.options.maxBikeMinutes} onSelect={() => { setSelectedId(BIKE_ONLY_ID); setExpandedId(null); }} />
+        <div className="journey-list">{cyclingReference ? <CyclingCard comparison={cyclingReference} selected={bikeOnlySelected} start={session.start}
+          maxBikeMinutes={session.options.maxBikeMinutes} onSelect={() => { setSelectedId(BIKE_ONLY_ID); setExpandedId(null); setCycleFocus(null); }} />
+          : <div className="cycling-unavailable" role="status"><strong>Cycling only</strong><p>{session.cyclingStatus === "loading" && loading
+            ? "Finding a route along roads and paths…" : "A complete cycling route is unavailable. No straight-line route has been substituted."}</p></div>}
           {proposals.map((proposal, index) => {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
           return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
-            expanded={expanded} planId={planId} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); }} />
+            expanded={expanded} planId={planId} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
             {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination} />}</div>;
         })}</div>
+        {!!cyclingRoutes.length && <CyclingDetails routes={cyclingRoutes} focus={cycleFocus} onFocus={setCycleFocus} />}
         <details className="search-coverage"><summary>Stops explored ({stops.length})</summary>
           <p>Small dots mark candidate and observed timetable stops. Numbered pins mark where you board and alight on the selected journey. Click a pin for service, time and platform details. Use Fit all stops to see the whole search area. This search can miss useful journeys.</p>
           <div className="candidate-stations">{[["Near departure", session.originStations], ["Near arrival", session.destinationStations]].map(([title, list]) =>
@@ -292,8 +303,9 @@ export default function App() {
         waypoints={mapWaypoints} editingDisabled={loading} canAddWaypoint={viaInputs.length < MAX_WAYPOINTS}
         onSelectPoint={(target, point) => target === "via" ? addWaypoint(point) : setMapPoint(target, point)} onMovePoint={setMapPoint}
         selectedJourney={selected} cycling={cyclingReference} bikeOnlySelected={bikeOnlySelected}
-        accessMinutes={session?.options.maxAccessMinutes ?? options.maxAccessMinutes} egressMinutes={session?.options.maxEgressMinutes ?? options.maxEgressMinutes} />
-      <div className="model-note"><strong>Experimental model</strong><p>Cycling uses straight-line estimates; map lines are schematic.
+        cycleFocus={focusedRoute && cycleFocus ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM } : null}
+        onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })} />
+      <div className="model-note"><strong>Routed cycling · estimated times</strong><p>Cycling follows mapped roads and paths. Transit lines remain schematic.
         Bicycle availability after transit is assumed. Carriage and reservation rules are deferred.</p></div>
     </aside></main>
   </div>;

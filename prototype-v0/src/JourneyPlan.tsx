@@ -57,7 +57,9 @@ export default function JourneyPlan({
                   {leg?.arrivalPlatform && <small>Platform {leg.arrivalPlatform}</small>}
                 </div>
               </div>
-              {step.mode === "bike" && <p className="plan-note">Estimated cycling time; no routed bike path yet.</p>}
+              {step.mode === "bike" && <p className="plan-note">{step.cyclingRoute
+                ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
+                : "Cycling route details unavailable."}</p>}
             </li>
           );
         })}

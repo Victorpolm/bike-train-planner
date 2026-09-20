@@ -12,7 +12,7 @@ Results first show a separate cycling-only estimate, then transit preferences: f
 
 ## Graph and feasible paths
 
-Use a directed mode-labelled graph. Timetable ride edges have fixed departure and arrival events; traversing one requires reaching its departure stop before departure, including the boarding buffer. Thus travel time is time-dependent, and waiting is part of elapsed time. Cycling edges use an estimated duration. Walking edges currently come from timed transfers supplied by the timetable API.
+Use a directed mode-labelled graph. Timetable ride edges have fixed departure and arrival events; traversing one requires reaching its departure stop before departure, including the boarding buffer. Thus travel time is time-dependent, and waiting is part of elapsed time. Cycling edges use a directed road route and its terrain-aware estimated duration; unavailable links are absent from the production graph. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md). Walking edges currently come from timed transfers supplied by the timetable API.
 
 The implementation compresses a transit vehicle ride into a boarding-to-alighting edge. Valid arrival checkpoints in a ride's pass list provide additional exit edges from the original boarding stop. Staying aboard to a later exit is still one boarding. Missing checkpoint times are not invented; a point with no arrival time is not treated as an alighting stop. The graph does not automatically provide boarding at every pass-list stop: those outgoing rides must also be discovered.
 
@@ -29,7 +29,7 @@ For a path P define:
 
 The common feasible set requires k >= 1, k <= K_max, T <= H, B <= B_max, endpoint cycling within its separate limits, and intermediate cycling within its own limit. Walking and cycling are not vehicle boardings. Pure cycling never competes for fewest changes.
 
-Cycling budgets remain constraints on B, not A. Walking currently has no separate resource limit beyond the overall horizon; it is limited by the sampled timed transfer edges and now penalized in the active-time objective. A dedicated walking budget remains future work.
+Cycling budgets remain constraints on B, not A. Under the current road adapter, a cycling leg includes its short endpoint walking connectors in B; these connectors are separately disclosed in the profile and are not counted again in W. Timetabled walking remains in W. Walking currently has no separate resource limit beyond the overall horizon; it is limited by the sampled timed transfer edges and now penalized in the active-time objective. A dedicated walking budget remains future work.
 
 Let P_0 be this set with m = 0 and P_1 the same set with m <= 1. Then P_0 is a subset of P_1. In particular, the fastest Extended arrival cannot be later than the fastest Baseline arrival on the same graph and constraints. Pareto frontiers themselves need not be nested: new paths can dominate old ones.
 
@@ -51,7 +51,7 @@ The selected endpoint's active duration is added as a fourth objective when an e
 
 Candidates for display must arrive within the configurable extra-time allowance of that model's fastest journey. This is a **presentation filter**. It does not change the absolute feasibility horizon or the underlying comparison. Ties are resolved by a stable journey identifier. Multiple category wins are merged; the interface shows at most four distinct cards, and sometimes fewer than three.
 
-These are transit cards; the cycling-only reference is an additional first card. It uses the same ready-to-leave time and `ceil(60 * haversine_km / 15)` minutes (zero for coincident points or identical stop IDs). It stays outside the feasible transit set, Pareto comparison and extra-time filter. It remains visible when above the cycling budget, with an explicit notice. Both its time and line are geometric estimates, not a road route or a guarantee of feasibility. The comparison appears once endpoints resolve, before stop/timetable acquisition, and survives later failures or cancellation.
+These are transit cards; the cycling-only reference is an additional first card. It uses the same departure instant and sums the upward-rounded routed stage times, including estimated short endpoint walking access. It stays outside transit feasibility, Pareto comparison and the extra-time filter, and remains visible when above the cycling budget. It appears when every cycling-only stage has a usable road route; mixed journeys may appear first. A completed reference survives timetable failure or cancellation. The former `ceil(60 * haversine_km / 15)` rule is retained only in explicitly opted-in historical/synthetic tests, never as a production fallback.
 
 ## Multi-label search
 
@@ -79,7 +79,7 @@ These numbers are implementation defaults for the experiment, not empirically ca
 
 | Parameter | Default |
 |---|---:|
-| Estimated cycling speed | 15 km/h |
+| Cycling profile | BRouter touring, moderate effort, 25 km/h cap |
 | Initial catchment band / expansion step | 20 min / 20 min |
 | Maximum initial cycling | 60 min |
 | Maximum final cycling | 60 min |
@@ -98,13 +98,15 @@ The form exposes **From**, **To**, **Departure** (Leave now by default, or a cho
 | Balanced | 90 min | 60 min | 20 min |
 | More | 150 min | 90 min | 30 min |
 
-Cycling estimates round positive durations up to whole minutes. Coincident points within one metre, or matching selected/provider stop IDs, get zero minutes. Identity avoids adding fictitious cycling for slight coordinate differences between datasets. The API query time rounds up to a Swiss local minute and the solver rechecks exact catchability against timestamps, including seconds and midnight.
+Cycling estimates round positive durations up to whole minutes. Coincident points within half a metre, or matching selected/provider stop IDs, get zero minutes. Identity avoids adding fictitious cycling for slight coordinate differences between datasets. The API query time rounds up to a Swiss local minute and the solver rechecks exact catchability against timestamps, including seconds and midnight.
 
 ## Catchment expansion and live candidate sampling
 
 Departure and arrival are handled separately. A selected stop retains its ID and coordinates and can be queried without geocoding or nearby lookup. An address initially uses a known rail hub within 20 cycling minutes if one exists; otherwise it requests nearby public-transport stops. If no candidate is available, or initial successful connection requests yield no feasible journey, additional discovery samples outward in 20-minute bands within each hard limit. At most two extra probes per endpoint are made (north/south). Earlier candidates and known rail hubs remain eligible through their hard bounds; this is not a complete isochrone.
 
-At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, are available in both models. Pairs exceeding the cumulative cycling budget are rejected before HTTP. Up to three pairs request four upcoming connections each. The first pair minimizes endpoint cycling; remaining slots first cover rail departure candidates, choosing the nearest feasible rail arrival when available, then rail arrival candidates and other pairs. Duplicate/already-queried pairs are excluded. This prevents several adjacent bus stops consuming all query slots before a feasible rail hub is tried. After fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
+Geographic distance at a 25 km/h upper bound is only a coarse discovery filter. Every accepted candidate is rechecked with a directed road route and actual time limits. The first feasible road pair can be queried before the remaining candidates are routed; already supported proposals are published before checking additional observed-stop links.
+
+At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, are available in both models. Pairs exceeding the cumulative cycling budget are rejected before HTTP. Up to three pairs request four upcoming connections each. The first pair uses the initially verified candidate paths; remaining slots first cover rail departure candidates, choosing the nearest feasible rail arrival when available, then rail arrival candidates and other pairs. Duplicate/already-queried pairs are excluded. This prevents several adjacent bus stops consuming all query slots before a feasible rail hub is tried. After fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
 
 The user's minimal-feasible-radius-plus-20 idea remains the motivation for adaptive discovery. There can be incomparable minimal `(start radius, arrival radius)` pairs, so separate scalar minima need not form a feasible pair. This implementation does not prove a globally minimal feasible radius. Fewer pair queries and deferred outward probes intentionally prioritize early results; they can miss better connections, including ones in the extra band after initial success.
 
@@ -138,7 +140,7 @@ Each stage may cycle directly within `max(maxAccessMinutes, maxEgressMinutes)`, 
 
 Requested points are visits, not merely stations a train passes through: the itinerary reaches the point and continues from there. No dwell duration is currently added. Reboarding still requires the three-minute buffer. All stages share the original departure, absolute horizon, total cycling and boarding limits. Stage solutions are not independently optimized and concatenated. Pure cycling follows the same ordered points and sums the rounded segment estimates.
 
-Acquisition gathers up to four candidate stops at each requested point, then up to two station pairs per adjacent stage. Onward queries start at a reached waypoint time plus the chosen station access and boarding buffer. All stages share the original 18-request/90-second phase budget. The first provider window can omit services needed by a slower feasible prefix; a label/resource cap can also make acquisition incomplete. Unlike no-via Extended searches, this first implementation does not add departure-board or transfer-suffix discovery to via searches. Switching models recomputes on the stage graph already acquired.
+Acquisition considers a pool of up to four stops per requested point and checks directed road links, initially stopping after a feasible candidate. It queries up to two available station pairs per adjacent stage; the progressive road pass can leave fewer candidates than the legacy geometric experiment. Onward queries start at a reached waypoint time plus the chosen station access and boarding buffer. All stages share the original 18-request/90-second phase budget. The first provider window can omit services needed by a slower feasible prefix; a label/resource cap can also make acquisition incomplete. Unlike no-via Extended searches, this first implementation does not add departure-board or transfer-suffix discovery to via searches. Switching to Extended also checks up to four short directed automatic-transfer pairs on the already acquired stage graph; no extra timetable departure-board discovery is added.
 
 Map selection creates an exact coordinate, then asks GeoAdmin for nearby feature names with a six-second deadline. A name is labelled “Near …”; lookup never snaps to a station or assigns its ID. Failure retains the coordinate label. Repeated drags cancel obsolete naming requests; names update only the still-matching selected point, including after reordering or reversal. Form changes and marker moves invalidate previous route results. Editing is disabled while acquiring a journey; Stop search enables editing again.
 
@@ -157,10 +159,12 @@ Map selection creates an exact coordinate, then asks GeoAdmin for nearby feature
 | `src/waypoints.ts` | Ordered requested visits with cumulative journey budgets |
 | `src/App.tsx` | Model switch, preferences, categories, empty/partial/cancel states |
 | `src/itinerary.ts`, `src/JourneyPlan.tsx` | Full chronological journey decomposition |
-| `src/MapView.tsx` | Schematic transit, walking and cycling legs |
+| `src/MapView.tsx` | Routed cycling, schematic transit/walking and profile position |
+| `src/cycling.ts`, `src/cyclingClient.ts` | Directed road geometry/time, attributes, elevation and bounded provider requests |
+| `src/CyclingDetails.tsx` | Map-linked elevation and road-attribute summaries |
 | `src/mapData.ts` | Distinct explored stops and ordered boarding/alighting events for map pins |
 
-Cycling lines are straight-line estimates, not navigable roads. Walking transfers are only the observed timed edges. Stops are station-level rather than a platform/infrastructure graph; the three-minute buffer does not certify real-world transfer feasibility. Departure times can become stale while a long search runs. No bike permission, route-safety or national optimality claims are made.
+Cycling lines follow the provider road network; short endpoint gaps are explicitly unverified walking connectors. Route estimates do not provide turn-by-turn navigation or validate every access restriction. Walking transfers are only the observed timed edges. Stops are station-level rather than a platform/infrastructure graph; the three-minute buffer does not certify real-world transfer feasibility. Departure times can become stale while a long search runs. No bike permission, route-safety or national optimality claims are made.
 
 OpenTripPlanner remains the production-engine candidate. Its documented access/egress limits, stop caps, transit transfer controls and itinerary filters confirm that bounded discovery and result filtering are existing-engine concerns. The next technical comparison should run fixed Swiss cases against an OTP deployment with complete timetable/street data, and check whether its state and objective support can reproduce this zero-versus-one-intermediate-leg experiment. No OTP instance has been installed or benchmarked here.
 

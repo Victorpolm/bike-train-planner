@@ -103,7 +103,7 @@ describe("live data boundaries", () => {
     const abort = new AbortController(), urls: URL[] = [], updates: SearchSession[] = [];
     let stalled!: () => void;
     const pending = new Promise<void>(resolve => { stalled = resolve; });
-    const task = plan(origin, destination, "baseline", DEFAULT_OPTIONS, abort.signal, () => {}, s => updates.push(s), {
+    const task = plan(origin, destination, "baseline", DEFAULT_OPTIONS, abort.signal, () => {}, s => updates.push(s), { cyclingClient: null,
       start, gapMs: 0, fetcher: async (input, init) => {
         urls.push(new URL(String(input)));
         if (urls.length === 1) return response({ connections: [{ sections: [{ journey: { name: "IC1", category: "IC", number: "1" },
@@ -128,7 +128,7 @@ describe("live data boundaries", () => {
   it("publishes resolved endpoints before the first request and keeps the cycling comparison available after failures", async () => {
     const origin = KNOWN_PLACES.find(p => p.stopId === "8503000")!, destination = KNOWN_PLACES.find(p => p.stopId === "8509786")!;
     const updates: SearchSession[] = [];
-    const result = await plan(origin, destination, "baseline", DEFAULT_OPTIONS, new AbortController().signal, () => {}, s => updates.push(s), {
+    const result = await plan(origin, destination, "baseline", DEFAULT_OPTIONS, new AbortController().signal, () => {}, s => updates.push(s), { cyclingClient: null,
       gapMs: 0, fetcher: async () => {
         assert.ok(updates.length > 0);
         assert.equal(updates[0].origin, origin);

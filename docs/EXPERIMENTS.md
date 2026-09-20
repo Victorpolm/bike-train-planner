@@ -354,3 +354,32 @@ The new `prototype-v0/src/waypoints.test.ts` uses explicitly synthetic timetable
 **Remaining limits:** All cycling geometry/times remain straight-line estimates. There is no added stopover duration, road profile or carriage/availability validation. Stage acquisition samples at most two stop pairs per stage and can miss alternatives; Extended with requested stops reuses that graph without extra departure-board acquisition. See the model document for exact semantics.
 
 **Next check:** On desktop and mobile, choose A/B and two intermediate stops on the map, drag one, reorder the stops and confirm the form and returned plan match. Check a failed naming request leaves a usable coordinate. Then implement the routed-cycling/engine pilot described in the roadmap.
+
+## 2026-09-20 — Routed cycling controls timetable feasibility
+
+**Implementation:** Directed BRouter road links replace geometric cycling in the production acquisition path and both solvers. The map and timing share those same links. Linked elevation inspection, ascent/descent, steep/final climbs, surface/infrastructure and approximate posted-speed bands are explained in [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
+
+### Recorded road and live multimodal observation
+
+The raw Renens–EPFL GeoJSON response is recorded in `prototype-v0/src/fixtures/renens-epfl-cycling-2026-09-20.json` with its URL, endpoints and attribution. From `(46.537, 6.578)` to `(46.5214, 6.5665)`, the response has 120 geometry points, **2.597 km** and **401 seconds** provider riding time. The smoothed displayed profile has **3 m ascent / 23 m descent**. Roughly 3 m start and 33 m end gaps add estimated walking access; the leg rounds upward to **8 minutes**. Surface data includes unknown portions. HTTP 200 and public CORS were observed; this is not an availability guarantee. The real adapter alone completed in 15.21 seconds in one run.
+
+A live Baseline planner run used those endpoints, Balanced budgets, no requested stops, and **21 September 2026, 08:00 Europe/Zurich**. It published its first transit proposal after **34.188 seconds** and completed after **67.875 seconds**. The selected alternatives took 31 minutes (R 2, 1 minute access and 12 minutes egress) and 41 minutes (IC 1 / R 4, 1 minute access and 8 minutes egress); the cycling-only comparison was 2.597 km / 8 minutes. Three connection queries and 16 main road requests were used, with no warnings. This short trip checks integration, not whether transit is useful here or whether the sparse search is optimal. A subsequent scheduling-only change publishes already supported paths before background road checks; these timings are not a benchmark of that final scheduling refinement.
+
+### Deterministic regressions
+
+**81 automated tests pass**, including 12 road-specific checks and the existing timetable/model cases. New road checks cover:
+
+- The unmodified live geometry, provider time, smoothed elevation and distance-weighted unknown-inclusive attributes.
+- Invalid geometry/time, over-75-m snapping, missing elevation and unmatched road-message intervals.
+- Directional infrastructure and asymmetric route times; no fabricated surface or measured traffic speed.
+- Failed/rate-limited road requests, duplicate requests and cancellation of late responses.
+- A synthetic 20-minute station approach rejects an 08:10 train that the old geometric model accepted, while retaining the 08:25 departure. Missing or reverse-only cached links cannot make it reachable.
+- A required visit takes 10 minutes out and 20 minutes back; both consume the shared budget and exclude an earlier onward train.
+- A 10-minute automatic transfer after 08:20 arrival plus the boarding buffer rejects 08:25 and accepts 08:35; a 9-minute transfer cap rejects the link.
+- The production acquisition flow with controlled road data queries the timetable at 08:23 after a 20-minute approach and three-minute buffer, and retains that approach in the final 55-minute journey.
+
+Historical timetable tests explicitly select the old geometric experiment to preserve their recorded assumptions. In particular, the previous Libingen–Rapperswil 78-minute access and associated totals are **historical geometric observations**, not new real-road estimates. They must be remeasured before using them as cycling advice.
+
+**Build and UI limits:** TypeScript and the production build pass, with no added dependency or lockfile change. The managed preview status still fails because its request mailbox is unavailable. No replacement preview service was started. The new profile/map pointer, touch, keyboard and responsive interactions have therefore not been visually verified in this session.
+
+**Next practical check:** Open the private site on desktop and mobile, select the cycling-only result, inspect the elevation with the slider, then choose a transit result and its final cycling leg. Repeat with a requested stop and a hilly finish. Compare ride duration and actual road/entrance access in the field. Exact posted speed values, operator bicycle restrictions and platform access remain unresolved.

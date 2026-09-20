@@ -193,3 +193,11 @@ The implemented experiment uses GeoAdmin address geocoding, with Transport API p
 Only known timed sections enter the graph. Recorded pass-list exits require a valid arrival time; untimed passage points are excluded. Delay/prognosis data, carriage permissions, capacity and reservations are not interpreted. Cycling and map geometry remain schematic. See `MATHEMATICAL_MODEL.md` for sampling, rate limits and the difference between an observed schedule graph and comprehensive network coverage.
 
 A small recorded 2026-09-05 Zürich–Laax schedule fixture is included for regression testing, with its source URL. It is an observation of scheduled data, not a promise that those services will run on another date.
+
+## Routed cycling adapter — 2026-09-20
+
+**Implemented:** Public [BRouter](https://brouter.de/) GeoJSON routing with the touring profile, moderate effort, steps/ferries disabled and a 25 km/h model cap. Returned OSM-derived tags and SRTM geometry support distance, time, elevation, surface and infrastructure. Requests are directional; provider errors do not fall back to geometry. Attribution and bounded in-memory caching are documented in [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
+
+BRouter's lookup table groups raw posted speed limits; the app shows approximate bands, never exact signs or measured traffic speed. Road-message matching preserves unknown intervals. Missing elevation is not filled, and surface is not inferred from road class. Data freshness is not known per segment; fetched-at time is not an OSM survey date. The community endpoint has no availability guarantee for this prototype; managed/self-hosted routing remains an engine decision before wider use.
+
+A real 20 September 2026 Renens–EPFL response is retained with source URL and attribution in `prototype-v0/src/fixtures/renens-epfl-cycling-2026-09-20.json`. This supersedes the earlier schematic-cycling adapter description; historical timetable fixtures preserve their original assumptions.

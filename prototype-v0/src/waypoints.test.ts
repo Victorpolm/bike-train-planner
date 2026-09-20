@@ -118,7 +118,7 @@ it("allows one automatic cycling transfer across the whole ordered journey, not 
 it("samples the onward timetable from the reached waypoint time using one request budget", async () => {
   const urls: URL[] = [];
   const station = (i: number) => ({ id: stops[i].id, name: stops[i].name, coordinate: { x: stops[i].lat, y: stops[i].lon } });
-  const result = await plan(places[0], places[2], "baseline", limits, new AbortController().signal, () => {}, () => {}, {
+  const result = await plan(places[0], places[2], "baseline", limits, new AbortController().signal, () => {}, () => {}, { cyclingClient: null,
     waypoints: [places[1]], start, gapMs: 0, fetcher: async input => {
       const url = new URL(String(input)); urls.push(url);
       const first = url.searchParams.get("from") === "A", i = first ? 0 : 1;
@@ -131,7 +131,7 @@ it("samples the onward timetable from the reached waypoint time using one reques
     [["A", "B", "08:03"], ["B", "C", "08:23"]]);
   assert.equal(result.client.requests, 2);
   assert.equal(result.baseline.journeys[0].totalMinutes, 40);
-  await assert.rejects(plan(places[0], places[2], "baseline", limits, new AbortController().signal, () => {}, () => {}, {
+  await assert.rejects(plan(places[0], places[2], "baseline", limits, new AbortController().signal, () => {}, () => {}, { cyclingClient: null,
     waypoints: Array(5).fill(places[1]),
   }), /four|4/i);
 });

@@ -37,7 +37,7 @@ it("retains the recorded daytime Libingen–EPFL journey and includes next-morni
 it("publishes an overnight proposal from the real acquisition flow without spending the remaining time on location expansion", async () => {
   const urls: URL[] = [], published: SearchSession[] = [];
   const result = await plan(fixture.origin, fixture.destination, "baseline", DEFAULT_OPTIONS,
-    new AbortController().signal, () => {}, s => published.push(s), {
+    new AbortController().signal, () => {}, s => published.push(s), { cyclingClient: null,
       start: new Date("2026-09-18T23:20:00+02:00"), gapMs: 0,
       fetcher: async input => {
         const url = new URL(String(input)); urls.push(url);
@@ -61,7 +61,7 @@ it("checks Rapperswil–Renens under More cycling even when nearer bus queries r
   // Only the recorded Rapperswil pair returns connections in this acquisition
   // scenario: neighboring bus stops must not consume all three query slots.
   const result = await plan(fixture.origin, fixture.destination, "baseline", options,
-    new AbortController().signal, () => {}, () => {}, { start, gapMs: 0, fetcher: async input => {
+    new AbortController().signal, () => {}, () => {}, { cyclingClient: null, start, gapMs: 0, fetcher: async input => {
       const url = new URL(String(input)); urls.push(url);
       if (url.pathname.endsWith("locations")) return response(fixture.originLocations);
       if (url.searchParams.get("from") !== rapperswil.id || url.searchParams.get("to") !== renens.id) return response({ connections: [] });

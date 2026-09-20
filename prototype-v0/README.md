@@ -9,7 +9,7 @@ A Swiss journey-planning experiment comparing cycling and scheduled public trans
 1. Type into **From** and **To**, then choose a suggestion, or click/tap the map and choose **Start here** / **Finish here**. Drag A/B to adjust the exact location. Arrow keys and Enter select text suggestions; **Choose map centre** also supports choosing a point after panning with the keyboard.
 2. Leave **Departure** on **Leave now**, or choose a date and time in Switzerland. Choose **Baseline** (cycle before/after transit) or **Extended** (also allow at most one intermediate cycling leg).
 3. Optionally open **Preferences** to choose Less / Balanced / More cycling and an extra endpoint category. No numeric parameters are required.
-4. Search. A **Cycling only · estimate** card appears first as soon as the places resolve. Transit results follow with **Fastest**, **Fewest boardings**, and **Least cycling or walking**. An optional fourth minimizes cycling plus walking at the start or arrival. One route can win several categories. The first vehicle counts as a boarding.
+4. Search. A **Cycling only · routed** card occupies the first position when its road route is ready. Its calculation runs independently from station access and timetable discovery. Transit results follow with **Fastest**, **Fewest boardings**, and **Least cycling or walking**. An optional fourth minimizes cycling plus walking at the start or arrival. One route can win several categories. The first vehicle counts as a boarding.
 5. Click a card to select its map route. Transit cards also open every bike, train/bus/tram, walking and waiting leg. Numbered map pins mark boarding/alighting stops and show available services, times and platforms; those numbers also appear in the travel plan.
 6. Use **Explored stops** to show/hide candidate and observed timetable stops, and **Fit all stops** to see the whole observed area. These include buses/trams and intermediate stops, not only endpoint railway stations.
 
@@ -17,7 +17,7 @@ Use **Add intermediate stop** in the form or map popup for up to **four requeste
 
 Clicked coordinates are usable immediately. A nearby place name replaces the coordinate label when available, without moving the marker or treating it as a selected station. If naming is unavailable, the coordinate label remains. Map naming has a six-second deadline and obsolete requests are cancelled when a marker is moved again.
 
-The cycling-only comparison uses the same departure instant and a straight-line estimate at 15 km/h. It does not follow roads or include hills/barriers. It remains visible if transit requests fail or are stopped, is explicitly marked when above the selected cycling budget, and does not compete for transit-category winners. Its purple dashed line remains a faint reference behind a selected transit route; selecting its card shows that estimate on its own.
+The cycling-only comparison follows mapped roads and paths through every requested stop, using BRouter's touring profile at moderate effort. Its estimated time includes terrain and small, explicitly marked walking connectors. The same routed durations determine station readiness, onward train catchability and cycling budgets. Unavailable paths are excluded; there is no straight-line substitute. A successful comparison stays visible after timetable failure or cancellation, is marked when above the cycling budget and stays outside transit-category ranking. Its purple line remains a faint reference behind a selected transit route.
 
 Switching to Extended after a Baseline search keeps the same departure time and limits, expands the timetable data, then compares both models on that same graph. Once both results are available, switching is immediate. Address, departure or budget edits invalidate the old results. Stopping an active search keeps proposals already found visible. After stopping, press Find journeys for a fresh search; an incomplete Extended phase is not silently presented as complete.
 
@@ -25,9 +25,9 @@ The arrival window is **24 hours from your chosen departure**, including waiting
 
 For searches with requested stops, up to two station pairs per adjacent stage are queried from reached waypoint times. These stages share the same request/time budget. Switching to Extended reuses that stage graph without additional departure-board discovery; results are still a bounded sample. The cycling-only reference follows all requested stops.
 
-For **Libingen → EPFL**, Balanced includes nearby bus stops and Wil. To consider cycling to **Rapperswil**, choose **More cycling**: the present straight-line model estimates 78 minutes to Rapperswil, beyond Balanced's 60-minute per-end limit. Rapperswil is then queried, but a better route can win the displayed categories. In the recorded daytime case, a route through Wil arrives at the same time with less cycling and fewer boardings.
+For **Libingen → EPFL**, choose the real departure time and try **More cycling** to allow longer station access. Every candidate, including Rapperswil, must now pass the actual routed time limit. The old 78-minute Rapperswil access figure in historical experiments was geometric and is not a current riding estimate. Sampling can still omit a station, and a queried route need not win a displayed category.
 
-Proposals appear after the first usable response, while a small number of alternatives are checked. Easy station journeys skip address and nearby-stop lookups. A live check returned Zürich–Bern proposals in 15.2 seconds and Zürich–Laax in 12.0 seconds; upstream latency varies. Extended exploration can continue for a minute or more, but it no longer hides existing results. The displayed departure is either the time captured when a Leave now search began or the chosen Swiss date/time; results do not continuously refresh.
+Proposals appear as soon as the necessary road links and a usable timetable response are available, while alternatives continue loading. A live Renens–EPFL check on 20 September returned a 2.597 km cycling comparison with 8 minutes including connectors and its first transit proposals after 34.2 seconds; upstream latency varies. Extended exploration can take longer. The displayed departure is captured when the search starts or taken from the chosen Swiss date/time; results do not continuously refresh.
 
 ## Run locally
 
@@ -46,11 +46,11 @@ npm run build
 npm run preview
 ```
 
-Tests use deterministic synthetic timetables and recorded Zürich–Laax and Libingen–EPFL fixtures; they do not make network requests. `npm test` includes ordered stopovers and shared budgets, map naming/failure handling, the routing model, category selection, timetable normalization, API adapter behavior and journey decomposition.
+Tests use deterministic synthetic timetables and recorded Zürich–Laax, Libingen–EPFL and Renens–EPFL road fixtures; they do not make network requests. `npm test` includes ordered stopovers and shared budgets, map naming/failure handling, the routing model, category selection, timetable normalization, API adapter behavior and journey decomposition.
 
 ## Model defaults
 
-- Cycling: straight-line estimate at 15 km/h, rounded up to minutes.
+- Cycling: BRouter touring profile, moderate effort, 25 km/h maximum model speed, with routed leg times rounded upward after estimated endpoint walking access.
 - Balanced preference: up to 60 minutes cycling at each end; additional stop discovery is a fallback in bounded 20-minute bands.
 - Intermediate cycling: up to 20 minutes; total cycling: up to 90 minutes.
 - Maximum four public-transport boardings and 24 hours overall, including overnight waiting.
@@ -61,21 +61,22 @@ Tests use deterministic synthetic timetables and recorded Zürich–Laax and Lib
 
 ## Implementation
 
-`src/places.ts` and `src/PlaceInput.tsx` implement debounced, cancellable address/stop suggestions, with known Swiss hubs available immediately. `src/preferences.ts` maps three cycling preferences to valid budgets; `src/http.ts` handles portable cancellation and response-body deadlines. `src/model.ts` implements the time-dependent graph, state-compatible Pareto labels, constraints and category selection. `src/api.ts` acquires a finite timetable graph; `src/timetable.ts` normalizes sections and pass-list exits. `src/mapData.ts` deduplicates explored stops and collects ordered boarding/alighting events. React presents the comparison, model control, preferences, category cards and full plans; Leaflet draws schematic leg geometry and interactive stop markers.
+`src/places.ts` and `src/PlaceInput.tsx` implement debounced, cancellable address/stop suggestions, with known Swiss hubs available immediately. `src/preferences.ts` maps three cycling preferences to valid budgets; `src/http.ts` handles portable cancellation and response-body deadlines. `src/model.ts` implements the time-dependent graph, state-compatible Pareto labels, constraints and category selection. `src/api.ts` acquires a finite timetable graph; `src/timetable.ts` normalizes sections and pass-list exits. `src/mapData.ts` deduplicates explored stops and collects ordered boarding/alighting events. React presents the comparison, model control, preferences, category cards and full plans; Leaflet draws road-following cycling, schematic transit/walking and interactive stop markers. `src/cycling.ts` parses geometry and road/elevation attributes; `src/cyclingClient.ts` controls cycling requests; `src/CyclingDetails.tsx` links the elevation profile to the map.
 
 The authoritative repository documentation is [the mathematical model](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/MATHEMATICAL_MODEL.md), [project state](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/PROJECT_STATE.md) and [experiment log](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/EXPERIMENTS.md).
 
-The [app roadmap](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/APP_ROADMAP.md) records the requested future cycling routes/profiles, bike-carriage guidance, repair/parking layers, commuting/bikepacking/expert modes and community features. Those features are not implemented by this map update.
+The [app roadmap](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/APP_ROADMAP.md) tracks remaining carriage guidance, repair/parking, commuting/bikepacking/expert modes and community work. [Cycling routes and data limits](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/CYCLING_ROUTES.md) documents the implemented provider, calculations and known gaps.
 
 ## Data and limits
 
 - GeoAdmin address search and Transport API place/stop lookup run independently for suggestions. Selecting a result preserves its coordinates and stop ID, avoiding repeated geocoding.
 - The community [Swiss Transport API](https://transport.opendata.ch/docs.html) for stops, scheduled connections and departure boards. Both models admit buses, trams and other returned public transport.
 - Existing Swiss rail-hub seed list and OpenStreetMap map tiles.
+- [BRouter](https://brouter.de/) for directed cycling geometry, riding time, OSM-derived road tags and SRTM elevation. The public service is a prototype dependency without an availability guarantee.
 
-This is a sampled experiment, not a complete national routing engine. Up to four candidate stops per endpoint, three initial endpoint-pair queries with four connections each, and limited Extended discovery can miss good routes. The shortest cycling pair is queried first; remaining slots prioritize rail access before neighboring bus alternatives. If the initial connections are valid but infeasible, bounded outward stop discovery permits up to three further pair queries. Requests have 20-second timeouts, a 90-second budget per acquisition phase and an 18-request overall cap. API failures and request/label caps produce an incomplete-search notice. A result of no journey found is not proof that no journey exists.
+This is a sampled experiment, not a complete national routing engine. Up to four candidate stops per endpoint, three initial endpoint-pair queries with four connections each, and limited Extended discovery can miss good routes. A first pair with verified routed access is queried before completing candidate road checks; remaining slots prioritize rail access before neighboring bus alternatives. If the initial connections are valid but infeasible, bounded outward stop discovery permits up to three further pair queries. Requests have 20-second timeouts, a 90-second budget per acquisition phase and an 18-request overall cap. API failures and request/label caps produce an incomplete-search notice. A result of no journey found is not proof that no journey exists.
 
-Cycling distances do not follow roads, and map lines are not navigation instructions. Station-level buffers do not validate platform access. The experiment assumes a bicycle is available after transit; carriage permissions, capacity and reservations are deliberately deferred. No operator permission or route-safety claim is made.
+Cycling follows the returned road network; transit/walking lines remain schematic. Short endpoint gaps (at most 75 m each) add walking time and appear dotted; their physical access is unverified. Station-level buffers do not validate platform access. The experiment assumes a bicycle is available after transit; carriage permissions, capacity and reservations remain deferred. No objective route-safety claim is made.
 
 ## Cycling preferences
 
@@ -86,3 +87,11 @@ Cycling distances do not follow roads, and map lines are not navigation instruct
 | More | 150 min | 90 min | 30 min |
 
 These are uncalibrated experiment presets. All other mathematical constraints remain shared between the two models. Suggestions are debounced by 350 ms, stale requests are cancelled, and successful combined lookup results are kept only in a bounded in-memory cache. Remote lookup failures do not fabricate places or timetable results.
+
+## Inspect a cycling route
+
+Select a result and open **Your cycling route**. Choose a cycling leg to see routed distance, estimated riding time, ascent/descent, steep sections and climbing in its final two kilometres. Hover the profile or cycling line to highlight the corresponding point; use the labelled slider on touch or keyboard. Orange marks steep climbs, blue steep descents.
+
+Surface and infrastructure breakdowns include unknown portions. Separated tracks, painted lanes and shared roads/paths are distinguished from an objective safety assessment. Posted road speeds are approximate **bands** because BRouter groups raw OSM limits; they are never measured traffic speeds. Missing elevation stays missing, and cumulative ascent/descent remain unknown when the profile is incomplete.
+
+Cycling requests have a 25-second timeout, a 150-second phase budget and a 32-request main cap. The separate comparison uses up to five stage requests. Successes use a 100-entry, 30-minute memory cache. Failure/cancellation preserves valid results and reports incomplete checks. Exact posted speed values, richer access data and rider-specific profiles remain follow-up work.

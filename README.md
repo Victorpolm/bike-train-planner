@@ -10,7 +10,9 @@ Sign in with the ChatGPT account that owns the Site. Access is restricted to tha
 
 For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website.
 
-**Next work:** [App roadmap](docs/APP_ROADMAP.md) records real cycling routes and profiles, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
+**Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
+
+**Next work:** [App roadmap](docs/APP_ROADMAP.md) records routing-engine evaluation, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
 
 ## Core question
 
@@ -50,7 +52,7 @@ npm install
 npm run dev
 ```
 
-It compares Baseline (cycling before/after transit) and Extended (at most one intermediate cycling leg). Results show a clearly labelled cycling-only estimate first, followed by fastest transit, fewest boardings and least cycling-or-walking alternatives. Cards open full journey plans; the map shows explored stops and numbered boarding/alighting points with timetable details. Address suggestions and optional cycling presets simplify input. The cycling comparison appears once the places resolve; transit proposals appear progressively and survive cancellation. See [the result and map design](docs/RESULTS_AND_MAP.md), [the implemented mathematical model](docs/MATHEMATICAL_MODEL.md), the prototype README and `docs/EXPERIMENTS.md`. The sampled prototype is not the final routing architecture.
+It compares Baseline (cycling before/after transit) and Extended (at most one intermediate cycling leg). Results show a clearly labelled cycling-only estimate first, followed by fastest transit, fewest boardings and least cycling-or-walking alternatives. Cards open full journey plans; the map shows explored stops and numbered boarding/alighting points with timetable details. Address suggestions and optional cycling presets simplify input. Cycling follows mapped roads, with an elevation profile linked to the map and surface/infrastructure breakdowns. Routed durations determine reachable trains. The cycling comparison and transit proposals appear progressively as their required paths are checked and survive cancellation once available. See [the result and map design](docs/RESULTS_AND_MAP.md), [the implemented mathematical model](docs/MATHEMATICAL_MODEL.md), the prototype README and `docs/EXPERIMENTS.md`. The sampled prototype is not the final routing architecture.
 
 Departure defaults to Leave now, with an optional Swiss date/time. A 24-hour arrival window includes overnight waiting. Initial connection queries now cover feasible rail access as well as the nearest stops; the recorded Libingen–EPFL failure and its repair are in [the experiment log](docs/EXPERIMENTS.md).
 

@@ -1,4 +1,5 @@
-import { cyclingMinutes, haversineKm, type Journey, type Place, type Station, type TransitLeg } from "./routing.ts";
+import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
+import { cachedCycling, type CyclingRoute } from "./cycling.ts";
 
 export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
@@ -20,9 +21,21 @@ export const DEFAULT_OPTIONS: Options = {
 };
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
 export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
-export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge> };
+export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge>; cycling?: Map<string, CyclingRoute | null> };
 export const emptyNetwork = (): Network => ({ stops: new Map(), edges: new Map() });
-export const atEndpoint = (stop: Stop, point: Place): Station => {
+export function cyclingLink(network: Network, from: Point & { id?: string; stopId?: string }, to: Point & { id?: string; stopId?: string }) {
+  if (network.cycling) {
+    const route = cachedCycling(network.cycling, from, to);
+    return { minutes: route?.minutes ?? Infinity, distanceKm: route?.distanceKm ?? Infinity, route: route ?? undefined };
+  }
+  const distanceKm = (from.stopId ?? from.id) && (from.stopId ?? from.id) === (to.stopId ?? to.id) ? 0 : haversineKm(from, to);
+  return { minutes: cyclingMinutes(distanceKm), distanceKm, route: undefined };
+}
+export const atEndpoint = (stop: Stop, point: Place, network?: Network, direction: "access" | "egress" = "access"): Station => {
+  if (network?.cycling) {
+    const link = direction === "access" ? cyclingLink(network, point, stop) : cyclingLink(network, stop, point);
+    return { ...stop, distanceKm: link.distanceKm, bikeMinutes: link.minutes, cyclingRoute: link.route };
+  }
   const distanceKm = point.stopId === stop.id ? 0 : haversineKm(stop, point);
   return { ...stop, distanceKm, bikeMinutes: cyclingMinutes(distanceKm) };
 };
@@ -125,7 +138,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const list = outgoing.get(edge.from) ?? [];
     list.push(edge); outgoing.set(edge.from, list);
   }
-  const cycling = new Map<string, { stop: Stop; minutes: number }[]>();
+  const cycling = new Map<string, { stop: Stop; minutes: number; route?: CyclingRoute }[]>();
   const boardingStops = [...network.stops.values()].filter(s => outgoing.get(s.id)?.some(e => e.leg.mode === "transit"));
   const labels = new Map<string, Label[]>(), queue: Label[] = [];
   let limited = false;
@@ -144,7 +157,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     labels.set(key, [...bucket.filter(l => l.alive), label]); queue.push(label);
   };
   for (const stop of boardingStops) {
-    const access = atEndpoint(stop, origin);
+    const access = atEndpoint(stop, origin, network);
     if (access.bikeMinutes <= o.maxAccessMinutes) add({ stop: stop.id,
       time: start.getTime() + access.bikeMinutes * 60_000, bike: access.bikeMinutes,
       walk: 0, accessActive: access.bikeMinutes, egressWalk: 0,
@@ -171,16 +184,16 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const from = network.stops.get(current.stop)!;
     let neighbors = cycling.get(from.id);
     if (!neighbors) {
-      neighbors = boardingStops.filter(s => s.id !== from.id).map(stop => ({ stop, minutes: cyclingMinutes(haversineKm(from, stop)) }))
+      neighbors = boardingStops.filter(s => s.id !== from.id).map(stop => ({ stop, ...cyclingLink(network, from, stop) }))
         .filter(n => n.minutes > 0 && n.minutes <= o.maxIntermediateMinutes);
       cycling.set(from.id, neighbors);
     }
-    for (const { stop, minutes } of neighbors) {
+    for (const { stop, minutes, route } of neighbors) {
       const arrival = current.time + minutes * 60_000;
       const leg: TransitLeg = { mode: "bike", from: from.name, to: stop.name,
         departure: new Date(current.time), arrival: new Date(arrival), departurePlatform: null, arrivalPlatform: null,
         service: "Cycle between stops", serviceName: null, direction: null,
-        fromId: from.id, toId: stop.id, fromPoint: from, toPoint: stop };
+        fromId: from.id, toId: stop.id, fromPoint: from, toPoint: stop, cyclingRoute: route, geometry: route?.points };
       add({ ...current, stop: stop.id, time: arrival, bike: current.bike + minutes,
         middle: 1, needsTransit: true, legs: [...current.legs, leg], alive: true });
     }
@@ -189,7 +202,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   const journeys: Journey[] = [];
   for (const label of reachable) {
     if (!label.boardings || label.needsTransit) continue;
-    const egress = atEndpoint(network.stops.get(label.stop)!, destination);
+    const egress = atEndpoint(network.stops.get(label.stop)!, destination, network, "egress");
     if (egress.bikeMinutes > o.maxEgressMinutes || label.bike + egress.bikeMinutes > o.maxBikeMinutes ||
       label.time + egress.bikeMinutes * 60_000 > horizon) continue;
     const departure = label.legs[0].departure!, arrival = new Date(label.time);

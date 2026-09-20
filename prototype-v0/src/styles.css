@@ -300,6 +300,43 @@ button:disabled { cursor: default; opacity: .65; }
 .location-actions a { display: inline-flex; align-items: center; text-decoration: none; }
 .waypoint-help, .point-notice { margin: 0; font-size: 14px; line-height: 1.5; color: #53645b; }
 .resolved-places { overflow-wrap: anywhere; }
+.cycling-details { margin-top: 24px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.cycling-details-heading, .elevation-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cycling-details h3, .cycling-details h4 { margin: 0; font-size: 18px; }
+.cycling-details-heading a, .elevation-heading span { font-size: 14px; }
+.cycling-details > p { line-height: 1.5; overflow-wrap: anywhere; }
+.cycle-leg-picker { display: grid; gap: 8px; margin: 14px 0; font-size: 14px; }
+.cycle-leg-picker select { width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: white; color: var(--ink); font: inherit; }
+.cycle-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+.cycle-stats dt { color: #53645b; font-size: 14px; }
+.cycle-stats dd { margin: 4px 0 0; font-size: 22px; font-weight: 650; }
+.cycle-caption { font-size: 14px; line-height: 1.5; color: #53645b; margin: 12px 0; }
+.elevation-heading { margin-top: 22px; }
+.elevation-chart { width: 100%; height: auto; display: block; margin-top: 12px; overflow: visible; cursor: crosshair; }
+.elevation-chart text { font-size: 18px; fill: #53645b; }
+.elevation-grid { stroke: #dce3df; stroke-width: 1; }
+.elevation-path { fill: none; stroke: #195e4d; stroke-width: 3; }
+.elevation-cursor { stroke: #b34c12; stroke-dasharray: 3 3; }
+.elevation-dot { fill: #b34c12; }
+.slope-up { stroke: #c15a17; stroke-width: 5; }
+.slope-down { stroke: #287caf; stroke-width: 5; }
+.elevation-slider { display: grid; gap: 6px; font-size: 14px; margin-top: 12px; }
+.elevation-slider input { width: 100%; min-height: 36px; accent-color: #195e4d; }
+.profile-location { font-size: 14px; padding: 10px; border-radius: 6px; background: #eef4f1; }
+.finish-climb { padding: 12px; background: #f9f1e9; border-radius: 8px; font-size: 14px; line-height: 1.5; }
+.finish-climb p { margin: 6px 0 0; }
+.cycle-breakdown { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 12px; font-size: 14px; }
+.cycle-breakdown summary { cursor: pointer; font-weight: 600; }
+.cycle-breakdown ul { padding: 0; list-style: none; max-height: 260px; overflow: auto; }
+.cycle-breakdown li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.cycle-breakdown li span:last-child { text-align: right; white-space: nowrap; }
+.cycle-breakdown button { border: 1px solid var(--line); border-radius: 6px; background: white; min-height: 40px; padding: 8px; cursor: pointer; text-align: left; }
+.cycling-unavailable { border: 1px solid var(--line); padding: 16px; border-radius: 10px; }
+.cycling-unavailable p { margin-bottom: 0; font-size: 14px; line-height: 1.5; }
+.legend-climb { background: #c15a17; }
+.legend-descent { background: #287caf; }
+.legend-bike { border: 0; background: #195e4d; }
+.legend-bike-only { border: 0; background: #76558e; }
 .map-panel { scroll-margin-top: 16px; }
 .map-instruction { flex-basis: 100%; padding: 7px 10px; border-radius: 7px;
   background: #fffffff2; color: #31473b; font-size: 14px; line-height: 1.4; pointer-events: none; }

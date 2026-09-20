@@ -1,6 +1,6 @@
 # App roadmap: bike + public transport
 
-_Updated 2026-09-20. This document records the requested future work; it does not mean these features are already implemented._
+_Updated 2026-09-20. Implemented features are identified below; remaining work is not implied to be delivered._
 
 ## Product direction
 
@@ -33,19 +33,23 @@ Each result is a complete journey, not a disconnected collection of legs. A sing
 
 Up to **four intermediate stops** can be added by map or address search, reordered and removed. Reverse route reverses endpoints and stop order. The planner must visit stops in that order; the cycling-only comparison includes them too. Transit acquisition uses reachable arrival times for onward stages, and cycling, boarding and elapsed-time budgets remain shared across the whole journey. Stopover duration is currently zero; boarding buffers still apply.
 
-**Current limits:** Cycling is still straight-line distance at 15 km/h. Bicycle carriage, reservations and capacity are not checked. Timetable discovery is a bounded sample and can miss connections. Map naming and tiles depend on external services. This update adds no road-routing, amenity or community service. See [the mathematical model](MATHEMATICAL_MODEL.md) and [verification log](EXPERIMENTS.md).
+**Cycling implementation:** Every accepted cycling leg now follows a directed BRouter road route, whose duration determines train readiness and budgets. The cycling-only comparison, map-linked elevation profile, ascent/descent, steep/final climbs and surface/infrastructure breakdowns are implemented. Posted limits use explicit provider-normalized bands; exact sign values and richer conditional access remain open. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
+
+**Current limits:** Bicycle carriage, reservations, capacity and station entrances are not checked. Timetable and cycling discovery are bounded and can miss connections. No amenity or community service is added. See [the mathematical model](MATHEMATICAL_MODEL.md) and [verification log](EXPERIMENTS.md).
 
 ## Recommended delivery order
 
 | Priority | Work | Completion criteria |
 |---|---|---|
-| 1 | Real cycling routes and routing-engine evaluation | Cycling follows legal, connected roads/paths; those durations determine train catchability. Compare fixed Swiss cases against a configured routing engine and record omissions. |
+| 1 | Routed cycling delivered; field validation and engine evaluation remain | Cycling follows legal, connected roads/paths; those durations determine train catchability. Compare fixed Swiss cases against a configured routing engine and record omissions. |
 | 2 | Bicycle carriage and station guidance | Every transit leg distinguishes allowed, prohibited and unknown; reservation requirements and capacity are separate fields, with sources and update dates. |
-| 3 | Road profile and useful nearby services | Route distance/elevation/surface summaries have known coverage; repair and parking locations have useful details without invented availability. |
+| 3 | Core road profile delivered; richer attributes and nearby services remain | Route distance/elevation/surface summaries have known coverage; repair and parking locations have useful details without invented availability. |
 | 4 | Commuting, bikepacking and expert controls | Presets use the same underlying engine and explain constraints; advanced options expose supported attributes and disclose missing data. |
 | 5 | Saved journeys and community pilot | Users can save/share a route with context; live schedules and operator rules are refreshed before reuse. |
 
 ### 1. Real cycling routes and an engine decision
+
+**Status:** Core geometry, routed time feasibility and the profile/road summaries listed below are implemented. Exact speed limits, roughness/barrier detail, entrance validation and the OTP benchmark are not. The following requirements remain the reference for further validation.
 
 Replace geometric links with a cycling route for **every** access, egress, required stop and automatic cycling transfer. Use routed distance and time for feasibility as well as drawing: a prettier line alone would leave missed trains and false shortcuts unresolved. Do not silently fall back to a straight line and call it a navigable route when a router fails.
 

@@ -1,4 +1,5 @@
-export const BIKE_SPEED_KMH = 15;
+import type { CyclingRoute } from "./cycling.ts";
+export const BIKE_SPEED_KMH = 15; // Legacy synthetic experiment only; live journeys use road-route durations.
 export const MAX_BIKE_MINUTES = 20;
 export const MAX_BIKE_DISTANCE_KM =
   (BIKE_SPEED_KMH * MAX_BIKE_MINUTES) / 60;
@@ -21,6 +22,7 @@ export type Station = Point & {
   distanceKm: number;
   bikeMinutes: number;
   kind?: string;
+  cyclingRoute?: CyclingRoute;
 };
 
 export type Journey = {
@@ -56,6 +58,7 @@ export type TransitLeg = {
   fromPoint?: Point;
   toPoint?: Point;
   geometry?: Point[];
+  cyclingRoute?: CyclingRoute;
 };
 
 export function haversineKm(a: Point, b: Point): number {
@@ -79,6 +82,7 @@ export type CyclingComparison = {
   distanceKm: number;
   minutes: number;
   arrival: Date;
+  routes?: CyclingRoute[];
 };
 
 // A reference estimate, independent of transit budgets and category selection.

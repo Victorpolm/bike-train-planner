@@ -30,7 +30,7 @@ The bicycle should be treated as accompanying the traveller through the journey,
 - Departure defaults to Leave now, with an explicit Swiss date/time option. The arrival window is now 24 hours including waiting, so late-evening searches can retain next-morning services. Remaining station-pair slots prioritize rail candidates after the nearest pair; adjacent bus stops no longer consume the whole initial batch.
 - Map click/tap sets start, finish or an intermediate stop; draggable A/B/V markers and named fields preserve exact coordinates. Up to four requested stops can be reordered/removed, and the route reversed. A separate stage-aware solver visits them in order with one global cycling/boarding/time budget. Baseline allows cycling at each requested stage's ends; Extended adds at most one automatic cycling transfer across the whole journey. Stopover time is zero. Two station pairs per stage share the existing 18-request limit; via searches do not add departure-board discovery.
 
-The solver uses Pareto labels on a finite, sampled timetable graph. Walking now contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. It is not a complete Swiss routing engine. Cycling, including the cycling-only comparison, is still estimated from straight-line distance at 15 km/h. The comparison is published before timetable acquisition and remains available after service failures. For this experiment, bicycle availability after transit is assumed and carriage/reservation constraints are explicitly deferred.
+The solver uses Pareto labels on a finite, sampled timetable graph. Walking contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. The production planner now uses directed BRouter road routes and terrain-aware estimated times for all accepted cycling legs, including access, egress, required visits and automatic transfers. Missing routes are excluded, never replaced by geometric estimates. The independent cycling-only reference appears when its routed stages are ready. Profiles linked to the map show ascent/descent, steep/final climbs, infrastructure, surfaces and approximate posted-speed bands with explicit unknowns. This remains a sampled planner; bicycle carriage/reservation and platform access are unverified. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
 
 See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominance, defaults, API limits and implementation boundaries, and [EXPERIMENTS.md](EXPERIMENTS.md) for verification.
 
@@ -43,7 +43,7 @@ See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominan
 - OpenTripPlanner as the first serious routing-engine candidate rather than writing the entire multimodal router from scratch.
 - MapLibre is the likely serious map direction; v0 currently uses Leaflet.
 - PostgreSQL/PostGIS when custom spatial storage/querying becomes useful.
-- Swiss elevation data later for slope-aware routing.
+- BRouter/SRTM elevation now supports route profiles; evaluate higher-resolution Swiss terrain and rider calibration later.
 - Bicycle carriage rules likely need a separate structured subsystem because timetable data alone may be insufficient.
 
 ## Current routing model
@@ -97,7 +97,9 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
 
-**2026-09-20 update:** The map/ordered-stop implementation and future [app roadmap](APP_ROADMAP.md) are complete. The roadmap captures real cycling routes and profiles, repair and parking, bicycle rules, commuting/bikepacking/expert presets, comfort research and the later community vision. Only map selection and ordered stops are implemented in this update. Automated verification now has 69 passing tests; map dragging/touch still needs a browser check because the managed preview service was unavailable. Live naming fell back to coordinates in this environment; its successful response parsing and failure behavior are covered with controlled responses.
+**2026-09-20 cycling update:** Road routes and their durations now feed timetable queries and both solvers. The map-linked cycling profile and road-attribute breakdowns are implemented. Automated verification has 81 passing tests plus a successful TypeScript/production build. A real Renens–EPFL road response and a live multimodal check are documented in [EXPERIMENTS.md](EXPERIMENTS.md). Managed preview remains unavailable, so the new profile interactions still need desktop/mobile checking. Exact posted speed signs cannot be recovered from the current provider; bands and unknowns are explicit.
+
+**2026-09-20 map update:** The map/ordered-stop implementation and future [app roadmap](APP_ROADMAP.md) are complete. The roadmap captures real cycling routes and profiles, repair and parking, bicycle rules, commuting/bikepacking/expert presets, comfort research and the later community vision. Only map selection and ordered stops are implemented in this update. Automated verification now has 69 passing tests; map dragging/touch still needs a browser check because the managed preview service was unavailable. Live naming fell back to coordinates in this environment; its successful response parsing and failure behavior are covered with controlled responses.
 
 **2026-09-05 update:** The user has authorized implementation and app changes after the mathematical discussion. This supersedes the earlier pause on routing changes. The Baseline/Extended switch, categories, bounded graph solver and bus-inclusive discovery are implemented.
 
@@ -108,7 +110,7 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 1. Try both models on 3–6 fixed real journeys and judge whether the cycling comparison, active-time trade-offs and boarding/alighting map pins are useful.
 2. Capture exact endpoints, departure times, returned legs, failures and search cost for those cases.
 3. Compare the sampled prototype with OpenTripPlanner and complete Swiss timetable/street data.
-4. Replace straight-line cycling with routed cycling before claiming practical transfer feasibility.
+4. Validate routed cycling times, final climbs and station entrances against real rides; obtain exact speed-limit/conditional-access attributes. Routing alone does not certify transfer feasibility.
 5. Introduce bicycle carriage and reservation constraints after this mathematical experiment, as requested by the user.
 6. Continue user interviews before major frontend investment.
 

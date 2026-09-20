@@ -1,4 +1,6 @@
-import { cyclingMinutes, haversineKm, type Place, type Point, type Station } from "./routing.ts";
+import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station } from "./routing.ts";
+import { CyclingClient } from "./cyclingClient.ts";
+import { cyclingKey, MAX_CYCLING_SPEED_KMH, samePlace } from "./cycling.ts";
 import { MAJOR_STATIONS } from "./majorStations.ts";
 import { type TransportSection } from "./itinerary.ts";
 import { addSections, addStationboard, readStop, type BoardJourney } from "./timetable.ts";
@@ -175,15 +177,113 @@ export type SearchSession = {
   origin: Place; destination: Place; start: Date; options: Options; network: Network; client: TimetableClient;
   originStations: Station[]; destinationStations: Station[]; baseline: Solution; extended: Solution | null; extendedComplete?: boolean;
   waypoints?: Place[];
+  cyclingClient?: CyclingClient;
+  comparisonClient?: CyclingClient;
+  cyclingComparison?: CyclingComparison | null;
+  cyclingStatus?: "loading" | "ready" | "unavailable";
+  cyclingTask?: Promise<void>;
+  transferCyclingAttempts?: Set<string>;
+  cyclingCandidatePools?: Map<string, Station[]>;
 };
 export function searchWarnings(session: SearchSession): string[] {
-  const warnings = [...session.client.warnings];
+  const warnings = [...session.client.warnings, ...session.cyclingClient?.warnings ?? [], ...session.comparisonClient?.warnings ?? []];
   if (session.client.rejectedSections) warnings.push("Some sections lacked usable stops or times and were excluded.");
   if (session.baseline.limited || session.extended?.limited) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
   return warnings;
 }
 
 export type SearchUpdate = (session: SearchSession) => void;
+async function roadCandidates(session: SearchSession, point: Place, maxMinutes: number, direction: "access" | "egress" | "both",
+  progress: Progress, expand = false, complete = false): Promise<Station[]> {
+  const pools = session.cyclingCandidatePools ??= new Map<string, Station[]>(), key = `${point.lat},${point.lon}:${maxMinutes}`;
+  const candidates = !expand && pools.has(key) ? pools.get(key)!
+    : await findCandidateStations(point, maxMinutes * (session.cyclingClient ? MAX_CYCLING_SPEED_KMH / 15 : 1), session.client, progress, expand);
+  pools.set(key, candidates);
+  if (!session.cyclingClient) return candidates;
+  const result: Station[] = [];
+  for (const stop of candidates) {
+    progress(`Checking cycling paths near ${point.label}…`);
+    if (direction !== "egress") await session.cyclingClient.route(point, stop);
+    if (direction !== "access") await session.cyclingClient.route(stop, point);
+    const access = atEndpoint(stop, point, session.network), egress = atEndpoint(stop, point, session.network, "egress");
+    const candidate = direction === "access" ? access : direction === "egress" ? egress : access.bikeMinutes <= egress.bikeMinutes ? access : egress;
+    if (candidate.bikeMinutes <= maxMinutes) {
+      result.push(candidate);
+      // One verified access and egress suffice to query and publish a first trip.
+      // Check the rest after that first timetable response, not before it.
+      if (!complete && !expand) break;
+    }
+  }
+  return result.sort((a, b) => a.bikeMinutes - b.bikeMinutes);
+}
+
+async function prepareObservedCycling(session: SearchSession, progress: Progress) {
+  if (!session.cyclingClient) return;
+  const { network, cyclingClient, options } = session;
+  const boarding = new Set([...network.edges.values()].filter(e => e.leg.mode === "transit").map(e => e.from));
+  const arrival = new Set([...network.edges.values()].map(e => e.to));
+  const points = [session.origin, ...session.waypoints ?? [], session.destination];
+  for (let index = 0; index < points.length; index++) {
+    const point = points[index];
+    for (const direction of ["access", "egress"] as const) {
+      if (index === 0 && direction === "egress" || index === points.length - 1 && direction === "access") continue;
+      const limit = Math.min(options.maxBikeMinutes, direction === "access" ? options.maxAccessMinutes : options.maxEgressMinutes);
+      const stops = [...network.stops.values()].filter(s => (direction === "access" ? boarding : arrival).has(s.id)
+        && (samePlace(s, point) || haversineKm(s, point) / MAX_CYCLING_SPEED_KMH * 60 <= limit))
+        .sort((a, b) => haversineKm(a, point) - haversineKm(b, point)).slice(0, 4);
+      for (const stop of stops) {
+        const from = direction === "access" ? point : stop, to = direction === "access" ? stop : point;
+        if (network.cycling!.has(cyclingKey(from, to)) || samePlace(from, to)) continue;
+        progress(`Checking the cycling link at ${stop.name}…`);
+        await cyclingClient.route(from, to);
+      }
+    }
+  }
+}
+async function prepareWaypointTransfers(session: SearchSession, progress: Progress) {
+  if (!session.cyclingClient || !session.waypoints?.length || session.options.maxIntermediateMinutes <= 0) return;
+  const { network, options, cyclingClient } = session;
+  const attempts = session.transferCyclingAttempts ??= new Set<string>();
+  const origins = [...new Set([...network.edges.values()].map(e => e.to))].map(id => network.stops.get(id)!);
+  const destinations = [...new Set([...network.edges.values()].filter(e => e.leg.mode === "transit").map(e => e.from))].map(id => network.stops.get(id)!);
+  const pairs = origins.flatMap(a => destinations.filter(b => a.id !== b.id && haversineKm(a, b) > .001
+    && haversineKm(a, b) / MAX_CYCLING_SPEED_KMH * 60 <= options.maxIntermediateMinutes).map(b => [a, b] as const))
+    .sort(([a, b], [c, d]) => haversineKm(a, b) - haversineKm(c, d));
+  for (const [a, b] of pairs) {
+    const key = cyclingKey(a, b);
+    if (attempts.size >= 4) break;
+    if (attempts.has(key) || network.cycling!.has(key)) continue;
+    attempts.add(key); progress(`Checking a cycling transfer between ${a.name} and ${b.name}…`);
+    await cyclingClient.route(a, b);
+  }
+}
+async function refreshRoads(session: SearchSession, extended: boolean, publish: SearchUpdate, progress: Progress) {
+  refresh(session, extended, publish);
+  await prepareObservedCycling(session, progress);
+  if (extended) await prepareWaypointTransfers(session, progress);
+  refresh(session, extended, publish);
+}
+function startCyclingComparison(session: SearchSession, publish: SearchUpdate, fetcher?: typeof fetch, gapMs?: number) {
+  if (!session.cyclingClient) return;
+  const points = [session.origin, ...session.waypoints ?? [], session.destination];
+  // One separate serial stream keeps a long bicycle-only route from blocking
+  // short station access. Transit and cycling cards publish independently.
+  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher);
+  session.comparisonClient = client;
+  session.cyclingTask = (async () => {
+    const routes = [];
+    for (let i = 1; i < points.length; i++) {
+      const route = await client.route(points[i - 1], points[i]);
+      if (route) { routes.push(route); session.network.cycling!.set(cyclingKey(points[i - 1], points[i]), route); }
+    }
+    session.cyclingComparison = routes.length === points.length - 1 ? {
+      distanceKm: routes.reduce((sum, r) => sum + r.distanceKm, 0), minutes: routes.reduce((sum, r) => sum + r.minutes, 0),
+      arrival: new Date(session.start.getTime() + routes.reduce((sum, r) => sum + r.minutes, 0) * 60_000), routes,
+    } : null;
+    session.cyclingStatus = session.cyclingComparison ? "ready" : "unavailable";
+    if (!session.client.signal.aborted) publish({ ...session });
+  })().catch(() => { session.cyclingStatus = "unavailable"; });
+}
 function refresh(session: SearchSession, extended: boolean, publish: SearchUpdate) {
   if (session.waypoints?.length) {
     const points = [session.origin, ...session.waypoints, session.destination];
@@ -204,7 +304,8 @@ function refresh(session: SearchSession, extended: boolean, publish: SearchUpdat
 // Dependency injection keeps the actual async acquisition flow testable without live HTTP.
 export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
-  dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[] } = {}): Promise<SearchSession> {
+  dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[];
+    cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch } = {}): Promise<SearchSession> {
   validateOptions(options);
   if ((dependencies.waypoints?.length ?? 0) > MAX_WAYPOINTS) throw new Error(`Choose up to ${MAX_WAYPOINTS} intermediate stops.`);
   const start = dependencies.start ?? new Date();
@@ -213,38 +314,49 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   const [origin, destination, ...waypoints] = await Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]);
   signal.throwIfAborted();
   const client = new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
+  const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher);
+  if (cyclingClient) network.cycling = cyclingClient.routes;
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
-    originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null, waypoints };
+    originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null, waypoints,
+    cyclingClient, cyclingStatus: cyclingClient ? "loading" : undefined };
   // Show the cycling-only reference as soon as the places resolve, including
   // while stop/timetable requests are pending or ultimately fail.
   publish({ ...session });
+  startCyclingComparison(session, publish, dependencies.cyclingFetcher, dependencies.gapMs);
   if (waypoints.length) return planWaypointStages(session, mode, progress, publish);
-  session.originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress);
+  session.originStations = await roadCandidates(session, origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), "access", progress);
   publish({ ...session });
-  session.destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress);
+  session.destinationStations = await roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress);
   publish({ ...session });
   if (!session.originStations.length || !session.destinationStations.length) throw new Error(
-    client.failures ? "Stop lookup was incomplete. Please try again." : "No stop was found within your cycling preference. Try More cycling, or a nearby stop.");
+    client.failures || cyclingClient?.warnings.size ? "Some station access routes could not be checked. Try again or choose a nearby station entrance." : "No stop was found within your cycling preference. Try More cycling, or a nearby stop.");
+  client.beginPhase();
   const queried = new Set<string>();
-  const queryPairs = async () => {
+  const queryPairs = async (limit = SEARCH_LIMITS.baselinePairs) => {
     for (const s of [...session.originStations, ...session.destinationStations]) network.stops.set(s.id, s);
-    const pairs = selectStationPairs(session.originStations, session.destinationStations, options.maxBikeMinutes, queried);
+    const pairs = selectStationPairs(session.originStations, session.destinationStations, options.maxBikeMinutes, queried, limit);
     for (const [a, b] of pairs) {
       progress(session.baseline.journeys.length ? "Your first options are ready. Checking a few alternatives…" : `Finding connections from ${a.name} to ${b.name}…`);
       queried.add(`${a.id}:${b.id}`);
       await connections(network, client, a, b, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000));
       signal.throwIfAborted();
-      refresh(session, mode === "extended", publish);
+      await refreshRoads(session, mode === "extended", publish, progress);
     }
   };
   await queryPairs();
+  if (cyclingClient && queried.size < SEARCH_LIMITS.baselinePairs) {
+    session.originStations = await roadCandidates(session, origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), "access", progress, false, true);
+    session.destinationStations = await roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress, false, true);
+    await queryPairs(SEARCH_LIMITS.baselinePairs - queried.size);
+  }
   if (!session.baseline.journeys.length && !session.extended?.journeys.length && !client.failures) {
     // Expensive catchment discovery is a fallback, not a prerequisite for easy trips.
-    session.originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress, true);
-    session.destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress, true);
+    session.originStations = await roadCandidates(session, origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), "access", progress, true);
+    session.destinationStations = await roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress, true);
     await queryPairs();
   }
   if (mode === "extended") return extend(session, progress, publish);
+  await session.cyclingTask;
   refresh(session, false, publish);
   return { ...session };
 }
@@ -252,6 +364,8 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
 export async function extend(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
   if (session.extendedComplete) return session;
   if (session.waypoints?.length) {
+    session.cyclingClient?.beginPhase();
+    await prepareWaypointTransfers(session, progress);
     session.extendedComplete = true;
     refresh(session, true, publish);
     return { ...session };
@@ -259,6 +373,7 @@ export async function extend(session: SearchSession, progress: Progress, publish
   refresh(session, true, publish);
   const { network, client, options: o, origin, destination, start } = session;
   client.beginPhase();
+  session.cyclingClient?.beginPhase();
   if (o.maxBoardings >= 2 && o.maxIntermediateMinutes > 0) {
     // Departure-board seeds let Extended find opportunities even when no complete
     // baseline connection was returned. They do not depend on baseline success.
@@ -269,7 +384,7 @@ export async function extend(session: SearchSession, progress: Progress, publish
         id: station.id, datetime: `${dt.date} ${dt.time}`, limit: "6",
       }));
       client.rejectedSections += addStationboard(network, data?.stationboard ?? []);
-      refresh(session, true, publish);
+      await refreshRoads(session, true, publish, progress);
     }
     const reach = solve(network, origin, destination, start, o, "baseline");
     const exits = reach.reachable.filter(l => l.boardings > 0 && l.boardings < o.maxBoardings && !l.needsTransit)
@@ -282,11 +397,14 @@ export async function extend(session: SearchSession, progress: Progress, publish
       progress(`Checking a cycling transfer near ${from.name}…`);
       const candidates = [...await nearby(from, client), ...MAJOR_STATIONS.map(s => ({ ...s, kind: "train" }))];
       const neighbors = [...new Map(candidates.map(s => [s.id, s])).values()]
-        .filter(s => s.id !== id && cyclingMinutes(haversineKm(from, s)) > 0 && cyclingMinutes(haversineKm(from, s)) <= o.maxIntermediateMinutes)
+        .filter(s => s.id !== id && haversineKm(from, s) > .001 && (session.cyclingClient
+          ? haversineKm(from, s) / MAX_CYCLING_SPEED_KMH * 60 : cyclingMinutes(haversineKm(from, s))) <= o.maxIntermediateMinutes)
         .sort((a, b) => haversineKm(a, destination) - haversineKm(b, destination) || a.id.localeCompare(b.id))
         .slice(0, SEARCH_LIMITS.neighborsPerTransfer);
       for (const neighbor of neighbors) {
-        const minutes = cyclingMinutes(haversineKm(from, neighbor));
+        const route = session.cyclingClient ? await session.cyclingClient.route(from, neighbor) : null;
+        const minutes = session.cyclingClient ? route?.minutes ?? Infinity : cyclingMinutes(haversineKm(from, neighbor));
+        if (minutes > o.maxIntermediateMinutes) continue;
         // Do not discard slower labels with less cycling or fewer boardings.
         const feasibleLabels = exits.filter(l => l.stop === id && l.bike + minutes <= o.maxBikeMinutes);
         if (!feasibleLabels.length) continue;
@@ -296,7 +414,7 @@ export async function extend(session: SearchSession, progress: Progress, publish
           if (queries >= SEARCH_LIMITS.suffixQueries) break;
           queries++;
           await connections(network, client, neighbor, end, ready);
-          refresh(session, true, publish);
+          await refreshRoads(session, true, publish, progress);
         }
       }
     }
@@ -305,6 +423,7 @@ export async function extend(session: SearchSession, progress: Progress, publish
   progress("Selecting useful trade-offs in both models…");
   // Refresh BOTH solutions on the identical expanded graph. No data/mode confound.
   session.extendedComplete = true;
+  await session.cyclingTask;
   refresh(session, true, publish);
   return { ...session };
 }
@@ -315,7 +434,8 @@ async function planWaypointStages(session: SearchSession, mode: ModelMode, progr
   for (let index = 0; index < points.length; index++) {
     const limit = index === 0 ? options.maxAccessMinutes : index === points.length - 1 ? options.maxEgressMinutes
       : Math.max(options.maxAccessMinutes, options.maxEgressMinutes);
-    const stops = await findCandidateStations(points[index], Math.min(limit, options.maxBikeMinutes), client, progress);
+    const stops = await roadCandidates(session, points[index], Math.min(limit, options.maxBikeMinutes),
+      index === 0 ? "access" : index === points.length - 1 ? "egress" : "both", progress);
     client.signal.throwIfAborted();
     candidates.push(stops);
     for (const stop of stops) network.stops.set(stop.id, stop);
@@ -323,12 +443,14 @@ async function planWaypointStages(session: SearchSession, mode: ModelMode, progr
     if (index === points.length - 1) session.destinationStations = stops;
     refresh(session, mode === "extended", publish);
   }
+  await session.cyclingTask;
+  client.beginPhase();
   // Two station pairs per stage share the SAME request/time budget. Query an
   // onward stage from an actually reachable waypoint time, never from the
   // original departure or an independently optimized route.
   for (let stage = 0; stage < points.length - 1; stage++) {
-    const from = candidates[stage].filter(s => s.bikeMinutes <= options.maxAccessMinutes);
-    const to = candidates[stage + 1].filter(s => s.bikeMinutes <= options.maxEgressMinutes);
+    const from = candidates[stage].map(s => atEndpoint(s, points[stage], network)).filter(s => s.bikeMinutes <= options.maxAccessMinutes);
+    const to = candidates[stage + 1].map(s => atEndpoint(s, points[stage + 1], network, "egress")).filter(s => s.bikeMinutes <= options.maxEgressMinutes);
     const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2);
     for (const [a, b] of pairs) {
       const reachable = solveWaypoints(network, points, start, options, mode).stageArrivals[stage];
@@ -336,7 +458,7 @@ async function planWaypointStages(session: SearchSession, mode: ModelMode, progr
       progress(`Checking stage ${stage + 1} of ${points.length - 1}: ${points[stage].label} → ${points[stage + 1].label}…`);
       await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000));
       client.signal.throwIfAborted();
-      refresh(session, mode === "extended", publish);
+      await refreshRoads(session, mode === "extended", publish, progress);
     }
   }
   session.extendedComplete = mode === "extended";

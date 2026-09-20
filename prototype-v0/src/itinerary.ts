@@ -69,6 +69,7 @@ export type JourneyStep = {
   departure: Date | null;
   arrival: Date | null;
   leg?: TransitLeg;
+  cyclingRoute?: TransitLeg["cyclingRoute"];
 };
 
 export function journeySteps(journey: Journey, origin: Place, destination: Place): JourneyStep[] {
@@ -81,7 +82,7 @@ export function journeySteps(journey: Journey, origin: Place, destination: Place
       // Zero-length waypoint visits still make the required visit visible.
       if (leg.mode !== "bike" || leg.arrival!.getTime() > leg.departure!.getTime() || leg.service.includes("intermediate")) {
         steps.push({ mode: leg.mode, title: leg.service, from: leg.from, to: leg.to,
-          departure: leg.departure, arrival: leg.arrival, leg });
+          departure: leg.departure, arrival: leg.arrival, leg, cyclingRoute: leg.cyclingRoute });
       }
       if (leg.arrival) previous = leg.arrival;
     }
@@ -91,6 +92,7 @@ export function journeySteps(journey: Journey, origin: Place, destination: Place
   const steps: JourneyStep[] = [{
     mode: "bike", title: "Bike to the station", from: origin.label,
     to: journey.originStation.name, departure: journey.startTime, arrival: bikeArrival,
+    cyclingRoute: journey.originStation.cyclingRoute,
   }];
 
   const addWait = (departure: Date | null, arrival: Date | null, from: string | null, to: string | null, title: string) => {
@@ -112,7 +114,7 @@ export function journeySteps(journey: Journey, origin: Place, destination: Place
     if (previous) addWait(previous.arrival, leg.departure, previous.to, leg.from, "Connection time");
     steps.push({
       mode: leg.mode, title: leg.service, from: leg.from, to: leg.to,
-      departure: leg.departure, arrival: leg.arrival, leg,
+      departure: leg.departure, arrival: leg.arrival, leg, cyclingRoute: leg.cyclingRoute,
     });
   });
 
@@ -120,6 +122,7 @@ export function journeySteps(journey: Journey, origin: Place, destination: Place
     mode: "bike", title: "Bike to your destination", from: journey.destinationStation.name,
     to: destination.label, departure: journey.arrival,
     arrival: new Date(journey.arrival.getTime() + journey.destinationStation.bikeMinutes * 60_000),
+    cyclingRoute: journey.destinationStation.cyclingRoute,
   });
   return steps;
 }
