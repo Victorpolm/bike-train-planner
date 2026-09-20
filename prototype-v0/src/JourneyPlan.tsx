@@ -1,6 +1,7 @@
 import { journeySteps } from "./itinerary";
 import { formatMinutes, type Journey, type Place } from "./routing";
 import { journeyStops } from "./mapData";
+import BusCarriageDetails from "./BusCarriageDetails";
 
 const clock = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit",
@@ -45,6 +46,7 @@ export default function JourneyPlan({
               </div>
               {leg?.direction && <p className="plan-service">Direction {leg.direction}</p>}
               {extraServiceName && <p className="plan-service">Service {leg.serviceName}</p>}
+              {leg?.operator && <p className="plan-service">Operator {leg.operator}</p>}
               <div className="plan-stop">
                 <PlanTime date={step.departure} start={journey.startTime} />
                 <div><span className="plan-stop-label">From {leg?.fromId && stopNumbers.has(leg.fromId) && `(map ${stopNumbers.get(leg.fromId)})`} </span><strong>{step.from ?? "Departure stop unavailable"}</strong>
@@ -60,11 +62,12 @@ export default function JourneyPlan({
               {step.mode === "bike" && <p className="plan-note">{step.cyclingRoute
                 ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
                 : "Cycling route details unavailable."}</p>}
+              {leg && <BusCarriageDetails leg={leg} />}
             </li>
           );
         })}
       </ol>
-      <p className="plan-caution">This experiment assumes a bicycle is available after transit; carriage and reservation rules are deferred. Times and platforms come from the timetable service.</p>
+      <p className="plan-caution">Bus guidance covers a standard, unfolded bicycle; confirm the exact departure and any reservation with the operator. Train, tram and other carriage rules remain unverified. Times and platforms come from the timetable service.</p>
     </section>
   );
 }

@@ -214,6 +214,18 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Presentation and verification:** Explain the shared journey window next to the choice and suggest the new preset when ordinary cycling limits exclude a search. Do not suggest raising the allowance when already selected. Controlled production-flow and solver cases cover 300 cycling minutes across access/egress, a 180-minute automatic transfer, 360 minutes via a requested stop, missed onward trains, shorter eligible routes and arrivals beyond 24 hours. See [EXPERIMENTS.md](EXPERIMENTS.md).
 
+## 2026-09-20 — Include buses with explicit bicycle-carriage uncertainty
+
+**Request:** The user now authorizes consideration of buses that take bicycles. This advances the previously deferred carriage work, with bus policies as the first slice.
+
+**Finding:** Buses were already in the timetable graph, but normalization discarded operator/category evidence and routing had no bicycle-carriage predicate. The documented public API does not supply per-departure bicycle permission, reservation availability or bike-space counts. Official operator rules have conditions and exceptions.
+
+**Decision:** Preserve the metadata, maintain a small sourced policy registry, and expose conditional, prohibited and unknown bus carriage. Default to matched conditional policies; allow an explicit unverified-bus opt-in and an avoid-buses choice. Matched prohibitions remain exclusions in every setting. Apply the filter before label dominance in Baseline, Extended and ordered-stop routing; preserve excluded observations for explanations. Recognized replacement markers remain unknown unless an operator prohibition applies.
+
+**Presentation:** A visible bus preference, carriage notice on each result, per-leg boarding/ticket/reservation guidance, source/review date and bicycle status on map pins. Cover a standard unfolded bicycle only. State that live space and individual departures are unverified; never present an operator policy as a booked or guaranteed place. Other transit modes remain explicitly outside this initial policy coverage.
+
+**Validation/next:** Controlled preference/dominance, waypoint, production adapter, station-board, metadata and recorded Zürich–Laax tests pass. The older reduced Libingen fixture now opts into unverified buses for its historical timing test because it omitted operators. Extend verified identifiers and obtain trip-level bicycle rules before claiming confirmed compatibility. See [BUS_BICYCLES.md](BUS_BICYCLES.md).
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

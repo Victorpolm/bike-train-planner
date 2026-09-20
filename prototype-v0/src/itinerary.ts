@@ -12,6 +12,7 @@ export type TransportStop = {
 export type TransportSection = {
   journey?: {
     category?: string | null;
+    operator?: string | number | null;
     number?: string | number | null;
     name?: string | null;
     to?: string | null;
@@ -54,6 +55,8 @@ export function transitLegsFromSections(sections?: TransportSection[] | null): T
           || service.name || "Transit service"
         : mode === "walk" ? "Transfer on foot" : "Transfer details unavailable",
       serviceName: service?.name || null,
+      category: service?.category?.trim() || null,
+      operator: service?.operator == null ? null : String(service.operator).trim() || null,
       direction: service?.to || null,
       fromId: section.departure?.station?.id ?? undefined,
       toId: section.arrival?.station?.id ?? undefined,

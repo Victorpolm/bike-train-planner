@@ -10,6 +10,7 @@ import { atEndpoint, compareModels, emptyNetwork, solve, validateOptions,
 import { fetchJson, HttpError } from "./http.ts";
 import { geocode, MAX_WAYPOINTS, type TransportLocation } from "./places.ts";
 import { solveWaypoints } from "./waypoints.ts";
+import { transitAllowed } from "./busCarriage.ts";
 export { geocode } from "./places.ts";
 
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
@@ -234,8 +235,9 @@ async function roadCandidates(session: SearchSession, point: Place, maxMinutes: 
 async function prepareObservedCycling(session: SearchSession, progress: Progress) {
   if (!session.cyclingClient) return;
   const { network, cyclingClient, options } = session;
-  const boarding = new Set([...network.edges.values()].filter(e => e.leg.mode === "transit").map(e => e.from));
-  const arrival = new Set([...network.edges.values()].map(e => e.to));
+  const usable = [...network.edges.values()].filter(e => transitAllowed(e.leg, options.busPreference));
+  const boarding = new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from));
+  const arrival = new Set(usable.map(e => e.to));
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
   for (let index = 0; index < points.length; index++) {
     const point = points[index];
@@ -258,8 +260,9 @@ async function prepareWaypointTransfers(session: SearchSession, progress: Progre
   if (!session.cyclingClient || !session.waypoints?.length || session.options.maxIntermediateMinutes <= 0) return;
   const { network, options, cyclingClient } = session;
   const attempts = session.transferCyclingAttempts ??= new Set<string>();
-  const origins = [...new Set([...network.edges.values()].map(e => e.to))].map(id => network.stops.get(id)!);
-  const destinations = [...new Set([...network.edges.values()].filter(e => e.leg.mode === "transit").map(e => e.from))].map(id => network.stops.get(id)!);
+  const usable = [...network.edges.values()].filter(e => transitAllowed(e.leg, options.busPreference));
+  const origins = [...new Set(usable.map(e => e.to))].map(id => network.stops.get(id)!);
+  const destinations = [...new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from))].map(id => network.stops.get(id)!);
   const pairs = origins.flatMap(a => destinations.filter(b => a.id !== b.id && haversineKm(a, b) > .001
     && haversineKm(a, b) / MAX_CYCLING_SPEED_KMH * 60 <= options.maxIntermediateMinutes).map(b => [a, b] as const))
     .sort(([a, b], [c, d]) => haversineKm(a, b) - haversineKm(c, d));

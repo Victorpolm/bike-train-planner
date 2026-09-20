@@ -12,6 +12,8 @@ For local Git setup and the publishing workflow, see [Website access and develop
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 
+**Buses with bicycles:** [Bus carriage rules](docs/BUS_BICYCLES.md) documents the new bus preference, sourced operator conditions, prohibited/unverified services, practical boarding information and remaining departure/capacity gaps.
+
 **Next work:** [App roadmap](docs/APP_ROADMAP.md) records routing-engine evaluation, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
 
 ## Core question

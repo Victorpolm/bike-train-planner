@@ -17,7 +17,9 @@ it("retains the recorded daytime Libingen–EPFL journey and includes next-morni
   ] as const) {
     const network = emptyNetwork();
     assert.equal(addSections(network, sample.connections[0].sections), 0);
-    const models = compareModels(network, fixture.origin, fixture.destination, new Date(start), DEFAULT_OPTIONS);
+    // This older reduced fixture omits operators; opt in explicitly rather than invent permission.
+    const options = { ...DEFAULT_OPTIONS, busPreference: "include-unknown" as const };
+    const models = compareModels(network, fixture.origin, fixture.destination, new Date(start), options);
     for (const solution of [models.baseline, models.extended]) {
       const viaVillage = solution.journeys.find(j => j.originStation.id === "8506786" && j.destinationStation.id === "8501118");
       assert.ok(viaVillage);
@@ -28,7 +30,7 @@ it("retains the recorded daytime Libingen–EPFL journey and includes next-morni
     }
     if (sample === fixture.night) {
       const oldWindow = solve(network, fixture.origin, fixture.destination, new Date(start),
-        { ...DEFAULT_OPTIONS, horizonMinutes: 480 }, "baseline");
+        { ...options, horizonMinutes: 480 }, "baseline");
       assert.equal(oldWindow.journeys.length, 0);
     }
   }

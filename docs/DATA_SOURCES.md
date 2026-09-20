@@ -91,6 +91,8 @@ Useful later for:
 
 ## Bicycle carriage rules
 
+**Implemented pilot (2026-09-20):** The app preserves timetable category/operator and applies a separate curated bus-rule registry. [BUS_BICYCLES.md](BUS_BICYCLES.md) lists exact coverage, official PostBus/ZVV/tpg sources and review dates. Unknown rules stay unknown; known bans are excluded, while conditional rules require a departure check. Reservation requirement, reservation availability, ticket requirement and live capacity are separate fields. This supersedes the earlier flat proposed representation below for the implemented bus pilot; the remaining broader sources are still prospective.
+
 This is a distinct subsystem, not just a timetable field.
 
 Rules may depend on:

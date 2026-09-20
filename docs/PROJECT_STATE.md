@@ -24,13 +24,13 @@ The bicycle should be treated as accompanying the traveller through the journey,
 - **Extended:** the same constraints and timetable graph, with at most one intermediate cycling leg; includes Baseline.
 - A model switch appears before search results. A cycling-only reference estimate appears first, then transit categories select fastest, fewest boardings (including the first), and least cycling or walking. An optional fourth minimizes active time at the start or arrival. Duplicate winners share a card.
 - Transit categories require public transport and obey explicit cycling, boarding and duration budgets. The cycling-only reference stays separate, even when it exceeds the transit journey's cycling budget. Exact timetable readiness is checked after cycling and before each boarding.
-- Public-transport discovery includes buses and trams; selected stops are queried first, with independent outward catchment discovery in 20-minute bands used when initial queries return no feasible journey.
+- Public-transport discovery includes buses and trams; selected stops are queried first, with independent outward catchment discovery in 20-minute bands used when initial queries return no feasible journey. The bus preference now filters recognized bus legs using sourced operator policies before either solver prunes labels: conditional rules by default, an explicit unverified-bus opt-in, or no buses. Matched prohibitions are always excluded. Cards, travel plans and map pins show the status; see [BUS_BICYCLES.md](BUS_BICYCLES.md).
 - Clicking a transit card opens every cycling, transit, walking and waiting leg. The map shows the selected route, a cycling-only comparison line, candidate/observed timetable stops and numbered boarding/alighting pins with available services, times and platforms. Pins match numbers in the plan. A toggle and Fit all stops control expose search coverage.
 - The app displays the first usable proposals while alternatives load, reports incomplete searches and keeps proposals when stopped. Debounced address/stop suggestions preserve selected coordinates; the form needs only From, To and the model choice, with optional cycling presets.
 - Departure defaults to Leave now, with an explicit Swiss date/time option. The arrival window is now 24 hours including waiting, so late-evening searches can retain next-morning services. Remaining station-pair slots prioritize rail candidates after the nearest pair; adjacent bus stops no longer consume the whole initial batch.
 - Map click/tap sets start, finish or an intermediate stop; draggable A/B/V markers and named fields preserve exact coordinates. Up to four requested stops can be reordered/removed, and the route reversed. A separate stage-aware solver visits them in order with one global cycling/boarding/time budget. Baseline allows cycling at each requested stage's ends; Extended adds at most one automatic cycling transfer across the whole journey. Stopover time is zero. Two station pairs per stage share the existing 18-request limit; via searches do not add departure-board discovery.
 
-The solver uses Pareto labels on a finite, sampled timetable graph. Walking contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. The production planner now uses directed BRouter road routes and terrain-aware estimated times for all accepted cycling legs, including access, egress, required visits and automatic transfers. Missing routes are excluded, never replaced by geometric estimates. The independent cycling-only reference appears when its routed stages are ready. Profiles linked to the map show ascent/descent, steep/final climbs, infrastructure, surfaces and approximate posted-speed bands with explicit unknowns. This remains a sampled planner; bicycle carriage/reservation and platform access are unverified. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
+The solver uses Pareto labels on a finite, sampled timetable graph. Walking contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. The production planner now uses directed BRouter road routes and terrain-aware estimated times for all accepted cycling legs, including access, egress, required visits and automatic transfers. Missing routes are excluded, never replaced by geometric estimates. The independent cycling-only reference appears when its routed stages are ready. Profiles linked to the map show ascent/descent, steep/final climbs, infrastructure, surfaces and approximate posted-speed bands with explicit unknowns. This remains a sampled planner. The bus pilot checks operator policies, while individual departures, reservations, live capacity, other-mode carriage and platform access remain unverified. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
 
 See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominance, defaults, API limits and implementation boundaries, and [EXPERIMENTS.md](EXPERIMENTS.md) for verification.
 
@@ -44,7 +44,7 @@ See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominan
 - MapLibre is the likely serious map direction; v0 currently uses Leaflet.
 - PostgreSQL/PostGIS when custom spatial storage/querying becomes useful.
 - BRouter/SRTM elevation now supports route profiles; evaluate higher-resolution Swiss terrain and rider calibration later.
-- Bicycle carriage rules likely need a separate structured subsystem because timetable data alone may be insufficient.
+- A separate sourced bus-policy module is implemented. Departure-level restrictions/reservations, capacity, more operators and train/tram rules remain necessary; timetable operator/category metadata alone cannot confirm bicycle carriage.
 
 ## Current routing model
 
@@ -97,6 +97,8 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
 
+**2026-09-20 bus bicycle update:** Added a maintained policy registry for PostBus, tpg and selected Zurich-area operators, known prohibitions, explicit unknown handling and a bus preference shared by Baseline/Extended/requested stops. Guidance is conditional operator information, not confirmed permission on a departure. All **97 tests**, TypeScript and the production build pass. The managed browser preview remains unavailable. See [BUS_BICYCLES.md](BUS_BICYCLES.md) and the latest [experiment](EXPERIMENTS.md).
+
 **2026-09-20 longer-cycling option:** Preferences now offers **Above 150 minutes cycling**. It removes separate total/access/egress/intermediate cycling caps within the same 24-hour whole-journey window, including requested stops, and keeps shorter journeys eligible. Three controlled regressions cover long station access, an Extended transfer and a requested stop; all **89 tests**, TypeScript and the production build pass. Road availability, timetables and bounded sampling can still leave a search without results. See the latest entry in [EXPERIMENTS.md](EXPERIMENTS.md) for verification and limits.
 
 **2026-09-20 warning diagnosis:** Cycling failures now name the affected endpoints and distinguish the independent cycling-only comparison from station-access checks. HTTP 400 is classified using its bounded response detail, so timeouts and unknown request failures no longer masquerade as “no connected path.” Valid proposals remain available. All 86 tests and the build pass. A repeat of the recorded Libingen–EPFL input returned journeys without warnings; the exact newly reported failing coordinates remain unknown.
@@ -117,7 +119,7 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 2. Capture exact endpoints, departure times, returned legs, failures and search cost for those cases.
 3. Compare the sampled prototype with OpenTripPlanner and complete Swiss timetable/street data.
 4. Validate routed cycling times, final climbs and station entrances against real rides; obtain exact speed-limit/conditional-access attributes. Routing alone does not certify transfer feasibility.
-5. Introduce bicycle carriage and reservation constraints after this mathematical experiment, as requested by the user.
+5. Extend the bus-policy pilot with departure-level bicycle restrictions, reservation data and more verified identifiers; then implement train/tram rules and bicycle-type differences.
 6. Continue user interviews before major frontend investment.
 
 ## What is explicitly not a priority yet

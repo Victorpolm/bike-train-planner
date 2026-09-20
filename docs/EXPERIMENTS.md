@@ -419,3 +419,17 @@ Historical timetable tests explicitly select the old geometric experiment to pre
 **Verification:** All **89 automated tests**, TypeScript and the production build pass. The tests use controlled provider responses and exact timestamps, without live service calls. The new UI choice uses the existing preferences select and displays the overall time limit; no browser interaction check is claimed for this change. No dependencies changed.
 
 **Next user check:** Open Preferences → How much cycling? → Above 150 minutes cycling and repeat the original journey. A more generous allowance cannot guarantee a path when routing/timetable data or candidate coverage is insufficient; retain the exact failed-link message and selected coordinates if no route appears.
+
+## 2026-09-20 — Bus bicycle-policy feasibility
+
+**Scope:** Preserve operator/category from connection sections and departure boards. Match the dated [bus policy registry](BUS_BICYCLES.md), filter before routing dominance, and show the same conditional/unknown status in cards, per-leg instructions and map pins. No claim of live bicycle-space or reservation availability is introduced.
+
+**Controlled route:** Four services leave the same stop after the boarding buffer: a prohibited operator arrives at minute 20, an unverified bus at 25, a conditional PostBus at 40, and a train at 60. Both models select minute 40 by default, minute 25 after opting into unverified buses, and minute 60 when buses are avoided. The prohibited bus never enters a result. This detects the important failure where filtering after dominance would lose the slower eligible alternative.
+
+**Ordered stop:** The same bus preference is enforced before a required visit. Catchable onward trains produce arrival minutes 70, 50 and 90 respectively. No forbidden bus bypasses the rule through a stage boundary. A production acquisition test repeats the direct case for all three preferences; timetable observations remain available to explain exclusions.
+
+**Metadata and coverage:** Tests keep missing/numeric/unmatched operators unknown, prevent replacement services inheriting normal operator permission, preserve categories/operators on station-board exit prefixes and deduplicate excluded departures. The recorded Zürich–Chur–Laax fixture retains its 138-minute journey, `PAG` / `B 81` bus, conditional policy, source link and map status. The older reduced Libingen fixture omitted operator fields: its original day/night timing regression explicitly enables unverified buses, rather than adding invented policy metadata. All cycling presets accept all three bus preferences.
+
+**Verification:** **97 automated tests**, TypeScript and the production build pass. Tests use controlled and existing recorded responses; no new live timetable performance or actual bicycle acceptance is claimed. Official policy pages were reviewed on 20 September. Browser preview could not start because the managed preview service was unavailable; no replacement server was started. No dependencies changed.
+
+**Next user check:** Refresh the private site, search Zürich HB → Laax GR, posta and expand a bus leg. Check the bicycle guidance, source and boarding pin. Compare with “Avoid buses”; use “Also include unverified buses” to explore operators outside the initial registry. The source timetable may return different journeys on another date.

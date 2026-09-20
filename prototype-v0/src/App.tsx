@@ -11,6 +11,7 @@ import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
+import { busExclusions, busJourneySummary, type BusPreference } from "./busCarriage";
 
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit" });
 const day = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", day: "numeric", month: "short" });
@@ -37,6 +38,7 @@ function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
 }) {
   const { journey: j, categories, extraMinutes, activeSaved } = proposal;
   const m = metrics(j), finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
+  const busSummary = busJourneySummary(j.transitLegs);
   return <button type="button" className={`journey-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
     <span className="category-badges">{categories.map(c => <span key={c}>{c}</span>)}</span>
@@ -46,6 +48,7 @@ function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
       {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}</span>
     {day.format(finalArrival) !== day.format(j.startTime) && <span className="comparison-caution">Next-day arrival. Total time includes waiting.</span>}
     <span className="route-services">{j.services.join(" → ")}</span>
+    {busSummary && <span className="bus-summary">{busSummary}</span>}
     <span className="cycling-summary"><b>{formatMinutes(m.active)} cycling or walking</b>
       {" "}· cycling ≈ {formatMinutes(m.bike)} · walking {formatMinutes(m.walk)}</span>
     <span className="cycling-summary">Active time at start {formatMinutes(m.activeStart)} · arrival {formatMinutes(m.activeEnd)}
@@ -73,9 +76,10 @@ export default function App() {
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
+  const [busPreference, setBusPreference] = useState<BusPreference>("known-rules");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date(Date.now() + 60 * 60_000)));
-  const options = useMemo(() => preferenceOptions(cycling, endpoint), [cycling, endpoint]);
+  const options = useMemo(() => preferenceOptions(cycling, endpoint, busPreference), [cycling, endpoint, busPreference]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -85,6 +89,7 @@ export default function App() {
   const controller = useRef<AbortController | null>(null);
   const runId = useRef(0);
   const solution = mode === "extended" ? session?.extended ?? session?.baseline : session?.baseline;
+  const excludedBuses = session ? busExclusions([...session.network.edges.values()].map(e => e.leg), session.options.busPreference) : null;
   const proposals = useMemo(() => categorize(solution?.journeys ?? [], session?.options ?? options), [solution, session, options]);
   const selected = selectedId === BIKE_ONLY_ID ? null : proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
   const bikeOnlySelected = !!session && selected === null;
@@ -236,6 +241,18 @@ export default function App() {
               <strong>Extended</strong><span>Also allow one {viaInputs.length ? "extra " : ""}cycling transfer</span></button>
           </div>
         </fieldset>
+        <label className="bus-preference"><span>Buses with my bicycle</span>
+          <select disabled={loading} value={busPreference} aria-describedby="bus-preference-help"
+            onChange={e => { invalidate(); setBusPreference(e.target.value as BusPreference); }}>
+            <option value="known-rules">Published bicycle rules · check conditions</option>
+            <option value="include-unknown">Also include unverified buses</option>
+            <option value="no-buses">Avoid buses</option>
+          </select>
+        </label>
+        <p className="bus-preference-help" id="bus-preference-help">{busPreference === "known-rules"
+          ? "Include buses whose published policy permits a standard, unfolded bicycle under conditions. Confirm your departure, space and any reservation."
+          : busPreference === "include-unknown" ? "Unverified buses are also shown with a warning. Check their rules before travelling. Known bicycle prohibitions are always excluded."
+          : "Bus legs are excluded from both journey models."}</p>
         <details className="preferences"><summary>Preferences · optional</summary>
           <div className="preference-grid">
             <label><span>How much cycling?</span><select disabled={loading} value={cycling}
@@ -266,13 +283,19 @@ export default function App() {
       {session && <section className="results">
         <p className="resolved-places">{[session.origin, ...session.waypoints ?? [], session.destination].map(p => p.label).join(" → ")}</p>
         <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>Your journey options</h2></div></div>
+        {excludedBuses && (excludedBuses.prohibited + excludedBuses.unknown + excludedBuses.preference > 0) && <div className="bus-search-note" role="status">
+          <strong>Bus bicycle filter</strong>
+          {excludedBuses.prohibited > 0 && <p>{excludedBuses.prohibited} sampled bus departure{excludedBuses.prohibited === 1 ? " was" : "s were"} excluded because the published operator rules prohibit bicycle transport.</p>}
+          {excludedBuses.unknown > 0 && <p>{excludedBuses.unknown} sampled bus departure{excludedBuses.unknown === 1 ? " has" : "s have"} unverified rules and {excludedBuses.unknown === 1 ? "was" : "were"} excluded. To explore these, choose “Also include unverified buses” and search again.</p>}
+          {excludedBuses.preference > 0 && <p>Your “Avoid buses” preference excluded {excludedBuses.preference} sampled bus departure{excludedBuses.preference === 1 ? "" : "s"}.</p>}
+        </div>}
         {warnings.length > 0 && <details className="search-notice" open={!proposals.length}><summary>{proposals.length ? "Journey options found · see search notes" : "Search notes · some checks were unsuccessful"}</summary>
           <p>{proposals.length ? "The journeys below use successfully calculated cycling paths. Other candidate links could not be used, so additional options may be missing."
             : "The messages below identify unsuccessful checks. They do not prove that no journey exists."}</p>
           {warnings.map(w => <p key={w}>{w}</p>)}</details>}
         {!proposals.length && !loading && <p className="empty-results">{warnings.length
           ? "Some timetable or cycling data was unavailable. Please try this journey again."
-          : `No transit journey was found within your cycling limits and ${session.options.horizonMinutes / 60}-hour arrival window. ${session.options.maxBikeMinutes < session.options.horizonMinutes
+          : `No transit journey was found with your cycling limits, bus preference and ${session.options.horizonMinutes / 60}-hour arrival window. ${session.options.maxBikeMinutes < session.options.horizonMinutes
             ? "Try Above 150 minutes cycling in Preferences, or a different departure time."
             : "Try a different departure time or nearby stops."} This limited search can miss connections.`}</p>}
         {!proposals.length && loading && <p className="comparison-note">Checking cycling paths and train connections. Options appear as they are found.</p>}
@@ -313,7 +336,7 @@ export default function App() {
         cycleFocus={focusedRoute && cycleFocus ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM } : null}
         onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })} />
       <div className="model-note"><strong>Routed cycling · estimated times</strong><p>Cycling follows mapped roads and paths. Transit lines remain schematic.
-        Bicycle availability after transit is assumed. Carriage and reservation rules are deferred.</p></div>
+        Bus bicycle rules are shown when known; space and individual departures need confirmation. Train and tram carriage remains unverified.</p></div>
     </aside></main>
   </div>;
 }

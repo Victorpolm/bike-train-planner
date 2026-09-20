@@ -1,5 +1,6 @@
 import type { Stop } from "./model.ts";
 import type { Journey, Point, Station } from "./routing.ts";
+import { busCarriage, busCarriageLabel } from "./busCarriage.ts";
 
 export type ExploredStop = Stop & { notes: string[] };
 export type StopEvent = {
@@ -8,6 +9,7 @@ export type StopEvent = {
   service: string;
   time: Date | null;
   platform: string | null;
+  bicycle?: string;
 };
 export type JourneyStop = Point & { id: string; name: string; number: number; events: StopEvent[] };
 
@@ -42,7 +44,8 @@ export function journeyStops(journey: Journey): JourneyStop[] {
   for (const leg of journey.transitLegs) {
     if (leg.mode !== "transit") continue;
     boarding++;
-    const event = { boarding, service: leg.service };
+    const rule = busCarriage(leg);
+    const event = { boarding, service: leg.service, ...(rule ? { bicycle: `${rule.operator}: ${busCarriageLabel(rule)}` } : {}) };
     add(leg.fromPoint ?? (leg.fromId === journey.originStation.id ? journey.originStation : undefined),
       leg.fromId, leg.from, { ...event, action: "Board", time: leg.departure, platform: leg.departurePlatform });
     add(leg.toPoint ?? (leg.toId === journey.destinationStation.id ? journey.destinationStation : undefined),

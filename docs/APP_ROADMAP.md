@@ -35,7 +35,9 @@ Up to **four intermediate stops** can be added by map or address search, reorder
 
 **Cycling implementation:** Every accepted cycling leg now follows a directed BRouter road route, whose duration determines train readiness and budgets. The cycling-only comparison, map-linked elevation profile, ascent/descent, steep/final climbs and surface/infrastructure breakdowns are implemented. Posted limits use explicit provider-normalized bands; exact sign values and richer conditional access remain open. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
 
-**Current limits:** Bicycle carriage, reservations, capacity and station entrances are not checked. Timetable and cycling discovery are bounded and can miss connections. No amenity or community service is added. See [the mathematical model](MATHEMATICAL_MODEL.md) and [verification log](EXPERIMENTS.md).
+**Bus policy pilot:** [Bus bicycle rules](BUS_BICYCLES.md) now filter recognized buses using a small sourced operator registry, with conditional guidance, known prohibitions, explicit unverified-bus opt-in and boarding instructions. Departure-specific permission, reservation availability, live capacity, bicycle types and train/tram carriage remain unverified.
+
+**Current limits:** Station entrances are not checked. Timetable and cycling discovery are bounded and can miss connections. No amenity or community service is added. See [the mathematical model](MATHEMATICAL_MODEL.md) and [verification log](EXPERIMENTS.md).
 
 ## Recommended delivery order
 
@@ -67,6 +69,8 @@ Retain route geometry and raw segment attributes so the interface can explain ch
 Acceptance cases include Libingen → EPFL with Wil and Rapperswil access, Zürich → Laax with its walking transfer, an overnight journey, a road barrier that invalidates a straight-line shortcut, and an ordered stop that changes the onward train. Record exact dates, inputs, raw responses and route attributes. Wider sampling remains important when a feasible route is absent; an empty sample is not proof of impossibility.
 
 ### 2. Bicycle carriage and practical boarding instructions
+
+**Status:** Bus operator-policy filtering and sourced instructions are implemented for a limited pilot registry. The following remains the broader acceptance target; the current pilot does not confirm individual departures or available reservations/spaces.
 
 For each train, bus or other service, show bicycle permission, relevant time/route restrictions, reservation requirements, bicycle ticket requirements and known bike-space information. Keep **permission**, **reservation required**, **reservation obtainable** and **live capacity** separate. Unknown permission must remain unknown.
 
@@ -114,4 +118,4 @@ After the planning foundation works, pilot saved commute templates and shareable
 4. What are the default distance/gradient thresholds for a gentle commute finish?
 5. When should the engine comparison replace the experimental Baseline/Extended controls?
 
-These questions do not block the map update. The next concrete development task is the routed-cycling/engine pilot, followed by bicycle-carriage feasibility before presenting journeys as practically verified.
+These questions do not block the implemented map, cycling and bus-policy work. Next, validate road/entrance access and obtain departure-level carriage information while continuing the routing-engine evaluation; operator guidance alone does not make a journey practically verified.

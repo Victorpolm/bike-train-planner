@@ -1,6 +1,6 @@
 # Implemented baseline and extended model
 
-_Status: implemented on 2026-09-05; active-travel objectives and map/comparison presentation updated on 2026-09-18 following explicit user approval. Experimental, bounded live search; bicycle carriage rules are postponed._
+_Status: implemented on 2026-09-05; active-travel objectives and map/comparison presentation updated on 2026-09-18; road cycling and a limited bus-policy filter added on 2026-09-20. Experimental, bounded live search; departure-level bicycle capacity and train/tram carriage remain unverified._
 
 ## Product behavior
 
@@ -33,7 +33,9 @@ Cycling budgets remain constraints on B, not A. Under the current road adapter, 
 
 Let P_0 be this set with m = 0 and P_1 the same set with m <= 1. Then P_0 is a subset of P_1. In particular, the fastest Extended arrival cannot be later than the fastest Baseline arrival on the same graph and constraints. Pareto frontiers themselves need not be nested: new paths can dominate old ones.
 
-The mathematical experiment assumes the bicycle is available after every transit ride. **This is not evidence that an operator permits carriage.** Carriage, capacity, reservations, station infrastructure, elevation and road accessibility are outside this experiment.
+The bicycle accompanies the traveller. Recognized bus edges must now pass the selected policy filter **before** label dominance in both solvers: matched conditional operator rules by default, unknown rules only with explicit opt-in, and matched prohibitions never. An avoid-buses option excludes recognized bus/replacement categories. The same predicate governs observed cycling-link preparation; rejected transit edges cannot create reachability. Operator and category are retained on timetable sections and pass-stop prefixes and are part of edge identity. See [BUS_BICYCLES.md](BUS_BICYCLES.md).
+
+Conditional operator guidance is **not** confirmation for a particular departure. Reservations and bike spaces remain unverified; train/tram/other carriage is still unchecked. Missing or unrecognized vehicle categories also limit bus classification. Platform access and practical bicycle loading are not established by the three-minute boarding buffer. Routed cycling and elevation data are now described in [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
 
 ## Objectives, dominance and categories
 
@@ -109,7 +111,7 @@ Departure and arrival are handled separately. A selected stop retains its ID and
 
 Geographic distance at a 25 km/h upper bound is only a coarse discovery filter. Every accepted candidate is rechecked with a directed road route and actual time limits. The first feasible road pair can be queried before the remaining candidates are routed; already supported proposals are published before checking additional observed-stop links.
 
-At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, are available in both models. Pairs exceeding the cumulative cycling budget are rejected before HTTP. Up to three pairs request four upcoming connections each. The first pair uses the initially verified candidate paths; remaining slots first cover rail departure candidates, choosing the nearest feasible rail arrival when available, then rail arrival candidates and other pairs. Duplicate/already-queried pairs are excluded. This prevents several adjacent bus stops consuming all query slots before a feasible rail hub is tried. After fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
+At most four query stops per endpoint retain nearest stops, rail hubs and band representatives as space permits. All returned public-transport modes, including buses and trams, can be sampled in both models; bus edges must also pass the selected bicycle-policy filter. Pairs exceeding the cumulative cycling budget are rejected before HTTP. Up to three pairs request four upcoming connections each. The first pair uses the initially verified candidate paths; remaining slots first cover rail departure candidates, choosing the nearest feasible rail arrival when available, then rail arrival candidates and other pairs. Duplicate/already-queried pairs are excluded. This prevents several adjacent bus stops consuming all query slots before a feasible rail hub is tried. After fallback discovery at most three previously unqueried pairs are tried. Every response contributes all usable timed sections and pass-list exits, followed immediately by model/category computation and publication. The UI does not wait for the whole batch.
 
 The user's minimal-feasible-radius-plus-20 idea remains the motivation for adaptive discovery. There can be incomparable minimal `(start radius, arrival radius)` pairs, so separate scalar minima need not form a feasible pair. This implementation does not prove a globally minimal feasible radius. Fewer pair queries and deferred outward probes intentionally prioritize early results; they can miss better connections, including ones in the extra band after initial success.
 

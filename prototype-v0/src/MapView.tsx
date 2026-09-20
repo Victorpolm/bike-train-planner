@@ -187,7 +187,7 @@ export default function MapView({
         const title = stop.number + ". " + stop.name;
         const events = stop.events.map(e => e.action + " " + e.service + " · boarding " + e.boarding
           + (e.time ? " · " + clock.format(e.time) : " · time unavailable")
-          + (e.platform ? " · platform " + e.platform : ""));
+          + (e.platform ? " · platform " + e.platform : "") + (e.bicycle ? " · " + e.bicycle : ""));
         L.marker([stop.lat, stop.lon], {
           icon: markerIcon(COLORS.transit, String(stop.number), offset), title, alt: title, zIndexOffset: 800,
         }).bindTooltip(textNode(title)).bindPopup(popup(title, events)).addTo(pinLayer);

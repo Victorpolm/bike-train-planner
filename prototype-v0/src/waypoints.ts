@@ -1,5 +1,6 @@
 import { atEndpoint, cyclingLink, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
+import { transitAllowed } from "./busCarriage.ts";
 
 type State = {
   stop: string; stage: number; time: number; bike: number; walk: number; boardings: number;
@@ -22,7 +23,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   for (const edge of network.edges.values()) {
     const leg = edge.leg;
     if (!leg.departure || !leg.arrival || !Number.isFinite(leg.departure.getTime()) || !Number.isFinite(leg.arrival.getTime())
-      || leg.arrival < leg.departure || !["transit", "walk"].includes(leg.mode)
+      || leg.arrival < leg.departure || !["transit", "walk"].includes(leg.mode) || !transitAllowed(leg, options.busPreference)
       || !network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
     outgoing.set(edge.from, [...outgoing.get(edge.from) ?? [], edge]);
   }
@@ -105,7 +106,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     const rides = state.legs.filter(leg => leg.mode === "transit"), first = rides[0], last = rides.at(-1)!;
     const originStation = { ...atEndpoint(network.stops.get(first.fromId!)!, points[0]), bikeMinutes: 0, distanceKm: 0 };
     const destinationStation = { ...atEndpoint(network.stops.get(last.toId!)!, points.at(-1)!), bikeMinutes: 0, distanceKm: 0 };
-    return { id: JSON.stringify([points.map(p => [p.lat, p.lon]), state.legs.map(l => [l.mode, l.fromId, l.toId, l.departure, l.arrival, l.service])]),
+    return { id: JSON.stringify([points.map(p => [p.lat, p.lon]), state.legs.map(l => [l.mode, l.fromId, l.toId, l.departure, l.arrival, l.service, l.operator, l.category])]),
       startTime: start, originStation, destinationStation, departure: state.legs[0].departure!, arrival: new Date(state.time),
       trainMinutes: (last.arrival!.getTime() - first.departure!.getTime()) / 60_000,
       waitMinutes: state.legs.reduce((sum, leg, index) => sum + Math.max(0,

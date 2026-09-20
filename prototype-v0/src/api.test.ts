@@ -153,7 +153,7 @@ describe("live data boundaries", () => {
       if (url.pathname.endsWith("stationboard")) return response({ stationboard: [{ name: "first", category: "IC", number: "1",
         stop: stop(a, null, 5), passList: [stop(a, null, 5), stop(b, 20, null)] }] });
       if (url.pathname.endsWith("locations")) return response({ stations: [{ id: c.id, name: c.name, icon: "bus", coordinate: { x: c.lat, y: c.lon } }] });
-      if (url.searchParams.get("from") === c.id) return response({ connections: [{ sections: [{ journey: { name: "second", category: "B", number: "2" },
+      if (url.searchParams.get("from") === c.id) return response({ connections: [{ sections: [{ journey: { name: "second", category: "B", number: "2", operator: "PAG" },
         departure: stop(c, null, 34), arrival: stop(d, 50, null) }] }] });
       return response({ connections: [] });
     });

@@ -52,6 +52,8 @@ export type TransitLeg = {
   arrivalPlatform: string | null;
   service: string;
   serviceName: string | null;
+  category?: string | null;
+  operator?: string | null;
   direction: string | null;
   fromId?: string;
   toId?: string;

@@ -1,5 +1,6 @@
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { cachedCycling, type CyclingRoute } from "./cycling.ts";
+import { transitAllowed, type BusPreference } from "./busCarriage.ts";
 
 export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
@@ -13,11 +14,12 @@ export type Options = {
   boardingMinutes: number;
   extraTimeMinutes: number;
   endpointPreference: EndpointPreference;
+  busPreference: BusPreference;
 };
 export const DEFAULT_OPTIONS: Options = {
   maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60,
   maxIntermediateMinutes: 20, maxBoardings: 4, horizonMinutes: 1440,
-  boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none",
+  boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none", busPreference: "known-rules",
 };
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
 export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
@@ -53,6 +55,7 @@ export function validateOptions(o: Options) {
     }
   }
   if (!["none", "start", "end"].includes(o.endpointPreference)) throw new Error("Invalid endpoint preference.");
+  if (!["known-rules", "include-unknown", "no-buses"].includes(o.busPreference)) throw new Error("Invalid bus preference.");
 }
 
 export function metrics(j: Journey) {
@@ -133,7 +136,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const l = edge.leg;
     if (!l.departure || !l.arrival || !Number.isFinite(l.departure.getTime()) ||
       !Number.isFinite(l.arrival.getTime()) || l.arrival < l.departure ||
-      !["transit", "walk"].includes(l.mode)) continue;
+      !["transit", "walk"].includes(l.mode) || !transitAllowed(l, o.busPreference)) continue;
     if (!network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
     const list = outgoing.get(edge.from) ?? [];
     list.push(edge); outgoing.set(edge.from, list);
@@ -207,7 +210,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
       label.time + egress.bikeMinutes * 60_000 > horizon) continue;
     const departure = label.legs[0].departure!, arrival = new Date(label.time);
     journeys.push({ id: JSON.stringify([label.access.id, ...label.legs.map(l =>
-      [l.mode, l.fromId, l.toId, l.serviceName, l.service, l.departure!.getTime(), l.arrival!.getTime()]), egress.id]),
+      [l.mode, l.fromId, l.toId, l.serviceName, l.service, l.operator, l.category, l.departure!.getTime(), l.arrival!.getTime()]), egress.id]),
       startTime: start, originStation: label.access, destinationStation: egress, departure, arrival,
       trainMinutes: (arrival.getTime() - departure.getTime()) / 60_000,
       waitMinutes: (departure.getTime() - start.getTime()) / 60_000 - label.access.bikeMinutes,

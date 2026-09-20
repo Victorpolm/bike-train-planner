@@ -32,7 +32,7 @@ export function addSections(network: Network, sections?: TransportSection[]): nu
         const t = stopTime(p, "arrival") ?? stopTime(p, "departure");
         return t && t > departure && t < endTime;
       }).map(p => readStop(p.station)).filter((p): p is Stop => !!p), end];
-      const edge: Edge = { id: JSON.stringify([leg.mode, from.id, end.id, departure.getTime(), endTime.getTime(), leg.serviceName, leg.service]),
+      const edge: Edge = { id: JSON.stringify([leg.mode, from.id, end.id, departure.getTime(), endTime.getTime(), leg.serviceName, leg.service, leg.operator, leg.category]),
         from: from.id, to: end.id, leg };
       network.stops.set(from.id, from); network.stops.set(end.id, end); network.edges.set(edge.id, edge);
     }
