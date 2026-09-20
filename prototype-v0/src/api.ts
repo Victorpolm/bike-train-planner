@@ -203,7 +203,9 @@ function stationAccessError(session: SearchSession) {
     const places = [!session.originStations.length && session.origin.label, !session.destinationStations.length && session.destination.label].filter(Boolean).join(" and ");
     return `No usable station-access path was found for ${places}. We allow up to ${MAX_ENDPOINT_GAP_METRES} m between a selected point and the routed path. Try a nearby road, path or entrance.`;
   }
-  return "No stop was found within your cycling preference. Try More cycling, or a nearby stop.";
+  return session.options.maxBikeMinutes < session.options.horizonMinutes
+    ? "No stop was found within your cycling preference. Try Above 150 minutes cycling in Preferences, or a nearby stop."
+    : "No usable stop was found in this search. Try a nearby stop.";
 }
 async function roadCandidates(session: SearchSession, point: Place, maxMinutes: number, direction: "access" | "egress" | "both",
   progress: Progress, expand = false, complete = false): Promise<Station[]> {

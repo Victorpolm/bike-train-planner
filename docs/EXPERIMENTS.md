@@ -407,3 +407,15 @@ Historical timetable tests explicitly select the old geometric experiment to pre
 **Verification:** **86 tests pass**, with TypeScript and the production build passing. A production-flow fixture returns valid transit through station A while another candidate station has a no-track response and the direct cycling-only route times out. Both failures are labelled correctly and the transit results survive. Provider-response cases verify timeout and unknown 400s are not classified as disconnected paths, recognized matching/path failures remain distinct, rate limits remain service failures and diagnostic retention is bounded. No new dependency or live browser check was added.
 
 **Next reproduction input:** Exact selected start and finish, any intermediate stops, departure/model/preset, and whether journey cards appear. The named failed-link message should make the missing check identifiable.
+
+## 2026-09-20 — Above 150 minutes cycling
+
+**Change:** Add the fourth cycling preset, permitting longer and shorter rides without separate cycling caps inside the existing 24-hour journey window. Raise total, access, egress and intermediate validation bounds together. The three previous presets and finite discovery/request limits are unchanged.
+
+**Controlled acquisition regression:** Start at 08:00 Swiss time; the cycling provider fixture returns 180 minutes to station A and 120 minutes from B to the destination. The real acquisition path queries A–B from 11:03, including the boarding buffer. The solver excludes an 11:02 train, accepts 11:03, and returns a 333-minute journey with 300 cycling minutes. It rejects a later service whose final cycling leg would arrive after 24 hours. More cycling rejects this same graph; a shorter, zero-cycling station-to-station journey remains eligible under the new preset.
+
+**Transfer and requested-stop regressions:** Extended permits a 180-minute directed cycling transfer and selects the first onward train reachable after the boarding buffer; Baseline and More cycling reject that transfer. A separate requested-stop case accumulates 360 cycling minutes across the outward and return legs, visits the stop at minute 200 and completes at minute 420. An earlier onward departure is excluded, and an arrival past the original 24-hour window remains infeasible.
+
+**Verification:** All **89 automated tests**, TypeScript and the production build pass. The tests use controlled provider responses and exact timestamps, without live service calls. The new UI choice uses the existing preferences select and displays the overall time limit; no browser interaction check is claimed for this change. No dependencies changed.
+
+**Next user check:** Open Preferences → How much cycling? → Above 150 minutes cycling and repeat the original journey. A more generous allowance cannot guarantee a path when routing/timetable data or candidate coverage is insufficient; retain the exact failed-link message and selected coordinates if no route appears.

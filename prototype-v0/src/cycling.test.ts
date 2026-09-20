@@ -4,7 +4,8 @@ import { it } from "node:test";
 import { plan, searchWarnings } from "./api.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import { breakdown, cachedCycling, classifyInfrastructure, classifySurface, cyclingKey, EndpointSnapError, finalClimb, parseCyclingRoute, pointAlong, postedSpeedBand, zeroCycling } from "./cycling.ts";
-import { DEFAULT_OPTIONS, emptyNetwork, solve, type Network, type Stop } from "./model.ts";
+import { DEFAULT_OPTIONS, emptyNetwork, metrics, solve, type Network, type Stop } from "./model.ts";
+import { preferenceOptions } from "./preferences.ts";
 import { haversineKm, type Place, type Point } from "./routing.ts";
 import { solveWaypoints } from "./waypoints.ts";
 
@@ -215,6 +216,73 @@ for (const { offset, failedAlternatives } of [{ offset: 0, failedAlternatives: f
   } else { assert.equal(result.cyclingStatus, "ready"); assert.equal(result.cyclingComparison!.minutes, 600); }
   assert.equal(urls.filter(u => u.pathname.endsWith("connections")).length, 1);
   assert.equal(zeroCycling(a, a).minutes, 0);
+});
+
+it("permits 300 routed cycling minutes and queries reachable trains with the above-150 preset", async () => {
+  // Synthetic coordinates keep Swiss seed stations outside the discovery radius.
+  const a = { id: "A", name: "A", lat: 30.3, lon: 4 }, b = { id: "B", name: "B", lat: 31, lon: 5 };
+  const from: Place = { label: "Home", lat: 30, lon: 4 }, to: Place = { label: "Destination", lat: 31.2, lon: 5 };
+  const options = preferenceOptions("unrestricted", "none");
+  let queries = 0;
+  const result = await plan(from, to, "baseline", options, new AbortController().signal, () => {}, () => {}, {
+    start, gapMs: 0,
+    cyclingFetcher: async input => {
+      const [p, q] = new URL(String(input)).searchParams.get("lonlats")!.split("|")
+        .map(s => { const [lon, lat] = s.split(",").map(Number); return { lon, lat }; });
+      return response(geometry(p, q, (q.lat === a.lat ? 180 : p.lat === b.lat ? 120 : 600) * 60));
+    },
+    fetcher: async input => {
+      const url = new URL(String(input));
+      const station = (p: Stop) => ({ id: p.id, name: p.name, icon: "train", coordinate: { x: p.lat, y: p.lon } });
+      if (url.pathname.endsWith("locations")) return response({ stations: [station(Number(url.searchParams.get("x")) < 31 ? a : b)] });
+      queries++;
+      assert.equal(url.searchParams.get("from"), "A"); assert.equal(url.searchParams.get("to"), "B");
+      assert.equal(url.searchParams.get("time"), "11:03"); // 180 minutes cycling + boarding buffer.
+      return response({ connections: [182, 183, 1400].map(depart => ({ sections: [{ journey: { category: "IC", number: String(depart) },
+        departure: { station: station(a), departure: time(depart).toISOString() },
+        arrival: { station: station(b), arrival: time(depart + 30).toISOString() } }] })) });
+    },
+  });
+  assert.equal(queries, 1);
+  assert.equal(result.baseline.journeys.length, 1); // Missed train and next-day arrival beyond 24 h are excluded.
+  const journey = result.baseline.journeys[0];
+  assert.equal(journey.originStation.bikeMinutes, 180); assert.equal(journey.destinationStation.bikeMinutes, 120);
+  assert.equal(metrics(journey).bike, 300); assert.equal(journey.totalMinutes, 333);
+  assert.equal(solve(result.network, from, to, start, preferenceOptions("more", "none"), "baseline").journeys.length, 0);
+  const stationStart = { ...a, label: "A", stopId: a.id }, stationFinish = { ...b, label: "B", stopId: b.id };
+  assert.ok(solve(result.network, stationStart, stationFinish, start, options, "baseline").journeys.some(j => metrics(j).bike === 0));
+});
+
+it("allows a long cycling transfer only in Extended and still checks onward readiness", () => {
+  const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 };
+  const c = { id: "C", name: "C", lat: 43.3, lon: 5 }, d = { id: "D", name: "D", lat: 44, lon: 6 };
+  const from = { ...a, label: "A", stopId: a.id }, to = { ...d, label: "D", stopId: d.id };
+  const n = emptyNetwork(); ride(n, a, b, 5, 20); ride(n, c, d, 202, 249); ride(n, c, d, 203, 250);
+  n.cycling = new Map([[cyclingKey(b, c), parseCyclingRoute(geometry(b, c, 180 * 60), b, c)]]);
+  const options = preferenceOptions("unrestricted", "none");
+  assert.equal(solve(n, from, to, start, options, "baseline").journeys.length, 0);
+  assert.equal(solve(n, from, to, start, preferenceOptions("more", "none"), "extended").journeys.length, 0);
+  const result = solve(n, from, to, start, options, "extended");
+  assert.equal(result.journeys.length, 1); assert.equal(result.journeys[0].totalMinutes, 250);
+  assert.equal(metrics(result.journeys[0]).middle, 180);
+});
+
+it("carries the above-150 allowance across requested stops without extending the journey window", () => {
+  const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 }, c = { id: "C", name: "C", lat: 44, lon: 6 };
+  const points: Place[] = [{ ...a, label: "A", stopId: a.id }, { label: "Visit", lat: 43.3, lon: 5 }, { ...c, label: "C", stopId: c.id }];
+  const n = emptyNetwork(); ride(n, a, b, 3, 20); ride(n, b, c, 382, 419); ride(n, b, c, 383, 420);
+  n.cycling = new Map([
+    [cyclingKey(b, points[1]), parseCyclingRoute(geometry(b, points[1], 180 * 60), b, points[1])],
+    [cyclingKey(points[1], b), parseCyclingRoute(geometry(points[1], b, 180 * 60), points[1], b)],
+  ]);
+  const options = preferenceOptions("unrestricted", "none");
+  assert.equal(solveWaypoints(n, points, start, preferenceOptions("more", "none"), "baseline").journeys.length, 0);
+  const result = solveWaypoints(n, points, start, options, "baseline");
+  assert.equal(result.journeys.length, 1); assert.equal(result.journeys[0].totalMinutes, 420);
+  assert.equal(metrics(result.journeys[0]).bike, 360);
+  assert.equal(result.journeys[0].waypoints![0].arrival.getTime(), time(200).getTime());
+  n.edges.clear(); ride(n, a, b, 3, 20); ride(n, b, c, 1430, 1450);
+  assert.equal(solveWaypoints(n, points, start, options, "baseline").journeys.length, 0);
 });
 
 it("reports routing-service failure separately from an off-network point or disconnected path", async () => {

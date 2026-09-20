@@ -97,6 +97,9 @@ The form exposes **From**, **To**, **Departure** (Leave now by default, or a cho
 | Less | 40 min | 20 min | 10 min |
 | Balanced | 90 min | 60 min | 20 min |
 | More | 150 min | 90 min | 30 min |
+| Above 150 minutes cycling | Within 24 h overall | Within 24 h overall | Within 24 h overall |
+
+The fourth preset has no separate cycling cap within the existing whole-journey horizon: all four cycling limits are set to the finite 1,440-minute horizon, and validation accepts those values. Cycling, transit, walking and waiting must still fit within the same 24 hours. There is no minimum cycling requirement, so shorter routes remain eligible. The allowance also covers requested-stop stages; Extended retains at most one automatic cycling transfer. Candidate, request, boarding and label limits are unchanged, so expanding this allowance does not guarantee a route or exhaustive coverage.
 
 Cycling estimates round positive durations up to whole minutes. Coincident points within half a metre, or matching selected/provider stop IDs, get zero minutes. Identity avoids adding fictitious cycling for slight coordinate differences between datasets. The API query time rounds up to a Swiss local minute and the solver rechecks exact catchability against timestamps, including seconds and midnight.
 

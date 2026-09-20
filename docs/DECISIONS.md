@@ -204,6 +204,16 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Verification:** Production-flow regression returns valid transit while an alternative station has no path and the cycling-only query times out. Error-body cases cover known and unknown 400s, 429 and bounded retention. The exact reported search still needs its start/finish to reproduce.
 
+## 2026-09-20 — Allow cycling above 150 minutes
+
+**Request:** Add “Above 150 minutes cycling” so longer bike-and-transit journeys are not excluded by the highest existing preset.
+
+**Decision:** Add a fourth optional preset with no separate cycling cap inside the existing 24-hour whole-journey horizon. Set total cycling, access, egress and intermediate cycling allowances to the finite 1,440-minute horizon, and raise validation bounds accordingly. Increasing only the total would still exclude long station-access rides. Keep shorter routes eligible; the label means these longer rides are permitted, not required. Preserve the other three presets and Balanced default.
+
+**Constraints:** Riding, walking, transit and waiting share the same 24 hours, including every requested-stop stage. Actual road durations and boarding buffers still determine train catchability. Baseline/Extended behavior, boardings and bounded sampling/request limits remain unchanged. A larger allowance cannot ensure that available road and timetable data yield a route; no fallback line is invented.
+
+**Presentation and verification:** Explain the shared journey window next to the choice and suggest the new preset when ordinary cycling limits exclude a search. Do not suggest raising the allowance when already selected. Controlled production-flow and solver cases cover 300 cycling minutes across access/egress, a 180-minute automatic transfer, 360 minutes via a requested stop, missed onward trains, shorter eligible routes and arrivals beyond 24 hours. See [EXPERIMENTS.md](EXPERIMENTS.md).
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

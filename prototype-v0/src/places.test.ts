@@ -42,11 +42,17 @@ it("searching typed text accepts the first valid location and cancels the slower
   assert.equal(place.label, "Example Street 12"); assert.equal(cancelled, true);
 });
 it("all cycling preference choices produce valid constraints with ordered budgets", () => {
-  for (const profile of ["less", "balanced", "more"] as const) {
+  for (const profile of ["less", "balanced", "more", "unrestricted"] as const) {
     for (const endpoint of ["none", "start", "end"] as const) validateOptions(preferenceOptions(profile, endpoint));
   }
   assert.ok(preferenceOptions("less", "none").maxBikeMinutes < preferenceOptions("balanced", "none").maxBikeMinutes);
   assert.ok(preferenceOptions("more", "none").maxBikeMinutes > preferenceOptions("balanced", "none").maxBikeMinutes);
+  const unrestricted = preferenceOptions("unrestricted", "none");
+  assert.ok(unrestricted.maxBikeMinutes > preferenceOptions("more", "none").maxBikeMinutes);
+  for (const key of ["maxBikeMinutes", "maxAccessMinutes", "maxEgressMinutes", "maxIntermediateMinutes"] as const) {
+    assert.equal(unrestricted[key], unrestricted.horizonMinutes);
+    assert.throws(() => validateOptions({ ...unrestricted, [key]: Infinity }));
+  }
 });
 
 it("names a map point without snapping its coordinates or inventing a station identity", async () => {

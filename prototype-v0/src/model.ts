@@ -42,8 +42,8 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 
 export function validateOptions(o: Options) {
   const bounds: [keyof Options, number, number][] = [
-    ["maxBikeMinutes", 0, 240], ["maxAccessMinutes", 0, 120], ["maxEgressMinutes", 0, 120],
-    ["maxIntermediateMinutes", 0, 60], ["maxBoardings", 1, 8], ["horizonMinutes", 30, 1440],
+    ["maxBikeMinutes", 0, 1440], ["maxAccessMinutes", 0, 1440], ["maxEgressMinutes", 0, 1440],
+    ["maxIntermediateMinutes", 0, 1440], ["maxBoardings", 1, 8], ["horizonMinutes", 30, 1440],
     ["boardingMinutes", 0, 15], ["extraTimeMinutes", 0, 1440],
   ];
   for (const [key, min, max] of bounds) {

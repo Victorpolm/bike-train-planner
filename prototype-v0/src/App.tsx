@@ -242,13 +242,15 @@ export default function App() {
               onChange={e => { invalidate(); setCycling(e.target.value as CyclingPreference); }}>
               <option value="less">Less · up to 40 min total</option><option value="balanced">Balanced · up to 90 min total</option>
               <option value="more">More · up to 150 min total</option>
+              <option value="unrestricted">Above 150 minutes cycling</option>
             </select></label>
             <label><span>Extra category</span><select disabled={loading} value={endpoint}
               onChange={e => { invalidate(); setEndpoint(e.target.value as EndpointPreference); }}>
               <option value="none">Just the three main categories</option><option value="start">Less cycling or walking at start</option><option value="end">Less cycling or walking at arrival</option>
             </select></label>
           </div>
-          <p>Up to {options.maxAccessMinutes} minutes cycling at each {viaInputs.length ? "stage's " : ""}end{mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.
+          <p>{cycling === "unrestricted" ? "No separate cycling cap; shorter rides are also included."
+            : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}
             {" "}Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours overall, including waiting.</p>
         </details>
         <button className="search-button" type="submit" disabled={loading}>{loading ? "Finding journeys…" : "Find journeys"}</button>
@@ -270,7 +272,9 @@ export default function App() {
           {warnings.map(w => <p key={w}>{w}</p>)}</details>}
         {!proposals.length && !loading && <p className="empty-results">{warnings.length
           ? "Some timetable or cycling data was unavailable. Please try this journey again."
-          : `No transit journey was found within your cycling limits and ${session.options.horizonMinutes / 60}-hour arrival window. Try a different departure time or More cycling. This limited search can miss connections.`}</p>}
+          : `No transit journey was found within your cycling limits and ${session.options.horizonMinutes / 60}-hour arrival window. ${session.options.maxBikeMinutes < session.options.horizonMinutes
+            ? "Try Above 150 minutes cycling in Preferences, or a different departure time."
+            : "Try a different departure time or nearby stops."} This limited search can miss connections.`}</p>}
         {!proposals.length && loading && <p className="comparison-note">Checking cycling paths and train connections. Options appear as they are found.</p>}
         {proposals.length > 0 && cyclingReference && <p className="comparison-note">Fastest transit option: {proposals[0].journey.totalMinutes === cyclingReference.minutes
           ? "the same estimated time as cycling only."
