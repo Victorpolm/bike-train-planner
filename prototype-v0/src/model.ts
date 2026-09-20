@@ -45,17 +45,17 @@ export function validateOptions(o: Options) {
 export function metrics(j: Journey) {
   const duration = (l: TransitLeg) => l.departure && l.arrival
     ? Math.max(0, (l.arrival.getTime() - l.departure.getTime()) / 60_000) : 0;
-  const middle = j.transitLegs.filter(l => l.mode === "bike")
-    .reduce((sum, l) => sum + duration(l), 0);
   const boardings = j.transitLegs.filter(l => l.mode === "transit").length;
   const first = j.transitLegs.findIndex(l => l.mode === "transit");
   const last = j.transitLegs.reduce((found, l, i) => l.mode === "transit" ? i : found, -1);
   const walking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "walk").reduce((sum, l) => sum + duration(l), 0);
-  const walk = walking(j.transitLegs), bike = j.originStation.bikeMinutes + middle + j.destinationStation.bikeMinutes;
+  const biking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "bike").reduce((sum, l) => sum + duration(l), 0);
+  const middle = biking(j.transitLegs.slice(first + 1, last));
+  const walk = walking(j.transitLegs), bike = j.originStation.bikeMinutes + biking(j.transitLegs) + j.destinationStation.bikeMinutes;
   return { time: j.totalMinutes, bike, walk, active: bike + walk,
     start: j.originStation.bikeMinutes, end: j.destinationStation.bikeMinutes, middle, boardings,
-    activeStart: j.originStation.bikeMinutes + walking(j.transitLegs.slice(0, Math.max(0, first))),
-    activeEnd: j.destinationStation.bikeMinutes + walking(j.transitLegs.slice(last + 1)) };
+    activeStart: j.originStation.bikeMinutes + walking(j.transitLegs.slice(0, Math.max(0, first))) + biking(j.transitLegs.slice(0, Math.max(0, first))),
+    activeEnd: j.destinationStation.bikeMinutes + walking(j.transitLegs.slice(last + 1)) + biking(j.transitLegs.slice(last + 1)) };
 }
 export const dominates = (a: number[], b: number[]) => a.every((v, i) => v <= b[i]) && a.some((v, i) => v < b[i]);
 export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none"): Journey[] {

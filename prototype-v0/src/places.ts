@@ -1,6 +1,43 @@
 import { MAJOR_STATIONS } from "./majorStations.ts";
 import { fetchJson } from "./http.ts";
-import type { Place } from "./routing.ts";
+import { haversineKm, type Place, type Point } from "./routing.ts";
+
+export const MAX_WAYPOINTS = 4;
+export function mapPlace(point: Point): Place {
+  if (!validPoint(point.lat, point.lon)) throw new Error("Choose a valid point on the map.");
+  return { lat: point.lat, lon: point.lon, label: `Map point · ${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}`, kind: "map" };
+}
+
+// Naming never moves the selected coordinates or turns a nearby feature into a
+// selected transit stop. Coordinates remain usable if the naming service fails.
+export async function nameMapPlace(point: Point, signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<Place> {
+  const fallback = mapPlace(point);
+  signal.throwIfAborted();
+  try {
+    const params = new URLSearchParams({ geometry: `${point.lon},${point.lat}`, geometryType: "esriGeometryPoint",
+      layers: "all:ch.swisstopo.amtliches-gebaeudeadressverzeichnis,ch.swisstopo.swissnames3d",
+      sr: "4326", mapExtent: `${point.lon - .02},${point.lat - .02},${point.lon + .02},${point.lat + .02}`,
+      imageDisplay: "1000,1000,96", tolerance: "50", returnGeometry: "true", limit: "10", lang: "en" });
+    type Feature = { attributes?: Record<string, unknown>; properties?: Record<string, unknown>;
+      geometry?: { x?: number; y?: number }; };
+    const data = await fetchJson<{ results?: Feature[] }>(`https://api3.geo.admin.ch/rest/services/ech/MapServer/identify?${params}`, signal, 6000, fetcher);
+    signal.throwIfAborted();
+    const candidates = (data.results ?? []).flatMap(feature => {
+      const attributes = feature.attributes ?? feature.properties ?? {};
+      const raw = attributes.label ?? attributes.adr_label ?? attributes.name;
+      if (typeof raw !== "string" || !raw.trim()) return [];
+      const name = raw.replace(/<[^>]*>/g, "").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+      const town = typeof attributes.com_name === "string" ? attributes.com_name : "";
+      const distance = validPoint(feature.geometry?.y, feature.geometry?.x)
+        ? haversineKm(point, { lat: feature.geometry!.y!, lon: feature.geometry!.x! }) : Infinity;
+      return [{ name: town && !name.includes(town) ? `${name}, ${town}` : name, distance }];
+    }).filter(candidate => candidate.distance <= .5).sort((a, b) => a.distance - b.distance);
+    return candidates[0] ? { ...fallback, label: `Near ${candidates[0].name}` } : fallback;
+  } catch (error) {
+    signal.throwIfAborted();
+    return fallback;
+  }
+}
 
 export type TransportLocation = { id: string | null; name: string; icon?: string | null;
   coordinate?: { x: number | null; y: number | null } };

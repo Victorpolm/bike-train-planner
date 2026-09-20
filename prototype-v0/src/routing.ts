@@ -36,6 +36,8 @@ export type Journey = {
   changes: number;
   services: string[];
   transitLegs: TransitLeg[];
+  legsIncludeEndpoints?: boolean;
+  waypoints?: { place: Place; arrival: Date }[];
 };
 
 export type TransitLeg = {
@@ -81,9 +83,12 @@ export type CyclingComparison = {
 
 // A reference estimate, independent of transit budgets and category selection.
 // This is deliberately not represented as a public-transport Journey.
-export function cyclingOnly(origin: Place, destination: Place, start: Date): CyclingComparison {
-  const distanceKm = origin.stopId && origin.stopId === destination.stopId ? 0 : haversineKm(origin, destination);
-  const minutes = cyclingMinutes(distanceKm);
+export function cyclingOnly(origin: Place, destination: Place, start: Date, waypoints: Place[] = []): CyclingComparison {
+  const points = [origin, ...waypoints, destination];
+  const distances = points.slice(1).map((point, i) => points[i].stopId && points[i].stopId === point.stopId
+    ? 0 : haversineKm(points[i], point));
+  const distanceKm = distances.reduce((sum, distance) => sum + distance, 0);
+  const minutes = distances.reduce((sum, distance) => sum + cyclingMinutes(distance), 0);
   return { distanceKm, minutes, arrival: new Date(start.getTime() + minutes * 60_000) };
 }
 

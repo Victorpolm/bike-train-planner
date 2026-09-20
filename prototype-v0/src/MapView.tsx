@@ -6,6 +6,11 @@ import { journeyStops, type ExploredStop } from "./mapData";
 type MapViewProps = {
   origin: Place | null;
   destination: Place | null;
+  waypoints: { id: string; place: Place; number: number }[];
+  editingDisabled: boolean;
+  canAddWaypoint: boolean;
+  onSelectPoint: (target: "origin" | "destination" | "via", point: Point) => void;
+  onMovePoint: (id: string, point: Point) => void;
   stops: ExploredStop[];
   selectedJourney: Journey | null;
   cycling: CyclingComparison | null;
@@ -37,11 +42,13 @@ function markerIcon(color: string, label: string, offset = L.point(0, 0)) {
 }
 function fitMap(map: L.Map, bounds: L.LatLngBounds) {
   // Reserve room for controls, the legend and displaced stop labels on mobile.
-  map.fitBounds(bounds, { paddingTopLeft: [48, 88], paddingBottomRight: [56, 84], maxZoom: 14, animate: false });
+  const controls = map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect().height ?? 68;
+  map.fitBounds(bounds, { paddingTopLeft: [48, controls + 34], paddingBottomRight: [56, 84], maxZoom: 14, animate: false });
 }
 
 export default function MapView({
-  origin, destination, stops, selectedJourney, cycling, bikeOnlySelected, accessMinutes, egressMinutes,
+  origin, destination, waypoints, editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint,
+  stops, selectedJourney, cycling, bikeOnlySelected, accessMinutes, egressMinutes,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -50,6 +57,10 @@ export default function MapView({
   const visibleBoundsRef = useRef<L.LatLngBounds | null>(null);
   const redrawPinsRef = useRef<(() => void) | null>(null);
   const fittedRef = useRef("");
+  const skipFitRef = useRef(false);
+  const pickerRef = useRef<((point: L.LatLng) => void) | null>(null);
+  const handlers = useRef({ editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint });
+  handlers.current = { editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint };
   const [showStops, setShowStops] = useState(true);
 
   useEffect(() => {
@@ -60,13 +71,32 @@ export default function MapView({
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 19,
     }).addTo(map);
     mapRef.current = map; layerRef.current = L.layerGroup().addTo(map);
+    const choosePoint = (point: L.LatLng) => {
+      if (handlers.current.editingDisabled) return;
+      const content = popup("Choose this location", [`${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`]);
+      content.className = "map-location-picker";
+      for (const [target, label] of [["origin", "Start here"], ["destination", "Finish here"], ["via", "Add intermediate stop"]] as const) {
+        const button = document.createElement("button"); button.type = "button"; button.textContent = label;
+        button.disabled = target === "via" && !handlers.current.canAddWaypoint;
+        button.onclick = () => {
+          if (handlers.current.editingDisabled) return;
+          skipFitRef.current = true; map.closePopup();
+          handlers.current.onSelectPoint(target, { lat: point.lat, lon: point.lng });
+        };
+        content.append(button);
+      }
+      L.DomEvent.disableClickPropagation(content);
+      L.popup({ maxWidth: 260, className: "location-popup" }).setLatLng(point).setContent(content).openOn(map);
+    };
+    pickerRef.current = choosePoint;
+    map.on("click", (event: L.LeafletMouseEvent) => choosePoint(event.latlng.wrap()));
     const observer = new ResizeObserver(() => {
       map.invalidateSize({ pan: false });
       if (visibleBoundsRef.current?.isValid()) fitMap(map, visibleBoundsRef.current);
       redrawPinsRef.current?.();
     });
     observer.observe(containerRef.current);
-    return () => { observer.disconnect(); map.remove(); mapRef.current = null; fittedRef.current = ""; };
+    return () => { observer.disconnect(); map.remove(); mapRef.current = null; pickerRef.current = null; fittedRef.current = ""; };
   }, []);
 
   useEffect(() => {
@@ -76,21 +106,32 @@ export default function MapView({
     const bounds = L.latLngBounds([]), allBounds = L.latLngBounds([]);
     const selectedStops = selectedJourney ? journeyStops(selectedJourney) : [];
     const selectedIds = new Set(selectedStops.map(s => s.id));
-    const addEndpoint = (place: Place, color: string, label: string, minutes: number) => {
+    if (editingDisabled) map.closePopup();
+    const addEndpoint = (id: string, place: Place, color: string, label: string, minutes?: number) => {
       const point: L.LatLngExpression = [place.lat, place.lon];
-      if (!bikeOnlySelected) L.circle(point, {
+      if (!bikeOnlySelected && minutes !== undefined) L.circle(point, {
         radius: Number.isFinite(minutes) ? minutes * 250 : 0, color, fillColor: color, fillOpacity: .035, weight: 1, dashArray: "5 7",
       }).addTo(layer);
-      L.marker(point, { icon: markerIcon(color, label), title: label + ": " + place.label, zIndexOffset: 1000 })
-        .bindTooltip(textNode(place.label)).bindPopup(popup(label === "A" ? "Origin" : "Destination", [place.label])).addTo(layer);
+      const title = id === "origin" ? "Start" : id === "destination" ? "Finish" : `Intermediate stop ${label.slice(1)}`;
+      const marker = L.marker(point, { icon: markerIcon(color, label), title: `${title}: ${place.label}`,
+        alt: `${title}: ${place.label}`, zIndexOffset: 1000, draggable: !editingDisabled, autoPan: true });
+      marker.bindTooltip(textNode(`${title} · ${place.label}`)).bindPopup(popup(title,
+        [place.label, editingDisabled ? "Stop the search to move this location." : "Drag this marker to move the location."])).addTo(layer);
+      marker.on("dragend", () => {
+        const position = marker.getLatLng().wrap();
+        skipFitRef.current = true;
+        handlers.current.onMovePoint(id, { lat: position.lat, lon: position.lng });
+      });
       bounds.extend(point); allBounds.extend(point);
     };
-    if (origin) addEndpoint(origin, COLORS.origin, "A", accessMinutes);
-    if (destination) addEndpoint(destination, COLORS.destination, "B", egressMinutes);
+    if (origin) addEndpoint("origin", origin, COLORS.origin, "A", accessMinutes);
+    waypoints.forEach(({ id, place, number }) => addEndpoint(id, place, COLORS.bikeOnly, `V${number}`));
+    if (destination) addEndpoint("destination", destination, COLORS.destination, "B", egressMinutes);
     const pinLayer = L.layerGroup().addTo(layer);
     const drawPins = () => {
       pinLayer.clearLayers();
-      const placed = [origin, destination].filter((p): p is Place => p !== null)
+      const controlsBottom = (map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect().height ?? 68) + 32;
+      const placed = [origin, ...waypoints.map(w => w.place), destination].filter((p): p is Place => p !== null)
         .map(p => map.latLngToLayerPoint([p.lat, p.lon]));
       for (const stop of selectedStops) {
         const anchor = map.latLngToLayerPoint([stop.lat, stop.lon]);
@@ -104,7 +145,7 @@ export default function MapView({
           }
         }
         offset = offsets.find(p => screen.x + p.x >= 20 && screen.x + p.x <= size.x - 20
-          && screen.y + p.y >= 90 && screen.y + p.y <= size.y - 82
+          && screen.y + p.y >= controlsBottom && screen.y + p.y <= size.y - 82
           && placed.every(other => other.distanceTo(anchor.add(p)) >= 40)) ?? offset;
         placed.push(anchor.add(offset));
         if (offset.x || offset.y) {
@@ -122,7 +163,7 @@ export default function MapView({
     };
 
     if (origin && destination && cycling) {
-      L.polyline([[origin.lat, origin.lon], [destination.lat, destination.lon]], {
+      L.polyline([origin, ...waypoints.map(w => w.place), destination].map(p => [p.lat, p.lon] as [number, number]), {
         color: COLORS.bikeOnly, weight: bikeOnlySelected ? 5 : 2, opacity: bikeOnlySelected ? .9 : .45,
         dashArray: "8 8", className: "bike-only-line",
       }).bindTooltip(textNode("Cycling only · ≈ " + formatMinutes(cycling.minutes) + " · straight-line estimate")).addTo(layer);
@@ -139,7 +180,7 @@ export default function MapView({
 
     if (selectedJourney && origin && destination) {
       const first = selectedJourney.originStation, last = selectedJourney.destinationStation;
-      L.polyline([[origin.lat, origin.lon], [first.lat, first.lon]],
+      if (!selectedJourney.legsIncludeEndpoints) L.polyline([[origin.lat, origin.lon], [first.lat, first.lon]],
         { color: COLORS.origin, weight: 4, dashArray: "4 7", className: "journey-line" }).addTo(layer);
       bounds.extend([first.lat, first.lon]); bounds.extend([last.lat, last.lon]);
       for (const leg of selectedJourney.transitLegs) {
@@ -152,7 +193,7 @@ export default function MapView({
         }).bindTooltip(textNode(leg.service + ": " + leg.from + " → " + leg.to)).addTo(layer);
         coordinates.forEach(point => bounds.extend(point));
       }
-      L.polyline([[last.lat, last.lon], [destination.lat, destination.lon]],
+      if (!selectedJourney.legsIncludeEndpoints) L.polyline([[last.lat, last.lon], [destination.lat, destination.lon]],
         { color: COLORS.destination, weight: 4, dashArray: "4 7", className: "journey-line" }).addTo(layer);
       for (const stop of selectedStops) {
         bounds.extend([stop.lat, stop.lon]);
@@ -162,19 +203,25 @@ export default function MapView({
     allBounds.extend(bounds); allBoundsRef.current = allBounds;
     // Background updates must not undo a user's zoom while inspecting a stop.
     const fitKey = [origin?.lat, origin?.lon, destination?.lat, destination?.lon,
+      ...waypoints.flatMap(w => [w.id, w.place.lat, w.place.lon]),
       selectedJourney?.id ?? "bike-only"].join("|");
     if (bounds.isValid() && fittedRef.current !== fitKey) {
       visibleBoundsRef.current = bounds;
-      fitMap(map, bounds); fittedRef.current = fitKey;
+      if (!skipFitRef.current) fitMap(map, bounds);
+      fittedRef.current = fitKey;
     }
+    skipFitRef.current = false;
     redrawPinsRef.current = drawPins;
     drawPins(); map.on("zoomend", drawPins);
     return () => { map.off("zoomend", drawPins); redrawPinsRef.current = null; };
-  }, [origin, destination, stops, selectedJourney, cycling, bikeOnlySelected, showStops, accessMinutes, egressMinutes]);
+  }, [origin, destination, waypoints, editingDisabled, stops, selectedJourney, cycling, bikeOnlySelected, showStops, accessMinutes, egressMinutes]);
 
   return <div className="map-shell">
     <div ref={containerRef} className="map" aria-label={bikeOnlySelected ? "Cycling-only estimate map" : "Selected journey and explored stops map"} />
-    {origin && <div className="map-controls">
+    <div className="map-controls">
+      <button type="button" disabled={editingDisabled} onClick={() => {
+        if (mapRef.current) pickerRef.current?.(mapRef.current.getCenter());
+      }}>Choose map centre</button>
       <label><input type="checkbox" checked={showStops} onChange={e => setShowStops(e.target.checked)} />Explored stops ({stops.length})</label>
       <button type="button" disabled={!stops.length} onClick={() => {
         setShowStops(true);
@@ -183,7 +230,8 @@ export default function MapView({
           fitMap(mapRef.current, allBoundsRef.current);
         }
       }}>Fit all stops</button>
-    </div>}
+      <div className="map-instruction">{editingDisabled ? "Stop the search to edit locations." : "Tap the map to choose locations. Drag A, B or a stop to move it."}</div>
+    </div>
     <div className="map-legend">
       <span><i className="legend-bike-only" />Cycling only</span>
       <span><i className="legend-bike" />Cycling leg</span>
@@ -192,7 +240,5 @@ export default function MapView({
       <span><i className="legend-stop" />Explored stop</span>
       <span><b className="legend-pin">1</b>Board / alight</span>
     </div>
-    {!origin && <div className="map-empty"><span>CH</span><strong>Your route will appear here</strong>
-      <small>Try Zürich HB → Bern, Bundesplatz</small></div>}
   </div>;
 }

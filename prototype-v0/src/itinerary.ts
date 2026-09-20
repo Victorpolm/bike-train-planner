@@ -72,6 +72,21 @@ export type JourneyStep = {
 };
 
 export function journeySteps(journey: Journey, origin: Place, destination: Place): JourneyStep[] {
+  if (journey.legsIncludeEndpoints) {
+    const steps: JourneyStep[] = [];
+    let previous = journey.startTime;
+    for (const leg of journey.transitLegs) {
+      if (leg.departure && leg.departure > previous) steps.push({ mode: "wait", title: "Boarding and waiting time",
+        from: leg.from, to: leg.from, departure: previous, arrival: leg.departure });
+      // Zero-length waypoint visits still make the required visit visible.
+      if (leg.mode !== "bike" || leg.arrival!.getTime() > leg.departure!.getTime() || leg.service.includes("intermediate")) {
+        steps.push({ mode: leg.mode, title: leg.service, from: leg.from, to: leg.to,
+          departure: leg.departure, arrival: leg.arrival, leg });
+      }
+      if (leg.arrival) previous = leg.arrival;
+    }
+    return steps;
+  }
   const bikeArrival = new Date(journey.startTime.getTime() + journey.originStation.bikeMinutes * 60_000);
   const steps: JourneyStep[] = [{
     mode: "bike", title: "Bike to the station", from: origin.label,

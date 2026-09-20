@@ -10,6 +10,8 @@ Sign in with the ChatGPT account that owns the Site. Access is restricted to tha
 
 For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website.
 
+**Next work:** [App roadmap](docs/APP_ROADMAP.md) records real cycling routes and profiles, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
+
 ## Core question
 
 > Given an origin, destination, departure time, bicycle and user preferences, what are the most useful practical journeys combining cycling and public transport?
@@ -51,6 +53,8 @@ npm run dev
 It compares Baseline (cycling before/after transit) and Extended (at most one intermediate cycling leg). Results show a clearly labelled cycling-only estimate first, followed by fastest transit, fewest boardings and least cycling-or-walking alternatives. Cards open full journey plans; the map shows explored stops and numbered boarding/alighting points with timetable details. Address suggestions and optional cycling presets simplify input. The cycling comparison appears once the places resolve; transit proposals appear progressively and survive cancellation. See [the result and map design](docs/RESULTS_AND_MAP.md), [the implemented mathematical model](docs/MATHEMATICAL_MODEL.md), the prototype README and `docs/EXPERIMENTS.md`. The sampled prototype is not the final routing architecture.
 
 Departure defaults to Leave now, with an optional Swiss date/time. A 24-hour arrival window includes overnight waiting. Initial connection queries now cover feasible rail access as well as the nearest stops; the recorded Libingen–EPFL failure and its repair are in [the experiment log](docs/EXPERIMENTS.md).
+
+Click/tap the map for **Start here**, **Finish here** or **Add intermediate stop**, then drag markers to adjust them. Up to four intermediate stops can be searched, reordered or removed; Reverse route reverses their order too. Routes visit every requested stop in order under one shared cycling/boarding/time budget. Naming keeps the exact clicked coordinates; coordinates remain usable if no nearby name is found. Stopover time is not added yet.
 
 ## Documentation semantics
 

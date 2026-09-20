@@ -6,7 +6,8 @@ import { atEndpoint, compareModels, emptyNetwork, solve, validateOptions,
   type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 
 import { fetchJson, HttpError } from "./http.ts";
-import { geocode, type TransportLocation } from "./places.ts";
+import { geocode, MAX_WAYPOINTS, type TransportLocation } from "./places.ts";
+import { solveWaypoints } from "./waypoints.ts";
 export { geocode } from "./places.ts";
 
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
@@ -173,6 +174,7 @@ async function connections(network: Network, client: TimetableClient, from: Stop
 export type SearchSession = {
   origin: Place; destination: Place; start: Date; options: Options; network: Network; client: TimetableClient;
   originStations: Station[]; destinationStations: Station[]; baseline: Solution; extended: Solution | null; extendedComplete?: boolean;
+  waypoints?: Place[];
 };
 export function searchWarnings(session: SearchSession): string[] {
   const warnings = [...session.client.warnings];
@@ -183,6 +185,16 @@ export function searchWarnings(session: SearchSession): string[] {
 
 export type SearchUpdate = (session: SearchSession) => void;
 function refresh(session: SearchSession, extended: boolean, publish: SearchUpdate) {
+  if (session.waypoints?.length) {
+    const points = [session.origin, ...session.waypoints, session.destination];
+    session.baseline = solveWaypoints(session.network, points, session.start, session.options, "baseline");
+    if (extended) {
+      session.extended = solveWaypoints(session.network, points, session.start, session.options, "extended");
+      session.extended.journeys = [...new Map([...session.baseline.journeys, ...session.extended.journeys].map(j => [j.id, j])).values()];
+    }
+    publish({ ...session });
+    return;
+  }
   if (extended) {
     const compared = compareModels(session.network, session.origin, session.destination, session.start, session.options);
     session.baseline = compared.baseline; session.extended = compared.extended;
@@ -192,19 +204,21 @@ function refresh(session: SearchSession, extended: boolean, publish: SearchUpdat
 // Dependency injection keeps the actual async acquisition flow testable without live HTTP.
 export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
-  dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number } = {}): Promise<SearchSession> {
+  dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[] } = {}): Promise<SearchSession> {
   validateOptions(options);
+  if ((dependencies.waypoints?.length ?? 0) > MAX_WAYPOINTS) throw new Error(`Choose up to ${MAX_WAYPOINTS} intermediate stops.`);
   const start = dependencies.start ?? new Date();
   progress("Finding both places…");
   const resolve = (value: string | Place) => typeof value === "string" ? geocode(value, signal, dependencies.fetcher) : value;
-  const [origin, destination] = await Promise.all([resolve(from), resolve(to)]);
+  const [origin, destination, ...waypoints] = await Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]);
   signal.throwIfAborted();
   const client = new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
-    originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null };
+    originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null, waypoints };
   // Show the cycling-only reference as soon as the places resolve, including
   // while stop/timetable requests are pending or ultimately fail.
   publish({ ...session });
+  if (waypoints.length) return planWaypointStages(session, mode, progress, publish);
   session.originStations = await findCandidateStations(origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), client, progress);
   publish({ ...session });
   session.destinationStations = await findCandidateStations(destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), client, progress);
@@ -237,6 +251,11 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
 
 export async function extend(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
   if (session.extendedComplete) return session;
+  if (session.waypoints?.length) {
+    session.extendedComplete = true;
+    refresh(session, true, publish);
+    return { ...session };
+  }
   refresh(session, true, publish);
   const { network, client, options: o, origin, destination, start } = session;
   client.beginPhase();
@@ -287,5 +306,40 @@ export async function extend(session: SearchSession, progress: Progress, publish
   // Refresh BOTH solutions on the identical expanded graph. No data/mode confound.
   session.extendedComplete = true;
   refresh(session, true, publish);
+  return { ...session };
+}
+
+async function planWaypointStages(session: SearchSession, mode: ModelMode, progress: Progress, publish: SearchUpdate): Promise<SearchSession> {
+  const { origin, destination, waypoints = [], network, client, options, start } = session;
+  const points = [origin, ...waypoints, destination], candidates: Station[][] = [];
+  for (let index = 0; index < points.length; index++) {
+    const limit = index === 0 ? options.maxAccessMinutes : index === points.length - 1 ? options.maxEgressMinutes
+      : Math.max(options.maxAccessMinutes, options.maxEgressMinutes);
+    const stops = await findCandidateStations(points[index], Math.min(limit, options.maxBikeMinutes), client, progress);
+    client.signal.throwIfAborted();
+    candidates.push(stops);
+    for (const stop of stops) network.stops.set(stop.id, stop);
+    if (index === 0) session.originStations = stops;
+    if (index === points.length - 1) session.destinationStations = stops;
+    refresh(session, mode === "extended", publish);
+  }
+  // Two station pairs per stage share the SAME request/time budget. Query an
+  // onward stage from an actually reachable waypoint time, never from the
+  // original departure or an independently optimized route.
+  for (let stage = 0; stage < points.length - 1; stage++) {
+    const from = candidates[stage].filter(s => s.bikeMinutes <= options.maxAccessMinutes);
+    const to = candidates[stage + 1].filter(s => s.bikeMinutes <= options.maxEgressMinutes);
+    const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2);
+    for (const [a, b] of pairs) {
+      const reachable = solveWaypoints(network, points, start, options, mode).stageArrivals[stage];
+      if (!Number.isFinite(reachable)) break;
+      progress(`Checking stage ${stage + 1} of ${points.length - 1}: ${points[stage].label} → ${points[stage + 1].label}…`);
+      await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000));
+      client.signal.throwIfAborted();
+      refresh(session, mode === "extended", publish);
+    }
+  }
+  session.extendedComplete = mode === "extended";
+  refresh(session, mode === "extended", publish);
   return { ...session };
 }

@@ -26,6 +26,8 @@ export default function JourneyPlan({
       <div className="plan-heading">
         <h3 id={`${id}-heading`}>Your travel plan</h3>
         <p>{day.format(journey.startTime)} · Swiss local time</p>
+        {!!journey.waypoints?.length && <p>Intermediate stops: {journey.waypoints.map((visit, index) =>
+          `${index + 1}. ${visit.place.label} (${clock.format(visit.arrival)})`).join(" → ")}</p>}
       </div>
       <ol className="plan-steps">
         {journeySteps(journey, origin, destination).map((step, index) => {

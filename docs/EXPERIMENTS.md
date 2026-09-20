@@ -323,3 +323,34 @@ TypeScript and the production build pass; no dependency or lockfile changed. The
 **Remaining limits:** Cycling still follows straight-line estimates; carriage/reservations are deferred. Only four candidate stops per side and three initial station pairs are sampled, with bounded fallback/Extended exploration. Feasible routes can be missed, and dominated journeys need not be shown as category winners. The exact cause of an unrecorded user search is not asserted beyond the reproduced case.
 
 **Next field check:** Refresh the private website, select these two suggestions, choose the desired Swiss departure time, and use More cycling when expecting Rapperswil to be considered. Compare the returned Wil and Rapperswil trade-offs against a practical routed cycling journey.
+
+## 2026-09-20 — Map selection and ordered intermediate stops
+
+**Request:** Map click/tap actions for start/finish, draggable named markers, intermediate steps and a GitHub document for the remaining app work.
+
+**Implementation:** Exact-coordinate map selections with bounded nearby-name lookup; up to four reorderable/removable requested stops; route reversal; stage-aware transit search and a cycling-only comparison through those same points. Existing no-via acquisition remains unchanged. The future work is recorded in [APP_ROADMAP.md](APP_ROADMAP.md).
+
+### Deterministic regressions
+
+The new `prototype-v0/src/waypoints.test.ts` uses explicitly synthetic timetables at 2026-09-20 08:00 Europe/Zurich. These are controlled correctness checks, not real offered services.
+
+| Case | Verified result |
+|---|---|
+| A → B → C, with a faster A → C shortcut | The shortcut cannot skip B; arrival is 08:40, with B visited at 08:20 and two boardings. Reordering to A → C → B has no journey in this directed fixture. |
+| One boarding allowed or a 39-minute overall horizon | The two-stage journey is rejected; exactly two boardings and a 40-minute horizon admit it. Budgets do not reset at B. |
+| Fast first stage uses two boardings; slower first stage uses one | The slower prefix survives pruning and catches the onward ride within the two-boarding total cap. |
+| Cycle from B to a requested point and back | Both legs enter total cycling and intermediate active time. Reducing the total budget by one minute rejects the trip. |
+| Onward departure one second before the waypoint's readiness plus buffer | Rejected; departure exactly at readiness is accepted. |
+| A requested final stage entirely by bicycle | Mixed journey remains eligible; final cycling enters the arrival active-time metric. The separate cycling-only estimate includes the requested point. |
+| Request an earlier place again | A → B → A → C records both visits in order. |
+| Two automatic cycling transfers, one in each stage | Extended rejects using both; the valid one-transfer alternative arrives at 09:30 instead of the invalid two-transfer 09:05. Baseline is infeasible in this fixture. |
+| Actual acquisition adapter with one requested stop | Queries A → B at 08:03 and B → C at 08:23, following the reached arrival plus boarding buffer. Two requests share one client; five requested stops are rejected before acquisition. |
+| Map naming with controlled GeoAdmin data | The label gains a nearby name but keeps exact latitude/longitude and no invented station ID. Network failure retains coordinates; cancellation aborts and invalid coordinates are rejected. |
+
+**Automated verification:** 69 tests pass, including the previous recorded Libingen–EPFL, Zürich–Laax and exhaustive no-via model checks. TypeScript and the production build pass. No dependency or lockfile change was required.
+
+**Browser/live limits:** The managed preview service failed because its request mailbox was unavailable; its status probe failed for the same reason. No replacement preview service was started. Map click, tap, dragging, keyboard selection and responsive layout have therefore **not been interactively or visually verified in this update**. Existing browser checks from 2026-09-18 do not cover these new controls. A direct naming attempt near Zürich HB did not obtain a successful live response in this environment and returned the coordinate fallback; successful response parsing is covered by controlled data, not asserted as a live result. No new live multi-stop timetable benchmark was performed.
+
+**Remaining limits:** All cycling geometry/times remain straight-line estimates. There is no added stopover duration, road profile or carriage/availability validation. Stage acquisition samples at most two stop pairs per stage and can miss alternatives; Extended with requested stops reuses that graph without extra departure-board acquisition. See the model document for exact semantics.
+
+**Next check:** On desktop and mobile, choose A/B and two intermediate stops on the map, drag one, reorder the stops and confirm the form and returned plan match. Check a failed naming request leaves a usable coordinate. Then implement the routed-cycling/engine pilot described in the roadmap.

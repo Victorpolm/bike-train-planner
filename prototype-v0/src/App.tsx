@@ -1,12 +1,12 @@
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, type SearchSession } from "./api";
 import { categorize, metrics, type ModelMode, type EndpointPreference, type Proposal } from "./model";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
-import { cyclingOnly, formatMinutes, type CyclingComparison } from "./routing";
+import { cyclingOnly, formatMinutes, type CyclingComparison, type Point } from "./routing";
 import { exploredStops } from "./mapData";
 import PlaceInput, { type PlaceValue } from "./PlaceInput";
-import { KNOWN_PLACES } from "./places";
+import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 
@@ -49,7 +49,8 @@ function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
     <span className="cycling-summary">Active time at start {formatMinutes(m.activeStart)} · arrival {formatMinutes(m.activeEnd)}
       {m.middle > 0 && ` · cycling between services ${formatMinutes(m.middle)}`}</span>
     <span className="route-stops">{j.originStation.name} → {j.destinationStation.name}</span>
-    {m.middle > 0 && <span className="middle-badge">One cycling transfer</span>}
+    {!!j.waypoints?.length && <span className="route-stops">Via {j.waypoints.map(w => w.place.label).join(" → ")}</span>}
+    {m.middle > 0 && <span className="middle-badge">{j.waypoints?.length ? "Cycling between journey stages" : "One cycling transfer"}</span>}
     {extraMinutes > 0 && <span className="tradeoff">{formatMinutes(extraMinutes)} longer than the fastest
       {activeSaved > 0 ? ` · ${formatMinutes(activeSaved)} less cycling or walking` : ""}</span>}
     <span className="journey-plan-toggle">{expanded ? "Hide travel plan −" : "View travel plan +"}</span>
@@ -62,6 +63,10 @@ export default function App() {
   };
   const [fromInput, setFromInput] = useState<PlaceValue>(() => initial("8503000"));
   const [toInput, setToInput] = useState<PlaceValue>(() => initial("8509786"));
+  const [viaInputs, setViaInputs] = useState<{ id: string; value: PlaceValue }[]>([]);
+  const nextViaId = useRef(0);
+  const naming = useRef(new Map<string, AbortController>());
+  const [pointNotice, setPointNotice] = useState("");
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
@@ -80,11 +85,54 @@ export default function App() {
   const proposals = useMemo(() => categorize(solution?.journeys ?? [], session?.options ?? options), [solution, session, options]);
   const selected = selectedId === BIKE_ONLY_ID ? null : proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
   const bikeOnlySelected = !!session && selected === null;
-  const cyclingReference = useMemo(() => session ? cyclingOnly(session.origin, session.destination, session.start) : null, [session]);
+  const cyclingReference = useMemo(() => session ? cyclingOnly(session.origin, session.destination, session.start, session.waypoints) : null, [session]);
+  const mapWaypoints = useMemo(() => viaInputs.flatMap((input, index) => {
+    const place = input.value.place ?? session?.waypoints?.[index];
+    return place ? [{ id: input.id, place, number: index + 1 }] : [];
+  }), [viaInputs, session]);
   const stops = useMemo(() => session ? exploredStops(session.network.stops.values(), session.originStations, session.destinationStations) : [], [session]);
   const warnings = session ? searchWarnings(session) : [];
 
   function invalidate() { setSession(null); setSelectedId(null); setExpandedId(null); setError(""); setProgress(""); }
+  useEffect(() => () => {
+    controller.current?.abort();
+    for (const abort of naming.current.values()) abort.abort();
+  }, []);
+  function setMapPoint(id: string, point: Point) {
+    if (loading) return;
+    const place = mapPlace(point), value = { text: place.label, place };
+    invalidate();
+    if (id === "origin") setFromInput(value);
+    else if (id === "destination") setToInput(value);
+    else setViaInputs(inputs => inputs.map(input => input.id === id ? { ...input, value } : input));
+    setPointNotice("Location selected. Its exact position is kept while we look up a nearby name.");
+    naming.current.get(id)?.abort();
+    const abort = new AbortController(); naming.current.set(id, abort);
+    void nameMapPlace(place, abort.signal).then(named => {
+      if (abort.signal.aborted) return;
+      const rename = (old: PlaceValue): PlaceValue => old.place === place ? { text: named.label, place: named } : old;
+      setFromInput(rename); setToInput(rename);
+      setViaInputs(inputs => inputs.map(input => ({ ...input, value: rename(input.value) })));
+      setSession(current => current ? { ...current,
+        origin: current.origin === place ? named : current.origin,
+        destination: current.destination === place ? named : current.destination,
+        waypoints: current.waypoints?.map(p => p === place ? named : p),
+      } : current);
+      setPointNotice(named.label === place.label ? "Point selected. A nearby place name was unavailable; the coordinates remain usable." : `Selected ${named.label}.`);
+    }).catch(() => { /* A newer drag replaces this naming request. */ })
+      .finally(() => { if (naming.current.get(id) === abort) naming.current.delete(id); });
+  }
+  function addWaypoint(point?: Point) {
+    if (loading || viaInputs.length >= MAX_WAYPOINTS) return;
+    const id = `via-${++nextViaId.current}`;
+    invalidate(); setViaInputs(inputs => [...inputs, { id, value: { text: "" } }]);
+    if (point) setMapPoint(id, point);
+  }
+  function moveWaypoint(index: number, delta: number) {
+    invalidate(); setViaInputs(inputs => {
+      const next = [...inputs]; [next[index], next[index + delta]] = [next[index + delta], next[index]]; return next;
+    });
+  }
   function cancel() {
     runId.current++; controller.current?.abort(); setLoading(false); setProgress(session ? "Search stopped. The cycling estimate and any transit proposals are kept below." : "Search stopped. You can try again.");
   }
@@ -101,7 +149,8 @@ export default function App() {
       }
       const next = await plan(fromInput.place ?? fromInput.text.trim(), toInput.place ?? toInput.text.trim(), mode, options, abort.signal,
         message => { if (id === runId.current) setProgress(message); },
-        result => { if (id === runId.current) setSession(result); }, { start });
+        result => { if (id === runId.current) setSession(result); },
+        { start, waypoints: viaInputs.map(input => input.value.place ?? input.value.text.trim()) });
       if (id === runId.current) { setSession(next); setProgress(""); }
     } catch (e) {
       if (id === runId.current && !abort.signal.aborted) setError(e instanceof Error ? e.message : "Search failed. Please try again.");
@@ -137,10 +186,28 @@ export default function App() {
       <form onSubmit={search} className="search-form">
         <div className="place-inputs">
           <PlaceInput label="From" value={fromInput} disabled={loading} onChange={value => { invalidate(); setFromInput(value); }} />
-          <button className="swap-button" type="button" disabled={loading} aria-label="Swap departure and arrival"
-            onClick={() => { invalidate(); setFromInput(toInput); setToInput(fromInput); }}>⇅</button>
+          {viaInputs.map((input, index) => <div className="waypoint-row" key={input.id}>
+            <PlaceInput label={`Intermediate stop ${index + 1}`} value={input.value} disabled={loading}
+              onChange={value => { invalidate(); setViaInputs(inputs => inputs.map(item => item.id === input.id ? { ...item, value } : item)); }} />
+            <div className="waypoint-actions">
+              <button type="button" disabled={loading || index === 0} aria-label={`Move intermediate stop ${index + 1} up`} onClick={() => moveWaypoint(index, -1)}>↑</button>
+              <button type="button" disabled={loading || index === viaInputs.length - 1} aria-label={`Move intermediate stop ${index + 1} down`} onClick={() => moveWaypoint(index, 1)}>↓</button>
+              <button type="button" disabled={loading} aria-label={`Remove intermediate stop ${index + 1}`} onClick={() => {
+                invalidate(); naming.current.get(input.id)?.abort(); setViaInputs(inputs => inputs.filter(item => item.id !== input.id));
+              }}>Remove</button>
+            </div>
+          </div>)}
           <PlaceInput label="To" value={toInput} disabled={loading} onChange={value => { invalidate(); setToInput(value); }} />
         </div>
+        <div className="location-actions">
+          <button type="button" disabled={loading || viaInputs.length >= MAX_WAYPOINTS} onClick={() => addWaypoint()}>+ Add intermediate stop</button>
+          <button type="button" disabled={loading} onClick={() => {
+            invalidate(); setFromInput(toInput); setToInput(fromInput); setViaInputs(inputs => [...inputs].reverse());
+          }}>Reverse route</button>
+          <a href="#journey-map">Choose on map</a>
+        </div>
+        {!!viaInputs.length && <p className="waypoint-help">Visit stops in this order · up to {MAX_WAYPOINTS} stops. Cycling and boarding limits apply to the whole journey. No stopover time is added.</p>}
+        {pointNotice && <p className="point-notice" role="status">{pointNotice}</p>}
         <div className="departure-controls">
           <label><span>Departure · Swiss time</span><select disabled={loading} value={departureMode}
             onChange={e => { invalidate(); setDepartureMode(e.target.value as "now" | "scheduled"); }}>
@@ -156,9 +223,9 @@ export default function App() {
           <legend>Journey options</legend>
           <div className="model-buttons">
             <button type="button" aria-pressed={mode === "baseline"} onClick={() => void changeMode("baseline")}>
-              <strong>Baseline</strong><span>Cycle before and after transit</span></button>
+              <strong>Baseline</strong><span>{viaInputs.length ? "Cycle at the ends of each stage" : "Cycle before and after transit"}</span></button>
             <button type="button" aria-pressed={mode === "extended"} onClick={() => void changeMode("extended")}>
-              <strong>Extended</strong><span>Also allow one cycling transfer</span></button>
+              <strong>Extended</strong><span>Also allow one {viaInputs.length ? "extra " : ""}cycling transfer</span></button>
           </div>
         </fieldset>
         <details className="preferences"><summary>Preferences · optional</summary>
@@ -173,7 +240,7 @@ export default function App() {
               <option value="none">Just the three main categories</option><option value="start">Less cycling or walking at start</option><option value="end">Less cycling or walking at arrival</option>
             </select></label>
           </div>
-          <p>Up to {options.maxAccessMinutes} minutes cycling at each end{mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.
+          <p>Up to {options.maxAccessMinutes} minutes cycling at each {viaInputs.length ? "stage's " : ""}end{mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.
             {" "}Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours overall, including waiting.</p>
         </details>
         <button className="search-button" type="submit" disabled={loading}>{loading ? "Finding journeys…" : "Find journeys"}</button>
@@ -187,7 +254,7 @@ export default function App() {
       {!loading && progress && <p role="status">{progress}</p>}
       {error && <div className="error-block" role="alert"><strong>We could not complete this search.</strong><p>{error}</p></div>}
       {session && cyclingReference && <section className="results" aria-live="polite">
-        <p className="resolved-places">{session.origin.label} → {session.destination.label}</p>
+        <p className="resolved-places">{[session.origin, ...session.waypoints ?? [], session.destination].map(p => p.label).join(" → ")}</p>
         <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>Your journey options</h2></div></div>
         {warnings.length > 0 && <details className="search-notice"><summary>Some alternatives could not be checked</summary>{warnings.map(w => <p key={w}>{w}</p>)}</details>}
         {!proposals.length && !loading && <p className="empty-results">{warnings.length
@@ -220,8 +287,10 @@ export default function App() {
           <p className="observed-stops">All observed stops: {stops.map(s => s.name).join(" · ")}</p>
         </details>
       </section>}
-    </section><aside className="map-panel">
-      <MapView origin={session?.origin ?? null} destination={session?.destination ?? null} stops={stops}
+    </section><aside className="map-panel" id="journey-map">
+      <MapView origin={fromInput.place ?? session?.origin ?? null} destination={toInput.place ?? session?.destination ?? null} stops={stops}
+        waypoints={mapWaypoints} editingDisabled={loading} canAddWaypoint={viaInputs.length < MAX_WAYPOINTS}
+        onSelectPoint={(target, point) => target === "via" ? addWaypoint(point) : setMapPoint(target, point)} onMovePoint={setMapPoint}
         selectedJourney={selected} cycling={cyclingReference} bikeOnlySelected={bikeOnlySelected}
         accessMinutes={session?.options.maxAccessMinutes ?? options.maxAccessMinutes} egressMinutes={session?.options.maxEgressMinutes ?? options.maxEgressMinutes} />
       <div className="model-note"><strong>Experimental model</strong><p>Cycling uses straight-line estimates; map lines are schematic.

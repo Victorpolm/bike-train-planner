@@ -152,6 +152,20 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Result:** The repeated late-evening live search returns three category winners. A separate More cycling daytime search explicitly queries Rapperswil–Renens and returns four connections. That route is feasible when examined independently; Wil dominates it in the combined graph for the recorded departure, so Rapperswil need not win a category. This is still a sampled search, not proof of complete timetable coverage. See [EXPERIMENTS.md](EXPERIMENTS.md).
 
+## 2026-09-20 — Map-selected places and ordered intermediate visits
+
+**Request:** Implement map click/tap selection, draggable named markers and intermediate steps; record the remaining app work in GitHub.
+
+**Decision:** Map clicks offer Start here, Finish here and Add intermediate stop. Preserve the exact selected coordinate when finding a nearby name, retaining coordinates when naming fails. Support up to four ordered requested stops, reordering/removal and route reversal. Invalidate stale results when the route changes; stop an active search before editing.
+
+**Routing meaning:** A stop is an actual visit in the requested order, with no added dwell time yet. Use stage-aware labels and one cumulative cycling/boarding/time budget, not independently optimized stage results. Baseline permits cycling at each requested stage's ends; Extended adds at most one automatic cycling transfer across the whole journey. Thus the original zero-versus-one-intermediate-block experiment applies directly to searches without requested stops. Both modes share the observed stage graph. The cycling-only reference visits the same points.
+
+**Acquisition limit:** Up to two station pairs per stage share the existing request/phase cap. Onward query times come from reachable stage arrivals. Via searches currently omit the extra departure-board/suffix acquisition used by no-via Extended searches. Completeness and practical bicycle feasibility are not claimed.
+
+**Roadmap:** [APP_ROADMAP.md](APP_ROADMAP.md) records routed cycling/profiles, carriage instructions, repair and parking layers, commuting/bikepacking/expert modes, comfort research and the later community vision. This request authorizes the map/ordered-stop implementation and that document; it does not make the future features implemented. Preserve the own-bicycle-first scope and evaluate an existing routing engine before further solver expansion.
+
+**Reconsider if:** Actual stopovers need dwell durations, pass-through waypoints are desired instead of visits, or the bounded stage acquisition misses useful journeys. Replace geometric cycling before treating the resulting transfers as practically feasible.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

@@ -1,6 +1,6 @@
 # Project state
 
-_Last consolidated: 2026-09-18._
+_Last consolidated: 2026-09-20._
 
 ## Current objective
 
@@ -28,6 +28,7 @@ The bicycle should be treated as accompanying the traveller through the journey,
 - Clicking a transit card opens every cycling, transit, walking and waiting leg. The map shows the selected route, a cycling-only comparison line, candidate/observed timetable stops and numbered boarding/alighting pins with available services, times and platforms. Pins match numbers in the plan. A toggle and Fit all stops control expose search coverage.
 - The app displays the first usable proposals while alternatives load, reports incomplete searches and keeps proposals when stopped. Debounced address/stop suggestions preserve selected coordinates; the form needs only From, To and the model choice, with optional cycling presets.
 - Departure defaults to Leave now, with an explicit Swiss date/time option. The arrival window is now 24 hours including waiting, so late-evening searches can retain next-morning services. Remaining station-pair slots prioritize rail candidates after the nearest pair; adjacent bus stops no longer consume the whole initial batch.
+- Map click/tap sets start, finish or an intermediate stop; draggable A/B/V markers and named fields preserve exact coordinates. Up to four requested stops can be reordered/removed, and the route reversed. A separate stage-aware solver visits them in order with one global cycling/boarding/time budget. Baseline allows cycling at each requested stage's ends; Extended adds at most one automatic cycling transfer across the whole journey. Stopover time is zero. Two station pairs per stage share the existing 18-request limit; via searches do not add departure-board discovery.
 
 The solver uses Pareto labels on a finite, sampled timetable graph. Walking now contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. It is not a complete Swiss routing engine. Cycling, including the cycling-only comparison, is still estimated from straight-line distance at 15 km/h. The comparison is published before timetable acquisition and remains available after service failures. For this experiment, bicycle availability after transit is assumed and carriage/reservation constraints are explicitly deferred.
 
@@ -95,6 +96,8 @@ Previous heuristic targets:
 For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
+
+**2026-09-20 update:** The map/ordered-stop implementation and future [app roadmap](APP_ROADMAP.md) are complete. The roadmap captures real cycling routes and profiles, repair and parking, bicycle rules, commuting/bikepacking/expert presets, comfort research and the later community vision. Only map selection and ordered stops are implemented in this update. Automated verification now has 69 passing tests; map dragging/touch still needs a browser check because the managed preview service was unavailable. Live naming fell back to coordinates in this environment; its successful response parsing and failure behavior are covered with controlled responses.
 
 **2026-09-05 update:** The user has authorized implementation and app changes after the mathematical discussion. This supersedes the earlier pause on routing changes. The Baseline/Extended switch, categories, bounded graph solver and bus-inclusive discovery are implemented.
 

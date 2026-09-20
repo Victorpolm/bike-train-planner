@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
-import { geocode, localSuggestions, suggestPlaces } from "./places.ts";
+import { geocode, localSuggestions, mapPlace, nameMapPlace, suggestPlaces } from "./places.ts";
 import { preferenceOptions } from "./preferences.ts";
 import { validateOptions } from "./model.ts";
 const response = (value: unknown) => new Response(JSON.stringify(value));
@@ -47,4 +47,26 @@ it("all cycling preference choices produce valid constraints with ordered budget
   }
   assert.ok(preferenceOptions("less", "none").maxBikeMinutes < preferenceOptions("balanced", "none").maxBikeMinutes);
   assert.ok(preferenceOptions("more", "none").maxBikeMinutes > preferenceOptions("balanced", "none").maxBikeMinutes);
+});
+
+it("names a map point without snapping its coordinates or inventing a station identity", async () => {
+  const point = { lat: 47.123456, lon: 8.123456 };
+  const place = await nameMapPlace(point, new AbortController().signal, async input => {
+    const url = new URL(String(input));
+    assert.equal(url.searchParams.get("geometry"), `${point.lon},${point.lat}`);
+    assert.equal(url.searchParams.get("sr"), "4326");
+    return response({ results: [{ attributes: { label: "<b>Teststrasse 12</b>", com_name: "Example" }, geometry: { x: point.lon + .00001, y: point.lat } }] });
+  });
+  assert.match(place.label, /Teststrasse 12.*Example/);
+  assert.deepEqual([place.lat, place.lon, place.stopId], [point.lat, point.lon, undefined]);
+});
+
+it("keeps clicked coordinates usable when naming fails, but respects cancellation", async () => {
+  const point = { lat: 47, lon: 8 };
+  const fallback = await nameMapPlace(point, new AbortController().signal, async () => { throw new TypeError("offline"); });
+  assert.deepEqual(fallback, mapPlace(point));
+  assert.match(fallback.label, /47\.00000, 8\.00000/);
+  const controller = new AbortController(); controller.abort();
+  await assert.rejects(nameMapPlace(point, controller.signal, async () => response({ results: [] })), { name: "AbortError" });
+  assert.throws(() => mapPlace({ lat: NaN, lon: 8 }));
 });

@@ -6,6 +6,8 @@ _Status: implemented on 2026-09-05; active-travel objectives and map/comparison 
 
 Select **Baseline** or **Extended** before searching. Baseline permits cycling only before and after public transport. Extended permits **at most one positive-duration cycling leg between public-transport rides** and includes Baseline. Either transit portion may contain several trains, buses, trams and ordinary walking transfers. Extended does not require an intermediate ride and is not limited to two vehicle rides.
 
+The preceding zero-versus-one rule describes searches **without requested intermediate stops**. Ordered stopovers added on 2026-09-20 use the stage extension below; cycling to a required visit is part of that visit, not an automatically selected transfer.
+
 Results first show a separate cycling-only estimate, then transit preferences: fastest, fewest boardings, and least cycling or walking. An optional fourth minimizes active time at the start or arrival. A transit journey winning multiple categories gets multiple badges on one card. Transit cards expand to the full timed sequence, including any intermediate cycling, service identifiers, stops, directions, available platforms, waiting and walking. Numbered map pins identify actual boarding/alighting events; candidate and observed timetable stops are shown separately. See [RESULTS_AND_MAP.md](RESULTS_AND_MAP.md).
 
 ## Graph and feasible paths
@@ -128,6 +130,18 @@ Errors, rejected sections and resource caps generate an incomplete-search notice
 
 Address and stop suggestions appear after two typed characters, using immediate accent-insensitive known-hub matches and independently published GeoAdmin/Transport results. A 350 ms debounce, cancellation and a generation guard reject stale queries. Each live lookup has a 20-second deadline; successful combined suggestions use a bounded 50-query in-memory cache. Selection preserves coordinates and stop IDs. Searching unselected text proceeds on the first valid match and cancels the slower provider; resolved labels are shown for checking. These lookup requests are separate from the timetable acquisition budget. There is no persisted address history.
 
+## Ordered requested stops (2026-09-20)
+
+`src/waypoints.ts` handles up to four requested intermediate points. For points `(origin, via_1, ..., via_n, destination)`, a label also records the index of the last visited point, whether its current stage has used transit, and whether it must board after a cycling access/automatic transfer. Advancing to the next point preserves cumulative cycling, walking, boardings, automatic transfers used, endpoint active time and elapsed time. Dominance compares only compatible stage/phase states, including whether the complete journey has any transit. A slower prefix with fewer boardings or less cycling must survive when it enables an onward stage.
+
+Each stage may cycle directly within `max(maxAccessMinutes, maxEgressMinutes)`, or cycle to transit and out to its requested endpoint within the corresponding per-leg limits. The global cycling cap still applies. A complete transit-category journey needs at least one transit boarding across all stages. Baseline allows access/egress at every **requested** stage. Extended adds at most one **automatic** cycling transfer across the whole journey, followed by another boarding. Required visits can therefore create more than one cycling block between rides without violating this extended-stage definition. Both models are evaluated on the same observed graph; Extended retains Baseline journeys explicitly.
+
+Requested points are visits, not merely stations a train passes through: the itinerary reaches the point and continues from there. No dwell duration is currently added. Reboarding still requires the three-minute buffer. All stages share the original departure, absolute horizon, total cycling and boarding limits. Stage solutions are not independently optimized and concatenated. Pure cycling follows the same ordered points and sums the rounded segment estimates.
+
+Acquisition gathers up to four candidate stops at each requested point, then up to two station pairs per adjacent stage. Onward queries start at a reached waypoint time plus the chosen station access and boarding buffer. All stages share the original 18-request/90-second phase budget. The first provider window can omit services needed by a slower feasible prefix; a label/resource cap can also make acquisition incomplete. Unlike no-via Extended searches, this first implementation does not add departure-board or transfer-suffix discovery to via searches. Switching models recomputes on the stage graph already acquired.
+
+Map selection creates an exact coordinate, then asks GeoAdmin for nearby feature names with a six-second deadline. A name is labelled “Near …”; lookup never snaps to a station or assigns its ID. Failure retains the coordinate label. Repeated drags cancel obsolete naming requests; names update only the still-matching selected point, including after reordering or reversal. Form changes and marker moves invalidate previous route results. Editing is disabled while acquiring a journey; Stop search enables editing again.
+
 ## Implementation boundaries and next experiment
 
 | File | Responsibility |
@@ -140,6 +154,7 @@ Address and stop suggestions appear after two typed characters, using immediate 
 | `src/preferences.ts` | User cycling preferences mapped to mathematical budgets |
 | `src/departure.ts` | Swiss-time form values and timezone-independent departure parsing |
 | `src/model.ts` | Feasibility, multi-label graph search, Pareto filtering and categories |
+| `src/waypoints.ts` | Ordered requested visits with cumulative journey budgets |
 | `src/App.tsx` | Model switch, preferences, categories, empty/partial/cancel states |
 | `src/itinerary.ts`, `src/JourneyPlan.tsx` | Full chronological journey decomposition |
 | `src/MapView.tsx` | Schematic transit, walking and cycling legs |
