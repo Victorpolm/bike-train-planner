@@ -17,6 +17,16 @@ export type CyclingRoute = {
 };
 export const CYCLING_PROFILE = "trekking";
 export const MAX_CYCLING_SPEED_KMH = 25;
+// Match BRouter's bounded waypoint search. Building/stop centroids need not
+// sit exactly on a way; the gap remains visible and consumes walking time.
+export const MAX_ENDPOINT_GAP_METRES = 250;
+export const CONNECTOR_WALKING_SPEED_KMH = 4;
+export class EndpointSnapError extends Error {
+  constructor() {
+    super(`The routed path is more than ${MAX_ENDPOINT_GAP_METRES} m from a selected point. Move that point closer to a road or path.`);
+    this.name = "EndpointSnapError";
+  }
+}
 export const STEEP_PERCENT = 6;
 export const FINAL_CLIMB_METRES = 2000;
 type Located = Point & { id?: string; stopId?: string };
@@ -136,8 +146,8 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
   if (!length || distanceM < length * .8 || distanceM > length * 1.5 + 50) throw new Error("Cycling distance and geometry disagree.");
   points.forEach(p => { p.distanceM *= distanceM / length; });
   const startGapM = haversineKm(from, points[0]) * 1000, endGapM = haversineKm(to, points.at(-1)!) * 1000;
-  if (startGapM > 75 || endGapM > 75) throw new Error("The selected point is more than 75 m from a routable path. Move it to a nearby road or entrance.");
-  const connectorMinutes = (startGapM + endGapM) / 1000 / 4 * 60;
+  if (startGapM > MAX_ENDPOINT_GAP_METRES || endGapM > MAX_ENDPOINT_GAP_METRES) throw new EndpointSnapError();
+  const connectorMinutes = (startGapM + endGapM) / 1000 / CONNECTOR_WALKING_SPEED_KMH * 60;
   const unknown = (startM: number, endM: number): CycleSection => ({ startM, endM, surface: "Unknown", infrastructure: "Unknown", speedLimit: "Unknown", tags: {} });
   const sections: CycleSection[] = [];
   const messages = properties.messages;

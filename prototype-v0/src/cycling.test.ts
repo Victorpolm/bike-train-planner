@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { it } from "node:test";
 import { plan } from "./api.ts";
 import { CyclingClient } from "./cyclingClient.ts";
-import { breakdown, cachedCycling, classifyInfrastructure, classifySurface, cyclingKey, finalClimb, parseCyclingRoute, pointAlong, postedSpeedBand, zeroCycling } from "./cycling.ts";
+import { breakdown, cachedCycling, classifyInfrastructure, classifySurface, cyclingKey, EndpointSnapError, finalClimb, parseCyclingRoute, pointAlong, postedSpeedBand, zeroCycling } from "./cycling.ts";
 import { DEFAULT_OPTIONS, emptyNetwork, solve, type Network, type Stop } from "./model.ts";
 import { haversineKm, type Place, type Point } from "./routing.ts";
 import { solveWaypoints } from "./waypoints.ts";
@@ -65,9 +65,25 @@ it("shows missing elevation as unknown and identifies sustained steep climbs", (
 it("rejects invalid time/geometry and distant snapping instead of drawing a road fallback", () => {
   const badTime = structuredClone(fixture.data); badTime.features[0].properties["total-time"] = null;
   assert.throws(() => parseCyclingRoute(badTime, fixture.from, fixture.to), /duration/);
-  assert.throws(() => parseCyclingRoute(fixture.data, { lat: 46.55, lon: 6.5 }, fixture.to), /75 m/);
+  assert.throws(() => parseCyclingRoute(fixture.data, { lat: 46.55, lon: 6.5 }, fixture.to), EndpointSnapError);
   const badPoint = structuredClone(fixture.data); badPoint.features[0].geometry.coordinates[5][0] = NaN;
   assert.throws(() => parseCyclingRoute(badPoint, fixture.from, fixture.to), /geometry/);
+});
+
+it("accepts nearby off-path endpoints while preserving pins and counting both walking connectors", () => {
+  const a = { lat: 46, lon: 6 }, b = { lat: 46.01, lon: 6 };
+  const data = geometry(a, b, 600);
+  const from = { ...a, lat: a.lat - 249 / 111_195 }, to = { ...b, lat: b.lat + 249 / 111_195 };
+  const route = parseCyclingRoute(data, from, to);
+  assert.equal(route.from, from); assert.equal(route.to, to);
+  assert.equal(route.points[0].lat, a.lat); assert.equal(route.points.at(-1)!.lat, b.lat);
+  assert.ok(route.startGapM > 248 && route.startGapM < 250);
+  assert.ok(route.endGapM > 248 && route.endGapM < 250);
+  assert.ok(Math.abs(route.connectorMinutes - 7.47) < .01);
+  assert.equal(route.minutes, 18); // 10-minute ride plus both access gaps, rounded up.
+  assert.equal(route.distanceKm, haversineKm(a, b)); // No invented road/elevation/surface for the gaps.
+  assert.throws(() => parseCyclingRoute(data, { ...a, lat: a.lat - 251 / 111_195 }, b), EndpointSnapError);
+  assert.throws(() => parseCyclingRoute(data, a, { ...b, lat: b.lat + 251 / 111_195 }), EndpointSnapError);
 });
 
 it("uses direction-aware cycle facilities and does not invent surfaces or measured speeds", () => {
@@ -91,6 +107,7 @@ it("deduplicates cycling requests but routes the reverse direction independently
     const url = new URL(String(input)); urls.push(url);
     assert.equal(url.searchParams.get("profile:allow_ferries"), "0");
     assert.equal(url.searchParams.get("profile:processUnusedTags"), "1");
+    assert.equal(url.searchParams.get("profile:waypointCatchingRange"), "250");
     return response(geometry(urls.length === 1 ? a : b, urls.length === 1 ? b : a, urls.length === 1 ? 600 : 1200));
   }, 0, false);
   const [one, duplicate] = await Promise.all([client.route(a, b), client.route(a, b)]);
@@ -105,6 +122,7 @@ it("does not replace unavailable cycling links with straight lines and stops aft
   assert.equal(await client.route(fixture.from, fixture.to), null);
   assert.equal(await client.route(fixture.to, fixture.from), null);
   assert.equal(requests, 1); assert.ok(client.warnings.size);
+  assert.ok(client.failureKinds.has("service"));
   assert.equal(cachedCycling(client.routes, fixture.from, fixture.to), null);
   assert.equal((await client.route(fixture.from, fixture.from))?.minutes, 0);
 });
@@ -161,7 +179,7 @@ it("uses the routed duration and geometry for an automatic cycling transfer", ()
   assert.equal(solve(n, from, to, start, { ...options, maxIntermediateMinutes: 9 }, "extended").journeys.length, 0);
 });
 
-it("queries the timetable after routed station access and keeps that duration in the final plan", async () => {
+for (const offset of [0, .001]) it(`queries trains after routed access including a ${offset ? "111 m" : "zero"} endpoint gap`, async () => {
   const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 };
   const from: Place = { label: "Home", lat: 42.001, lon: 4 }, to: Place = { ...b, label: "B", stopId: "B" };
   const urls: URL[] = [];
@@ -169,21 +187,40 @@ it("queries the timetable after routed station access and keeps that duration in
     new AbortController().signal, () => {}, () => {}, {
       start, gapMs: 0, cyclingFetcher: async input => {
         const points = new URL(String(input)).searchParams.get("lonlats")!.split("|").map(s => { const [lon, lat] = s.split(",").map(Number); return { lon, lat }; });
-        return response(geometry(points[0], points[1], points[1].lat === a.lat ? 1200 : 36_000));
+        const access = points[1].lat === a.lat;
+        return response(geometry(access ? { ...points[0], lat: points[0].lat + offset } : points[0], points[1], access ? 1200 : 36_000));
       },
       fetcher: async input => {
         const url = new URL(String(input)); urls.push(url);
         const station = (p: Stop) => ({ id: p.id, name: p.name, icon: "train", coordinate: { x: p.lat, y: p.lon } });
         if (url.pathname.endsWith("locations")) return response({ stations: [station(a)] });
-        assert.equal(url.searchParams.get("time"), "08:23");
-        return response({ connections: [{ sections: [{ journey: { category: "IC", number: "1" },
-          departure: { station: station(a), departure: time(25).toISOString() }, arrival: { station: station(b), arrival: time(55).toISOString() } }] }] });
+        assert.equal(url.searchParams.get("time"), offset ? "08:25" : "08:23");
+        // Returning both trains exercises the solver as well as request readiness.
+        return response({ connections: [24, 25].map(depart => ({ sections: [{ journey: { category: "IC", number: String(depart) },
+          departure: { station: station(a), departure: time(depart).toISOString() }, arrival: { station: station(b), arrival: time(depart + 30).toISOString() } }] })) });
       },
     });
-  assert.equal(result.baseline.journeys[0].totalMinutes, 55);
-  assert.equal(result.baseline.journeys[0].originStation.bikeMinutes, 20);
-  assert.equal(result.baseline.journeys[0].originStation.cyclingRoute?.minutes, 20);
+  assert.equal(result.baseline.journeys[0].totalMinutes, offset ? 55 : 54);
+  assert.equal(result.baseline.journeys[0].originStation.bikeMinutes, offset ? 22 : 20);
+  assert.equal(result.baseline.journeys[0].originStation.cyclingRoute?.minutes, offset ? 22 : 20);
   assert.equal(result.cyclingStatus, "ready"); assert.equal(result.cyclingComparison!.minutes, 600);
   assert.equal(urls.filter(u => u.pathname.endsWith("connections")).length, 1);
   assert.equal(zeroCycling(a, a).minutes, 0);
+});
+
+it("reports routing-service failure separately from an off-network point or disconnected path", async () => {
+  const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 };
+  const from: Place = { label: "Home", lat: 42.001, lon: 4 }, to: Place = { ...b, label: "B", stopId: "B" };
+  for (const failure of ["service", "no-route", "off-network"]) {
+    const signal = new AbortController().signal;
+    const client = new CyclingClient(signal, async () => failure === "off-network"
+      ? response(geometry({ ...from, lat: from.lat + .01 }, a, 1200))
+      : response({}, failure === "service" ? 503 : 400), 0, false);
+    await assert.rejects(plan(from, to, "baseline", DEFAULT_OPTIONS, signal, () => {}, () => {}, {
+      start, gapMs: 0, cyclingClient: client, cyclingFetcher: async () => response({}, 503),
+      fetcher: async () => response({ stations: [{ ...a, icon: "train", coordinate: { x: a.lat, y: a.lon } }] }),
+    }), failure === "service" ? /cycling route service.*try again/i : /Home.*250 m/);
+    assert.ok(client.failureKinds.has(failure as "service" | "no-route" | "off-network"));
+    assert.equal(client.getCached(from, a), null);
+  }
 });

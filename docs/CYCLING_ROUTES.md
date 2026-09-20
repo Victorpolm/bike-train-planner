@@ -38,7 +38,9 @@ Requested stops keep their existing semantics: actual ordered visits, no added s
 
 ## Exact points and road snapping
 
-The selected A/B/V coordinates are preserved. BRouter may start/end on the nearest routable way. If either gap exceeds **75 m**, reject that route and invite selection of a nearby road or entrance. Smaller gaps are shown as dotted **unverified walking access** and add time at 4 km/h before the whole cycling leg is rounded upward to minutes. Their distance is reported separately from routed cycling distance; they do not enter road-surface percentages or the elevation profile.
+The selected A/B/V coordinates are preserved. BRouter may start/end on the nearest routable way. Allow a gap of up to **250 m at each end**, using the same explicit `profile:waypointCatchingRange=250` in the provider request and the local response validator. This replaces the initial 75 m local cutoff, which rejected otherwise usable routes for building/stop centroids. Reject a larger gap and explain which location needs adjustment. Smaller gaps are shown as dotted **unverified walking access** and add time at 4 km/h before the whole cycling leg is rounded upward to minutes. Their distance is reported separately from routed cycling distance; they do not enter road-surface percentages or the elevation profile.
+
+The 250 m margin follows BRouter's default waypoint-matching range, verified in its [RoutingContext implementation](https://github.com/abrensch/brouter/blob/master/brouter-core/src/main/java/btools/router/RoutingContext.java). The UI distinguishes provider/network failure, exhausted search budgets and unavailable/disconnected paths; a service failure does not ask the user to place their pin exactly on a road.
 
 This does not verify the presence of a gate, a crossing or an accessible station entrance. Two selections with the same public-transport stop ID still have zero endpoint cycling under the station-level model; platform access remains unverified and the boarding buffer still applies.
 

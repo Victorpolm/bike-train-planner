@@ -1,6 +1,6 @@
 import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station } from "./routing.ts";
 import { CyclingClient } from "./cyclingClient.ts";
-import { cyclingKey, MAX_CYCLING_SPEED_KMH, samePlace } from "./cycling.ts";
+import { cyclingKey, MAX_CYCLING_SPEED_KMH, MAX_ENDPOINT_GAP_METRES, samePlace } from "./cycling.ts";
 import { MAJOR_STATIONS } from "./majorStations.ts";
 import { type TransportSection } from "./itinerary.ts";
 import { addSections, addStationboard, readStop, type BoardJourney } from "./timetable.ts";
@@ -193,6 +193,17 @@ export function searchWarnings(session: SearchSession): string[] {
 }
 
 export type SearchUpdate = (session: SearchSession) => void;
+function stationAccessError(session: SearchSession) {
+  const kinds = session.cyclingClient?.failureKinds;
+  if (session.client.failures) return "The timetable service could not finish finding nearby stops. Please try again.";
+  if (kinds?.has("service")) return "The cycling route service could not complete the station-access checks. Please try again; your points do not need to be exactly on a path.";
+  if (kinds?.has("limit")) return "The search reached its limit while checking paths to nearby stops. Try again or choose a closer stop.";
+  if (kinds?.has("off-network") || kinds?.has("no-route")) {
+    const places = [!session.originStations.length && session.origin.label, !session.destinationStations.length && session.destination.label].filter(Boolean).join(" and ");
+    return `No usable station-access path was found for ${places}. We allow up to ${MAX_ENDPOINT_GAP_METRES} m between a selected point and the routed path. Try a nearby road, path or entrance.`;
+  }
+  return "No stop was found within your cycling preference. Try More cycling, or a nearby stop.";
+}
 async function roadCandidates(session: SearchSession, point: Place, maxMinutes: number, direction: "access" | "egress" | "both",
   progress: Progress, expand = false, complete = false): Promise<Station[]> {
   const pools = session.cyclingCandidatePools ??= new Map<string, Station[]>(), key = `${point.lat},${point.lon}:${maxMinutes}`;
@@ -328,8 +339,7 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   publish({ ...session });
   session.destinationStations = await roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress);
   publish({ ...session });
-  if (!session.originStations.length || !session.destinationStations.length) throw new Error(
-    client.failures || cyclingClient?.warnings.size ? "Some station access routes could not be checked. Try again or choose a nearby station entrance." : "No stop was found within your cycling preference. Try More cycling, or a nearby stop.");
+  if (!session.originStations.length || !session.destinationStations.length) throw new Error(stationAccessError(session));
   client.beginPhase();
   const queried = new Set<string>();
   const queryPairs = async (limit = SEARCH_LIMITS.baselinePairs) => {

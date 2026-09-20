@@ -39,7 +39,7 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
       <div><dt>Descent</dt><dd>{metres(route.descentM)}</dd></div>
     </dl>
     <p className="cycle-caption">Times use a touring bicycle at moderate effort. Terrain and riding pace affect the estimate.</p>
-    {route.startGapM + route.endGapM > 1 && <p className="cycle-caption">Journey timing adds about {Math.ceil(route.connectorMinutes)} min for {Math.round(route.startGapM)} m at the start and {Math.round(route.endGapM)} m at the end. Dotted links are estimated walking access; entrance access is unverified.</p>}
+    {route.startGapM + route.endGapM > 1 && <p className="cycle-caption">Connected to a nearby path: {Math.round(route.startGapM)} m at the start and {Math.round(route.endGapM)} m at the end. Journey timing includes about {Math.ceil(route.connectorMinutes)} min of walking with your bike for these dotted links. Check that you can reach the path; entrance access is unverified.</p>}
     <div className="elevation-heading"><h4>Elevation along this leg</h4><span>{Math.round(route.elevationCoverage * 100)}% covered</span></div>
     {elevations.length > 1 ? <>
       <svg className="elevation-chart" viewBox="0 0 600 180" role="img" aria-labelledby={`${id}-chart-title`}

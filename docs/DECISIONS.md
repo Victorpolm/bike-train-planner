@@ -180,6 +180,18 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Validation and remaining work:** Recorded real road geometry plus synthetic missed-train, reverse-direction, ordered-stop, transfer, missing-data and cancellation regressions are in `cycling.test.ts`; live results and preview limitations are in [EXPERIMENTS.md](EXPERIMENTS.md). Calibrate times and inspect road/entrance access in the field, obtain exact speed/conditional-access attributes and benchmark OTP. Carriage, amenities and user modes remain separate roadmap work.
 
+## 2026-09-20 — Allow reasonable endpoint placement tolerance
+
+**User report:** Station-access checks fail, and the user asks for an error margin when selected points are not exactly on a path.
+
+**Finding:** BRouter's default waypoint search permits 250 m, while the app rejected a returned route whenever either endpoint gap exceeded 75 m. The generic empty-candidate error also suggested moving the point when the underlying problem could be a service failure. The exact user's failing coordinates were not supplied in this report.
+
+**Decision:** Use a shared 250 m per-end margin in both provider requests and local validation. Preserve the clicked/searched points, draw the gaps as dotted estimated walking access and include that walking time at 4 km/h in timetable readiness, solver constraints and total duration. Apply the same policy to start/end, requested stops and station access. Larger gaps and absent road routes still cannot become invented cycling links. Keep road distance, elevation and surface coverage separate from these gaps.
+
+**Errors:** Distinguish unavailable routing service, exhausted checks, missing/disconnected paths and ordinary cycling-budget exclusion. Service failure must not imply that a coordinate is invalid.
+
+**Verification:** Regressions accept 249 m gaps at both ends and reject 251 m at either end. A 111 m start gap delays station readiness from 08:23 to 08:25 and excludes the earlier train. This margin is a practical prototype choice, not validation of gates, crossings or platform access. Reconsider it after field testing.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title
