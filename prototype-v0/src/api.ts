@@ -186,10 +186,11 @@ export type SearchSession = {
   cyclingCandidatePools?: Map<string, Station[]>;
 };
 export function searchWarnings(session: SearchSession): string[] {
-  const warnings = [...session.client.warnings, ...session.cyclingClient?.warnings ?? [], ...session.comparisonClient?.warnings ?? []];
+  const warnings = [...session.client.warnings, ...session.cyclingClient?.warnings ?? [],
+    ...[...session.comparisonClient?.warnings ?? []].map(w => `Cycling-only comparison — ${w}`)];
   if (session.client.rejectedSections) warnings.push("Some sections lacked usable stops or times and were excluded.");
   if (session.baseline.limited || session.extended?.limited) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
-  return warnings;
+  return [...new Set(warnings)];
 }
 
 export type SearchUpdate = (session: SearchSession) => void;

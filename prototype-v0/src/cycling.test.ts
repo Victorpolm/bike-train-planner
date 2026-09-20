@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { it } from "node:test";
-import { plan } from "./api.ts";
+import { plan, searchWarnings } from "./api.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import { breakdown, cachedCycling, classifyInfrastructure, classifySurface, cyclingKey, EndpointSnapError, finalClimb, parseCyclingRoute, pointAlong, postedSpeedBand, zeroCycling } from "./cycling.ts";
 import { DEFAULT_OPTIONS, emptyNetwork, solve, type Network, type Stop } from "./model.ts";
@@ -179,8 +179,9 @@ it("uses the routed duration and geometry for an automatic cycling transfer", ()
   assert.equal(solve(n, from, to, start, { ...options, maxIntermediateMinutes: 9 }, "extended").journeys.length, 0);
 });
 
-for (const offset of [0, .001]) it(`queries trains after routed access including a ${offset ? "111 m" : "zero"} endpoint gap`, async () => {
+for (const { offset, failedAlternatives } of [{ offset: 0, failedAlternatives: false }, { offset: .001, failedAlternatives: false }, { offset: 0, failedAlternatives: true }]) it(`queries trains after routed access with a ${offset ? "111 m" : "zero"} gap${failedAlternatives ? " despite failed alternatives" : ""}`, async () => {
   const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 };
+  const other = { id: "C", name: "Other station", lat: 42.003, lon: 4 };
   const from: Place = { label: "Home", lat: 42.001, lon: 4 }, to: Place = { ...b, label: "B", stopId: "B" };
   const urls: URL[] = [];
   const result = await plan(from, to, "baseline", { ...DEFAULT_OPTIONS, maxAccessMinutes: 25, maxEgressMinutes: 0 },
@@ -188,12 +189,13 @@ for (const offset of [0, .001]) it(`queries trains after routed access including
       start, gapMs: 0, cyclingFetcher: async input => {
         const points = new URL(String(input)).searchParams.get("lonlats")!.split("|").map(s => { const [lon, lat] = s.split(",").map(Number); return { lon, lat }; });
         const access = points[1].lat === a.lat;
+        if (failedAlternatives && !access) return new Response(points[1].lat === other.lat ? "no track found at pass=0" : "operation killed by timeout", { status: 400 });
         return response(geometry(access ? { ...points[0], lat: points[0].lat + offset } : points[0], points[1], access ? 1200 : 36_000));
       },
       fetcher: async input => {
         const url = new URL(String(input)); urls.push(url);
         const station = (p: Stop) => ({ id: p.id, name: p.name, icon: "train", coordinate: { x: p.lat, y: p.lon } });
-        if (url.pathname.endsWith("locations")) return response({ stations: [station(a)] });
+        if (url.pathname.endsWith("locations")) return response({ stations: [station(a), ...failedAlternatives ? [station(other)] : []] });
         assert.equal(url.searchParams.get("time"), offset ? "08:25" : "08:23");
         // Returning both trains exercises the solver as well as request readiness.
         return response({ connections: [24, 25].map(depart => ({ sections: [{ journey: { category: "IC", number: String(depart) },
@@ -203,7 +205,14 @@ for (const offset of [0, .001]) it(`queries trains after routed access including
   assert.equal(result.baseline.journeys[0].totalMinutes, offset ? 55 : 54);
   assert.equal(result.baseline.journeys[0].originStation.bikeMinutes, offset ? 22 : 20);
   assert.equal(result.baseline.journeys[0].originStation.cyclingRoute?.minutes, offset ? 22 : 20);
-  assert.equal(result.cyclingStatus, "ready"); assert.equal(result.cyclingComparison!.minutes, 600);
+  if (failedAlternatives) {
+    assert.equal(result.cyclingStatus, "unavailable"); assert.equal(result.cyclingComparison, null);
+    const warnings = searchWarnings(result);
+    assert.ok(warnings.some(w => w.includes("Home → Other station") && w.includes("no usable connection")));
+    assert.ok(warnings.some(w => w.startsWith("Cycling-only comparison") && w.includes("Home → B") && w.includes("ran out of time")));
+    assert.equal(result.cyclingClient!.failedLinks.size, 1);
+    assert.ok(result.baseline.journeys.every(j => j.originStation.id === "A"));
+  } else { assert.equal(result.cyclingStatus, "ready"); assert.equal(result.cyclingComparison!.minutes, 600); }
   assert.equal(urls.filter(u => u.pathname.endsWith("connections")).length, 1);
   assert.equal(zeroCycling(a, a).minutes, 0);
 });
@@ -215,12 +224,35 @@ it("reports routing-service failure separately from an off-network point or disc
     const signal = new AbortController().signal;
     const client = new CyclingClient(signal, async () => failure === "off-network"
       ? response(geometry({ ...from, lat: from.lat + .01 }, a, 1200))
-      : response({}, failure === "service" ? 503 : 400), 0, false);
+      : new Response(failure === "service" ? "unavailable" : "no track found at pass=0", { status: failure === "service" ? 503 : 400 }), 0, false);
     await assert.rejects(plan(from, to, "baseline", DEFAULT_OPTIONS, signal, () => {}, () => {}, {
       start, gapMs: 0, cyclingClient: client, cyclingFetcher: async () => response({}, 503),
       fetcher: async () => response({ stations: [{ ...a, icon: "train", coordinate: { x: a.lat, y: a.lon } }] }),
     }), failure === "service" ? /cycling route service.*try again/i : /Home.*250 m/);
     assert.ok(client.failureKinds.has(failure as "service" | "no-route" | "off-network"));
     assert.equal(client.getCached(from, a), null);
+  }
+});
+
+it("classifies actual provider errors and retains named, bounded diagnostics", async () => {
+  const cases = [
+    { status: 400, body: "operation killed by timeout", kind: "service", message: /ran out of time/ },
+    { status: 400, body: "no track found at pass=0", kind: "no-route", message: /no usable connection/ },
+    { status: 400, body: "from-position not mapped in existing datafile", kind: "off-network", message: /could not be matched/ },
+    { status: 400, body: "profile not found", kind: "service", message: /could not complete/ },
+    { status: 400, body: "unrecognized error ".repeat(500), kind: "service", message: /could not complete/ },
+    { status: 429, body: "busy", kind: "service", message: /is busy/ },
+  ] as const;
+  const from = { ...fixture.from, label: "Start address" }, to = { ...fixture.to, name: "Station entrance" };
+  for (const example of cases) {
+    const client = new CyclingClient(new AbortController().signal, async () => new Response(example.body, { status: example.status }), 0, false);
+    assert.equal(await client.route(from, to), null);
+    const failure = client.failedLinks.get(cyclingKey(from, to))!;
+    assert.equal(failure.from, from); assert.equal(failure.to, to);
+    assert.equal(failure.kind, example.kind); assert.equal(failure.status, example.status);
+    assert.equal(failure.providerDetail, example.body.slice(0, 2048).trim());
+    assert.match(failure.message, example.message);
+    assert.ok([...client.warnings].every(w => w.includes("Start address → Station entrance")));
+    assert.ok([...client.warnings].every(w => !/operation killed|unrecognized error|profile not found/.test(w)));
   }
 });

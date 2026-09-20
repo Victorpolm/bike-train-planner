@@ -192,6 +192,18 @@ This file records important project choices. Do not silently rewrite old decisio
 
 **Verification:** Regressions accept 249 m gaps at both ends and reject 251 m at either end. A 111 m start gap delays station readiness from 08:23 to 08:25 and excludes the earlier train. This margin is a practical prototype choice, not validation of gates, crossings or platform access. Reconsider it after field testing.
 
+## 2026-09-20 — Explain failed cycling checks without misdiagnosing HTTP 400
+
+**Report:** The user sees “Some alternatives could not be checked” and a generic no-connected-path warning after the endpoint tolerance fix. The report supplies no endpoints or indication whether other results appeared.
+
+**Finding:** The cycling client mapped every HTTP 400 to a missing path and discarded the provider's response body. BRouter's server returns HTTP 400 for any routing-engine error, including timeout; the old message therefore asserted more than the response established. A repeat of the recorded Libingen–EPFL journey succeeded without warnings and does not reproduce the unspecified user case.
+
+**Decision:** Retain a bounded provider diagnostic and distinguish known timeout, unmatched-point, no-track/island and unknown service errors. Name each failed link with its place/station labels (coordinates if unnamed), and mark failures from the independent cycling-only comparison. Store raw diagnostics in memory but show only plain explanatory messages. Do not enlarge the 250 m tolerance again or invent replacement road links without evidence.
+
+**Presentation:** If transit proposals exist, explain that they use successfully calculated cycling links and that other alternatives may be missing. With no proposals, open the search notes automatically. Keep valid results when a candidate or the independent comparison fails.
+
+**Verification:** Production-flow regression returns valid transit while an alternative station has no path and the cycling-only query times out. Error-body cases cover known and unknown 400s, 429 and bounded retention. The exact reported search still needs its start/finish to reproduce.
+
 ## Template for future changes
 
 ### YYYY-MM-DD — Decision title

@@ -97,6 +97,8 @@ For a pilot, repeat journey planning matters more than downloads or compliments.
 
 ## Immediate next actions
 
+**2026-09-20 warning diagnosis:** Cycling failures now name the affected endpoints and distinguish the independent cycling-only comparison from station-access checks. HTTP 400 is classified using its bounded response detail, so timeouts and unknown request failures no longer masquerade as “no connected path.” Valid proposals remain available. All 86 tests and the build pass. A repeat of the recorded Libingen–EPFL input returned journeys without warnings; the exact newly reported failing coordinates remain unknown.
+
 **2026-09-20 endpoint tolerance fix:** Selected start, finish, stop and station coordinates now allow up to 250 m to the routed path, replacing the restrictive 75 m cutoff. Original pins remain fixed; dotted connectors add walking time before timetable queries and solver feasibility. Routing-service failures now have a separate message. All 84 tests and the production build pass; a live Libingen → Libingen, Dorf route also succeeded. See [EXPERIMENTS.md](EXPERIMENTS.md).
 
 **2026-09-20 cycling update:** Road routes and their durations now feed timetable queries and both solvers. The map-linked cycling profile and road-attribute breakdowns are implemented. Automated verification has 81 passing tests plus a successful TypeScript/production build. A real Renens–EPFL road response and a live multimodal check are documented in [EXPERIMENTS.md](EXPERIMENTS.md). Managed preview remains unavailable, so the new profile interactions still need desktop/mobile checking. Exact posted speed signs cannot be recovered from the current provider; bands and unknowns are explicit.

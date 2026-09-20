@@ -4,12 +4,36 @@ import type { Point } from "./routing.ts";
 
 export const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
 const cache = new Map<string, CyclingRoute>();
-type Located = Point & { id?: string; stopId?: string };
+type Located = Point & { id?: string; stopId?: string; label?: string; name?: string };
 type CyclingFailureKind = "service" | "no-route" | "off-network" | "limit";
+export type CyclingFailure = {
+  from: Located; to: Located; kind: CyclingFailureKind; message: string;
+  status?: number; providerDetail?: string;
+};
+const placeName = (point: Located) => point.label || point.name || `${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}`;
+function explainFailure(error: unknown): Omit<CyclingFailure, "from" | "to"> {
+  if (error instanceof EndpointSnapError) return { kind: "off-network", message: error.message };
+  const diagnostic = error instanceof HttpError ? { status: error.status, providerDetail: error.detail } : {};
+  const detail = diagnostic.providerDetail ?? "";
+  if (error instanceof Error && error.name === "TimeoutError" || /timeout|timed out|time limit/i.test(detail)) {
+    return { ...diagnostic, kind: "service", message: "The cycling service ran out of time for this link. Please try again." };
+  }
+  if (diagnostic.status === 429) return { ...diagnostic, kind: "service", message: "The cycling service is busy. Try again later." };
+  if (diagnostic.status === 400 && /(?:from|to|via[^\s]*)-position not mapped|no (?:matching|routable) (?:way|road|path).*(?:point|position)/i.test(detail)) {
+    return { ...diagnostic, kind: "off-network", message: `A point could not be matched to a routable path within ${MAX_ENDPOINT_GAP_METRES} m. Check a nearby road or entrance.` };
+  }
+  if (diagnostic.status === 400 && /no track found|(?:start|target) island detected|routing island/i.test(detail)) {
+    return { ...diagnostic, kind: "no-route", message: "The cycling service found no usable connection between these points with this bicycle profile." };
+  }
+  // Unknown 400 responses are service/request failures, not evidence that a
+  // path does not exist. Never tell the user to move a valid pin on that basis.
+  return { ...diagnostic, kind: "service", message: "The cycling service could not complete this check. Please try again." };
+}
 export class CyclingClient {
   readonly routes = new Map<string, CyclingRoute | null>();
   readonly warnings = new Set<string>();
   readonly failureKinds = new Set<CyclingFailureKind>();
+  readonly failedLinks = new Map<string, CyclingFailure>();
   requests = 0;
   private queue: Promise<unknown> = Promise.resolve();
   private pending = new Map<string, Promise<CyclingRoute | null>>();
@@ -63,12 +87,9 @@ export class CyclingClient {
         this.signal.throwIfAborted();
         if (error instanceof HttpError && error.status === 429) this.stopped = true;
         this.routes.set(key, null);
-        const kind: CyclingFailureKind = error instanceof EndpointSnapError ? "off-network"
-          : error instanceof HttpError && error.status === 400 ? "no-route" : "service";
-        this.failureKinds.add(kind);
-        this.warnings.add(kind === "off-network" ? (error as EndpointSnapError).message
-          : kind === "no-route" ? `No connected cycling path was returned for some links after searching within ${MAX_ENDPOINT_GAP_METRES} m of their endpoints.`
-            : "The cycling route service could not complete some requests. Checked routes remain available; please try again for missing links.");
+        const failure = { from: a, to: b, ...explainFailure(error) };
+        this.failedLinks.set(key, failure); this.failureKinds.add(failure.kind);
+        this.warnings.add(`${placeName(a)} → ${placeName(b)}: ${failure.message}`);
         return null;
       }
     });

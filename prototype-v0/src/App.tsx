@@ -264,7 +264,10 @@ export default function App() {
       {session && <section className="results">
         <p className="resolved-places">{[session.origin, ...session.waypoints ?? [], session.destination].map(p => p.label).join(" → ")}</p>
         <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>Your journey options</h2></div></div>
-        {warnings.length > 0 && <details className="search-notice"><summary>Some alternatives could not be checked</summary>{warnings.map(w => <p key={w}>{w}</p>)}</details>}
+        {warnings.length > 0 && <details className="search-notice" open={!proposals.length}><summary>{proposals.length ? "Journey options found · see search notes" : "Search notes · some checks were unsuccessful"}</summary>
+          <p>{proposals.length ? "The journeys below use successfully calculated cycling paths. Other candidate links could not be used, so additional options may be missing."
+            : "The messages below identify unsuccessful checks. They do not prove that no journey exists."}</p>
+          {warnings.map(w => <p key={w}>{w}</p>)}</details>}
         {!proposals.length && !loading && <p className="empty-results">{warnings.length
           ? "Some timetable or cycling data was unavailable. Please try this journey again."
           : `No transit journey was found within your cycling limits and ${session.options.horizonMinutes / 60}-hour arrival window. Try a different departure time or More cycling. This limited search can miss connections.`}</p>}

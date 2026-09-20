@@ -95,3 +95,9 @@ Select a result and open **Your cycling route**. Choose a cycling leg to see rou
 Surface and infrastructure breakdowns include unknown portions. Separated tracks, painted lanes and shared roads/paths are distinguished from an objective safety assessment. Posted road speeds are approximate **bands** because BRouter groups raw OSM limits; they are never measured traffic speeds. Missing elevation stays missing, and cumulative ascent/descent remain unknown when the profile is incomplete.
 
 Cycling requests have a 25-second timeout, a 150-second phase budget and a 32-request main cap. The separate comparison uses up to five stage requests. Successes use a 100-entry, 30-minute memory cache. Failure/cancellation preserves valid results and reports incomplete checks. Exact posted speed values, richer access data and rider-specific profiles remain follow-up work.
+
+## Understand search notes
+
+A failed candidate cycling link does not invalidate another result that uses successfully calculated paths. **Journey options found · see search notes** explains this when proposals are available. With no proposals, notes open automatically. Cycling warnings name both endpoints; failures of the independent cycling-only comparison are labelled separately.
+
+The routing service uses HTTP 400 for several causes, including timeouts. The app reads a bounded diagnostic to distinguish timeout, unmatched point, no usable connection and unknown service failure. It no longer assumes every 400 response proves that no connected path exists. Raw provider messages are kept only in the in-memory failed-link diagnostics and are not rendered in the page. Report the exact start/finish and named failed link when a problem persists.
