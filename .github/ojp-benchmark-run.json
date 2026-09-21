@@ -1,24 +1,116 @@
 {
   "departure_date": "2026-09-22",
-  "purpose": "Initial OJP 2.0 bicycle-attribute evaluation; changing this manifest intentionally triggers a bounded live run.",
+  "purpose": "Manually run OJP 2.0 bicycle-attribute evaluation using public stops and places. The initial private-address case has been generalized.",
   "locations": {
-    "buchholz33": {"label": "Buchholzstrasse 33, Zürich", "provider": "geoadmin", "query": "Buchholzstrasse 33 Zürich", "required_label_parts": ["Buchholzstrasse 33", "Zürich"]},
-    "zurich-hb": {"label": "Zürich HB", "coordinates": [47.3781762, 8.54021154], "source": "prototype-v0/src/majorStations.ts"},
-    "kusnacht-station": {"label": "Küsnacht ZH station (reference origin; user's exact origin unknown)", "provider": "transport", "query": "Küsnacht ZH", "expected_name": "Küsnacht ZH"},
-    "libingen": {"label": "Populated Place Libingen (SG) - Mosnang", "coordinates": [47.328453063964844, 9.023324966430664], "source": "prototype-v0/src/fixtures/libingen-epfl-2026-09-18.json"},
-    "epfl": {"label": "Schul Hochschulareal EPFL (VD) - Ecublens (VD)", "coordinates": [46.521400451660156, 6.566524505615234], "source": "prototype-v0/src/fixtures/libingen-epfl-2026-09-18.json"},
-    "laax": {"label": "Laax GR, posta", "coordinates": [46.806492, 9.258086], "source": "prototype-v0/src/fixtures/zurich-laax-2026-09-05.json"},
-    "rapperswil": {"label": "Rapperswil SG", "coordinates": [47.2248875, 8.81674892], "source": "prototype-v0/src/majorStations.ts"},
-    "renens": {"label": "Renens VD", "coordinates": [46.53704052, 6.57893775], "source": "prototype-v0/src/majorStations.ts"}
+    "zurich-hb": {
+      "label": "Zürich HB",
+      "coordinates": [
+        47.3781762,
+        8.54021154
+      ],
+      "source": "prototype-v0/src/majorStations.ts"
+    },
+    "kusnacht-station": {
+      "label": "Küsnacht ZH station (reference origin; user's exact origin unknown)",
+      "provider": "transport",
+      "query": "Küsnacht ZH",
+      "expected_name": "Küsnacht ZH"
+    },
+    "libingen": {
+      "label": "Populated Place Libingen (SG) - Mosnang",
+      "coordinates": [
+        47.328453063964844,
+        9.023324966430664
+      ],
+      "source": "prototype-v0/src/fixtures/libingen-epfl-2026-09-18.json"
+    },
+    "epfl": {
+      "label": "Schul Hochschulareal EPFL (VD) - Ecublens (VD)",
+      "coordinates": [
+        46.521400451660156,
+        6.566524505615234
+      ],
+      "source": "prototype-v0/src/fixtures/libingen-epfl-2026-09-18.json"
+    },
+    "laax": {
+      "label": "Laax GR, posta",
+      "coordinates": [
+        46.806492,
+        9.258086
+      ],
+      "source": "prototype-v0/src/fixtures/zurich-laax-2026-09-05.json"
+    },
+    "rapperswil": {
+      "label": "Rapperswil SG",
+      "coordinates": [
+        47.2248875,
+        8.81674892
+      ],
+      "source": "prototype-v0/src/majorStations.ts"
+    },
+    "renens": {
+      "label": "Renens VD",
+      "coordinates": [
+        46.53704052,
+        6.57893775
+      ],
+      "source": "prototype-v0/src/majorStations.ts"
+    },
+    "zurich-local": {
+      "label": "Zürich, Waserstrasse (public stop reference origin)",
+      "provider": "transport",
+      "query": "Zürich, Waserstrasse",
+      "expected_name": "Zürich, Waserstrasse"
+    }
   },
   "cases": [
-    {"id": "buchholz-hb-day", "origin": "buchholz33", "destination": "zurich-hb", "time": "08:00"},
-    {"id": "buchholz-hb-night", "origin": "buchholz33", "destination": "zurich-hb", "time": "01:54"},
-    {"id": "kusnacht-hb-day", "origin": "kusnacht-station", "destination": "zurich-hb", "time": "08:00"},
-    {"id": "kusnacht-hb-night", "origin": "kusnacht-station", "destination": "zurich-hb", "time": "01:54"},
-    {"id": "libingen-epfl-day", "origin": "libingen", "destination": "epfl", "time": "08:00"},
-    {"id": "libingen-epfl-night", "origin": "libingen", "destination": "epfl", "time": "23:20"},
-    {"id": "zurich-laax-day", "origin": "zurich-hb", "destination": "laax", "time": "08:00"},
-    {"id": "rapperswil-renens-day", "origin": "rapperswil", "destination": "renens", "time": "08:00"}
+    {
+      "id": "zurich-local-hb-day",
+      "origin": "zurich-local",
+      "destination": "zurich-hb",
+      "time": "08:00"
+    },
+    {
+      "id": "zurich-local-hb-night",
+      "origin": "zurich-local",
+      "destination": "zurich-hb",
+      "time": "01:54"
+    },
+    {
+      "id": "kusnacht-hb-day",
+      "origin": "kusnacht-station",
+      "destination": "zurich-hb",
+      "time": "08:00"
+    },
+    {
+      "id": "kusnacht-hb-night",
+      "origin": "kusnacht-station",
+      "destination": "zurich-hb",
+      "time": "01:54"
+    },
+    {
+      "id": "libingen-epfl-day",
+      "origin": "libingen",
+      "destination": "epfl",
+      "time": "08:00"
+    },
+    {
+      "id": "libingen-epfl-night",
+      "origin": "libingen",
+      "destination": "epfl",
+      "time": "23:20"
+    },
+    {
+      "id": "zurich-laax-day",
+      "origin": "zurich-hb",
+      "destination": "laax",
+      "time": "08:00"
+    },
+    {
+      "id": "rapperswil-renens-day",
+      "origin": "rapperswil",
+      "destination": "renens",
+      "time": "08:00"
+    }
   ]
 }

@@ -62,7 +62,7 @@ def request_xml(origin, destination, departure, bike_transport, now=None):
     return ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
 
-def summarize(xml):
+def summarize(xml, departure=None):
     root = ET.fromstring(xml)
     if root.tag != "{" + NS["o"] + "}OJP" or root.find(".//o:OJPTripDelivery", NS) is None:
         raise ValueError("Not an OJP trip delivery")
@@ -82,8 +82,10 @@ def summarize(xml):
                 "operating_day": value(service, "o:OperatingDayRef"),
                 "mode": value(service, "o:Mode/o:PtMode"),
                 "operator": value(service, "s:OperatorRef"),
-                "line": value(service, "o:PublishedLineName/o:Text"),
-                "service_name": value(service, "o:ServiceSection/o:PublishedLineName/o:Text"),
+                "line": value(service, "o:PublicCode") or value(service, "o:PublishedLineName/o:Text"),
+                "line_ref": value(service, "s:LineRef"),
+                "service_name": value(service, "o:PublishedServiceName/o:Text"),
+                "train_number": value(service, "o:TrainNumber"),
                 "from": value(leg, "o:LegBoard/s:StopPointRef"),
                 "to": value(leg, "o:LegAlight/s:StopPointRef"),
                 "from_name": value(leg, "o:LegBoard/o:StopPointName/o:Text"),
@@ -103,11 +105,21 @@ def summarize(xml):
             for kind in ["ContinuousLeg", "TransferLeg"]:
                 active = leg.find("o:" + kind, NS)
                 if active is not None:
-                    active_legs.append({"kind": kind, "duration": value(leg, "o:Duration"),
+                    active_legs.append({"kind": kind, "duration": value(active, "o:Duration") or value(leg, "o:Duration"),
                                         "mode": value(active, "o:Service/o:PersonalMode")})
         trips.append({"id": value(trip, "o:Id"), "duration": value(trip, "o:Duration"),
                       "start": value(trip, "o:StartTime"), "end": value(trip, "o:EndTime"),
                       "boardings": len(legs), "legs": legs, "active_legs": active_legs})
+    if departure is not None:
+        requested = datetime.fromisoformat(departure.replace("Z", "+00:00"))
+        for trip in trips:
+            start = datetime.fromisoformat(trip["start"].replace("Z", "+00:00"))
+            end = datetime.fromisoformat(trip["end"].replace("Z", "+00:00"))
+            trip["starts_before_request"] = start < requested
+            # OJP Duration excludes the wait between the query and StartTime.
+            # A 26-minute trip starting hours later is not a 26-minute answer.
+            trip["request_to_arrival_minutes"] = round((end - requested).total_seconds() / 60, 3)
+            trip["wait_before_start_minutes"] = round((start - requested).total_seconds() / 60, 3)
     return {"statuses": [n.text for n in root.findall(".//s:Status", NS)],
             "errors": [ET.tostring(n, encoding="unicode") for n in root.iter() if n.tag.rsplit("}", 1)[-1] == "ErrorCondition"],
             "trips": trips}
@@ -158,7 +170,7 @@ def capture_pair(origin, destination, departure, output, key="", dry_run=False):
                 request = urllib.request.Request(ENDPOINT, data=payload, headers=headers, method="POST")
                 with urllib.request.build_opener(NoRedirect).open(request, timeout=30) as response:
                     raw = save_response(name, response.read(8_000_001))
-                record.update(summarize(raw))
+                record.update(summarize(raw, departure))
                 if record["errors"] or any(s != "true" for s in record["statuses"]):
                     failed = True
             except urllib.error.HTTPError as error:

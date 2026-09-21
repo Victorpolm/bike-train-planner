@@ -81,19 +81,21 @@ def departure_timestamp(day, clock, zone="Europe/Zurich"):
 def render_report(matrix):
     lines = ["# OJP bicycle evidence benchmark", "", f"Departure date: {matrix['departure_date']} (Europe/Zurich).",
              "Provider-default access, scheduled times; not a bicycle-time comparison. All permissions remain unassessed.", "",
-             "| Case | Filter | Trips | Transit trips | Modes | Request seconds | Status |",
-             "|---|---|---:|---:|---|---:|---|"]
+             "| Case | Filter | Trips | Transit trips | Earliest arrival from query (min) | Modes | Request seconds | Status |",
+             "|---|---|---:|---:|---:|---|---:|---|"]
     for case in matrix["cases"]:
         if "error" in case:
-            lines.append(f"| {case['id']} | — | — | — | — | — | {case['error']} |")
+            lines.append(f"| {case['id']} | — | — | — | — | — | — | {case['error']} |")
             continue
         for run in case["capture"]["runs"]:
             trips = run.get("trips", [])
             modes = sorted({leg["mode"] for trip in trips for leg in trip["legs"]})
+            arrivals = [t["request_to_arrival_minutes"] for t in trips if not t.get("starts_before_request", True)]
             status = run.get("error") or ("provider error" if run.get("errors") or
                      any(s != "true" for s in run.get("statuses", [])) else "ok")
             lines.append(f"| {case['id']} | {'on' if run['bike_transport_filter'] else 'off'} | {len(trips)} | "
-                         f"{sum(t['boardings'] > 0 for t in trips)} | {', '.join(modes)} | {run.get('seconds', '')} | {status} |")
+                         f"{sum(t['boardings'] > 0 for t in trips)} | {min(arrivals) if arrivals else '—'} | "
+                         f"{', '.join(modes)} | {run.get('seconds', '')} | {status} |")
     lines += ["", "## Returned service attributes", "", "Codes/text are observations, not permission decisions.", ""]
     attributes = sorted({(a["code"], a["text"]) for case in matrix["cases"]
                          for run in case.get("capture", {}).get("runs", []) for trip in run.get("trips", [])

@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OJP xmlns="http://www.vdv.de/ojp" xmlns:siri="http://www.siri.org.uk/siri" version="2.0">
+  <!--Reduced from OJP 2.0 public timetable response, captured 2026-09-21; GitHub Actions run 35604479414, Zürich local night case / bike-filter-on. Intermediate stops and endpoint geometry omitted.-->
+  <OJPResponse>
+    <siri:ServiceDelivery>
+      <OJPTripDelivery>
+        <TripResult>
+          <Trip>
+            <Id>ID-BD779BD0-B73E-4699-AB63-02CC18C0CBD5</Id>
+            <Duration>PT26M</Duration>
+            <StartTime>2026-09-22T03:06:00Z</StartTime>
+            <EndTime>2026-09-22T03:32:00Z</EndTime>
+            <Transfers>0</Transfers>
+            <Distance>5274</Distance>
+            <Leg>
+              <Id>1</Id>
+              <Duration>PT6M</Duration>
+              <ContinuousLeg>
+                <Service>
+                  <PersonalModeOfOperation>own</PersonalModeOfOperation>
+                  <PersonalMode>foot</PersonalMode>
+                </Service>
+                <Duration>PT6M</Duration>
+                <Length>0</Length>
+              </ContinuousLeg>
+              <EmissionCO2>
+                <KilogramPerPersonKm>0</KilogramPerPersonKm>
+              </EmissionCO2>
+            </Leg>
+            <Leg>
+              <Id>2</Id>
+              <Duration>PT15M</Duration>
+              <TimedLeg>
+                <LegBoard>
+                  <siri:StopPointRef>ch:1:sloid:91424::11</siri:StopPointRef>
+                  <StopPointName>
+                    <Text xml:lang="de">Zürich, Waserstrasse</Text>
+                  </StopPointName>
+                  <NameSuffix>
+                    <Text xml:lang="de">PLATFORM_ACCESS_WITHOUT_ASSISTANCE</Text>
+                  </NameSuffix>
+                  <ServiceDeparture>
+                    <TimetabledTime>2026-09-22T03:12:00Z</TimetabledTime>
+                  </ServiceDeparture>
+                  <Order>1</Order>
+                </LegBoard>
+                <LegAlight>
+                  <siri:StopPointRef>ch:1:sloid:87348::11</siri:StopPointRef>
+                  <StopPointName>
+                    <Text xml:lang="de">Zürich, Bahnhofplatz/HB</Text>
+                  </StopPointName>
+                  <NameSuffix>
+                    <Text xml:lang="de">PLATFORM_ACCESS_WITHOUT_ASSISTANCE</Text>
+                  </NameSuffix>
+                  <ServiceArrival>
+                    <TimetabledTime>2026-09-22T03:27:00Z</TimetabledTime>
+                  </ServiceArrival>
+                  <Order>14</Order>
+                </LegAlight>
+                <Service>
+                  <OperatingDayRef>2026-09-22</OperatingDayRef>
+                  <JourneyRef>ch:1:sjyid:100648:plan:387f5ddf-ca1b-4d10-be46-fd29c4271e71</JourneyRef>
+                  <PublicCode>31</PublicCode>
+                  <siri:LineRef>ojp:92031:G</siri:LineRef>
+                  <siri:DirectionRef>R</siri:DirectionRef>
+                  <Mode>
+                    <PtMode>bus</PtMode>
+                    <siri:BusSubmode>localBus</siri:BusSubmode>
+                    <Name>
+                      <Text xml:lang="de">Bus</Text>
+                    </Name>
+                    <ShortName>
+                      <Text xml:lang="de">B</Text>
+                    </ShortName>
+                  </Mode>
+                  <ProductCategory>
+                    <Name>
+                      <Text xml:lang="de">Bus</Text>
+                    </Name>
+                    <ShortName>
+                      <Text xml:lang="de">B</Text>
+                    </ShortName>
+                    <ProductCategoryRef>29</ProductCategoryRef>
+                  </ProductCategory>
+                  <PublishedServiceName>
+                    <Text xml:lang="de">31</Text>
+                  </PublishedServiceName>
+                  <TrainNumber>362</TrainNumber>
+                  <Attribute>
+                    <UserText>
+                      <Text xml:lang="de">Niederflureinstieg</Text>
+                    </UserText>
+                    <Code>A__NF</Code>
+                    <Importance>50</Importance>
+                  </Attribute>
+                  <OriginText>
+                    <Text xml:lang="de">n/a</Text>
+                  </OriginText>
+                  <siri:OperatorRef>ojp:849</siri:OperatorRef>
+                  <DestinationStopPointRef>ch:1:sloid:96008</DestinationStopPointRef>
+                  <DestinationText>
+                    <Text xml:lang="de">Zürich, Hermetschloo</Text>
+                  </DestinationText>
+                </Service>
+              </TimedLeg>
+              <EmissionCO2>
+                <KilogramPerPersonKm>0.0918</KilogramPerPersonKm>
+              </EmissionCO2>
+            </Leg>
+            <Leg>
+              <Id>3</Id>
+              <Duration>PT5M</Duration>
+              <ContinuousLeg>
+                <Service>
+                  <PersonalModeOfOperation>own</PersonalModeOfOperation>
+                  <PersonalMode>foot</PersonalMode>
+                </Service>
+                <Duration>PT5M</Duration>
+                <Length>0</Length>
+              </ContinuousLeg>
+              <EmissionCO2>
+                <KilogramPerPersonKm>0</KilogramPerPersonKm>
+              </EmissionCO2>
+            </Leg>
+          </Trip>
+        </TripResult>
+      </OJPTripDelivery>
+    </siri:ServiceDelivery>
+  </OJPResponse>
+</OJP>

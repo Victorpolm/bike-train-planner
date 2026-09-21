@@ -1,6 +1,6 @@
 # Project state
 
-**Latest:** Separate permission searches and improved local-stop discovery are implemented. The user has added `OJP_API_KEY` as a repository Actions secret; a bounded eight-case OJP benchmark workflow is prepared for live validation. General operator policies and OJP filter inclusion are not service confirmation. [Details and next experiment](BICYCLE_PERMISSION_AND_OJP.md).
+**Latest:** The OJP secret is validated: all 16 live requests in the eight-case benchmark succeeded. OJP finds local Zürich transit and Rapperswil–Renens, with useful but incomplete bicycle notes. Independent permission searches remain necessary; the next step is a server-side adapter plus reviewed evidence mapping and routed bicycle access. The website still uses its existing timetable source. [Live findings](OJP_BENCHMARK_2026-09-21.md) · [design and next steps](BICYCLE_PERMISSION_AND_OJP.md).
 
 _Last consolidated: 2026-09-21._
 

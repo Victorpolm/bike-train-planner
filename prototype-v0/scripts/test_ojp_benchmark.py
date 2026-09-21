@@ -1,7 +1,6 @@
 import unittest
 import xml.etree.ElementTree as ET
 import io
-import json
 from pathlib import Path
 import tempfile
 from unittest.mock import patch
@@ -74,16 +73,16 @@ class OjpBenchmarkTest(unittest.TestCase):
             opener.assert_not_called()
 
     def test_exact_address_matching_rejects_neighbours_and_ambiguity(self):
-        spec = {"provider": "geoadmin", "query": "Buchholzstrasse 33 Zürich",
-                "required_label_parts": ["Buchholzstrasse 33", "Zürich"]}
+        spec = {"provider": "geoadmin", "query": "Example Street 33 Testville",
+                "required_label_parts": ["Example Street 33", "Testville"]}
         def result(label, lat=47.3):
             return {"attrs": {"label": label, "lat": lat, "lon": 8.5}}
-        with patch("ojp_matrix.public_json", return_value={"results": [result("Buchholzstrasse 330, Zürich")] }):
+        with patch("ojp_matrix.public_json", return_value={"results": [result("Example Street 330, Testville")] }):
             with self.assertRaises(ValueError):
                 resolve_endpoint(spec)
-        with patch("ojp_matrix.public_json", return_value={"results": [result("<b>Buchholzstrasse 33</b> 8053 Zürich")] }):
+        with patch("ojp_matrix.public_json", return_value={"results": [result("<b>Example Street 33</b> 1234 Testville")] }):
             self.assertEqual(resolve_endpoint(spec)["value"], "47.3,8.5")
-        with patch("ojp_matrix.public_json", return_value={"results": [result("Buchholzstrasse 33 Zürich"), result("Buchholzstrasse 33 Zürich", 47.4)]}):
+        with patch("ojp_matrix.public_json", return_value={"results": [result("Example Street 33 Testville"), result("Example Street 33 Testville", 47.4)]}):
             with self.assertRaises(ValueError):
                 resolve_endpoint(spec)
 
@@ -93,6 +92,22 @@ class OjpBenchmarkTest(unittest.TestCase):
         report = render_report({"departure_date": "2026-09-22", "cases": [{"id": "a", "error": "Location failed"}]})
         self.assertIn("Location failed", report)
         self.assertIn("not a bicycle-time comparison", report)
+
+    def test_recorded_ojp_fields_and_wait_are_preserved(self):
+        xml = (Path(__file__).parent / "fixtures" / "ojp-zurich-night-2026-09-21.xml").read_bytes()
+        result = summarize(xml, "2026-09-22T01:54:00+02:00")
+        trip = result["trips"][0]
+        self.assertEqual(trip["duration"], "PT26M")
+        self.assertEqual(trip["wait_before_start_minutes"], 192)
+        self.assertEqual(trip["request_to_arrival_minutes"], 218)
+        self.assertFalse(trip["starts_before_request"])
+        self.assertEqual(trip["legs"][0]["line"], "31")
+        self.assertEqual(trip["legs"][0]["service_name"], "31")
+        self.assertTrue(trip["legs"][0]["line_ref"])
+        self.assertEqual(trip["active_legs"][0]["duration"], "PT6M")
+        self.assertEqual(trip["legs"][0]["bicycle_permission"], "unassessed")
+        # The real successful delivery omits optional Status fields.
+        self.assertEqual(result["statuses"], [])
 
 
 if __name__ == "__main__":

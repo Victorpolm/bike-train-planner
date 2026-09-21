@@ -7,11 +7,6 @@ on:
         description: "Future Swiss date (YYYY-MM-DD); blank uses the checked-in manifest"
         required: false
         type: string
-  # A deliberate manifest change starts one bounded run. Ordinary app/doc pushes
-  # and pull requests do not spend API quota or receive the credential.
-  push:
-    branches: [main]
-    paths: [.github/ojp-benchmark-run.json]
 
 permissions:
   contents: read
