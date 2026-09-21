@@ -433,3 +433,19 @@ Historical timetable tests explicitly select the old geometric experiment to pre
 **Verification:** **97 automated tests**, TypeScript and the production build pass. Tests use controlled and existing recorded responses; no new live timetable performance or actual bicycle acceptance is claimed. Official policy pages were reviewed on 20 September. Browser preview could not start because the managed preview service was unavailable; no replacement server was started. No dependencies changed.
 
 **Next user check:** Refresh the private site, search Zürich HB → Laax GR, posta and expand a bus leg. Check the bicycle guidance, source and boarding pin. Compare with “Avoid buses”; use “Also include unverified buses” to explore operators outside the initial registry. The source timetable may return different journeys on another date.
+
+## 2026-09-21 — Independent permission searches, Zürich comparisons and OJP preparation
+
+**User correction:** Present confirmed bicycle-compatible transit separately from optimization that allows uncertain permission. Merge identical results. Do not let uncertain shortcuts eliminate confirmed routes.
+
+**Controlled regression:** An uncertain service reaches the destination at minute 20; a confirmed service reaches it at minute 200. Permissive label pruning removes the latter, but the separate strict solve retains it as its own fastest winner, outside the other scope's 60-minute window. Both Baseline and Extended pass. Ordered-stop cases require positive matching evidence on every leg, including an onward tram; removing that evidence empties only the strict result. Segment, service, operator and date mismatches stay uncertain. Known prohibitions never qualify.
+
+**Deduplication:** Identical recommendations produce one card with both memberships. A shared journey can be fastest in the confirmed group and least-active in the permissive group; those different categories and time references survive merging.
+
+**Reported Zürich totals:** A controlled comparison uses the user's 14-minute cycling estimate, 183-minute rail journey with 33 active minutes, and 214-minute bus journey with 11 active minutes. The comparisons are respectively 169 minutes longer / 19 more active minutes and 200 minutes longer / 3 fewer active minutes. A separate illustrative Küsnacht-style case checks that a slower journey with more cycling is described accurately. These are arithmetic/ranking regressions, not live timetable reproductions; the exact dates and Küsnacht origin were not supplied.
+
+**Acquisition regressions:** A location beside Zürich rail hubs now requests nearby stops and retains local buses alongside rail candidates. A controlled road/timetable flow initially finds a 183-minute transit trip beside a 14-minute bicycle route, continues outward discovery, and finds a 25-minute local service. Both results remain uncertain. A second production-flow fixture checks 08:00 and 01:00 departures, publishing permissive results and an honestly empty confirmed group. Existing recorded Libingen–EPFL and Zürich–Laax cases remain covered.
+
+**Verification:** 105 app tests pass, plus two Python request/parsing tests for the OJP evaluation harness. TypeScript and the production build pass; no dependencies changed. OJP XML dry-run requests were generated without network access. No live OJP calls or new live timetable benchmark were run because no OJP API key is configured. The supervised preview service was unavailable, so this update has no new desktop/mobile visual verification.
+
+**Next:** Configure OJP access, select exact dated Zürich/Küsnacht inputs, and run the paired filter-on/filter-off captures before judging timetable coverage or importing permission evidence. The [evaluation document](BICYCLE_PERMISSION_AND_OJP.md) specifies the matrix, commands and acceptance criteria.

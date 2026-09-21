@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, type SearchSession } from "./api";
-import { categorize, metrics, type ModelMode, type EndpointPreference, type Proposal } from "./model";
+import { metrics, type ModelMode, type EndpointPreference } from "./model";
+import { recommend, compareCycling, waitingMinutes, scopeLabels, type ScopedProposal } from "./recommendations";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
 import CyclingDetails, { type CycleFocus, type NamedCycleRoute } from "./CyclingDetails";
@@ -17,12 +18,12 @@ const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour
 const day = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", day: "numeric", month: "short" });
 const BIKE_ONLY_ID = "cycling-only-reference";
 
-function CyclingCard({ comparison, selected, start, maxBikeMinutes, onSelect }: {
-  comparison: CyclingComparison; selected: boolean; start: Date; maxBikeMinutes: number; onSelect: () => void;
+function CyclingCard({ comparison, selected, start, maxBikeMinutes, fastest, onSelect }: {
+  comparison: CyclingComparison; selected: boolean; start: Date; maxBikeMinutes: number; fastest: boolean; onSelect: () => void;
 }) {
   return <button type="button" className={`journey-card cycling-only-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-pressed={selected}>
-    <span className="category-badges"><span>Cycling only · routed</span></span>
+    <span className="category-badges"><span>Cycling only · routed</span>{fastest && <span>Fastest in this search</span>}</span>
     <span className="journey-topline"><strong>≈ {formatMinutes(comparison.minutes)}</strong><span>0 boardings</span></span>
     <span className="arrival-summary">Estimated arrival <b>{clock.format(comparison.arrival)}</b>
       {day.format(comparison.arrival) !== day.format(start) && ` · ${day.format(comparison.arrival)}`}</span>
@@ -33,21 +34,28 @@ function CyclingCard({ comparison, selected, start, maxBikeMinutes, onSelect }: 
   </button>;
 }
 
-function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
-  proposal: Proposal; selected: boolean; expanded: boolean; planId: string; onSelect: () => void;
+function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelect }: {
+  proposal: ScopedProposal; selected: boolean; expanded: boolean; planId: string; comparison: CyclingComparison | null; onSelect: () => void;
 }) {
-  const { journey: j, categories, extraMinutes, activeSaved } = proposal;
+  const { journey: j, wins } = proposal;
+  const sameWins = wins.length === 2 && JSON.stringify(wins[0].categories) === JSON.stringify(wins[1].categories)
+    && wins[0].extraMinutes === wins[1].extraMinutes;
   const m = metrics(j), finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
   const busSummary = busJourneySummary(j.transitLegs);
   return <button type="button" className={`journey-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
-    <span className="category-badges">{categories.map(c => <span key={c}>{c}</span>)}</span>
+    {(sameWins ? wins.slice(0, 1) : wins).map(win => <span className={`scope-win scope-${win.scope}`} key={win.scope}>
+      <strong>{sameWins ? "Confirmed permission · selected in both searches" : scopeLabels[win.scope]}</strong>
+      <span className="category-badges">{win.categories.map(c => <span key={c}>{c === "Fastest" ? "Fastest with transit" : c}</span>)}</span>
+      {win.extraMinutes > 0 && <span className="tradeoff">{formatMinutes(win.extraMinutes)} longer than the fastest in this group</span>}
+    </span>)}
     <span className="journey-topline"><strong>{formatMinutes(j.totalMinutes)}</strong>
       <span>{m.boardings} boarding{m.boardings === 1 ? "" : "s"} · {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
     <span className="arrival-summary">Arrive at your destination at <b>{clock.format(finalArrival)}</b>
       {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}</span>
     {day.format(finalArrival) !== day.format(j.startTime) && <span className="comparison-caution">Next-day arrival. Total time includes waiting.</span>}
     <span className="route-services">{j.services.join(" → ")}</span>
+    <span className="comparison-caution">Waiting and boarding: {formatMinutes(waitingMinutes(j))}</span>
     {busSummary && <span className="bus-summary">{busSummary}</span>}
     <span className="cycling-summary"><b>{formatMinutes(m.active)} cycling or walking</b>
       {" "}· cycling ≈ {formatMinutes(m.bike)} · walking {formatMinutes(m.walk)}</span>
@@ -56,8 +64,7 @@ function JourneyCard({ proposal, selected, expanded, planId, onSelect }: {
     <span className="route-stops">{j.originStation.name} → {j.destinationStation.name}</span>
     {!!j.waypoints?.length && <span className="route-stops">Via {j.waypoints.map(w => w.place.label).join(" → ")}</span>}
     {m.middle > 0 && <span className="middle-badge">{j.waypoints?.length ? "Cycling between journey stages" : "One cycling transfer"}</span>}
-    {extraMinutes > 0 && <span className="tradeoff">{formatMinutes(extraMinutes)} longer than the fastest
-      {activeSaved > 0 ? ` · ${formatMinutes(activeSaved)} less cycling or walking` : ""}</span>}
+    {comparison && <span className="tradeoff cycling-tradeoff">{compareCycling(j, comparison)}</span>}
     <span className="journey-plan-toggle">{expanded ? "Hide travel plan −" : "View travel plan +"}</span>
   </button>;
 }
@@ -76,7 +83,7 @@ export default function App() {
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
-  const [busPreference, setBusPreference] = useState<BusPreference>("known-rules");
+  const [busPreference, setBusPreference] = useState<BusPreference>("include-unknown");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date(Date.now() + 60 * 60_000)));
   const options = useMemo(() => preferenceOptions(cycling, endpoint, busPreference), [cycling, endpoint, busPreference]);
@@ -90,8 +97,13 @@ export default function App() {
   const runId = useRef(0);
   const solution = mode === "extended" ? session?.extended ?? session?.baseline : session?.baseline;
   const excludedBuses = session ? busExclusions([...session.network.edges.values()].map(e => e.leg), session.options.busPreference) : null;
-  const proposals = useMemo(() => categorize(solution?.journeys ?? [], session?.options ?? options), [solution, session, options]);
-  const selected = selectedId === BIKE_ONLY_ID ? null : proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
+  const confirmedSolution = mode === "extended" ? session?.confirmed?.extended ?? session?.confirmed?.baseline : session?.confirmed?.baseline;
+  const recommendation = useMemo(() => recommend(confirmedSolution?.journeys ?? [], solution?.journeys ?? [], session?.options ?? options), [confirmedSolution, solution, session, options]);
+  const { proposals } = recommendation;
+  const cyclingFastest = !!session?.cyclingComparison && session.cyclingComparison.minutes <= (session.options.maxBikeMinutes)
+    && proposals.every(p => session.cyclingComparison!.minutes <= p.journey.totalMinutes);
+  const selected = selectedId === BIKE_ONLY_ID || (selectedId === null && cyclingFastest) ? null
+    : proposals.find(p => p.journey.id === selectedId)?.journey ?? proposals[0]?.journey ?? null;
   const bikeOnlySelected = !!session && selected === null;
   const cyclingReference = session?.cyclingComparison ?? null;
   const cyclingRoutes = useMemo<NamedCycleRoute[]>(() => selected && session
@@ -244,15 +256,13 @@ export default function App() {
         <label className="bus-preference"><span>Buses with my bicycle</span>
           <select disabled={loading} value={busPreference} aria-describedby="bus-preference-help"
             onChange={e => { invalidate(); setBusPreference(e.target.value as BusPreference); }}>
-            <option value="known-rules">Published bicycle rules · check conditions</option>
-            <option value="include-unknown">Also include unverified buses</option>
+            <option value="include-unknown">Include buses · show bicycle uncertainty</option>
             <option value="no-buses">Avoid buses</option>
           </select>
         </label>
-        <p className="bus-preference-help" id="bus-preference-help">{busPreference === "known-rules"
-          ? "Include buses whose published policy permits a standard, unfolded bicycle under conditions. Confirm your departure, space and any reservation."
-          : busPreference === "include-unknown" ? "Unverified buses are also shown with a warning. Check their rules before travelling. Known bicycle prohibitions are always excluded."
-          : "Bus legs are excluded from both journey models."}</p>
+        <p className="bus-preference-help" id="bus-preference-help">{busPreference === "include-unknown"
+          ? "We compare confirmed bicycle permission with options that allow uncertain permission, for all public transport. Known prohibitions are excluded from both."
+          : "Bus legs are excluded from both permission groups."}</p>
         <details className="preferences"><summary>Preferences · optional</summary>
           <div className="preference-grid">
             <label><span>How much cycling?</span><select disabled={loading} value={cycling}
@@ -299,24 +309,32 @@ export default function App() {
             ? "Try Above 150 minutes cycling in Preferences, or a different departure time."
             : "Try a different departure time or nearby stops."} This limited search can miss connections.`}</p>}
         {!proposals.length && loading && <p className="comparison-note">Checking cycling paths and train connections. Options appear as they are found.</p>}
-        {proposals.length > 0 && cyclingReference && <p className="comparison-note">Fastest transit option: {proposals[0].journey.totalMinutes === cyclingReference.minutes
-          ? "the same estimated time as cycling only."
-          : `${formatMinutes(Math.abs(proposals[0].journey.totalMinutes - cyclingReference.minutes))} ${proposals[0].journey.totalMinutes < cyclingReference.minutes ? "faster" : "slower"} than the cycling-only estimate.`}</p>}
+        <div className="permission-summary">
+          {recommendation.identical && proposals.length > 0 ? <p><strong>Both permission searches give the same recommendations.</strong> Each journey appears once, with its categories in both groups.</p>
+            : recommendation.groups.map(group => <div key={group.scope} className={`permission-group scope-${group.scope}`}>
+              <h3>{scopeLabels[group.scope]}</h3>
+              {group.proposals.length ? <p>{group.proposals.length} recommendation{group.proposals.length === 1 ? "" : "s"} · fastest with transit {formatMinutes(Math.min(...group.proposals.map(p => p.journey.totalMinutes)))}</p>
+                : <p>{group.scope === "confirmed"
+                  ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: the current timetable feed does not verify permission for individual departures."
+                  : loading ? "Checking possible journeys…" : "No journey found in this limited search."}</p>}
+            </div>)}
+          <p className="comparison-caution">Confirmed permission concerns your bicycle on every service. Available space, tickets and any required reservation still need checking. General operator policies remain in the uncertain group.</p>
+        </div>
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
           {!Number.isFinite(baselineFastest) ? "Extended found a journey where Baseline found none in this search."
             : extendedFastest < baselineFastest ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
               : "Both models have the same fastest arrival in this search."}
           {" "}Same departure time and limits.</p>}
-        {proposals.length > 0 && <p className="result-explanation">Transit categories compare the connections explored. Boardings include the first vehicle. A route can win several categories.
-          {" "}Alternatives arrive at most {session.options.extraTimeMinutes} minutes after the fastest.</p>}
+        {proposals.length > 0 && <p className="result-explanation">Each permission group has its own fastest, fewest-boardings and least-cycling-or-walking results. Identical journeys appear once. Boardings include the first vehicle.
+          {" "}Alternatives arrive at most {session.options.extraTimeMinutes} minutes after that group’s fastest transit journey. Cycling only remains a separate comparison.</p>}
         <div className="journey-list">{cyclingReference ? <CyclingCard comparison={cyclingReference} selected={bikeOnlySelected} start={session.start}
-          maxBikeMinutes={session.options.maxBikeMinutes} onSelect={() => { setSelectedId(BIKE_ONLY_ID); setExpandedId(null); setCycleFocus(null); }} />
+          maxBikeMinutes={session.options.maxBikeMinutes} fastest={cyclingFastest} onSelect={() => { setSelectedId(BIKE_ONLY_ID); setExpandedId(null); setCycleFocus(null); }} />
           : <div className="cycling-unavailable" role="status"><strong>Cycling only</strong><p>{session.cyclingStatus === "loading" && loading
             ? "Finding a route along roads and paths…" : "A complete cycling route is unavailable. No straight-line route has been substituted."}</p></div>}
           {proposals.map((proposal, index) => {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
           return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
-            expanded={expanded} planId={planId} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
+            expanded={expanded} planId={planId} comparison={cyclingReference} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
             {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination} />}</div>;
         })}</div>
         {!!cyclingRoutes.length && <CyclingDetails routes={cyclingRoutes} focus={cycleFocus} onFocus={setCycleFocus} />}
@@ -336,7 +354,7 @@ export default function App() {
         cycleFocus={focusedRoute && cycleFocus ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM } : null}
         onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })} />
       <div className="model-note"><strong>Routed cycling · estimated times</strong><p>Cycling follows mapped roads and paths. Transit lines remain schematic.
-        Bus bicycle rules are shown when known; space and individual departures need confirmation. Train and tram carriage remains unverified.</p></div>
+        Each public-transport leg shows its bicycle-permission status. Check uncertain departures and any required reservation before travelling.</p></div>
     </aside></main>
   </div>;
 }

@@ -14,6 +14,6 @@ export default function BusCarriageDetails({ leg }: { leg: TransitLeg }) {
       <div><dt>Bike spaces</dt><dd>Live availability unknown · no space reserved by this app</dd></div>
     </dl>
     {rule.source && <p className="bus-source"><a href={rule.source.url} target="_blank" rel="noreferrer">{rule.source.title}</a>
-      {" "}· reviewed {rule.source.checked}. Operator guidance; this departure is not individually verified.</p>}
+      {" "}· reviewed {rule.source.checked}. Operator guidance; the service-specific permission status is shown above.</p>}
   </div>;
 }

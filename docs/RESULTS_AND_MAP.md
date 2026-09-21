@@ -1,5 +1,7 @@
 # Journey comparison and map
 
+**21 September update:** Categories are optimized independently for **Confirmed permission only** and **Allow uncertain permission**. Each group has its own fastest-with-transit reference and arrival allowance; identical journeys appear once with both category memberships. An empty confirmed group explicitly identifies insufficient service evidence. Cycling only remains visible, with per-transit-card comparisons of elapsed and active time. Waiting and boarding time is shown separately. If cycling is quickest within the selected budget, it is labelled and selected on the map by default. See [the current design](BICYCLE_PERMISSION_AND_OJP.md); this supersedes earlier single-group descriptions below.
+
 _Updated 2026-09-20. Facts and implemented decisions are distinguished from future product scope._
 
 ## Product objective and tree

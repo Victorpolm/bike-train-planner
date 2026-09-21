@@ -1,6 +1,6 @@
 import { atEndpoint, cyclingLink, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
-import { transitAllowed } from "./busCarriage.ts";
+import { bicycleLegAllowed } from "./bicyclePermission.ts";
 
 type State = {
   stop: string; stage: number; time: number; bike: number; walk: number; boardings: number;
@@ -23,7 +23,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   for (const edge of network.edges.values()) {
     const leg = edge.leg;
     if (!leg.departure || !leg.arrival || !Number.isFinite(leg.departure.getTime()) || !Number.isFinite(leg.arrival.getTime())
-      || leg.arrival < leg.departure || !["transit", "walk"].includes(leg.mode) || !transitAllowed(leg, options.busPreference)
+      || leg.arrival < leg.departure || !["transit", "walk"].includes(leg.mode) || !bicycleLegAllowed(leg, options.busPreference, options.bicycleScope)
       || !network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
     outgoing.set(edge.from, [...outgoing.get(edge.from) ?? [], edge]);
   }

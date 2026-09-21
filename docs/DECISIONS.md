@@ -239,3 +239,15 @@ This file records important project choices. Do not silently rewrite old decisio
 **Reason:**
 
 **Reconsider if:**
+
+## 2026-09-21 — Optimize confirmed and uncertain bicycle permission independently
+
+**Request:** Preserve both optimization problems, collapsing identical results. Do not treat operator-level conditions as certainty or let a quicker uncertain service remove a confirmed one. Proceed with OJP evaluation and regression cases.
+
+**Decision:** Run independent feasibility/dominance/category searches for confirmed-only and uncertainty-permitted graphs in each existing model. Apply evidence to every transit leg, preserve unknowns, exclude prohibitions in both, and deduplicate only after optimization. Keep cycling as a clear comparison, including saved active time versus additional elapsed time. Permissive bus inclusion replaces the previous known-policy-only form default; Avoid buses remains.
+
+**Data:** Current operator policies do not provide service confirmation. The confirmed group truthfully reports insufficient evidence. A future trusted source must match exact departure, service, operator and segment; space/reservations remain separate. No live OJP claim is made without its API key.
+
+**Discovery:** Always consider nearby local stops for nonzero catchments, reserve local and rail query coverage, and do not stop outward exploration solely because a poor transit path exists. The finite overall budget remains explicit.
+
+**Next:** Run the prepared OJP paired-request benchmark on fixed dated inputs once API access is configured, then validate bicycle attribute semantics before any engine migration. See [BICYCLE_PERMISSION_AND_OJP.md](BICYCLE_PERMISSION_AND_OJP.md).

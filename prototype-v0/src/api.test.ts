@@ -96,7 +96,7 @@ describe("live data boundaries", () => {
     const point = KNOWN_PLACES.find(p => p.stopId === "8503000")!;
     assert.equal(atEndpoint({ id: point.stopId!, name: point.label, lat: 47.377847, lon: 8.540502 }, point).bikeMinutes, 0);
   });
-  it("publishes the first route before a stalled alternative, skips selected-place lookups, and preserves that snapshot after cancel", async () => {
+  it("publishes the first route after local-stop discovery and preserves that snapshot after cancel", async () => {
     const origin = KNOWN_PLACES.find(p => p.stopId === "8503000")!, destination = KNOWN_PLACES.find(p => p.stopId === "8507000")!;
     const start = new Date("2026-09-05T08:00:00+02:00"), time = (m: number) => new Date(start.getTime() + m * 60000).toISOString();
     const stop = (p: typeof origin) => ({ id: p.stopId!, name: p.label, coordinate: { x: p.lat, y: p.lon } });
@@ -105,8 +105,9 @@ describe("live data boundaries", () => {
     const pending = new Promise<void>(resolve => { stalled = resolve; });
     const task = plan(origin, destination, "baseline", DEFAULT_OPTIONS, abort.signal, () => {}, s => updates.push(s), { cyclingClient: null,
       start, gapMs: 0, fetcher: async (input, init) => {
-        urls.push(new URL(String(input)));
-        if (urls.length === 1) return response({ connections: [{ sections: [{ journey: { name: "IC1", category: "IC", number: "1" },
+        const url = new URL(String(input)); urls.push(url);
+        if (url.pathname.endsWith("locations")) return response({ stations: [] });
+        if (urls.filter(u => u.pathname.endsWith("connections")).length === 1) return response({ connections: [{ sections: [{ journey: { name: "IC1", category: "IC", number: "1" },
           departure: { station: stop(origin), departure: time(10) }, arrival: { station: stop(destination), arrival: time(70) } }] }] });
         stalled();
         return new Promise((_resolve, reject) => init!.signal!.addEventListener("abort", () => reject(init!.signal!.reason), { once: true }));
@@ -120,7 +121,7 @@ describe("live data boundaries", () => {
     const published = updates.find(s => s.baseline.journeys.length > 0)!;
     assert.ok(published);
     assert.equal(published.baseline.journeys[0].totalMinutes, 70);
-    assert.ok(urls.every(u => u.pathname.endsWith("connections")));
+    assert.equal(urls.filter(u => u.pathname.endsWith("locations")).length, 2);
     const ids = published.baseline.journeys.map(j => j.id);
     abort.abort(); await rejected;
     assert.deepEqual(published.baseline.journeys.map(j => j.id), ids);

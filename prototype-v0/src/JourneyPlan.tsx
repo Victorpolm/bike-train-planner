@@ -2,6 +2,7 @@ import { journeySteps } from "./itinerary";
 import { formatMinutes, type Journey, type Place } from "./routing";
 import { journeyStops } from "./mapData";
 import BusCarriageDetails from "./BusCarriageDetails";
+import { bicyclePermission, bicyclePermissionLabel } from "./bicyclePermission";
 
 const clock = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit",
@@ -62,12 +63,19 @@ export default function JourneyPlan({
               {step.mode === "bike" && <p className="plan-note">{step.cyclingRoute
                 ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
                 : "Cycling route details unavailable."}</p>}
+              {leg?.mode === "transit" && <div className="permission-leg">
+                <strong>{bicyclePermissionLabel(leg)}</strong>
+                {bicyclePermission(leg) === "confirmed" && leg.bicycleEvidence && <>
+                  {leg.bicycleEvidence.conditions.map(condition => <p key={condition}>{condition}</p>)}
+                  <p><a href={leg.bicycleEvidence.source.url} target="_blank" rel="noreferrer">{leg.bicycleEvidence.source.title}</a> · checked {leg.bicycleEvidence.source.checked}</p>
+                </>}
+              </div>}
               {leg && <BusCarriageDetails leg={leg} />}
             </li>
           );
         })}
       </ol>
-      <p className="plan-caution">Bus guidance covers a standard, unfolded bicycle; confirm the exact departure and any reservation with the operator. Train, tram and other carriage rules remain unverified. Times and platforms come from the timetable service.</p>
+      <p className="plan-caution">Bicycle guidance covers a standard, unfolded bicycle. Check uncertain departures with the operator. Permission does not guarantee space or make a reservation; this app does not book bicycle spaces. Times and platforms come from the timetable service.</p>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 import type { CyclingRoute } from "./cycling.ts";
+import type { BicycleEvidence } from "./bicyclePermission.ts";
 export const BIKE_SPEED_KMH = 15; // Legacy synthetic experiment only; live journeys use road-route durations.
 export const MAX_BIKE_MINUTES = 20;
 export const MAX_BIKE_DISTANCE_KM =
@@ -54,6 +55,7 @@ export type TransitLeg = {
   serviceName: string | null;
   category?: string | null;
   operator?: string | null;
+  bicycleEvidence?: BicycleEvidence;
   direction: string | null;
   fromId?: string;
   toId?: string;

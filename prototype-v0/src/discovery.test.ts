@@ -51,7 +51,7 @@ it("publishes an overnight proposal from the real acquisition flow without spend
   assert.ok(published.some(s => s.baseline.journeys.length > 0));
   assert.ok(result.baseline.journeys.some(j => j.totalMinutes === 666));
   assert.equal(result.client.failures, 0);
-  assert.equal(urls.filter(u => u.pathname.endsWith("locations")).length, 1);
+  assert.equal(urls.filter(u => u.pathname.endsWith("locations")).length, 2);
   assert.ok(urls.some(u => u.searchParams.get("from") === "8506206"));
 });
 
@@ -61,7 +61,7 @@ it("checks Rapperswil–Renens under More cycling even when nearer bus queries r
   const rapperswil = MAJOR_STATIONS.find(s => s.id === "8503110")!;
   const renens = MAJOR_STATIONS.find(s => s.id === "8501118")!;
   // Only the recorded Rapperswil pair returns connections in this acquisition
-  // scenario: neighboring bus stops must not consume all three query slots.
+  // scenario: neighboring bus stops must not consume every query slot.
   const result = await plan(fixture.origin, fixture.destination, "baseline", options,
     new AbortController().signal, () => {}, () => {}, { cyclingClient: null, start, gapMs: 0, fetcher: async input => {
       const url = new URL(String(input)); urls.push(url);
@@ -76,6 +76,6 @@ it("checks Rapperswil–Renens under More cycling even when nearer bus queries r
   assert.equal(journey.totalMinutes, 300);
   assert.equal(metrics(journey).bike, 86);
   assert.equal(metrics(journey).boardings, 2);
-  assert.equal(urls.filter(u => u.pathname.endsWith("connections")).length, 3);
+  assert.equal(urls.filter(u => u.pathname.endsWith("connections")).length, 4);
   assert.ok(result.baseline.journeys.every(j => metrics(j).bike <= options.maxBikeMinutes));
 });

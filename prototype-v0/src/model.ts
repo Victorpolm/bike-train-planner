@@ -1,6 +1,7 @@
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { cachedCycling, type CyclingRoute } from "./cycling.ts";
-import { transitAllowed, type BusPreference } from "./busCarriage.ts";
+import { type BusPreference } from "./busCarriage.ts";
+import { bicycleLegAllowed, type BicycleScope } from "./bicyclePermission.ts";
 
 export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
@@ -15,11 +16,12 @@ export type Options = {
   extraTimeMinutes: number;
   endpointPreference: EndpointPreference;
   busPreference: BusPreference;
+  bicycleScope?: BicycleScope;
 };
 export const DEFAULT_OPTIONS: Options = {
   maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60,
   maxIntermediateMinutes: 20, maxBoardings: 4, horizonMinutes: 1440,
-  boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none", busPreference: "known-rules",
+  boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none", busPreference: "include-unknown",
 };
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
 export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
@@ -56,6 +58,7 @@ export function validateOptions(o: Options) {
   }
   if (!["none", "start", "end"].includes(o.endpointPreference)) throw new Error("Invalid endpoint preference.");
   if (!["known-rules", "include-unknown", "no-buses"].includes(o.busPreference)) throw new Error("Invalid bus preference.");
+  if (o.bicycleScope !== undefined && !["confirmed", "allow-uncertain"].includes(o.bicycleScope)) throw new Error("Invalid bicycle permission scope.");
 }
 
 export function metrics(j: Journey) {
@@ -136,7 +139,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const l = edge.leg;
     if (!l.departure || !l.arrival || !Number.isFinite(l.departure.getTime()) ||
       !Number.isFinite(l.arrival.getTime()) || l.arrival < l.departure ||
-      !["transit", "walk"].includes(l.mode) || !transitAllowed(l, o.busPreference)) continue;
+      !["transit", "walk"].includes(l.mode) || !bicycleLegAllowed(l, o.busPreference, o.bicycleScope)) continue;
     if (!network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
     const list = outgoing.get(edge.from) ?? [];
     list.push(edge); outgoing.set(edge.from, list);

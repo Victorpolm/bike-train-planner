@@ -1,20 +1,14 @@
 # Buses with an accompanied bicycle
 
-_Implemented and sources reviewed: 2026-09-20. Scope: one standard, unfolded bicycle._
+_Policies reviewed: 2026-09-20; search presentation updated: 2026-09-21. Scope: one standard, unfolded bicycle._
 
 ## What the app now does
 
 Buses were already returned by timetable searches. The change preserves the service category and operator, evaluates a small maintained set of bicycle policies, and applies the selected bus preference before routing labels or category winners are calculated. It works in Baseline, Extended and journeys with requested stops.
 
-The form offers **Buses with my bicycle**:
+The form offers **Include buses · show bicycle uncertainty** (default) or **Avoid buses**. Every search compares confirmed bicycle permission with a second optimization that also permits uncertain permission. A general operator policy is uncertain for an individual departure, so none of the registry entries below establishes confirmation. Matched prohibitions are excluded from both searches; Avoid buses applies to both. The legacy `known-rules` API option remains supported for controlled experiments but is no longer a form choice.
 
-| Choice | Bus eligibility |
-|---|---|
-| Published bicycle rules · check conditions (default) | Include operators with a matched conditional bicycle policy; exclude unverified bus rules and matched prohibitions. |
-| Also include unverified buses | Also explore buses with missing/unmatched rules, visibly marked unverified. Matched prohibitions remain excluded. |
-| Avoid buses | Exclude recognized bus and replacement-service categories. Other transport modes remain available. |
-
-The default does **not** mean the selected departure is confirmed to carry bicycles. Operator policies can have route-specific exceptions. Confirm the actual service, any reservation and available space. Train, tram and other carriage checks remain future work; none inherits a bus permission.
+Confirmed results require sourced permission covering every exact dated service and boarded segment, including trains and trams. The current feed does not supply it: an empty confirmed group means insufficient evidence, not necessarily no eligible journey. See [the dual-search design and OJP evaluation](BICYCLE_PERMISSION_AND_OJP.md).
 
 Cards identify conditional or unverified bus carriage. Each bus leg shows the operator, instructions, ticket/reservation guidance, source link and review date. Boarding/alighting map pins repeat the bicycle status. Search notes explain excluded departures, counting pass-stop exits once. Editing the choice clears old results and requires a fresh search.
 

@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**Latest update:** The app independently compares confirmed bicycle permission with journeys that allow uncertain permission, merges identical results, and shows each transit route against cycling only. Current data cannot yet confirm individual services. [Design, data limits and OJP evaluation](docs/BICYCLE_PERMISSION_AND_OJP.md).
+
 Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.
 
 ## Open the private website

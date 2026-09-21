@@ -1,5 +1,7 @@
 # Backlog
 
+**Current next step (21 September):** Configure OJP API access and run the paired-request harness against the dated Zürich/Küsnacht/Libingen/Laax matrix. Validate per-service bicycle attributes before connecting the confirmed-results group to a live source. Independent permission optimization, deduplication and local-stop discovery changes are implemented. See [the evaluation plan](BICYCLE_PERMISSION_AND_OJP.md).
+
 These ideas may be useful later, but they should not distract from validating the core bike + public-transport journey planner.
 
 ## Later product features

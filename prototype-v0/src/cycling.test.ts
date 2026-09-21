@@ -253,6 +253,38 @@ it("permits 300 routed cycling minutes and queries reachable trains with the abo
   assert.ok(solve(result.network, stationStart, stationFinish, start, options, "baseline").journeys.some(j => metrics(j).bike === 0));
 });
 
+it("continues local discovery after finding transit slower than the direct bicycle ride", async () => {
+  const origin: Place = { label: "Controlled origin", lat: 30, lon: 4 };
+  const destination: Place = { label: "Controlled destination", lat: 30.05, lon: 4, stopId: "D" };
+  const a = { id: "A", name: "First stop", lat: 30.001, lon: 4 };
+  const c = { id: "C", name: "Additional local stop", lat: 30.002, lon: 4 };
+  const d = { id: "D", name: "Destination", ...destination };
+  const urls: URL[] = [];
+  const station = (s: typeof a) => ({ id: s.id, name: s.name, icon: "bus", coordinate: { x: s.lat, y: s.lon } });
+  const result = await plan(origin, destination, "baseline", { ...DEFAULT_OPTIONS, maxAccessMinutes: 20, maxEgressMinutes: 0 },
+    new AbortController().signal, () => {}, () => {}, { start, gapMs: 0,
+      cyclingFetcher: async input => {
+        const [p, q] = new URL(String(input)).searchParams.get("lonlats")!.split("|")
+          .map(s => { const [lon, lat] = s.split(",").map(Number); return { lat, lon }; });
+        return response(geometry(p, q, (q.lat === destination.lat ? 14 : 1) * 60));
+      },
+      fetcher: async input => {
+        const url = new URL(String(input)); urls.push(url);
+        if (url.pathname.endsWith("locations")) return response({ stations: [station(Number(url.searchParams.get("x")) === origin.lat ? a : c)] });
+        const expanded = url.searchParams.get("from") === c.id;
+        return response({ connections: [{ sections: [{ journey: { category: "B", operator: "VBZ", name: expanded ? "Local daytime" : "Long wait" },
+          departure: { station: station(expanded ? c : a), departure: time(expanded ? 5 : 180).toISOString() },
+          arrival: { station: station(d), arrival: time(expanded ? 25 : 183).toISOString() },
+        }] }] });
+      },
+    });
+  assert.equal(result.cyclingComparison!.minutes, 14);
+  assert.ok(urls.some(u => u.searchParams.get("from") === c.id));
+  assert.equal(Math.min(...result.baseline.journeys.map(j => j.totalMinutes)), 25);
+  assert.equal(result.confirmed!.baseline.journeys.length, 0);
+  assert.ok(result.client.requests <= 18);
+});
+
 it("allows a long cycling transfer only in Extended and still checks onward readiness", () => {
   const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 };
   const c = { id: "C", name: "C", lat: 43.3, lon: 5 }, d = { id: "D", name: "D", lat: 44, lon: 6 };

@@ -1,7 +1,7 @@
 import { DEFAULT_OPTIONS, type EndpointPreference, type Options } from "./model.ts";
 import type { BusPreference } from "./busCarriage.ts";
 export type CyclingPreference = "less" | "balanced" | "more" | "unrestricted";
-export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "known-rules"): Options {
+export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown"): Options {
   const budgets = {
     less: { maxBikeMinutes: 40, maxAccessMinutes: 20, maxEgressMinutes: 20, maxIntermediateMinutes: 10 },
     balanced: { maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60, maxIntermediateMinutes: 20 },

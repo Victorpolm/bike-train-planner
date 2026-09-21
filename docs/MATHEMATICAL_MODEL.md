@@ -182,3 +182,13 @@ Primary references consulted:
 - [ULTRA: unrestricted multimodal transfer routing](https://arxiv.org/abs/1906.04832)
 
 For measured results and the recorded Zürich–Laax case, see [EXPERIMENTS.md](EXPERIMENTS.md).
+
+## Independent bicycle-permission scopes (2026-09-21)
+
+For each Baseline/Extended model, solve separately on `G_confirmed` and `G_possible`. The confirmed graph admits a transit edge only with applicable positive evidence for its dated service and segment. The possible graph also admits uncertain edges. Both exclude known prohibitions and apply the same bus-avoidance preference, road times and resource limits. Walking edges do not require carriage permission.
+
+Apply eligibility before constructing labels and before dominance. Filtering a permissive frontier afterward is incorrect: an uncertain earlier service can erase the only confirmed path. Each scope also computes its own fastest reference, 60-minute arrival allowance and category winners. Deduplicate whole journeys after those two optimizations while retaining scope/category membership. Cycling only is compared explicitly but never dominates away a scope's transit recommendations.
+
+`bicyclePermission.ts` owns evidence applicability; `recommendations.ts` merges independent winners and computes cycling comparisons. `api.ts` refreshes both scopes after acquisition and preserves both sets of reachable labels for Extended discovery. The live adapter supplies no service confirmation, so strict results are normally empty; synthetic positive evidence is used only in regression tests.
+
+Discovery now checks local stops beside rail hubs, reserves local/rail coverage across four initial pairs, and permits bounded expansion when transit is slower than a completed direct cycling comparison. The 18-request limit and other bounds still apply. This supersedes the earlier three-pair and skip-nearby-hub descriptions above. Neither scope proves completeness beyond the sampled graph. See [the evidence contract and OJP evaluation](BICYCLE_PERMISSION_AND_OJP.md).

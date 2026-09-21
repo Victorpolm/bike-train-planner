@@ -344,6 +344,17 @@ button:disabled { cursor: default; opacity: .65; }
 .bus-carriage dt { font-weight: 600; }
 .bus-carriage dd { margin: 0; }
 .bus-source { font-size: 12px; overflow-wrap: anywhere; }
+.permission-summary { display: grid; gap: 10px; margin: 16px 0; }
+.permission-group { padding: 14px; border: 1px solid var(--line); border-left: 4px solid #967137; border-radius: 8px; background: #faf8f2; }
+.permission-group.scope-confirmed { border-left-color: #195e4d; background: #f0f5f2; }
+.permission-group h3 { margin: 0 0 6px; font-size: 16px; }
+.permission-group p { margin: 0; font-size: 14px; line-height: 1.5; }
+.scope-win { display: block; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }
+.scope-win > strong { display: block; font-size: 14px; margin-bottom: 6px; color: #795017; }
+.scope-win.scope-confirmed > strong { color: #195e4d; }
+.cycling-tradeoff { display: block; background: #f1edf6; color: #49395e; padding: 10px; border-radius: 6px; line-height: 1.5; }
+.permission-leg { font-size: 14px; line-height: 1.5; margin-top: 12px; }
+.permission-leg p { margin: 5px 0; }
 .legend-climb { background: #c15a17; }
 .legend-descent { background: #287caf; }
 .legend-bike { border: 0; background: #195e4d; }
