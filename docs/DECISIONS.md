@@ -251,3 +251,11 @@ This file records important project choices. Do not silently rewrite old decisio
 **Discovery:** Always consider nearby local stops for nonzero catchments, reserve local and rail query coverage, and do not stop outward exploration solely because a poor transit path exists. The finite overall budget remains explicit.
 
 **Next:** Run the prepared OJP paired-request benchmark on fixed dated inputs once API access is configured, then validate bicycle attribute semantics before any engine migration. See [BICYCLE_PERMISSION_AND_OJP.md](BICYCLE_PERMISSION_AND_OJP.md).
+
+## 2026-09-21 — Evaluate OJP through a repository Actions secret
+
+**Authorization:** The user reports adding `OJP_API_KEY` after the GitHub Actions secret setup. Connect the prepared benchmark and run it; the token is not requested in chat or retrieved from GitHub.
+
+**Implementation:** A manually dispatchable workflow also runs on deliberate changes to its dated manifest on main. Eight paired cases cover Zürich/Küsnacht daytime and overnight, Libingen–EPFL, Zürich–Laax and Rapperswil–Renens. At most 16 requests, scheduled times, bounded responses, paced calls, no retries, and no calls after an authentication/quota error. The key exists only in the capture step's environment; reports retain service evidence without authorization headers. Actions artifacts expire after seven days.
+
+**Scope:** This is evaluation infrastructure. No production timetable adapter, secret in the static website, automated permission promotion or engine migration is introduced. Küsnacht station is a reference origin until the user's exact location is known. Default OJP walking access must be replaced with the app's routed cycling access before claiming comparable door-to-door times.

@@ -1,0 +1,59 @@
+name: OJP bicycle evidence benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      departure_date:
+        description: "Future Swiss date (YYYY-MM-DD); blank uses the checked-in manifest"
+        required: false
+        type: string
+  # A deliberate manifest change starts one bounded run. Ordinary app/doc pushes
+  # and pull requests do not spend API quota or receive the credential.
+  push:
+    branches: [main]
+    paths: [.github/ojp-benchmark-run.json]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ojp-benchmark
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    if: github.repository == 'Victorpolm/bike-train-planner' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check benchmark parser and credential handling
+        run: python3 -m unittest discover -s prototype-v0/scripts -p 'test_*.py'
+      - name: Capture paired OJP requests
+        env:
+          OJP_API_KEY: ${{ secrets.OJP_API_KEY }}
+          OJP_BENCHMARK_DATE: ${{ inputs.departure_date }}
+        run: >-
+          python3 prototype-v0/scripts/ojp_matrix.py
+          --manifest .github/ojp-benchmark-run.json
+          --date "$OJP_BENCHMARK_DATE"
+          --output prototype-v0/evaluation-output/ojp
+      - name: Publish readable evidence summary
+        if: always()
+        shell: bash
+        run: |
+          report=prototype-v0/evaluation-output/ojp/report.md
+          if [ -f "$report" ]; then
+            cat "$report" >> "$GITHUB_STEP_SUMMARY"
+            cat "$report"
+          fi
+      - name: Save requests, responses and normalized service evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ojp-benchmark-${{ github.run_id }}-${{ github.run_attempt }}
+          path: prototype-v0/evaluation-output/ojp/
+          if-no-files-found: warn
+          retention-days: 7

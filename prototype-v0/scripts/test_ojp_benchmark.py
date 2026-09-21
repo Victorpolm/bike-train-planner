@@ -1,16 +1,24 @@
 import unittest
 import xml.etree.ElementTree as ET
-from ojp_benchmark import NS, request_xml, summarize
+import io
+import json
+from pathlib import Path
+import tempfile
+from unittest.mock import patch
+import urllib.error
+from ojp_benchmark import NS, capture_pair, request_xml, summarize
+from ojp_matrix import departure_timestamp, resolve_endpoint, render_report
 
 
 class OjpBenchmarkTest(unittest.TestCase):
     def test_paired_requests_share_endpoints_and_departure(self):
         for flag in [False, True]:
-            root = ET.fromstring(request_xml("47.375,8.54", "8503000", "2026-09-22T08:00:00+02:00", flag))
+            root = ET.fromstring(request_xml("47.375,8.54", "ch:1:sloid:3000", "2026-09-22T08:00:00+02:00", flag))
             self.assertEqual(root.findtext(".//o:BikeTransport", namespaces=NS), str(flag).lower())
             self.assertEqual(root.findtext(".//o:Origin/o:PlaceRef/o:GeoPosition/s:Latitude", namespaces=NS), "47.375")
-            self.assertEqual(root.findtext(".//o:Destination/o:PlaceRef/o:StopPlaceRef", namespaces=NS), "8503000")
+            self.assertEqual(root.findtext(".//o:Destination/o:PlaceRef/o:StopPlaceRef", namespaces=NS), "ch:1:sloid:3000")
             self.assertEqual(root.findtext(".//o:DepArrTime", namespaces=NS), "2026-09-22T08:00:00+02:00")
+            self.assertEqual(root.findtext(".//o:UseRealtimeData", namespaces=NS), "none")
         with self.assertRaises(ValueError):
             request_xml("8503000", "8507000", "2026-09-22T08:00:00", False)
 
@@ -31,6 +39,60 @@ class OjpBenchmarkTest(unittest.TestCase):
         self.assertEqual(result["trips"][0]["boardings"], 1)
         with self.assertRaises(ValueError):
             summarize("<html><body>Service unavailable</body></html>")
+
+    def test_capture_redacts_unexpected_echo_and_stops_on_auth_failure(self):
+        key = "controlled-not-a-real-credential"
+        error = urllib.error.HTTPError("https://example.test", 401, "not saved " + key, {},
+                                       io.BytesIO(("unexpected echo " + key).encode()))
+        with tempfile.TemporaryDirectory() as temp, patch("ojp_benchmark.time.sleep"), \
+                patch("ojp_benchmark.urllib.request.build_opener") as opener:
+            opener.return_value.open.side_effect = error
+            output = Path(temp) / "capture"
+            report = capture_pair("47.375,8.54", "ch:1:sloid:3000", "2026-09-22T08:00:00+02:00", output, "Bearer " + key)
+            self.assertTrue(report["failed"])
+            self.assertEqual(len(report["runs"]), 1)
+            self.assertEqual(report["runs"][0]["http_status"], 401)
+            self.assertEqual(opener.return_value.open.call_count, 1)
+            for path in output.iterdir():
+                self.assertNotIn(key, path.read_text())
+
+    def test_failed_provider_delivery_is_not_an_empty_success(self):
+        xml = b'<OJP xmlns="http://www.vdv.de/ojp" xmlns:s="http://www.siri.org.uk/siri"><OJPTripDelivery><s:Status>false</s:Status><ErrorCondition>Bad request</ErrorCondition></OJPTripDelivery></OJP>'
+        with tempfile.TemporaryDirectory() as temp, patch("ojp_benchmark.time.sleep"), \
+                patch("ojp_benchmark.urllib.request.build_opener") as opener:
+            opener.return_value.open.return_value.__enter__.return_value.read.return_value = xml
+            report = capture_pair("47.375,8.54", "ch:1:sloid:3000", "2026-09-22T08:00:00+02:00", Path(temp) / "capture", "controlled-key")
+            self.assertTrue(report["failed"])
+            self.assertEqual(report["runs"][0]["trips"], [])
+            self.assertTrue(report["runs"][0]["errors"])
+
+    def test_dry_run_uses_no_network_and_requires_no_key(self):
+        with tempfile.TemporaryDirectory() as temp, patch("ojp_benchmark.urllib.request.build_opener") as opener:
+            report = capture_pair("47.375,8.54", "ch:1:sloid:3000", "2026-09-22T08:00:00+02:00", Path(temp) / "capture", dry_run=True)
+            self.assertFalse(report["failed"])
+            self.assertEqual(len(report["runs"]), 2)
+            opener.assert_not_called()
+
+    def test_exact_address_matching_rejects_neighbours_and_ambiguity(self):
+        spec = {"provider": "geoadmin", "query": "Buchholzstrasse 33 Zürich",
+                "required_label_parts": ["Buchholzstrasse 33", "Zürich"]}
+        def result(label, lat=47.3):
+            return {"attrs": {"label": label, "lat": lat, "lon": 8.5}}
+        with patch("ojp_matrix.public_json", return_value={"results": [result("Buchholzstrasse 330, Zürich")] }):
+            with self.assertRaises(ValueError):
+                resolve_endpoint(spec)
+        with patch("ojp_matrix.public_json", return_value={"results": [result("<b>Buchholzstrasse 33</b> 8053 Zürich")] }):
+            self.assertEqual(resolve_endpoint(spec)["value"], "47.3,8.5")
+        with patch("ojp_matrix.public_json", return_value={"results": [result("Buchholzstrasse 33 Zürich"), result("Buchholzstrasse 33 Zürich", 47.4)]}):
+            with self.assertRaises(ValueError):
+                resolve_endpoint(spec)
+
+    def test_swiss_offsets_and_missing_location_report(self):
+        self.assertEqual(departure_timestamp("2026-09-22", "01:54"), "2026-09-22T01:54:00+02:00")
+        self.assertEqual(departure_timestamp("2026-12-01", "08:00"), "2026-12-01T08:00:00+01:00")
+        report = render_report({"departure_date": "2026-09-22", "cases": [{"id": "a", "error": "Location failed"}]})
+        self.assertIn("Location failed", report)
+        self.assertIn("not a bicycle-time comparison", report)
 
 
 if __name__ == "__main__":

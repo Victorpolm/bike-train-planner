@@ -35,18 +35,28 @@ Each transit card compares time and cycling-or-walking with the routed cycling-o
 
 **Verified from official documentation:** [OJP 2.0 TripRequest](https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/) accepts a `BikeTransport` filter and returns service attributes. The documentation warns of a limitation around services restricted at particular stops. The filter's inclusion alone is not sufficient positive evidence for our confirmed group. The response attributes must be interpreted with their service/segment scope. OJP supports one via point directly; our multiple-stop feature needs separate handling.
 
-The [official SDK](https://github.com/openTdataCH/ojp-js) identifies the OJP 2.0 endpoint. [API access](https://opentransportdata.swiss/en/cookbook/development-miscellaneous-cookbook/howto-access-apis/) requires a key sent in an authorization header. No key is configured for this project. **No live OJP benchmark or engine migration has been completed.**
+The [official SDK](https://github.com/openTdataCH/ojp-js) identifies the OJP 2.0 endpoint. [API access](https://opentransportdata.swiss/en/cookbook/development-miscellaneous-cookbook/howto-access-apis/) requires a key sent in an authorization header. The user reports adding the repository Actions secret `OJP_API_KEY`. The benchmark workflow can consume it without retrieving or displaying the value. **Live validation is pending; no engine migration has been completed.**
 
 `prototype-v0/scripts/ojp_benchmark.py` prepares or captures two otherwise identical requests with `BikeTransport` off/on. It retains XML plus service IDs, operating dates, stop references, scheduled times and raw attributes. Permission stays `unassessed`; empty responses and request errors are distinguished. Keys stay in a local environment variable, outside the static website and saved files.
 
 From `prototype-v0/`, a reproducible dry run is:
 
 ```bash
-python3 scripts/ojp_benchmark.py --origin 8503000 --destination 8507000 --departure 2026-09-22T08:00:00+02:00 --output evaluation-output/dry-run --dry-run
+python3 scripts/ojp_benchmark.py --origin ch:1:sloid:3000 --destination ch:1:sloid:7000 --departure 2026-09-22T08:00:00+02:00 --output evaluation-output/dry-run --dry-run
 python3 -m unittest discover -s scripts -p 'test_*.py'
 ```
 
 For live evaluation, configure `OJP_API_KEY` locally, use a future departure and a new output directory, and omit `--dry-run`. Origins/destinations accept a stop reference or the exact `latitude,longitude` selected in the app. Never place the key in a frontend `VITE_` variable or commit captures containing personal addresses.
+
+### GitHub Actions benchmark
+
+Open [Actions → OJP bicycle evidence benchmark](https://github.com/Victorpolm/bike-train-planner/actions/workflows/ojp-benchmark.yml), choose **Run workflow**, keep branch **main**, and enter a future Swiss departure date (`YYYY-MM-DD`). Blank uses `.github/ojp-benchmark-run.json`. A deliberate change to that manifest on main also triggers one run; ordinary source/doc changes and pull requests do not. The initial manifest uses Tuesday **22 September 2026**.
+
+The eight cases make at most 16 OJP calls (six requested results each), with 1.3 seconds between requests and no automatic retries. Authentication or quota errors stop further OJP calls. The workflow has read-only repository permissions, pinned actions and a step-scoped secret. It writes a readable summary and a seven-day artifact containing requests, bounded response XML and normalized service evidence. Headers and credentials are never printed or uploaded. Captures are excluded from git. Repository Actions visibility applies to reports/artifacts; the user-authorized case labels are also in the manifest.
+
+`ojp_matrix.py` resolves Buchholzstrasse 33 with an exact street/house-number and municipality match; an ambiguous or unavailable match fails that case instead of choosing a nearby address. Küsnacht uses the exact railway-station match, explicitly **not** a reproduction of the user's unspecified origin. Resolved coordinates, provider URLs, local departure offsets and UTC capture times are retained. Other coordinates come from the existing app/recorded fixtures. OJP 2.0's documented Swiss stop references are SLOIDs, not the Transport API's UIC IDs; the matrix uses coordinates and the standalone example above uses SLOIDs.
+
+All requests use scheduled times (`UseRealtimeData=none`) and provider-default access. Results therefore measure service discovery and returned evidence; they do not yet compare the app's routed bicycle access or establish that a particular bicycle connection is catchable. Raw service/stop attributes are retained without promoting filter inclusion to confirmed permission.
 
 ## Fixed evaluation cases
 

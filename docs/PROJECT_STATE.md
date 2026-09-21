@@ -1,6 +1,6 @@
 # Project state
 
-**Latest:** Separate permission searches and improved local-stop discovery are implemented. The OJP paired-request evaluation harness is prepared and tested; live benchmarking remains blocked on an OJP API key. General operator policies are not service confirmation. [Details and next experiment](BICYCLE_PERMISSION_AND_OJP.md).
+**Latest:** Separate permission searches and improved local-stop discovery are implemented. The user has added `OJP_API_KEY` as a repository Actions secret; a bounded eight-case OJP benchmark workflow is prepared for live validation. General operator policies and OJP filter inclusion are not service confirmation. [Details and next experiment](BICYCLE_PERMISSION_AND_OJP.md).
 
 _Last consolidated: 2026-09-21._
 
