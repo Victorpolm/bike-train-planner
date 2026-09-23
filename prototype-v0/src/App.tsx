@@ -13,6 +13,7 @@ import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 import { busExclusions, busJourneySummary, type BusPreference } from "./busCarriage";
+import { bicyclePermission } from "./bicyclePermission";
 
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit" });
 const day = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", day: "numeric", month: "short" });
@@ -38,17 +39,19 @@ function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelec
   proposal: ScopedProposal; selected: boolean; expanded: boolean; planId: string; comparison: CyclingComparison | null; onSelect: () => void;
 }) {
   const { journey: j, wins } = proposal;
-  const sameWins = wins.length === 2 && JSON.stringify(wins[0].categories) === JSON.stringify(wins[1].categories)
-    && wins[0].extraMinutes === wins[1].extraMinutes;
+  const sameWins = wins.length > 1 && wins.every(win => JSON.stringify(win.categories) === JSON.stringify(wins[0].categories)
+    && win.extraMinutes === wins[0].extraMinutes);
+  const prohibited = j.transitLegs.some(leg => leg.mode === "transit" && bicyclePermission(leg) === "prohibited");
   const m = metrics(j), finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
   const busSummary = busJourneySummary(j.transitLegs);
   return <button type="button" className={`journey-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
     {(sameWins ? wins.slice(0, 1) : wins).map(win => <span className={`scope-win scope-${win.scope}`} key={win.scope}>
-      <strong>{sameWins ? "Confirmed permission · selected in both searches" : scopeLabels[win.scope]}</strong>
+      <strong>{sameWins ? wins.map(w => scopeLabels[w.scope]).join(" · ") : scopeLabels[win.scope]}</strong>
       <span className="category-badges">{win.categories.map(c => <span key={c}>{c === "Fastest" ? "Fastest with transit" : c}</span>)}</span>
       {win.extraMinutes > 0 && <span className="tradeoff">{formatMinutes(win.extraMinutes)} longer than the fastest in this group</span>}
     </span>)}
+    {prohibited && <span className="permission-warning">Comparison only: bicycles are prohibited on at least one service. This is not a journey you can take with your bicycle.</span>}
     <span className="journey-topline"><strong>{formatMinutes(j.totalMinutes)}</strong>
       <span>{m.boardings} boarding{m.boardings === 1 ? "" : "s"} · {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
     <span className="arrival-summary">Arrive at your destination at <b>{clock.format(finalArrival)}</b>
@@ -98,7 +101,8 @@ export default function App() {
   const solution = mode === "extended" ? session?.extended ?? session?.baseline : session?.baseline;
   const excludedBuses = session ? busExclusions([...session.network.edges.values()].map(e => e.leg), session.options.busPreference) : null;
   const confirmedSolution = mode === "extended" ? session?.confirmed?.extended ?? session?.confirmed?.baseline : session?.confirmed?.baseline;
-  const recommendation = useMemo(() => recommend(confirmedSolution?.journeys ?? [], solution?.journeys ?? [], session?.options ?? options), [confirmedSolution, solution, session, options]);
+  const allTransitSolution = mode === "extended" ? session?.allTransit?.extended ?? session?.allTransit?.baseline : session?.allTransit?.baseline;
+  const recommendation = useMemo(() => recommend(confirmedSolution?.journeys ?? [], solution?.journeys ?? [], allTransitSolution?.journeys ?? [], session?.options ?? options), [confirmedSolution, solution, allTransitSolution, session, options]);
   const { proposals } = recommendation;
   const cyclingFastest = !!session?.cyclingComparison && session.cyclingComparison.minutes <= (session.options.maxBikeMinutes)
     && proposals.every(p => session.cyclingComparison!.minutes <= p.journey.totalMinutes);
@@ -261,8 +265,8 @@ export default function App() {
           </select>
         </label>
         <p className="bus-preference-help" id="bus-preference-help">{busPreference === "include-unknown"
-          ? "We compare confirmed bicycle permission with options that allow uncertain permission, for all public transport. Known prohibitions are excluded from both."
-          : "Bus legs are excluded from both permission groups."}</p>
+          ? "Three comparisons: confirmed bicycle permission, allowing uncertain permission, and all public transport. Only the last ignores bicycle restrictions."
+          : "Bus legs are excluded from all three comparisons."}</p>
         <details className="preferences"><summary>Preferences · optional</summary>
           <div className="preference-grid">
             <label><span>How much cycling?</span><select disabled={loading} value={cycling}
@@ -295,7 +299,7 @@ export default function App() {
         <div className="results-heading"><div><p className="eyebrow">{mode} results</p><h2>Your journey options</h2></div></div>
         {excludedBuses && (excludedBuses.prohibited + excludedBuses.unknown + excludedBuses.preference > 0) && <div className="bus-search-note" role="status">
           <strong>Bus bicycle filter</strong>
-          {excludedBuses.prohibited > 0 && <p>{excludedBuses.prohibited} sampled bus departure{excludedBuses.prohibited === 1 ? " was" : "s were"} excluded because the published operator rules prohibit bicycle transport.</p>}
+          {excludedBuses.prohibited > 0 && <p>{excludedBuses.prohibited} sampled bus departure{excludedBuses.prohibited === 1 ? " prohibits" : "s prohibit"} bicycles. These can appear only in the all-public-transport comparison, unless buses are avoided.</p>}
           {excludedBuses.unknown > 0 && <p>{excludedBuses.unknown} sampled bus departure{excludedBuses.unknown === 1 ? " has" : "s have"} unverified rules and {excludedBuses.unknown === 1 ? "was" : "were"} excluded. To explore these, choose “Also include unverified buses” and search again.</p>}
           {excludedBuses.preference > 0 && <p>Your “Avoid buses” preference excluded {excludedBuses.preference} sampled bus departure{excludedBuses.preference === 1 ? "" : "s"}.</p>}
         </div>}
@@ -310,9 +314,10 @@ export default function App() {
             : "Try a different departure time or nearby stops."} This limited search can miss connections.`}</p>}
         {!proposals.length && loading && <p className="comparison-note">Checking cycling paths and train connections. Options appear as they are found.</p>}
         <div className="permission-summary">
-          {recommendation.identical && proposals.length > 0 ? <p><strong>Both permission searches give the same recommendations.</strong> Each journey appears once, with its categories in both groups.</p>
-            : recommendation.groups.map(group => <div key={group.scope} className={`permission-group scope-${group.scope}`}>
+          {recommendation.identical && proposals.length > 0 && <p><strong>All three comparisons give the same recommendations.</strong> Each journey appears once, with its categories in each group.</p>}
+          {recommendation.groups.map(group => <div key={group.scope} className={`permission-group scope-${group.scope}`}>
               <h3>{scopeLabels[group.scope]}</h3>
+              {group.scope === "all-transit" && <p>Bicycle restrictions are ignored in this comparison. It can include services that prohibit bicycles; these are labelled on the journey.</p>}
               {group.proposals.length ? <p>{group.proposals.length} recommendation{group.proposals.length === 1 ? "" : "s"} · fastest with transit {formatMinutes(Math.min(...group.proposals.map(p => p.journey.totalMinutes)))}</p>
                 : <p>{group.scope === "confirmed"
                   ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: the current timetable feed does not verify permission for individual departures."
@@ -321,11 +326,12 @@ export default function App() {
           <p className="comparison-caution">Confirmed permission concerns your bicycle on every service. Available space, tickets and any required reservation still need checking. General operator policies remain in the uncertain group.</p>
         </div>
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
+          <strong>Allow uncertain permission: </strong>
           {!Number.isFinite(baselineFastest) ? "Extended found a journey where Baseline found none in this search."
             : extendedFastest < baselineFastest ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
               : "Both models have the same fastest arrival in this search."}
           {" "}Same departure time and limits.</p>}
-        {proposals.length > 0 && <p className="result-explanation">Each permission group has its own fastest, fewest-boardings and least-cycling-or-walking results. Identical journeys appear once. Boardings include the first vehicle.
+        {proposals.length > 0 && <p className="result-explanation">Each comparison has its own fastest, fewest-boardings and least-cycling-or-walking results. Identical journeys appear once. Boardings include the first vehicle.
           {" "}Alternatives arrive at most {session.options.extraTimeMinutes} minutes after that group’s fastest transit journey. Cycling only remains a separate comparison.</p>}
         <div className="journey-list">{cyclingReference ? <CyclingCard comparison={cyclingReference} selected={bikeOnlySelected} start={session.start}
           maxBikeMinutes={session.options.maxBikeMinutes} fastest={cyclingFastest} onSelect={() => { setSelectedId(BIKE_ONLY_ID); setExpandedId(null); setCycleFocus(null); }} />
@@ -354,7 +360,7 @@ export default function App() {
         cycleFocus={focusedRoute && cycleFocus ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM } : null}
         onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })} />
       <div className="model-note"><strong>Routed cycling · estimated times</strong><p>Cycling follows mapped roads and paths. Transit lines remain schematic.
-        Each public-transport leg shows its bicycle-permission status. Check uncertain departures and any required reservation before travelling.</p></div>
+        Each public-transport leg shows its bicycle-permission status. All-public-transport results may prohibit bicycles. The map shows explored stops and routes, not the complete Swiss network.</p></div>
     </aside></main>
   </div>;
 }

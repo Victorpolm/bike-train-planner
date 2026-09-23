@@ -14,9 +14,11 @@ The repository is the durable source of truth. Distinguish facts, decisions, hyp
 ## Current scope
 
 - Switzerland-first bicycle + public-transport journey planner
-- Local responsive web prototype before deployment or native apps
+- Responsive web prototype and an existing owner-private Site; source and publication are separate
 - Bicycle accompanies the traveller through transit
-- Simple routing now, but raw route attributes must remain available for later multicriteria/Pareto ranking
+- Bounded multi-label Baseline/Extended routing with road-routed cycling; preserve raw route attributes
+- Three independent permission comparisons; prohibited services appear only in the all-transit reference
+- TripInfo evidence investigation is active; bicycle-space availability and booking integration are deferred
 - Data quality and bicycle-carriage rules are first-class uncertainties
 
 ## Change discipline

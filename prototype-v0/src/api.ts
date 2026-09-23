@@ -10,7 +10,7 @@ import { atEndpoint, compareModels, emptyNetwork, solve, validateOptions,
 import { fetchJson, HttpError } from "./http.ts";
 import { geocode, MAX_WAYPOINTS, type TransportLocation } from "./places.ts";
 import { solveWaypoints } from "./waypoints.ts";
-import { bicycleLegAllowed } from "./bicyclePermission.ts";
+import { BICYCLE_SCOPES, bicycleLegAllowed } from "./bicyclePermission.ts";
 export { geocode } from "./places.ts";
 
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
@@ -182,6 +182,7 @@ export type SearchSession = {
   origin: Place; destination: Place; start: Date; options: Options; network: Network; client: TimetableClient;
   originStations: Station[]; destinationStations: Station[]; baseline: Solution; extended: Solution | null; extendedComplete?: boolean;
   confirmed?: { baseline: Solution; extended: Solution | null };
+  allTransit?: { baseline: Solution; extended: Solution | null };
   waypoints?: Place[];
   cyclingClient?: CyclingClient;
   comparisonClient?: CyclingClient;
@@ -195,7 +196,7 @@ export function searchWarnings(session: SearchSession): string[] {
   const warnings = [...session.client.warnings, ...session.cyclingClient?.warnings ?? [],
     ...[...session.comparisonClient?.warnings ?? []].map(w => `Cycling-only comparison — ${w}`)];
   if (session.client.rejectedSections) warnings.push("Some sections lacked usable stops or times and were excluded.");
-  if (session.baseline.limited || session.extended?.limited || session.confirmed?.baseline.limited || session.confirmed?.extended?.limited) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
+  if ([session, session.confirmed, session.allTransit].some(s => s?.baseline.limited || s?.extended?.limited)) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
   return [...new Set(warnings)];
 }
 
@@ -240,7 +241,7 @@ async function roadCandidates(session: SearchSession, point: Place, maxMinutes: 
 async function prepareObservedCycling(session: SearchSession, progress: Progress) {
   if (!session.cyclingClient) return;
   const { network, cyclingClient, options } = session;
-  const usable = [...network.edges.values()].filter(e => bicycleLegAllowed(e.leg, options.busPreference));
+  const usable = [...network.edges.values()].filter(e => bicycleLegAllowed(e.leg, options.busPreference, "all-transit"));
   const boarding = new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from));
   const arrival = new Set(usable.map(e => e.to));
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
@@ -265,7 +266,7 @@ async function prepareWaypointTransfers(session: SearchSession, progress: Progre
   if (!session.cyclingClient || !session.waypoints?.length || session.options.maxIntermediateMinutes <= 0) return;
   const { network, options, cyclingClient } = session;
   const attempts = session.transferCyclingAttempts ??= new Set<string>();
-  const usable = [...network.edges.values()].filter(e => bicycleLegAllowed(e.leg, options.busPreference));
+  const usable = [...network.edges.values()].filter(e => bicycleLegAllowed(e.leg, options.busPreference, "all-transit"));
   const origins = [...new Set(usable.map(e => e.to))].map(id => network.stops.get(id)!);
   const destinations = [...new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from))].map(id => network.stops.get(id)!);
   const pairs = origins.flatMap(a => destinations.filter(b => a.id !== b.id && haversineKm(a, b) > .001
@@ -323,6 +324,7 @@ function refresh(session: SearchSession, extended: boolean, publish: SearchUpdat
   const possible = run({ ...session.options, bicycleScope: "allow-uncertain" });
   session.baseline = possible.baseline; session.extended = possible.extended;
   session.confirmed = run({ ...session.options, bicycleScope: "confirmed" });
+  session.allTransit = run({ ...session.options, bicycleScope: "all-transit" });
   publish({ ...session });
 }
 // Dependency injection keeps the actual async acquisition flow testable without live HTTP.
@@ -414,7 +416,8 @@ export async function extend(session: SearchSession, progress: Progress, publish
     }
     const reach = solve(network, origin, destination, start, { ...o, bicycleScope: "allow-uncertain" }, "baseline");
     const strict = solve(network, origin, destination, start, { ...o, bicycleScope: "confirmed" }, "baseline");
-    const exits = [...reach.reachable, ...strict.reachable].filter(l => l.boardings > 0 && l.boardings < o.maxBoardings && !l.needsTransit)
+    const all = solve(network, origin, destination, start, { ...o, bicycleScope: "all-transit" }, "baseline");
+    const exits = [...reach.reachable, ...strict.reachable, ...all.reachable].filter(l => l.boardings > 0 && l.boardings < o.maxBoardings && !l.needsTransit)
       .sort((a, b) => haversineKm(network.stops.get(a.stop)!, destination) - haversineKm(network.stops.get(b.stop)!, destination)
         || a.time - b.time || a.bike - b.bike);
     const stopIds = [...new Set(exits.map(l => l.stop))].slice(0, SEARCH_LIMITS.transferStops);
@@ -480,12 +483,16 @@ async function planWaypointStages(session: SearchSession, mode: ModelMode, progr
     const to = candidates[stage + 1].map(s => atEndpoint(s, points[stage + 1], network, "egress")).filter(s => s.bikeMinutes <= options.maxEgressMinutes);
     const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2);
     for (const [a, b] of pairs) {
-      const reachable = solveWaypoints(network, points, start, options, mode).stageArrivals[stage];
-      if (!Number.isFinite(reachable)) break;
-      progress(`Checking stage ${stage + 1} of ${points.length - 1}: ${points[stage].label} → ${points[stage + 1].label}…`);
-      await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000));
-      client.signal.throwIfAborted();
-      await refreshRoads(session, mode === "extended", publish, progress);
+      // Preserve independently reachable stage times. An earlier prohibited ride
+      // must neither block the comparison nor replace later bicycle-aware queries.
+      const arrivals = [...new Set(BICYCLE_SCOPES.map(bicycleScope =>
+        solveWaypoints(network, points, start, { ...options, bicycleScope }, mode).stageArrivals[stage]).filter(Number.isFinite))];
+      for (const reachable of arrivals) {
+        progress(`Checking stage ${stage + 1} of ${points.length - 1}: ${points[stage].label} → ${points[stage + 1].label}…`);
+        await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000));
+        client.signal.throwIfAborted();
+        await refreshRoads(session, mode === "extended", publish, progress);
+      }
     }
   }
   session.extendedComplete = mode === "extended";

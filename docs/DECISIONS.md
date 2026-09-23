@@ -263,3 +263,17 @@ This file records important project choices. Do not silently rewrite old decisio
 **Observed outcome:** [Run 35604479414](https://github.com/Victorpolm/bike-train-planner/actions/runs/35604479414) succeeded on all 16 calls. Local bus 31 and Rapperswil–Renens are returned; bus 81 carries a bicycle-reservation requirement and bus 411 a space-conditional carriage note. Many other legs have no positive bicycle note, including the returned Zürich local services. Retain the two optimizations and unknowns. OJP duration can exclude hours before the proposed trip starts; record request-to-arrival elapsed time as well. The parser was corrected using saved responses, with an actual overnight regression, without repeating API calls. [Full findings](OJP_BENCHMARK_2026-09-21.md).
 
 **Privacy review:** Automatic approval review rejected publishing the exact street address and coordinates in the findings. Current benchmark files and documentation generalize that origin to a public stop; mock geocoding tests use fictional addresses. The reduced recorded XML omits endpoint geometry. This current-revision cleanup does not rewrite older Git history or remove the first run artifact, whose retention is seven days.
+
+## 2026-09-21 — Three transit comparisons; TripInfo inspection; capacity deferred
+
+**Latest user instruction:** Synchronize GitHub, investigate TripInfoRequest, do not integrate remaining bicycle spaces, and consider (1) bicycles authorised throughout, (2) uncertain permission, (3) all public transport. The user asks whether nationwide land/boat and cycle-path coverage is actually present.
+
+**Updated decision:** Add the unrestricted comparison to the previously implemented independent strict/permissive solves. The sets are nested. Apply each scope before dominance, retain independent category windows, then merge identical journeys. Keep the same mode preference and physical/time budgets. Known prohibitions remain forbidden in the first two scopes and are prominently labelled comparison-only in the third. Preserve the same behavior across Baseline, Extended and ordered visits, including onward acquisition for each distinct reachable scope time.
+
+**Research and implementation:** Official TripInfo documentation was inspected. Add an offline/single-call evaluation command and manual secret-backed workflow that retain dated service and stop conditions without promoting them to permission. No live TripInfo success or production OJP migration is claimed in this change. This supersedes treating a third comparison as merely pending; it does not supersede the requirement for reviewed service/segment evidence.
+
+**Parked:** Remaining bicycle spaces, occupancy, reservation availability and bookings. Published reservation requirements may remain explanatory notes.
+
+**Coverage finding:** The app has sampled services and requested BRouter paths, not a complete national transit/boat map or audited inventory of all cycle paths. The national GTFS source includes boat modes but is not imported. Keep source coverage, model coverage and actual app coverage separate.
+
+**Synchronization:** Update the project instruction block, agent scope, current state and related docs. Preserve older dated decisions and experiments as history. A GitHub change does not automatically update pasted ChatGPT instructions or the private Site. See [TripInfo and coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).

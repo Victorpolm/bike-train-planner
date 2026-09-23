@@ -1,7 +1,7 @@
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { cachedCycling, type CyclingRoute } from "./cycling.ts";
 import { type BusPreference } from "./busCarriage.ts";
-import { bicycleLegAllowed, type BicycleScope } from "./bicyclePermission.ts";
+import { BICYCLE_SCOPES, bicycleLegAllowed, type BicycleScope } from "./bicyclePermission.ts";
 
 export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
@@ -58,7 +58,7 @@ export function validateOptions(o: Options) {
   }
   if (!["none", "start", "end"].includes(o.endpointPreference)) throw new Error("Invalid endpoint preference.");
   if (!["known-rules", "include-unknown", "no-buses"].includes(o.busPreference)) throw new Error("Invalid bus preference.");
-  if (o.bicycleScope !== undefined && !["confirmed", "allow-uncertain"].includes(o.bicycleScope)) throw new Error("Invalid bicycle permission scope.");
+  if (o.bicycleScope !== undefined && !BICYCLE_SCOPES.includes(o.bicycleScope)) throw new Error("Invalid bicycle permission scope.");
 }
 
 export function metrics(j: Journey) {

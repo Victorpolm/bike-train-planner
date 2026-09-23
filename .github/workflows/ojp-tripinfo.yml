@@ -1,0 +1,50 @@
+name: OJP TripInfo permission inspection
+
+on:
+  workflow_dispatch:
+    inputs:
+      journey_ref:
+        description: "Exact JourneyRef returned by an OJP TripRequest or StopEventRequest"
+        required: true
+        type: string
+      operating_day:
+        description: "Matching OperatingDayRef (YYYY-MM-DD)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ojp-benchmark
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    if: github.repository == 'Victorpolm/bike-train-planner' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Verify request, evidence scope and credential handling
+        run: python3 -m unittest discover -s prototype-v0/scripts -p 'test_*.py'
+      - name: Inspect one dated service
+        env:
+          OJP_API_KEY: ${{ secrets.OJP_API_KEY }}
+          OJP_JOURNEY_REF: ${{ inputs.journey_ref }}
+          OJP_OPERATING_DAY: ${{ inputs.operating_day }}
+        run: >-
+          python3 prototype-v0/scripts/ojp_tripinfo.py
+          --journey-ref "$OJP_JOURNEY_REF"
+          --operating-day "$OJP_OPERATING_DAY"
+          --output prototype-v0/evaluation-output/tripinfo
+      - name: Retain bounded service and stop evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ojp-tripinfo-${{ github.run_id }}-${{ github.run_attempt }}
+          path: prototype-v0/evaluation-output/tripinfo/
+          if-no-files-found: warn
+          retention-days: 7

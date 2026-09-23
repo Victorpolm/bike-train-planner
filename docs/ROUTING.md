@@ -1,8 +1,8 @@
 # Routing and optimization
 
-## Current implementation update — 2026-09-05
+## Current implementation update — 2026-09-21
 
-The user-approved Baseline/Extended experiment is implemented. Read [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for the current state graph, feasibility, Pareto labels, categories, data acquisition, defaults and limitations. It supersedes the earlier scalar-only/fixed-radius prototype direction below. Earlier sections remain design history and longer-term architecture guidance. OpenTripPlanner is still the production-engine candidate; no complete nationwide router has been built.
+The active implementation uses React/TypeScript and Leaflet, directed BRouter cycling routes, sampled Transport API services and bounded multi-label Baseline/Extended solvers. Three permission comparisons are independent before deduplication. OJP TripRequest has been benchmarked; TripInfo evaluation tooling is prepared but not live-validated. There is no production OJP backend, imported national GTFS/OSM graph, or remaining-bike-space integration. The proposed stack below is direction, not a list of deployed components. Read [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for the current state graph, feasibility, Pareto labels, categories, data acquisition, defaults and limitations. It supersedes the earlier scalar-only/fixed-radius prototype direction below. Earlier sections remain design history and longer-term architecture guidance. OpenTripPlanner is still the production-engine candidate; no complete nationwide router has been built.
 
 
 ## 1. Conceptual model
@@ -26,6 +26,7 @@ Edges may represent modes such as:
 - train
 - tram
 - bus
+- boat/ferry
 
 Each edge can carry attributes such as:
 

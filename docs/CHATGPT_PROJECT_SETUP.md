@@ -73,7 +73,7 @@ The v0 requirements and limitations are documented in `prototype-v0/README.md` a
 | `docs/ROUTING.md` | Current routing formulation and research direction |
 | `docs/EXPERIMENTS.md` | Golden journeys, experiments and observed failures |
 | `docs/RESEARCH_LOG.md` | External research questions and findings |
-| `prototype-v0/` | Preserved first runnable implementation |
+| `prototype-v0/` | Active evolving prototype; the original version is preserved in Git history |
 
 ## 7. Routine for substantial sessions
 
@@ -91,13 +91,12 @@ At the end:
 4. Confirm the exact commit or files changed.
 5. End with one concrete next step.
 
-## 8. Immediate recommended sequence
+## 8. Current synchronization and next work
 
-1. Clone and run `prototype-v0` on the target computer.
-2. Confirm its existing behaviour on three origin/destination pairs.
-3. Turn those pairs into golden regression journeys in `docs/EXPERIMENTS.md`.
-4. Refactor route generation, route metrics and ranking into separate layers.
-5. Implement adaptive candidate-station expansion with an explicit maximum and fallback.
-6. Only then replace straight-line cycling estimates with routed cycling times.
+Use `docs/PROJECT_STATE.md` for the current milestone, tests, data limitations and publication status. The September 5 uploaded snapshot and old simple-enumeration wording are superseded. Routed cycling and separated generation/ranking are already implemented.
 
-This order preserves the simple prototype while preventing it from becoming a dead end for future multicriteria routing.
+1. Replace any pasted project instruction block with the current `CHATGPT_PROJECT_SETTING.md`; a GitHub commit does not edit ChatGPT settings automatically.
+2. Treat uploaded documents as dated snapshots and refresh them from the same verified repository revision when needed.
+3. Publish the tested three-comparison source to the existing private Site; verify publication separately from the GitHub push.
+4. Run the bounded TripInfo inspection and review service/stop evidence. Keep capacity availability out of scope.
+5. Recheck the fixed golden journeys and compare the sampled engine with comprehensive data/OTP before expanding the pilot.

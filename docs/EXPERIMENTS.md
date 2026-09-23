@@ -449,3 +449,15 @@ Historical timetable tests explicitly select the old geometric experiment to pre
 **Verification:** 105 app tests pass, plus two Python request/parsing tests for the OJP evaluation harness. TypeScript and the production build pass; no dependencies changed. OJP XML dry-run requests were generated without network access. No live OJP calls or new live timetable benchmark were run because no OJP API key is configured. The supervised preview service was unavailable, so this update has no new desktop/mobile visual verification.
 
 **Next:** Configure OJP access, select exact dated Zürich/Küsnacht inputs, and run the paired filter-on/filter-off captures before judging timetable coverage or importing permission evidence. The [evaluation document](BICYCLE_PERMISSION_AND_OJP.md) specifies the matrix, commands and acceptance criteria.
+
+## 2026-09-21 — Three comparisons and bounded TripInfo inspection
+
+**Controlled graph regression:** A prohibited bus arrives at minute 10, an uncertain boat at 100 and a confirmed train at 200. Baseline and Extended retain the independent winners 200/100/10, each with zero extra time in its own category window. Avoid buses removes the bus from the unrestricted comparison too. A dated ferry prohibition is treated consistently with other modes and its evidence remains prohibited after unrestricted inclusion.
+
+**Ordered visit:** A prohibited onward leg empties only the two bicycle-aware scopes. The unrestricted solve still visits the requested point and completes the journey. In the production acquisition flow, separate uncertain/unrestricted arrivals at minutes 40/20 query onward services at 08:43/08:23 with the same three-minute boarding buffer and shared request cap, producing 50/30-minute journeys. Confirmed remains empty because the live-adapter fixture supplies no positive evidence. This runs in both models.
+
+**TripInfo tool:** Five controlled tests cover dated request construction without formation/capacity, separate service/stop conditions, mismatched dates/invalid response rejection, one-call authentication failure with credential redaction, empty delivery failure, and a keyless/no-network dry run. Permission remains unassessed. The existing eight OJP benchmark tests also pass. No new live OJP requests were made.
+
+**Verification:** 108 app tests, 13 Python tests, TypeScript and production build pass. No dependency or lockfile change. New desktop/mobile visual interactions have not been browser-verified.
+
+**Delivery limitation:** Repository reads were recovered through Git. Native GitHub and Sites calls fail with HTTP 400 `Invalid MCP request metadata`; direct Git has no configured write credential. This records verified local work only, not a successful GitHub push or Site publication. Recheck the remote revision before pushing the prepared change and publish the exact tested application source afterward.

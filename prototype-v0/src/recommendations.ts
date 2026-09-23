@@ -4,12 +4,14 @@ import type { BicycleScope } from "./bicyclePermission.ts";
 
 export const scopeLabels: Record<BicycleScope, string> = {
   confirmed: "Confirmed permission only", "allow-uncertain": "Allow uncertain permission",
+  "all-transit": "All public transport · comparison only",
 };
 export type ScopedProposal = Proposal & { wins: { scope: BicycleScope; categories: string[]; extraMinutes: number }[] };
-export function recommend(confirmed: Journey[], possible: Journey[], options: Options) {
+export function recommend(confirmed: Journey[], possible: Journey[], allTransit: Journey[], options: Options) {
   // Optimize first, then merge: filtering the permissive winners would lose
   // slower confirmed journeys that were pruned by an uncertain alternative.
-  const groups = ([{ scope: "confirmed", journeys: confirmed }, { scope: "allow-uncertain", journeys: possible }] as const)
+  const groups = ([{ scope: "confirmed", journeys: confirmed }, { scope: "allow-uncertain", journeys: possible },
+    { scope: "all-transit", journeys: allTransit }] as const)
     .map(({ scope, journeys }) => ({ scope, proposals: categorize(journeys, options) }));
   const merged = new Map<string, ScopedProposal>();
   for (const { scope, proposals } of groups) for (const proposal of proposals) {
@@ -19,7 +21,7 @@ export function recommend(confirmed: Journey[], possible: Journey[], options: Op
     else merged.set(proposal.journey.id, { ...proposal, wins: [win] });
   }
   const signature = (proposals: Proposal[]) => JSON.stringify(proposals.map(p => [p.journey.id, [...p.categories].sort()]).sort());
-  return { groups, proposals: [...merged.values()], identical: signature(groups[0].proposals) === signature(groups[1].proposals) };
+  return { groups, proposals: [...merged.values()], identical: groups.every(g => signature(g.proposals) === signature(groups[0].proposals)) };
 }
 export function compareCycling(journey: Journey, cycling: CyclingComparison): string {
   const time = journey.totalMinutes - cycling.minutes, active = metrics(journey).active - cycling.minutes;

@@ -1,6 +1,6 @@
 # App roadmap: bike + public transport
 
-_Updated 2026-09-20. Implemented features are identified below; remaining work is not implied to be delivered._
+_Updated 2026-09-21. Implemented features are identified below; remaining work is not implied to be delivered._
 
 ## Product direction
 
@@ -35,7 +35,7 @@ Up to **four intermediate stops** can be added by map or address search, reorder
 
 **Cycling implementation:** Every accepted cycling leg now follows a directed BRouter road route, whose duration determines train readiness and budgets. The cycling-only comparison, map-linked elevation profile, ascent/descent, steep/final climbs and surface/infrastructure breakdowns are implemented. Posted limits use explicit provider-normalized bands; exact sign values and richer conditional access remain open. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
 
-**Bus policy pilot:** [Bus bicycle rules](BUS_BICYCLES.md) now filter recognized buses using a small sourced operator registry, with conditional guidance, known prohibitions, explicit unverified-bus opt-in and boarding instructions. Departure-specific permission, reservation availability, live capacity, bicycle types and train/tram carriage remain unverified.
+**Bus policy pilot:** [Bus bicycle rules](BUS_BICYCLES.md) now filter recognized buses using a small sourced operator registry, with conditional guidance, known prohibitions and boarding instructions. The default includes uncertain buses; three independent permission comparisons now include an unrestricted reference with prominent prohibition labels. Departure-specific permission, reservation availability, live capacity, bicycle types and train/tram carriage remain unverified.
 
 **Current limits:** Station entrances are not checked. Timetable and cycling discovery are bounded and can miss connections. No amenity or community service is added. See [the mathematical model](MATHEMATICAL_MODEL.md) and [verification log](EXPERIMENTS.md).
 
@@ -44,7 +44,7 @@ Up to **four intermediate stops** can be added by map or address search, reorder
 | Priority | Work | Completion criteria |
 |---|---|---|
 | 1 | Routed cycling delivered; field validation and engine evaluation remain | Cycling follows legal, connected roads/paths; those durations determine train catchability. Compare fixed Swiss cases against a configured routing engine and record omissions. |
-| 2 | Bicycle carriage and station guidance | Every transit leg distinguishes allowed, prohibited and unknown; reservation requirements and capacity are separate fields, with sources and update dates. |
+| 2 | Bicycle carriage and station guidance | Every transit leg distinguishes allowed, prohibited and unknown; dated service/segment evidence has sources and update dates; remaining capacity and reservation availability are deferred. |
 | 3 | Core road profile delivered; richer attributes and nearby services remain | Route distance/elevation/surface summaries have known coverage; repair and parking locations have useful details without invented availability. |
 | 4 | Commuting, bikepacking and expert controls | Presets use the same underlying engine and explain constraints; advanced options expose supported attributes and disclose missing data. |
 | 5 | Saved journeys and community pilot | Users can save/share a route with context; live schedules and operator rules are refreshed before reuse. |
@@ -72,11 +72,11 @@ Acceptance cases include Libingen → EPFL with Wil and Rapperswil access, Züri
 
 **Status:** Bus operator-policy filtering and sourced instructions are implemented for a limited pilot registry. The following remains the broader acceptance target; the current pilot does not confirm individual departures or available reservations/spaces.
 
-For each train, bus or other service, show bicycle permission, relevant time/route restrictions, reservation requirements, bicycle ticket requirements and known bike-space information. Keep **permission**, **reservation required**, **reservation obtainable** and **live capacity** separate. Unknown permission must remain unknown.
+For each train, bus or other service, show bicycle permission, relevant time/route restrictions, reservation requirements, bicycle ticket requirements and published conditions. Keep **permission**, **reservation required**, **reservation obtainable** and **live capacity** separate. Unknown permission must remain unknown.
 
 Provide a concise checklist explaining the operator's published procedure: ticket/reservation link, where to board when known, and relevant boarding or storage instructions. Link to the authoritative operator page and show when the rule was checked. Track exceptions by service/date and bicycle type; do not assume all trains of a category or all panoramic trains accept bikes. Station access, lifts, stairs and realistic transfer time need their own data.
 
-Acceptance: test at least one allowed, prohibited, reservation-required and unknown service; a prohibited leg cannot win a bicycle-compatible category, and missing reservation/capacity data is visible before the user relies on a proposal. Do not promise a bookable journey without the required availability integration.
+Acceptance: test at least one allowed, prohibited, reservation-required and unknown service; a prohibited leg cannot win a bicycle-compatible category, and unknown permission remains explicit. Remaining-space and reservation-availability integration is deferred by the latest instruction; no availability is invented. Do not promise a bookable journey without the required availability integration.
 
 ### 3. Repair shops and bicycle parking
 

@@ -26,7 +26,11 @@ Treat information according to its explicit status: **fact**, **decision**, **hy
 
 The core product plans journeys where a bicycle accompanies the traveller through public transport. It is not a generic cycling super-app.
 
-The immediate objective is a local web prototype that can produce useful real journeys in a small Swiss pilot area. The current v0 uses simple candidate-station enumeration and fastest-arrival ranking. Near-term algorithmic work should support adaptive station catchments and keep route attributes separate so later Pareto or multicriteria ranking remains possible.
+The immediate objective is a web prototype that produces useful real journeys in a small Swiss pilot area. Read `docs/PROJECT_STATE.md` for the current implementation rather than treating these instructions or an uploaded snapshot as live state. The app has progressed to a bounded multi-label timetable experiment with routed cycling, Baseline/Extended models, ordered visits and category comparisons; it is not a complete national router.
+
+Compare three independently optimized transit sets: permission confirmed on every leg; uncertain permission permitted but known prohibitions excluded; and all public transport as a labelled comparison that ignores bicycle restrictions. Preserve each set's winners before merging identical journeys. An unrestricted comparison is not permission to take a bicycle on a prohibited service.
+
+Investigate OJP TripInfo for dated-service and stop-specific carriage evidence. Missing evidence remains unknown. Do not integrate remaining bicycle spaces, occupancy, reservation availability or booking yet. Distinguish available Swiss GTFS/OSM sources from data actually imported, and repository source changes from a verified website publication.
 
 Do not prioritize ticket sales, native mobile apps, nationwide expansion, real-time disruption handling, social features, carbon dashboards, or a sophisticated custom routing engine before the core journey problem and data quality are validated.
 

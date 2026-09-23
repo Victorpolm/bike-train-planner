@@ -347,6 +347,8 @@ button:disabled { cursor: default; opacity: .65; }
 .permission-summary { display: grid; gap: 10px; margin: 16px 0; }
 .permission-group { padding: 14px; border: 1px solid var(--line); border-left: 4px solid #967137; border-radius: 8px; background: #faf8f2; }
 .permission-group.scope-confirmed { border-left-color: #195e4d; background: #f0f5f2; }
+.permission-group.scope-all-transit { border-left-color: #536778; background: #f1f4f7; }
+.permission-warning { display: block; margin: 8px 0; padding: 10px; border-left: 4px solid #a34424; background: #fff0e8; color: #7c321c; font-size: 14px; line-height: 1.5; font-weight: 600; }
 .permission-group h3 { margin: 0 0 6px; font-size: 16px; }
 .permission-group p { margin: 0; font-size: 14px; line-height: 1.5; }
 .scope-win { display: block; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--line); }

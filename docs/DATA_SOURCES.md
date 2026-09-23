@@ -91,7 +91,7 @@ Useful later for:
 
 ## Bicycle carriage rules
 
-**Implemented pilot (2026-09-20):** The app preserves timetable category/operator and applies a separate curated bus-rule registry. [BUS_BICYCLES.md](BUS_BICYCLES.md) lists exact coverage, official PostBus/ZVV/tpg sources and review dates. Unknown rules stay unknown; known bans are excluded, while conditional rules require a departure check. Reservation requirement, reservation availability, ticket requirement and live capacity are separate fields. This supersedes the earlier flat proposed representation below for the implemented bus pilot; the remaining broader sources are still prospective.
+**Implemented pilot (2026-09-20):** The app preserves timetable category/operator and applies a separate curated bus-rule registry. [BUS_BICYCLES.md](BUS_BICYCLES.md) lists exact coverage, official PostBus/ZVV/tpg sources and review dates. Unknown rules stay unknown; known bans are excluded from bicycle-aware scopes and labelled in the all-transit reference, while conditional rules require a departure check. Reservation requirement, reservation availability, ticket requirement and live capacity are separate fields. This supersedes the earlier flat proposed representation below for the implemented bus pilot; the remaining broader sources are still prospective.
 
 This is a distinct subsystem, not just a timetable field.
 
@@ -203,3 +203,9 @@ A small recorded 2026-09-05 Zürich–Laax schedule fixture is included for regr
 BRouter's lookup table groups raw posted speed limits; the app shows approximate bands, never exact signs or measured traffic speed. Road-message matching preserves unknown intervals. Missing elevation is not filled, and surface is not inferred from road class. Data freshness is not known per segment; fetched-at time is not an OSM survey date. The community endpoint has no availability guarantee for this prototype; managed/self-hosted routing remains an engine decision before wider use.
 
 A real 20 September 2026 Renens–EPFL response is retained with source URL and attribution in `prototype-v0/src/fixtures/renens-epfl-cycling-2026-09-20.json`. This supersedes the earlier schematic-cycling adapter description; historical timetable fixtures preserve their original assumptions.
+
+## Current coverage and TripInfo — 2026-09-21
+
+[TripInfo and Swiss network coverage](TRIPINFO_AND_NETWORK_COVERAGE.md) distinguishes source availability from imported data. Swiss national GTFS includes land and boat/ferry modes, but this app holds a sampled timetable graph. BRouter returns requested OSM-derived routes; no complete local cycling network or inventory of every path is verified. The map is not a national network map.
+
+TripInfo inspection is implemented as separate evaluation tooling, not a production permission feed. Live confirmation and reviewed service/segment mapping remain pending. Remaining bicycle spaces, occupancy and reservation availability are explicitly deferred. BRouter/SRTM profiles are already implemented; the earlier elevation-priority text concerns higher-resolution terrain and future calibration.

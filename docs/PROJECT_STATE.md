@@ -1,143 +1,62 @@
 # Project state
 
-**Latest:** The OJP secret is validated: all 16 live requests in the eight-case benchmark succeeded. OJP finds local Zürich transit and Rapperswil–Renens, with useful but incomplete bicycle notes. Independent permission searches remain necessary; the next step is a server-side adapter plus reviewed evidence mapping and routed bicycle access. The website still uses its existing timetable source. [Live findings](OJP_BENCHMARK_2026-09-21.md) · [design and next steps](BICYCLE_PERMISSION_AND_OJP.md).
+_Last consolidated: 2026-09-21. Source implementation and publication status are distinct._
 
-_Last consolidated: 2026-09-21._
+## Objective and scope
 
-## Current objective
-
-**Decision:** Build and validate a focused bicycle + public-transport journey planner, initially in Switzerland.
-
-The immediate milestone is not a polished app. It is a working set of real journeys where the system can combine cycling and public transport in a way a real cyclist would plausibly choose.
-
-## Current product hypothesis
-
-**Hypothesis:** People travelling with bicycles and public transport often need to combine several apps, websites and operator rules. A planner that integrates comfortable cycling access/egress with bicycle-compatible transit can materially reduce planning friction.
-
-The bicycle should be treated as accompanying the traveller through the journey, not merely as a first/last-mile mode that is parked before transit.
+**Decision:** Validate useful bicycle + public-transport journeys in a small Swiss pilot area. The bicycle accompanies the traveller throughout. Preserve raw route attributes, represent missing carriage rules as uncertainty, and describe cycling infrastructure without claiming objective safety.
 
 ## Current implementation
 
-**Fact:** `prototype-v0/` now implements the user-approved Baseline/Extended mathematical experiment.
+**Fact:** `prototype-v0/` is the active React/TypeScript/Leaflet application. The original geometric prototype is preserved in Git history and historical fixtures; the current code has progressed beyond simple station enumeration and fastest-arrival ranking.
 
-**Access:** The [private website](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site) is restricted to its owning ChatGPT account. The repository README links to it. [Website access and development](WEBSITE.md) explains how to open it from GitHub, run a local clone and republish; GitHub pushes do not automatically update the Site.
+- **Baseline / Extended:** The same sampled timetable graph and resource limits, allowing zero versus at most one automatic intermediate cycling leg. Ordinary transit/walking changes are allowed in both.
+- **Three independent comparisons:** Confirmed bicycle permission on every transit leg; allowing uncertain permission but excluding prohibitions; all public transport with bicycle rules ignored. The third is a labelled reference and may contain services that prohibit bicycles. Avoid buses applies to all three. Deduplicate after optimization; preserve each group's categories and arrival allowance.
+- **Results:** Routed cycling-only comparison, then fastest with transit, fewest boardings and least cycling or walking; optional least active time at one endpoint. Raw cycling and walking remain separate. Each transit comparison has its own 60-minute alternative window.
+- **Cycling:** Directed BRouter road routes and terrain-aware time estimates determine train readiness and budgets. No geometric fallback. Profiles show elevation, surfaces, infrastructure and approximate speed bands with explicit unknowns. Endpoint gaps up to 250 m remain visible and add estimated walking time.
+- **Journey input:** Address suggestions, map selection and dragging, up to four ordered visits, route reversal, Swiss departure time and a 24-hour whole-journey window. Visits share cycling/boarding/time budgets; stopover duration is zero.
+- **Usability:** Progressive proposals survive cancellation; journey cards explain all legs, waiting, boarding locations and available platforms. The map shows observed stops and routes. Cycling presets include Above 150 minutes within the 24-hour horizon.
+- **Data acquisition:** Local and rail candidate coverage, bounded outward exploration and an 18-request timetable cap. Ordered-stage queries preserve independently reachable permission-scope times. Sampled acquisition can still miss services and is not globally optimal.
 
-- **Baseline:** cycling before and after public transport, with ordinary transit/walking transfers.
-- **Extended:** the same constraints and timetable graph, with at most one intermediate cycling leg; includes Baseline.
-- A model switch appears before search results. A cycling-only reference estimate appears first, then transit categories select fastest, fewest boardings (including the first), and least cycling or walking. An optional fourth minimizes active time at the start or arrival. Duplicate winners share a card.
-- Transit categories require public transport and obey explicit cycling, boarding and duration budgets. The cycling-only reference stays separate, even when it exceeds the transit journey's cycling budget. Exact timetable readiness is checked after cycling and before each boarding.
-- Every model runs two independent bicycle-permission searches: confirmed on every transit service, and allowing uncertain permission. Each has its own category winners and arrival allowance; identical journeys share one card. Unknown buses are included in the permissive search by default; Avoid buses applies to both. Known prohibitions never qualify. The current feed cannot confirm individual services, so the confirmed group normally reports insufficient evidence. See [permission searches and OJP](BICYCLE_PERMISSION_AND_OJP.md).
-- Local bus/tram stops are looked up even near seeded rail hubs. Four initial pair slots preserve local and rail coverage. A result slower than cycling only can trigger bounded outward discovery. Each transit card compares time/active travel with cycling only and shows waiting/boarding time; no confirmed option is discarded by an uncertain or cycling-only alternative.
-- Clicking a transit card opens every cycling, transit, walking and waiting leg. The map shows the selected route, a cycling-only comparison line, candidate/observed timetable stops and numbered boarding/alighting pins with available services, times and platforms. Pins match numbers in the plan. A toggle and Fit all stops control expose search coverage.
-- The app displays the first usable proposals while alternatives load, reports incomplete searches and keeps proposals when stopped. Debounced address/stop suggestions preserve selected coordinates; the form needs only From, To and the model choice, with optional cycling presets.
-- Departure defaults to Leave now, with an explicit Swiss date/time option. The arrival window is now 24 hours including waiting, so late-evening searches can retain next-morning services. Station-pair slots preserve local transport and rail coverage after the nearest pair; adjacent bus stops no longer consume the whole initial batch.
-- Map click/tap sets start, finish or an intermediate stop; draggable A/B/V markers and named fields preserve exact coordinates. Up to four requested stops can be reordered/removed, and the route reversed. A separate stage-aware solver visits them in order with one global cycling/boarding/time budget. Baseline allows cycling at each requested stage's ends; Extended adds at most one automatic cycling transfer across the whole journey. Stopover time is zero. Two station pairs per stage share the existing 18-request limit; via searches do not add departure-board discovery.
+The third comparison does not imply a complete national dataset. See [the mathematical model](MATHEMATICAL_MODEL.md), [permission contract](BICYCLE_PERMISSION_AND_OJP.md) and [coverage audit](TRIPINFO_AND_NETWORK_COVERAGE.md).
 
-The solver uses Pareto labels on a finite, sampled timetable graph. Walking contributes to active time during label pruning and ranking; cycling remains a separate constrained resource. The production planner now uses directed BRouter road routes and terrain-aware estimated times for all accepted cycling legs, including access, egress, required visits and automatic transfers. Missing routes are excluded, never replaced by geometric estimates. The independent cycling-only reference appears when its routed stages are ready. Profiles linked to the map show ascent/descent, steep/final climbs, infrastructure, surfaces and approximate posted-speed bands with explicit unknowns. This remains a sampled planner. The bus pilot checks operator policies, while individual departures, reservations, live capacity, other-mode carriage and platform access remain unverified. See [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
+## Bicycle permission and OJP
 
-See [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for equations, state, dominance, defaults, API limits and implementation boundaries, and [EXPERIMENTS.md](EXPERIMENTS.md) for verification.
+**Fact:** The production Transport API feed does not supply the positive dated-service evidence required by the strict search. General operator policies remain uncertain. The confirmed group can truthfully be empty even when bicycles are actually permitted.
 
-## Current technical direction
+**Fact:** The first OJP TripRequest benchmark passed all 16 calls using a repository Actions secret. It found useful but incomplete bicycle notes. The website still uses its existing timetable provider. [Recorded results](OJP_BENCHMARK_2026-09-21.md).
 
-- Responsive web prototype first.
-- Preserve v0 before refactoring it.
-- OpenStreetMap for road/cycling network and many cycling POIs.
-- Swiss GTFS/open transport data for public-transport schedules.
-- OpenTripPlanner as the first serious routing-engine candidate rather than writing the entire multimodal router from scratch.
-- MapLibre is the likely serious map direction; v0 currently uses Leaflet.
-- PostgreSQL/PostGIS when custom spatial storage/querying becomes useful.
-- BRouter/SRTM elevation now supports route profiles; evaluate higher-resolution Swiss terrain and rider calibration later.
-- A separate sourced bus-policy module is implemented. Departure-level restrictions/reservations, capacity, more operators and train/tram rules remain necessary; timetable operator/category metadata alone cannot confirm bicycle carriage.
+**Implemented evaluation tooling:** A bounded TripInfo command and manual workflow request one dated service, preserve service/stop conditions, reject mismatched identities and leave permission unassessed. Official documentation has been reviewed; a live TripInfo result has not yet been captured in this change. [Research, commands and limits](TRIPINFO_AND_NETWORK_COVERAGE.md).
 
-## Current routing model
+**Decision:** Keep the three comparisons simple. Remaining bicycle spaces, occupancy, reservation availability and booking integration are parked by explicit user instruction. Reservation requirements may remain explanatory conditions; permission is distinct from guaranteed boarding.
 
-**Decision (updated 2026-09-18):** Compare zero versus at most one intermediate cycling leg. Use the `(total time, cycling + walking time, boardings)` frontier and a small set of category winners, adding the selected endpoint's active time when requested. Preserve raw cycling and walking separately. The cycling-only estimate does not participate in transit-category dominance or the extra-time allowance. The earlier cycling-only objective is superseded; see the dated decision log.
+## Network coverage
 
-**Fact:** This is implemented with shared constraints and paired searches over the same observed timetable graph. The live data adapter samples stops and departures; exact national optimality and globally minimal feasible catchments are not claimed.
+**Fact:** We do not have a complete, verified local graph/map of all Swiss terrestrial and boat public transport, or an audited inventory of every cycle path. The app queries selected services and BRouter routes.
 
-**Open:** Whether the practical benefit of intermediate cycling justifies its extra discovery/search cost across representative real journeys. OpenTripPlanner remains the first production-engine candidate.
+The national Swiss GTFS source includes land modes and boat/ferry categories, but is not imported. BRouter uses OSM; availability of a road route does not establish completeness of every path or tag. Transit map lines are schematic. The cycling profile disables ferries, which must appear as explicit transit legs. See [source coverage versus app coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).
 
-## Current cycling-comfort direction
+## Verification and publication
 
-A conceptual cycling edge cost is:
+**Automated verification for this source change:** 108 app tests, 13 Python evaluation tests, TypeScript and the production build pass. New regressions distinguish prohibited/unknown/confirmed winners before dominance, preserve Avoid buses, retain boat categories, and check independently timed onward queries across a requested visit. See [EXPERIMENTS.md](EXPERIMENTS.md).
 
-`cost = travel_time × road_factor × speed_factor × cycleway_factor × surface_factor × slope_factor`
-
-Possible route profiles:
-
-- Fast
-- Balanced
-- Comfortable
-- Cargo bike (later)
-- E-bike (later)
-
-**Decision:** Do not call these routes objectively “safe” based only on map attributes. Prefer terms such as comfortable, low-stress or infrastructure-preferred.
-
-## Current main risks
-
-1. **Bicycle carriage data** — permission/reservation rules may not be machine-readable or uniform.
-2. **Cycling route quality** — OSM completeness and the comfort model may be insufficient.
-3. **Multimodal candidate generation** — station selection and transit access/egress need to be useful, not merely feasible.
-4. **User demand** — the planning problem must be recurrent and painful enough to justify a dedicated product.
-5. **Explainability** — users must understand why an apparently longer or less obvious journey is recommended.
-
-## Geographic focus
-
-**Decision:** Start small. Zurich and one surrounding corridor are good candidates (for example Zurich–Winterthur or Zurich–Zug). Do not start with national or European scope.
-
-## Validation direction
-
-Interview users about actual past journeys rather than asking whether they like the idea.
-
-Previous heuristic targets:
-
-- 15–20 interviews with bike + public-transport users.
-- ~10 reporting a recent relevant planning problem.
-- ~5 currently combining several apps/sites.
-- ~5 willing to test a prototype.
-
-For a pilot, repeat journey planning matters more than downloads or compliments.
+**Publication:** The last verified successful private-site publication is version 13, 21 September 2026 at 07:38 UTC, preceding this three-comparison change. This revision has not been deployed. GitHub pushes do not automatically publish the Site. [Website access and development](WEBSITE.md) explains the separate publication step.
 
 ## Immediate next actions
 
-**2026-09-20 bus bicycle update:** Added a maintained policy registry for PostBus, tpg and selected Zurich-area operators, known prohibitions, explicit unknown handling and a bus preference shared by Baseline/Extended/requested stops. Guidance is conditional operator information, not confirmed permission on a departure. All **97 tests**, TypeScript and the production build pass. The managed browser preview remains unavailable. See [BUS_BICYCLES.md](BUS_BICYCLES.md) and the latest [experiment](EXPERIMENTS.md).
+1. Publish the verified three-comparison source to the existing private Site and check its desktop/mobile presentation.
+2. Run the bounded TripInfo inspection for dated train, bus/tram and boat services; compare notes with TripRequest on the actual boarded segments. Missing notes remain unknown.
+3. Evaluate a server-side OJP adapter and evidence mapping before replacing the website's timetable source. Never expose its API key to the static frontend.
+4. Recheck 3–6 fixed real journeys, recording exact public endpoints, departure, paths, time to first result, missed candidates and unresolved permission.
+5. Compare the sampled approach with OpenTripPlanner and complete timetable/street data; validate cycling times and station entrances against real rides. No RAPTOR/ULTRA or OTP migration is implemented.
+6. Continue user interviews before expanding the product scope.
 
-**2026-09-20 longer-cycling option:** Preferences now offers **Above 150 minutes cycling**. It removes separate total/access/egress/intermediate cycling caps within the same 24-hour whole-journey window, including requested stops, and keeps shorter journeys eligible. Three controlled regressions cover long station access, an Extended transfer and a requested stop; all **89 tests**, TypeScript and the production build pass. Road availability, timetables and bounded sampling can still leave a search without results. See the latest entry in [EXPERIMENTS.md](EXPERIMENTS.md) for verification and limits.
+## Remaining risks and parked work
 
-**2026-09-20 warning diagnosis:** Cycling failures now name the affected endpoints and distinguish the independent cycling-only comparison from station-access checks. HTTP 400 is classified using its bounded response detail, so timeouts and unknown request failures no longer masquerade as “no connected path.” Valid proposals remain available. All 86 tests and the build pass. A repeat of the recorded Libingen–EPFL input returned journeys without warnings; the exact newly reported failing coordinates remain unknown.
+Carriage-rule coverage, sampled service discovery, cycling estimates, incomplete OSM attributes and station/platform access remain the main technical uncertainties. Demand and the value of an intermediate cycling leg still need validation.
 
-**2026-09-20 endpoint tolerance fix:** Selected start, finish, stop and station coordinates now allow up to 250 m to the routed path, replacing the restrictive 75 m cutoff. Original pins remain fixed; dotted connectors add walking time before timetable queries and solver feasibility. Routing-service failures now have a separate message. All 84 tests and the production build pass; a live Libingen → Libingen, Dorf route also succeeded. See [EXPERIMENTS.md](EXPERIMENTS.md).
-
-**2026-09-20 cycling update:** Road routes and their durations now feed timetable queries and both solvers. The map-linked cycling profile and road-attribute breakdowns are implemented. Automated verification has 81 passing tests plus a successful TypeScript/production build. A real Renens–EPFL road response and a live multimodal check are documented in [EXPERIMENTS.md](EXPERIMENTS.md). Managed preview remains unavailable, so the new profile interactions still need desktop/mobile checking. Exact posted speed signs cannot be recovered from the current provider; bands and unknowns are explicit.
-
-**2026-09-20 map update:** The map/ordered-stop implementation and future [app roadmap](APP_ROADMAP.md) are complete. The roadmap captures real cycling routes and profiles, repair and parking, bicycle rules, commuting/bikepacking/expert presets, comfort research and the later community vision. Only map selection and ordered stops are implemented in this update. Automated verification now has 69 passing tests; map dragging/touch still needs a browser check because the managed preview service was unavailable. Live naming fell back to coordinates in this environment; its successful response parsing and failure behavior are covered with controlled responses.
-
-**2026-09-05 update:** The user has authorized implementation and app changes after the mathematical discussion. This supersedes the earlier pause on routing changes. The Baseline/Extended switch, categories, bounded graph solver and bus-inclusive discovery are implemented.
-
-**Verification (2026-09-18):** 53 automated tests, TypeScript and the production build pass. New cases cover active-time pruning, cycling resource constraints, the cycling-only reference and boarding/alighting markers, including the recorded Zürich–Laax walking transfer. Desktop/mobile browser checks with controlled timetable data verify result order, stop popups, map controls, selection, failure fallback and responsive framing; marker collisions and mobile cropping found during inspection were fixed. See [EXPERIMENTS.md](EXPERIMENTS.md) for inputs and limits. Earlier 2026-09-05 live latency observations remain in that log; this change does not establish a new live performance result.
-
-**Follow-up verification (2026-09-18):** The exact Libingen (Mosnang) → EPFL (Ecublens VD) case is recorded: a 23:20 search that previously returned no proposals produces three category winners after the fix. More cycling queries Rapperswil–Renens; Balanced excludes the 78-minute estimated access ride under its 60-minute per-end limit. All 58 tests and the production build pass. Browser preview was unavailable for the new departure control; live adapter and recorded regression checks are documented in the latest experiment entry.
-
-1. Try both models on 3–6 fixed real journeys and judge whether the cycling comparison, active-time trade-offs and boarding/alighting map pins are useful.
-2. Capture exact endpoints, departure times, returned legs, failures and search cost for those cases.
-3. Compare the sampled prototype with OpenTripPlanner and complete Swiss timetable/street data.
-4. Validate routed cycling times, final climbs and station entrances against real rides; obtain exact speed-limit/conditional-access attributes. Routing alone does not certify transfer feasibility.
-5. Extend the bus-policy pilot with departure-level bicycle restrictions, reservation data and more verified identifiers; then implement train/tram rules and bicycle-type differences.
-6. Continue user interviews before major frontend investment.
-
-## What is explicitly not a priority yet
-
-- Native iOS/Android apps
-- Ticket sales
-- Europe-wide coverage
-- Real-time disruptions
-- Social/community features
-- Carbon tracking
-- Machine-learning personalization
-- Full turn-by-turn navigation
-- Perfect Pareto routing
-- Microservices / production-scale infrastructure
+Native apps, ticket sales, real-time disruptions, nationwide product expansion, social/community features, carbon dashboards, machine-learning personalization, turn-by-turn navigation and production-scale infrastructure remain outside the immediate milestone. National data evaluation does not itself change the pilot product scope.
 
 ## Updating this file
 
-Keep this file short. When the project changes materially, update the relevant detailed doc and then refresh this summary. If an old assumption changes, record the change in `DECISIONS.md` rather than silently rewriting history.
+Keep this summary short and factual. Record changes to earlier decisions as dated entries in `DECISIONS.md`; retain experiment history in `EXPERIMENTS.md`. An uploaded copy is a snapshot, not an automatically synchronized source. Repository code, tests and verified publication records determine the current state.

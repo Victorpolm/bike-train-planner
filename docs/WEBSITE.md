@@ -41,4 +41,8 @@ GitHub is the authoritative source. The hosted Site has its own source repositor
 
 Publishing must use the tested app source from the chosen GitHub revision, build its static output, push that exact source to the Site repository, and save/deploy the corresponding version. Confirm successful deployment before reporting an update. Do not commit dependencies, build output, tokens or local environment files.
 
-The published app remains an experiment: cycling lines are straight-line estimates, transit discovery is sampled, and bicycle carriage/reservation rules are not validated. See [current project state](PROJECT_STATE.md) and [results and map design](RESULTS_AND_MAP.md).
+The app uses real BRouter cycling paths and estimated routed durations; transit lines remain schematic and discovery is sampled. The source now has three independent permission comparisons, including an unrestricted reference that may prohibit bicycles. Individual bicycle permissions remain unverified by the current feed. No live bicycle-space or booking integration is implemented. See [current project state](PROJECT_STATE.md) and [results and map design](RESULTS_AND_MAP.md).
+
+## Last verified publication
+
+Version 13 succeeded on 21 September 2026 at 07:38 UTC. It precedes the three-comparison/TripInfo synchronization change. That source change has not been deployed: the Sites connector currently returns HTTP 400 `Invalid MCP request metadata`. Update this record only after a successful matching publication. A successful local build is not a deployment.

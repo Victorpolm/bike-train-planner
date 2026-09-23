@@ -2,14 +2,15 @@
 
 _Decision and implementation: 21 September 2026._
 
-## The two questions
+## The three comparisons
 
 1. Which useful journey can I take when bicycle permission is confirmed on every public-transport service?
 2. Which useful journey could I take if I also consider services whose bicycle permission remains uncertain?
+3. What public-transport journeys are available if bicycle permission is ignored, with prohibitions clearly labelled as comparison-only?
 
-Both searches use the same departure, road routes, cycling budget, requested stops and boarding limits. Each independently chooses fastest with transit, fewest boardings and least cycling or walking, plus the optional endpoint preference. Each has its own 60-minute alternative window. A quicker uncertain service cannot prune a confirmed alternative. The separate cycling-only reference does not remove either group's transit results.
+All three searches use the same departure, road routes, cycling budget, requested stops and boarding limits. Each independently chooses fastest with transit, fewest boardings and least cycling or walking, plus the optional endpoint preference. Each has its own 60-minute alternative window. A quicker uncertain service cannot prune a confirmed alternative. The separate cycling-only reference does not remove any group’s transit results.
 
-Identical journey IDs merge only after optimization. One card retains its winning categories and time comparison in each group. If both recommendation sets match, the page says so and presents one shared result set. A route with confirmed permission can also win the permissive search; “allow uncertain permission” describes the search, not necessarily that particular route.
+Identical journey IDs merge only after optimization. One card retains its winning categories and time comparison in each group. If all three recommendation sets match, the page says so and presents one shared result set. A route with confirmed permission can also win the permissive and unrestricted searches; “allow uncertain permission” describes the search, not necessarily that particular route.
 
 ## Evidence and current limits
 
@@ -18,8 +19,8 @@ Identical journey IDs merge only after optimization. One card retains its winnin
 | Positive, sourced evidence for the exact dated service and boarded segment | Eligible for the confirmed search, subject to all other constraints |
 | General operator policy, including conditional PostBus/VBZ rules | Uncertain; eligible only for the permissive search |
 | Missing service permission, including current train/tram data | Uncertain; never inferred to be allowed |
-| Applicable explicit prohibition or matched operator prohibition | Excluded from both searches |
-| Available bicycle space or reservation availability | Unknown; the app makes no booking |
+| Applicable explicit prohibition or matched operator prohibition | Excluded from confirmed/uncertain searches; allowed only in the labelled all-transit comparison |
+| Available bicycle space or reservation availability | Explicitly deferred; not queried or integrated |
 
 The current Transport API adapter does not supply positive service-level evidence. **The confirmed group will normally be empty.** Its message explains that available data cannot confirm a journey, rather than asserting that no bicycle-compatible service exists. This is an intentional data-quality boundary, not a completed carriage-data integration. The evidence type is ready for a trusted adapter; arbitrary upstream fields are not accepted as permission.
 
@@ -27,7 +28,7 @@ The check applies to every transit leg in Baseline, Extended and ordered-stop ro
 
 ## Zürich discovery and comparisons
 
-Nearby bus/tram lookup now also runs beside seeded rail hubs and selected stations with a nonzero catchment. Up to four candidates preserve local transport and rail coverage. Up to four initial pair queries reserve a local connection before rail coverage; the overall 18-request cap is unchanged. A transit result slower than the completed cycling-only estimate can trigger bounded outward discovery. Extended discovery retains reachable labels from both permission searches.
+Nearby bus/tram lookup now also runs beside seeded rail hubs and selected stations with a nonzero catchment. Up to four candidates preserve local transport and rail coverage. Up to four initial pair queries reserve a local connection before rail coverage; the overall 18-request cap is unchanged. A transit result slower than the completed cycling-only estimate can trigger bounded outward discovery. Extended discovery retains reachable labels from all three searches. Ordered visits query each distinct scope arrival under the same 18-request budget. All scopes share the selected Avoid buses constraint. Unrestricted discovery must not be interpreted as bicycle feasibility.
 
 Each transit card compares time and cycling-or-walking with the routed cycling-only reference, and displays waiting/boarding time. “Fastest with transit” is scoped to a permission group. Cycling receives “Fastest in this search” only when it is at least as fast as all recommendations and within the chosen cycling allowance. No claim of national optimality follows from this sampled graph.
 
@@ -67,6 +68,10 @@ All requests use scheduled times (`UseRealtimeData=none`) and provider-default a
 | Libingen → EPFL | Existing recorded daytime/night cases, plus a future rerun | Rapperswil–Renens coverage and catchable routed access |
 | Zürich HB → Laax GR, posta | Weekday daytime | Train/bus scope, reservations and bus segment attributes |
 
-For each case capture current-app winners in both groups, all provider returns, time-to-first-result, request failures, access duration, boarding count and unresolved permissions. OJP requests currently use provider-default access, so their raw journey times are **not** equivalent to our bicycle-routing times. Recalculate directed cycling access, boarding readiness and egress before comparing feasible arrivals.
+For each case capture current-app winners in all three groups, all provider returns, time-to-first-result, request failures, access duration, boarding count and unresolved permissions. OJP requests currently use provider-default access, so their raw journey times are **not** equivalent to our bicycle-routing times. Recalculate directed cycling access, boarding readiness and egress before comparing feasible arrivals.
 
 The initial live matrix is complete. Before adopting OJP: confirm the meaning/coverage of bicycle attributes against official departure details, preserve unknowns, handle restrictions at individual stops, and verify later confirmed alternatives are not lost to provider result limits. A static-site migration also needs a server-side credential boundary. These are remaining work, not implemented capabilities.
+
+## TripInfo follow-up and coverage
+
+The user requests TripInfo investigation without remaining-space integration. A single-service evaluation command and manual workflow are now available, with controlled tests but no live TripInfo result yet. Keep raw service/stop evidence separate and permission unassessed until reviewed. [Research, commands, three-set semantics and actual network coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).

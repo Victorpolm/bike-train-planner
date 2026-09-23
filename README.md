@@ -1,6 +1,6 @@
 # Bike + Train Journey Planner
 
-**Latest update:** The app independently compares confirmed bicycle permission with journeys that allow uncertain permission, merges identical results, and shows each transit route against cycling only. Current data cannot yet confirm individual services. [Design, data limits and OJP evaluation](docs/BICYCLE_PERMISSION_AND_OJP.md).
+**Latest source update:** Three independent comparisons: confirmed bicycle permission, allowing uncertain permission, and all public transport with bicycle rules ignored. Prohibited-bike journeys appear only as clearly labelled comparisons. Identical results merge after optimization. TripInfo inspection tooling is prepared; live TripInfo validation and production OJP integration remain pending. [Permission design](docs/BICYCLE_PERMISSION_AND_OJP.md) · [TripInfo and actual Swiss network coverage](docs/TRIPINFO_AND_NETWORK_COVERAGE.md).
 
 **OJP API access verified:** All 16 requests in the first live benchmark passed using a GitHub Actions secret. Local Zürich connections and Rapperswil–Renens are present; bicycle notes are useful but incomplete. [Results and next integration step](docs/OJP_BENCHMARK_2026-09-21.md). The website still uses its existing timetable provider.
 
@@ -12,11 +12,11 @@ Research and prototype for a bicycle + public-transport journey planner, initial
 
 Sign in with the ChatGPT account that owns the Site. Access is restricted to that account; the link does not make the website public. You can always return here and click this link to use the planner without installing anything.
 
-For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website.
+For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. The last verified publication is version 13 (21 September, 07:38 UTC); this three-comparison source update has not yet been deployed.
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 
-**Buses with bicycles:** [Bus carriage rules](docs/BUS_BICYCLES.md) documents the new bus preference, sourced operator conditions, prohibited/unverified services, practical boarding information and remaining departure/capacity gaps.
+**Buses with bicycles:** [Bus carriage rules](docs/BUS_BICYCLES.md) documents the new bus preference, sourced operator conditions, prohibited/unverified services, practical boarding information and remaining departure-rule gaps; live bicycle-space availability is explicitly deferred.
 
 **Next work:** [App roadmap](docs/APP_ROADMAP.md) records routing-engine evaluation, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
 

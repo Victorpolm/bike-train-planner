@@ -173,3 +173,11 @@ When adding findings:
 **Implication for project:**
 
 **Next test:**
+
+## 2026-09-21 — TripInfo and actual network coverage
+
+**Fact:** Official OJP documentation exposes TripInfo for a dated vehicle journey and its stop/service details. A bounded evaluation command and manual workflow preserve its raw conditions without inferring permission; no live TripInfo result is claimed yet.
+
+**Decision:** Independently compare confirmed, uncertainty-permitted and unrestricted transit. Defer remaining bicycle spaces and reservation availability. **Open question:** Does TripInfo add bicycle evidence beyond the same TripRequest service, with sufficient segment scope?
+
+**Coverage correction:** Availability of national Swiss GTFS (including boats) and worldwide OSM-derived BRouter routing does not mean the prototype contains a complete national graph or every cycle path. [Primary sources, evidence status and next experiment](TRIPINFO_AND_NETWORK_COVERAGE.md).
