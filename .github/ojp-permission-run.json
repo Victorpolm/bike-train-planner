@@ -1,0 +1,9 @@
+{
+  "departure_date": "2026-09-25",
+  "purpose": "Bounded bicycle-permission and prerequisite inspection; public stops only; no remaining-space queries.",
+  "cases": [
+    {"mode": "rail", "origin": "47.2248875,8.81674892", "destination": "46.53704052,6.57893775", "time": "08:00:00"},
+    {"mode": "bus", "origin": "46.852875,9.527724", "destination": "46.806492,9.258086", "time": "09:00:00"},
+    {"mode": "water", "origin": "46.505081,6.627594", "destination": "46.401593,6.594771", "time": "10:00:00"}
+  ]
+}

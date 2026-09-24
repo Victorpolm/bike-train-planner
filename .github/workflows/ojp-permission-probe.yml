@@ -1,0 +1,37 @@
+name: OJP bicycle permission and prerequisites
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/ojp-permission-run.json]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ojp-benchmark
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: github.repository == 'Victorpolm/bike-train-planner' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify request and credential handling
+        run: python3 -m unittest discover -s prototype-v0/scripts -p 'test_*.py'
+      - name: Inspect train, bus and boat bicycle conditions
+        env:
+          OJP_API_KEY: ${{ secrets.OJP_API_KEY }}
+        run: python3 prototype-v0/scripts/ojp_permission_probe.py .github/ojp-permission-run.json prototype-v0/evaluation-output/permission-probe
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ojp-permission-probe-${{ github.run_id }}
+          path: prototype-v0/evaluation-output/permission-probe/
+          if-no-files-found: warn
+          retention-days: 7
