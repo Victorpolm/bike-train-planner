@@ -117,12 +117,12 @@ it("deduplicates cycling requests but routes the reverse direction independently
   assert.equal(client.requests, 2); assert.equal(reverse?.minutes, 20); assert.equal(one?.minutes, 10);
 });
 
-it("does not replace unavailable cycling links with straight lines and stops after rate limiting", async () => {
+it("does not replace unavailable cycling links with straight lines and bounds rate-limit recovery", async () => {
   let requests = 0;
   const client = new CyclingClient(new AbortController().signal, async () => { requests++; return response({}, 429); }, 0, false);
   assert.equal(await client.route(fixture.from, fixture.to), null);
   assert.equal(await client.route(fixture.to, fixture.from), null);
-  assert.equal(requests, 1); assert.ok(client.warnings.size);
+  assert.equal(requests, 2); assert.ok(client.warnings.size);
   assert.ok(client.failureKinds.has("service"));
   assert.equal(cachedCycling(client.routes, fixture.from, fixture.to), null);
   assert.equal((await client.route(fixture.from, fixture.from))?.minutes, 0);

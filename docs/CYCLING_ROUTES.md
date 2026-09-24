@@ -1,6 +1,6 @@
 # Routed cycling and road profiles
 
-_Implemented 2026-09-20. Own-bicycle, Switzerland-first prototype._
+_Implemented 2026-09-20; resilience updated 2026-09-24. Own-bicycle, Switzerland-first prototype._
 
 ## What changed
 
@@ -24,6 +24,12 @@ Current defaults:
 
 The public service is a prototype dependency, not a contracted service with a reliability guarantee. Requests reveal the selected coordinates to BRouter. No address history is persisted by this application. Before wider use, operate a suitable routing backend or agree appropriate hosted-service capacity; keep the adapter replaceable. Bike type, fitness, load, wind, weather and user-specific pace remain uncalibrated. The engine's [trekking profile](https://github.com/abrensch/brouter/blob/master/misc/profiles2/trekking.brf) documents its travel-time model and preferences.
 
+### Backup for temporary service failures
+
+Temporary BRouter timeouts, network errors and transient server responses can use the independent [FOSSGIS OSRM bicycle service](https://routing.openstreetmap.de/about.html). Calls use its `routed-bike` endpoint, preserve directed road geometry and estimated time, and pass the same distance/speed/endpoint checks. Only replies with all steps explicitly in cycling mode are accepted: ferries, trains and pushing-bike sections are excluded. The backup does not provide elevation or surface/infrastructure tags; these remain unknown and the interface identifies OSRM. The primary touring model and the backup bicycle profile can yield different paths and time estimates.
+
+The [provider usage policy](https://routing.openstreetmap.de/about.html) requires attribution, a fix-the-map link and at most one request per second. One browser-wide serialized queue covers both cycling streams. The browser supplies its normal user agent/referrer. No bulk downloading is performed. Requested coordinates are sent to this service when it is used; see its linked privacy policy. A conclusive no-route or off-network result does not trigger fallback. Wider or multi-user deployment still needs an appropriately provisioned road service.
+
 ## Train feasibility and budgets
 
 For a cycling link, the provider's route time replaces `haversine distance / 15 km/h`. Readiness is previous arrival + routed link duration + the existing boarding buffer. The same durations enter cumulative cycling-leg limits, elapsed time and category ranking. Outbound and inbound routes are computed independently: one-way streets and slopes can make them different.
@@ -32,7 +38,7 @@ The current cycling-leg budget conservatively includes the small walking connect
 
 Candidate discovery may use straight-line distance at the **25 km/h upper speed** to avoid requesting clearly distant links. That is only a coarse sampling boundary: a candidate becomes feasible only after a road route is available and passes the real time limits. Both models use the same checked road-link cache and observed timetable graph. The pure solver retains an explicit legacy geometric mode for historical/synthetic tests; the production planner always installs a road-link map and cannot silently enter that mode after a service failure.
 
-The first verified station access and egress are enough to query a first timetable connection. Proposals already supported by checked paths are published immediately; additional candidate paths and observed-stop links are checked afterwards. A long cycling-only calculation has a separate serial stream, so it does not block short station access. If the cycling-only route fails, valid mixed journeys can still appear.
+The first verified station access and egress are enough to query a first timetable connection. Proposals already supported by checked paths are published immediately; additional candidate paths and observed-stop links are checked afterwards. A long cycling-only calculation has a separate serial stream, so it does not block short station access. If the cycling-only route fails, valid mixed journeys can still appear. Conversely, a successful independent cycling-only route is returned even if the nearby station-access checks all fail. Observed exits now reserve checks for reachable fewest-boardings and earliest-arrival candidates; several nearby bus stops cannot consume every slot before a useful rail exit.
 
 Requested stops keep their existing semantics: actual ordered visits, no added stopover duration, and shared cycling/boarding/horizon budgets. No-via Extended acquisition checks routed transfers before requesting onward services. Via Extended searches can check up to four nearby directed transfer pairs already present in the sampled timetable graph; this does not add complete departure-board or nationwide transfer discovery.
 
@@ -70,11 +76,12 @@ A pending or unavailable cycling-only route has its own state. An unavailable ro
 
 ## Bounded requests and freshness
 
-- Main cycling client: at most 32 requests, serialized, at least 500 ms between starts, 25-second response/body deadline, 150-second phase budget. Extended can start a new phase without resetting the request cap or a rate-limit stop.
-- Cycling-only comparison: a separate serialized stream with at most one request per requested stage (up to five). At most two cycling requests are in flight across the streams.
-- Deduplicate concurrent same-pair requests in each client. Successful directional routes use a bounded 100-entry in-memory cache for 30 minutes; failures are not cached across searches. No persistent browser cache is added.
-- Abort active/queued work when stopped. A late response cannot publish or cache a route after cancellation. HTTP 429 stops that client; warnings identify incomplete checks.
-- Existing timetable request limits remain bounded. Coarse geographic sampling, finite candidate/pair counts and service windows can still omit useful journeys. Exhausting a road budget is not proof that no path exists.
+- Main cycling client: at most 32 physical requests including recovery/fallback, serialized, normally at least 500 ms between primary starts, a 25-second response/body deadline and 150 seconds of cycling work per phase. Time waiting for timetable/geocoding data does not consume that budget. Extended can start a new phase without resetting the request count.
+- Cycling-only comparison: a separate stream covering up to five ordered stages with bounded recovery. Backup calls share one queue at no more than one per second across both streams.
+- Deduplicate concurrent same-pair requests in each client. Successful directed routes use a bounded 100-entry in-memory cache for 30 minutes. Conclusive failures stay unusable within the search; transient failures allow a bounded recheck and their stale warnings clear after recovery. No persistent browser cache is added.
+- Abort active/queued work when stopped. A late response cannot publish or cache a route after cancellation. Transient errors receive one immediate primary retry when backup is disabled, or one backup attempt when available. Respect Retry-After; repeated rate limits suspend further provider calls. Never retry a conclusive no-route/off-network response.
+- Timetable queries retain their 18-request cap and 20-second request timeout. Their 90-second phase budget charges timetable work rather than cycling waits. One transient retry counts toward the cap; long Retry-After periods are reported without blocking for minutes. Successful replies are reusable for 30 seconds.
+- Coarse geographic sampling, finite candidate/pair counts and service windows can still omit useful journeys. Exhausting a road budget or either provider's outage is not proof that no path exists.
 
 ## Verification and next work
 
@@ -82,4 +89,4 @@ See [EXPERIMENTS.md](EXPERIMENTS.md) for the live observation and regressions. T
 
 Next: validate rider pace and climbing estimates on real trips, obtain exact road-speed/conditional-access attributes, validate road and station access, and compare the multimodal engine against an OTP deployment. Bicycle carriage, repair/parking, full bikepacking presets and community features remain separate work in [APP_ROADMAP.md](APP_ROADMAP.md).
 
-Attribution: routing by [BRouter](https://brouter.de/), map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) under ODbL, and [CGIAR-CSI SRTM elevation](https://srtm.csi.cgiar.org/). The [BRouter web client credits](https://brouter.de/brouter-web/) identify these data sources.
+Attribution: routing by [BRouter](https://brouter.de/) or [OSRM / FOSSGIS](https://routing.openstreetmap.de/about.html), [fix the map](https://www.openstreetmap.org/fixthemap), map data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) under ODbL, and [CGIAR-CSI SRTM elevation](https://srtm.csi.cgiar.org/). The [BRouter web client credits](https://brouter.de/brouter-web/) identify these data sources.

@@ -13,7 +13,7 @@ export type CyclingRoute = {
   ridingSeconds: number; minutes: number; ascentM: number | null; descentM: number | null;
   elevation: CyclePoint[]; elevationCoverage: number; steep: SlopeSection[];
   sections: CycleSection[]; startGapM: number; endGapM: number; connectorMinutes: number;
-  source: "BRouter" | "same place"; fetchedAt: number;
+  source: "BRouter" | "OSRM" | "same place"; fetchedAt: number;
 };
 export const CYCLING_PROFILE = "trekking";
 export const MAX_CYCLING_SPEED_KMH = 25;

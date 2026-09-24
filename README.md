@@ -1,6 +1,8 @@
 # Bike + Train Journey Planner
 
-**Latest source update (24 September 2026):** Bicycle permission and prerequisites for every public-transport leg: allowed/unknown/prohibited, bike ticket or pass, and a separate bike-space reservation requirement. Three independent journey comparisons remain. A server-only OJP adapter and scoped TripInfo checks are implemented. [Implementation and live findings](docs/OJP_PERMISSION_2026-09-24.md).
+**Latest source update (24 September 2026):** Fixed useful train exits hidden by nearby bus stops, bounded recovery of temporary provider failures, and preservation of valid cycling-only routes. All three reported Baden cases now return useful options in live checks. [Regressions and live results](docs/EXPERIMENTS.md#2026-09-24--baden-train-exits-short-cycling-and-temporary-failures).
+
+Bicycle permission and prerequisites remain separate for every transit leg: permission, bike ticket/pass and bike-space reservation requirement. The three independent comparisons, server-only OJP adapter and scoped TripInfo checks are implemented. [Implementation and live findings](docs/OJP_PERMISSION_2026-09-24.md).
 
 **Access and activation:** The existing GitHub Actions key worked for all nine new train/bus/boat calls, following the earlier 16-call benchmark. The hosted Site needs the same key configured separately as its secret `OJP_API_KEY`; its runtime environment is currently empty. Until then, it uses the fallback timetable and keeps missing permission unknown. No remaining-space or booking integration is included.
 
@@ -12,7 +14,7 @@ Research and prototype for a bicycle + public-transport journey planner, initial
 
 Sign in with the ChatGPT account that owns the Site. Access is restricted to that account; the link does not make the website public. You can always return here and click this link to use the planner without installing anything.
 
-For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. The last verified publication is version 13 (21 September, 07:38 UTC); this three-comparison source update has not yet been deployed.
+For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. The last verified publication is version 15 (24 September, 18:41 UTC), including the Baden fixes. See [publication status](docs/WEBSITE.md) for the deployed revision; source updates and publication are recorded separately.
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 

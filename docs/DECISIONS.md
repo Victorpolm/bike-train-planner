@@ -291,3 +291,16 @@ This file records important project choices. Do not silently rewrite old decisio
 **Activation boundary:** GitHub Actions and the Site store secrets separately. The Site environment is empty; GitHub does not return stored secret values. Implement and publish the app with a truthful fallback, then configure `OJP_API_KEY` as a Site runtime secret to activate live OJP. No credential-extraction workflow is authorized or introduced.
 
 **Limits:** 120 app tests, 13 Python tests and production build pass; browser QA is blocked by absent managed-preview infrastructure. No complete Swiss GTFS/OSM graph, live capacity, booking or routing-engine migration is implied.
+
+
+## 2026-09-24 — Baden exits and temporary provider failures
+
+**Report:** A Zürich-to-Baden journey included an avoidable bus after the train; a short Baden cycling route and a Baden-to-Zürich search returned service-failure notes instead of useful options. The original departure/settings and provider response bodies were not retained, so the exact historical outages cannot be reconstructed.
+
+**Confirmed code defects:** Observed cycling links were limited to the four geographically nearest stops, letting nearby bus stops hide a rail exit. Timetable and cycling phase clocks advanced while the other provider was working. HTTP 429 permanently stopped each client, and a temporary failed cycling link was cached as unusable within that search. Station-access failure could reject the search before its independent cycling-only calculation completed.
+
+**Decision:** Retain bounded sampling and all three permission searches. Prioritize observed egress by reachable boarding count and potential arrival, preserve rail access among nearby candidates, and use real routed durations for feasibility. Charge phase budgets to each provider's own work. Add bounded transient retries, respect Retry-After/cooldowns and retain the 18/32 request caps. Successful timetable replies can be reused for 30 seconds; temporary cycling failure can be rechecked. Wait for and return a valid independent cycling-only result when station access fails.
+
+**Road-service resilience:** A temporary BRouter outage can use the independent FOSSGIS OSRM bicycle service. Serialize backup calls across both cycling streams at no more than one per second. Validate geometry, distance, duration and endpoint gaps using the existing checks; reject any returned step whose mode is not cycling, including ferries, trains and pushing-bike sections. Identify the provider and retain missing elevation/road attributes as unknown. This is a road-network fallback, never a straight-line substitute. Conclusive off-network/disconnected-path responses are not rerouted through another provider.
+
+**Limits:** Public services can still be unavailable or rate-limited, and sampling remains incomplete. No new national dataset, routing-engine migration, bicycle-capacity query or booking integration is implied. See the dated regressions and live checks in [EXPERIMENTS.md](EXPERIMENTS.md).

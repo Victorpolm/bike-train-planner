@@ -50,28 +50,29 @@ describe("live data boundaries", () => {
     assert.equal(await failing.get("connections", params), null);
     assert.equal(failing.failures, 1); assert.ok(failing.warnings.size > 0);
   });
-  it("stops after rate limiting and explicitly reports a request cap", async () => {
+  it("bounds rate-limit recovery and explicitly reports a request cap", async () => {
     const limited = new TimetableClient(new AbortController().signal, 0, async () => response({}, 429));
     await limited.get("connections", new URLSearchParams({ from: "a" }));
     await limited.get("connections", new URLSearchParams({ from: "b" }));
-    assert.equal(limited.requests, 1); assert.ok([...limited.warnings].some(w => w.includes("busy")));
+    assert.equal(limited.requests, 2); assert.ok([...limited.warnings].some(w => w.includes("busy")));
     const capped = new TimetableClient(new AbortController().signal, 0, async () => response({}), 1);
     await capped.get("locations", new URLSearchParams({ x: "1" }));
     await capped.get("locations", new URLSearchParams({ x: "2" }));
     assert.equal(capped.requests, 1); assert.ok([...capped.warnings].some(w => w.includes("limit")));
   });
-  it("bounds elapsed search time and can start a later Extended phase without resetting the request budget", async () => {
+  it("charges timetable work rather than time spent cycling, retaining the request cap across phases", async () => {
     let now = Date.now();
     const clock = mock.method(Date, "now", () => now);
     try {
-      const client = new TimetableClient(new AbortController().signal, 0, async () => response({ connections: [] }));
+      const client = new TimetableClient(new AbortController().signal, 0, async () => { now += 30_001; return response({ connections: [] }); });
       now += 90_001;
-      assert.equal(await client.get("connections", new URLSearchParams({ from: "a" })), null);
-      assert.equal(client.requests, 0);
+      for (const from of ["a", "b", "c"]) assert.deepEqual(await client.get("connections", new URLSearchParams({ from })), { connections: [] });
+      assert.equal(await client.get("connections", new URLSearchParams({ from: "d" })), null);
+      assert.equal(client.requests, 3);
       assert.ok([...client.warnings].some(w => w.includes("time limit")));
       client.beginPhase();
-      assert.deepEqual(await client.get("connections", new URLSearchParams({ from: "b" })), { connections: [] });
-      assert.equal(client.requests, 1);
+      assert.deepEqual(await client.get("connections", new URLSearchParams({ from: "e" })), { connections: [] });
+      assert.equal(client.requests, 4);
     } finally { clock.mock.restore(); }
   });
   it("cancels queued requests before sending them", async () => {

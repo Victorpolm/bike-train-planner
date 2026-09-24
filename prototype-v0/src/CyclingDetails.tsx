@@ -38,7 +38,7 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
       <div><dt>Ascent</dt><dd>{metres(route.ascentM)}</dd></div>
       <div><dt>Descent</dt><dd>{metres(route.descentM)}</dd></div>
     </dl>
-    <p className="cycle-caption">Times use a touring bicycle at moderate effort. Terrain and riding pace affect the estimate.</p>
+    <p className="cycle-caption">{route.source === "OSRM" ? "Backup bicycle route from OSRM. Elevation and road attributes are unavailable for this leg." : "Times use a touring bicycle at moderate effort."} Terrain and riding pace affect the estimate.</p>
     {route.startGapM + route.endGapM > 1 && <p className="cycle-caption">Connected to a nearby path: {Math.round(route.startGapM)} m at the start and {Math.round(route.endGapM)} m at the end. Journey timing includes about {Math.ceil(route.connectorMinutes)} min of walking with your bike for these dotted links. Check that you can reach the path; entrance access is unverified.</p>}
     <div className="elevation-heading"><h4>Elevation along this leg</h4><span>{Math.round(route.elevationCoverage * 100)}% covered</span></div>
     {elevations.length > 1 ? <>
@@ -74,6 +74,6 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
         {key === "infrastructure" && <p className="cycle-caption">Mapped separated cycleways, painted lanes, shared roads and paths. Protection on shared roads may be unmapped; separation does not establish route safety.</p>}
         {key === "speedLimit" && <p className="cycle-caption">Posted limits from map tags, grouped by the routing provider. These are approximate bands, not exact signs or measured traffic speeds. Unknown includes missing, conditional or unrecognized limits.</p>}
       </details>)}
-    <p className="cycle-caption">Elevation is sampled and smoothed; short ramps, bridges and tunnels may be inaccurate. Road/path attributes can be missing or outdated. <a href="https://brouter.de/" target="_blank" rel="noreferrer">BRouter</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a> · <a href="https://srtm.csi.cgiar.org/" target="_blank" rel="noreferrer">SRTM elevation</a>.</p>
+    <p className="cycle-caption">Elevation is sampled and smoothed; short ramps, bridges and tunnels may be inaccurate. Road/path attributes can be missing or outdated. {route.source === "OSRM" ? <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noreferrer">OSRM · FOSSGIS</a> : <><a href="https://brouter.de/" target="_blank" rel="noreferrer">BRouter</a> · <a href="https://srtm.csi.cgiar.org/" target="_blank" rel="noreferrer">SRTM elevation</a></>} · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a> · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Fix the map</a>.</p>
   </section>;
 }

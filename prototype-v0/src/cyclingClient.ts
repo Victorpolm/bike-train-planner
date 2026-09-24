@@ -1,6 +1,7 @@
-import { fetchJson, HttpError } from "./http.ts";
+import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
 import { cachedCycling, cyclingKey, CYCLING_PROFILE, MAX_CYCLING_SPEED_KMH, MAX_ENDPOINT_GAP_METRES, EndpointSnapError, parseCyclingRoute, samePlace, zeroCycling, type CyclingRoute } from "./cycling.ts";
 import type { Point } from "./routing.ts";
+import { fallbackCycling } from "./cyclingFallback.ts";
 
 export const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
 const cache = new Map<string, CyclingRoute>();
@@ -38,16 +39,20 @@ export class CyclingClient {
   private queue: Promise<unknown> = Promise.resolve();
   private pending = new Map<string, Promise<CyclingRoute | null>>();
   private lastRequest = 0;
-  private deadline = Date.now() + CYCLING_LIMITS.phaseMs;
-  private stopped = false;
+  private remainingMs = CYCLING_LIMITS.phaseMs;
+  private cooldown = 0;
+  private attempts = new Map<string, number>();
   readonly signal: AbortSignal;
   private fetcher: typeof fetch;
   private gapMs: number;
   private useCache: boolean;
-  constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true) {
+  private fallbackFetcher: typeof fetch | null;
+  constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true,
+    fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null) {
     this.signal = signal; this.fetcher = fetcher; this.gapMs = gapMs; this.useCache = useCache;
+    this.fallbackFetcher = fallbackFetcher;
   }
-  beginPhase() { this.deadline = Date.now() + CYCLING_LIMITS.phaseMs; }
+  beginPhase() { this.remainingMs = CYCLING_LIMITS.phaseMs; }
   getCached(a: Located, b: Located) { return cachedCycling(this.routes, a, b); }
   route(a: Located, b: Located): Promise<CyclingRoute | null> {
     if (this.signal.aborted) return Promise.reject(this.signal.reason);
@@ -59,38 +64,80 @@ export class CyclingClient {
     if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }
     const task = this.queue.then(async () => {
       this.signal.throwIfAborted();
-      if (this.stopped || this.requests >= CYCLING_LIMITS.requests || Date.now() >= this.deadline) {
-        if (!this.stopped) this.failureKinds.add("limit");
-        this.warnings.add("Some cycling links could not be checked within the search limit. Only checked links are used.");
-        return null;
-      }
-      const delay = Math.max(0, this.gapMs - (Date.now() - this.lastRequest));
-      if (delay) await new Promise(resolve => setTimeout(resolve, delay));
-      this.signal.throwIfAborted();
-      this.lastRequest = Date.now(); this.requests++;
-      const params = new URLSearchParams({ lonlats: `${a.lon},${a.lat}|${b.lon},${b.lat}`, profile: CYCLING_PROFILE,
-        alternativeidx: "0", format: "geojson", "profile:processUnusedTags": "1", "profile:allow_steps": "0",
-        "profile:allow_ferries": "0", "profile:maxSpeed": String(MAX_CYCLING_SPEED_KMH),
-        "profile:waypointCatchingRange": String(MAX_ENDPOINT_GAP_METRES) });
-      try {
-        const data = await fetchJson<unknown>(`https://brouter.de/brouter?${params}`, this.signal,
-          Math.max(1, Math.min(CYCLING_LIMITS.timeoutMs, this.deadline - Date.now())), this.fetcher);
-        this.signal.throwIfAborted();
-        const route = parseCyclingRoute(data, a, b);
+      const started = Date.now();
+      const remaining = () => this.remainingMs - Math.max(0, Date.now() - started);
+      const remember = (route: CyclingRoute) => {
         this.routes.set(key, route);
+        const previous = this.failedLinks.get(key);
+        if (previous) this.warnings.delete(`${placeName(a)} → ${placeName(b)}: ${previous.message}`);
+        this.failedLinks.delete(key);
+        this.failureKinds.clear();
+        for (const failure of this.failedLinks.values()) this.failureKinds.add(failure.kind);
         if (this.useCache) {
           cache.delete(key); cache.set(key, route);
           while (cache.size > CYCLING_LIMITS.cacheEntries) cache.delete(cache.keys().next().value!);
         }
         return route;
-      } catch (error) {
-        this.signal.throwIfAborted();
-        if (error instanceof HttpError && error.status === 429) this.stopped = true;
-        this.routes.set(key, null);
-        const failure = { from: a, to: b, ...explainFailure(error) };
-        this.failedLinks.set(key, failure); this.failureKinds.add(failure.kind);
-        this.warnings.add(`${placeName(a)} → ${placeName(b)}: ${failure.message}`);
+      };
+      const params = new URLSearchParams({ lonlats: `${a.lon},${a.lat}|${b.lon},${b.lat}`, profile: CYCLING_PROFILE,
+        alternativeidx: "0", format: "geojson", "profile:processUnusedTags": "1", "profile:allow_steps": "0",
+        "profile:allow_ferries": "0", "profile:maxSpeed": String(MAX_CYCLING_SPEED_KMH),
+        "profile:waypointCatchingRange": String(MAX_ENDPOINT_GAP_METRES) });
+      try {
+        for (let attempt = 0; attempt < 2; attempt++) {
+          if (this.requests >= CYCLING_LIMITS.requests || remaining() <= 0) {
+            this.failureKinds.add("limit");
+            this.warnings.add("Some cycling links could not be checked within the search limit. Only checked links are used.");
+            return null;
+          }
+          // One immediate retry and at most one later recheck for a failed link.
+          // Permanent errors stay cached; a transient null must not poison it.
+          if ((this.attempts.get(key) ?? 0) >= 3) return null;
+          const delay = Math.max(0, this.gapMs - (Date.now() - this.lastRequest), this.cooldown - Date.now());
+          if (delay > 10_000 || delay >= remaining()) {
+            if (this.fallbackFetcher) {
+              this.requests++;
+              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher)); }
+              catch { this.signal.throwIfAborted(); }
+            }
+            return null;
+          }
+          await waitFor(delay, this.signal);
+          this.lastRequest = Date.now(); this.requests++;
+          this.attempts.set(key, (this.attempts.get(key) ?? 0) + 1);
+          try {
+            const data = await fetchJson<unknown>(`https://brouter.de/brouter?${params}`, this.signal,
+              Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fetcher);
+            this.signal.throwIfAborted();
+            const route = parseCyclingRoute(data, a, b);
+            this.cooldown = 0;
+            return remember(route);
+          } catch (error) {
+            this.signal.throwIfAborted();
+            const temporary = transientFailure(error);
+            const rateLimited = error instanceof HttpError && error.status === 429;
+            const delay = error instanceof HttpError && error.retryAfterMs !== null ? error.retryAfterMs : this.gapMs * 5;
+            if (rateLimited) this.cooldown = Date.now() + (attempt === 0 ? delay : Math.max(delay, 60_000));
+            if (temporary && this.fallbackFetcher && this.requests < CYCLING_LIMITS.requests && remaining() > 0) {
+              this.requests++;
+              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher)); }
+              catch { this.signal.throwIfAborted(); }
+            }
+            if (temporary && !this.fallbackFetcher && attempt === 0 && delay <= 10_000 && delay < remaining() && this.requests < CYCLING_LIMITS.requests) {
+              if (!rateLimited) await waitFor(delay, this.signal);
+              continue;
+            }
+            if (!temporary) this.routes.set(key, null);
+            const failure = { from: a, to: b, ...explainFailure(error) };
+            this.failedLinks.set(key, failure); this.failureKinds.add(failure.kind);
+            this.warnings.add(`${placeName(a)} → ${placeName(b)}: ${failure.message}`);
+            return null;
+          }
+        }
         return null;
+      } finally {
+        // Time spent waiting on geocoding or timetables is not cycling work.
+        this.remainingMs -= Math.max(0, Date.now() - started);
       }
     });
     this.pending.set(key, task); this.queue = task.catch(() => undefined);
