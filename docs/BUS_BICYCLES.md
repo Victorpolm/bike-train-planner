@@ -1,5 +1,8 @@
 # Buses with an accompanied bicycle
 
+**Current update, 24 September 2026:** The all-public-transport selector supersedes the historical bus-only preference below. Applicable published permission counts as verified even when ticket or reservation details are unknown. Reviewed VBZ/VBG/VZO/Stadtbus Winterthur and tpg ordinary buses/trams now establish permission; replacements do not inherit it and explicit bans override it. PostBus's route exceptions still require dated evidence. See [the current permission contract](BICYCLE_PERMISSION_AND_OJP.md).
+
+
 **24 September update:** The bus-only form choice has been replaced by one access selector for **all public transport**. Public timetable symbols now supply dated prohibitions/reservation requirements, separately from this general bus-policy registry. [Current rules and sources](BICYCLE_PERMISSION_AND_OJP.md). The former form behavior described below is historical.
 
 _Policies reviewed: 2026-09-20; search presentation updated: 2026-09-21. Scope: one standard, unfolded bicycle._

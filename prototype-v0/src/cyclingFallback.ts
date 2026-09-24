@@ -1,10 +1,11 @@
+import type { CyclingPace } from "./cyclingPace.ts";
 import { parseCyclingRoute, type CyclingRoute } from "./cycling.ts";
 import { fetchJson, HttpError, waitFor } from "./http.ts";
 import type { Point } from "./routing.ts";
 
 let queue: Promise<unknown> = Promise.resolve(), nextRequest = 0;
 
-export function parseFallbackRoute(data: unknown, from: Point, to: Point): CyclingRoute {
+export function parseFallbackRoute(data: unknown, from: Point, to: Point, pace?: CyclingPace): CyclingRoute {
   const reply = data as { code?: string; routes?: { distance?: number; duration?: number; geometry?: unknown;
     legs?: { steps?: { mode?: string }[] }[] }[] };
   const route = reply?.routes?.[0];
@@ -15,13 +16,13 @@ export function parseFallbackRoute(data: unknown, from: Point, to: Point): Cycli
     throw new Error("The backup cycling service did not return a bicycle-only path.");
   }
   const parsed = parseCyclingRoute({ features: [{ geometry: route!.geometry,
-    properties: { "track-length": route!.distance, "total-time": route!.duration } }] }, from, to);
+    properties: { "track-length": route!.distance, "total-time": route!.duration } }] }, from, to, Date.now(), pace);
   return { ...parsed, source: "OSRM" };
 }
 
 // FOSSGIS requires at most one request per second. This single queue covers
 // station links and the independent cycling-only comparison in this browser.
-export function fallbackCycling(from: Point, to: Point, signal: AbortSignal, timeoutMs: number, fetcher: typeof fetch = fetch) {
+export function fallbackCycling(from: Point, to: Point, signal: AbortSignal, timeoutMs: number, fetcher: typeof fetch = fetch, pace?: CyclingPace) {
   const task = queue.then(async () => {
     signal.throwIfAborted();
     const started = Date.now(), delay = Math.max(0, nextRequest - started);
@@ -33,7 +34,7 @@ export function fallbackCycling(from: Point, to: Point, signal: AbortSignal, tim
     try {
       const data = await fetchJson(url, signal, Math.max(1, timeoutMs - (Date.now() - started)), fetcher);
       signal.throwIfAborted();
-      return parseFallbackRoute(data, from, to);
+      return parseFallbackRoute(data, from, to, pace);
     } catch (error) {
       if (error instanceof HttpError && error.status === 429) nextRequest = Date.now() + Math.max(error.retryAfterMs ?? 60_000, 1000);
       throw error;

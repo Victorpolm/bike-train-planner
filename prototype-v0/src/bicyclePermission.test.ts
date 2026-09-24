@@ -21,13 +21,13 @@ function ride(n: Network, from: number, to: number, departure: number, arrival: 
   for (const p of points) n.stops.set(p.stopId!, { id: p.stopId!, name: p.label, lat: p.lat, lon: p.lon });
   const id = `${from}-${to}-${arrival}`, leg: TransitLeg = { mode: "transit", from: points[from].label, to: points[to].label,
     fromId: String(from), toId: String(to), departure: time(departure), arrival: time(arrival),
-    departurePlatform: null, arrivalPlatform: null, service: id, serviceName: id, direction: null, category, operator: "VBZ" };
+    departurePlatform: null, arrivalPlatform: null, service: id, serviceName: id, direction: null, category, operator: "Unreviewed operator" };
   if (evidence) leg.bicycleEvidence = proof(leg);
   n.edges.set(id, { id, from: String(from), to: String(to), leg });
   return leg;
 }
 
-it("requires exact service evidence for every transit mode, retaining policies as uncertain", () => {
+it("requires exact service evidence for unreviewed operators in every transit mode", () => {
   for (const category of ["IC", "B", "Tram", "EV"]) {
     const leg = ride(emptyNetwork(), 0, 2, 3, 40, false, category);
     assert.equal(bicyclePermission(leg), "uncertain");
@@ -181,7 +181,7 @@ it("discovers local Zürich bus stops beside rail hubs and reserves a local conn
   assert.ok(pairs.some(([a, b]) => a.kind === "train" && b.kind === "train"));
 });
 
-it("publishes three comparisons without fabricating confirmation from a live-adapter policy", async () => {
+it("publishes verified access from a reviewed VBZ policy for dated daytime and night services", async () => {
   const station = (p: Place) => ({ id: p.stopId, name: p.label, coordinate: { x: p.lat, y: p.lon } });
   for (const hour of [8, 1]) {
     const departure = new Date(`2026-09-21T${String(hour).padStart(2, "0")}:00:00+02:00`);
@@ -193,8 +193,41 @@ it("publishes three comparisons without fabricating confirmation from a live-ada
         arrival: { station: station(points[2]), arrival: t(hour === 8 ? 15 : 195) },
       }] }] })),
     });
-    assert.ok(result.baseline.journeys.length); assert.equal(result.confirmed?.baseline.journeys.length, 0);
+    assert.ok(result.baseline.journeys.length); assert.equal(result.confirmed?.baseline.journeys.length, 1);
     assert.equal(result.baseline.journeys[0].totalMinutes, hour === 8 ? 15 : 195);
     assert.equal(result.allTransit?.baseline.journeys[0].id, result.baseline.journeys[0].id);
   }
+});
+
+it("keeps allowed services verified when ticket or reservation requirements are unknown", async () => {
+  const { carriageForLeg, bicycleJourneySummary } = await import("./bicycleCarriage.ts");
+  for (const category of ["B", "T", "IR", "BAT"]) {
+    const leg = ride(emptyNetwork(), 0, 2, 3, 40, true, category);
+    leg.bicycleEvidence!.prerequisites = { bikeTicket: "unknown", bikeReservation: "unknown" };
+    assert.equal(carriageForLeg(leg).permission, "confirmed");
+    assert.equal(carriageForLeg(leg).bikeReservation, "unknown");
+    assert.match(bicycleJourneySummary([leg])!, /access verified on every transit leg/);
+    assert.equal(bicycleLegAllowed(leg, "include-unknown", "confirmed"), true);
+  }
+});
+
+it("applies reviewed bus and tram permission while preserving explicit bans and unmatched policies", async () => {
+  const { carriageForLeg, bicycleJourneySummary } = await import("./bicycleCarriage.ts");
+  for (const operator of ["VBZ", "VBG", "VZO", "Stadtbus Winterthur", "tpg"]) {
+    for (const category of ["B", "T"]) {
+      const leg = { ...ride(emptyNetwork(), 0, 2, 3, 40, false, category), operator };
+      assert.equal(bicyclePermission(leg), "confirmed");
+      assert.ok(carriageForLeg(leg).permissionSource?.url.startsWith("https://"));
+      leg.bicycleEvidence = proof(leg, "prohibited");
+      assert.equal(bicyclePermission(leg), "prohibited");
+      assert.equal(bicycleLegAllowed(leg, "include-unknown", "confirmed"), false);
+      assert.equal(bicycleLegAllowed(leg, "include-unknown", "all-transit"), true);
+    }
+  }
+  const unknown = ride(emptyNetwork(), 0, 2, 3, 40, false, "B");
+  for (const operator of ["PAG", "Unreviewed operator"]) assert.equal(bicyclePermission({ ...unknown, operator }), "uncertain");
+  assert.equal(bicyclePermission({ ...unknown, operator: "VBZ", category: "EV" }), "uncertain");
+  const known = { ...unknown, operator: "VBZ", service: "B 5" };
+  assert.equal(carriageForLeg(known).bikeTicket, "required");
+  assert.match(bicycleJourneySummary([known, unknown])!, new RegExp(`1 of 2 services verified · access unknown on ${unknown.service}`));
 });

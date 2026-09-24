@@ -48,7 +48,7 @@ export function carriageForLeg(leg: TransitLeg) {
   const requirements = evidence?.prerequisites;
   const sob = sobMainlineRule(leg);
   const sbbIR = sbbInterRegioRule(leg);
-  const operatorPermissionSource = sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : undefined;
+  const operatorPermissionSource = sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
   const reservationFallback = !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && (sob || sbbIR);
   const sbb = ["SBB", "SBB CFF FFS", "CFF", "FFS", "ojp:11"].includes(leg.operator ?? "");
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
@@ -73,10 +73,14 @@ export function carriageForLeg(leg: TransitLeg) {
 }
 
 export function bicycleJourneySummary(legs: TransitLeg[]) {
-  const rules = legs.filter(l => l.mode === "transit").map(carriageForLeg);
+  const services = legs.filter(l => l.mode === "transit");
+  const rules = services.map(carriageForLeg);
   if (!rules.length) return null;
   if (rules.some(r => r.permission === "prohibited")) return "Includes a service that prohibits bicycles · comparison only";
-  const status = rules.every(r => r.permission === "confirmed") ? "Bikes allowed on every transit leg" : "Bicycle permission partly or fully unknown";
+  const unknown = services.filter((_, i) => rules[i].permission === "uncertain");
+  const names = [...new Set(unknown.map(leg => leg.service))].join(", ");
+  const status = unknown.length === 0 ? "Bicycle access verified on every transit leg"
+    : `${rules.length - unknown.length} of ${rules.length} services verified · access unknown on ${names}`;
   return status + (rules.some(r => r.bikeReservation === "required") ? " · bike reservation required" : "");
 }
 

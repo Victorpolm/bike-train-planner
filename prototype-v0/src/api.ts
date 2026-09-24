@@ -1,6 +1,7 @@
 import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
+import { maxCyclingSpeed } from "./cyclingPace.ts";
 import { CyclingClient } from "./cyclingClient.ts";
-import { cyclingKey, MAX_CYCLING_SPEED_KMH, MAX_ENDPOINT_GAP_METRES, samePlace } from "./cycling.ts";
+import { cyclingKey, MAX_ENDPOINT_GAP_METRES, samePlace } from "./cycling.ts";
 import { MAJOR_STATIONS } from "./majorStations.ts";
 import { type TransportSection } from "./itinerary.ts";
 import { addSections, addStationboard, readStop, type BoardJourney } from "./timetable.ts";
@@ -280,7 +281,7 @@ async function roadCandidates(session: SearchSession, point: Place, maxMinutes: 
   progress: Progress, expand = false, complete = false): Promise<Station[]> {
   const pools = session.cyclingCandidatePools ??= new Map<string, Station[]>(), key = `${point.lat},${point.lon}:${maxMinutes}`;
   const candidates = !expand && pools.has(key) ? pools.get(key)!
-    : await findCandidateStations(point, maxMinutes * (session.cyclingClient ? MAX_CYCLING_SPEED_KMH / 15 : 1), session.client, progress, expand);
+    : await findCandidateStations(point, maxMinutes * (session.cyclingClient ? maxCyclingSpeed(session.options.cyclingPace) / 15 : 1), session.client, progress, expand);
   pools.set(key, candidates);
   if (!session.cyclingClient) return candidates;
   const result: Station[] = [];
@@ -313,7 +314,7 @@ async function prepareObservedCycling(session: SearchSession, progress: Progress
       if (index === 0 && direction === "egress" || index === points.length - 1 && direction === "access") continue;
       const limit = Math.min(options.maxBikeMinutes, direction === "access" ? options.maxAccessMinutes : options.maxEgressMinutes);
       let candidates = [...network.stops.values()].filter(s => (direction === "access" ? boarding : arrival).has(s.id)
-        && (samePlace(s, point) || haversineKm(s, point) / MAX_CYCLING_SPEED_KMH * 60 <= limit))
+        && (samePlace(s, point) || haversineKm(s, point) / maxCyclingSpeed(session.options.cyclingPace) * 60 <= limit))
         .sort((a, b) => haversineKm(a, point) - haversineKm(b, point));
       const selected = new Map<string, Stop>();
       const add = (stop?: Stop) => { if (stop && selected.size < 4) selected.set(stop.id, stop); };
@@ -324,8 +325,8 @@ async function prepareObservedCycling(session: SearchSession, progress: Progress
         const labels = (options.bicycleScope ? [session.baseline, session.extended] : [session.allTransit?.baseline, session.allTransit?.extended, session.confirmed?.baseline])
           .flatMap(solution => solution?.reachable ?? [])
           .filter(l => l.boardings > 0 && !l.needsTransit && allowed.has(l.stop)
-            && l.bike + haversineKm(network.stops.get(l.stop)!, point) / MAX_CYCLING_SPEED_KMH * 60 <= options.maxBikeMinutes);
-        const finish = (l: typeof labels[number]) => l.time + haversineKm(network.stops.get(l.stop)!, point) / MAX_CYCLING_SPEED_KMH * 3_600_000;
+            && l.bike + haversineKm(network.stops.get(l.stop)!, point) / maxCyclingSpeed(session.options.cyclingPace) * 60 <= options.maxBikeMinutes);
+        const finish = (l: typeof labels[number]) => l.time + haversineKm(network.stops.get(l.stop)!, point) / maxCyclingSpeed(session.options.cyclingPace) * 3_600_000;
         // Refine unchecked exits instead of repeatedly choosing the same four.
         // Lower bounds prioritize checks; final ranking uses routed cycling time.
         const unchecked = labels.filter(l => {
@@ -361,7 +362,7 @@ export function railExitCandidates(session: SearchSession): Stop[] {
   const limit = Math.min(options.maxBikeMinutes, options.maxEgressMinutes);
   const stops = [...network.stops.values()].filter(s => ids.has(s.id) && !samePlace(s, origin)
     && haversineKm(s, destination) < haversineKm(origin, destination)
-    && haversineKm(s, destination) / MAX_CYCLING_SPEED_KMH * 60 <= limit)
+    && haversineKm(s, destination) / maxCyclingSpeed(session.options.cyclingPace) * 60 <= limit)
     .sort((a, b) => haversineKm(a, destination) - haversineKm(b, destination));
   const major = new Set(MAJOR_STATIONS.map(s => s.id));
   return [...new Map([stops.find(s => major.has(s.id)), ...stops].filter((s): s is Stop => !!s).map(s => [s.id, s])).values()];
@@ -375,7 +376,7 @@ async function prepareWaypointTransfers(session: SearchSession, progress: Progre
   const origins = [...new Set(usable.map(e => e.to))].map(id => network.stops.get(id)!);
   const destinations = [...new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from))].map(id => network.stops.get(id)!);
   const pairs = origins.flatMap(a => destinations.filter(b => a.id !== b.id && haversineKm(a, b) > .001
-    && haversineKm(a, b) / MAX_CYCLING_SPEED_KMH * 60 <= options.maxIntermediateMinutes).map(b => [a, b] as const))
+    && haversineKm(a, b) / maxCyclingSpeed(session.options.cyclingPace) * 60 <= options.maxIntermediateMinutes).map(b => [a, b] as const))
     .sort(([a, b], [c, d]) => haversineKm(a, b) - haversineKm(c, d));
   for (const [a, b] of pairs) {
     const key = cyclingKey(a, b);
@@ -396,7 +397,7 @@ function startCyclingComparison(session: SearchSession, publish: SearchUpdate, f
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
   // One separate serial stream keeps a long bicycle-only route from blocking
   // short station access. Transit and cycling cards publish independently.
-  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher);
+  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace);
   session.comparisonClient = client;
   session.cyclingTask = (async () => {
     const routes = [];
@@ -454,7 +455,7 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   client.publicTimetable = dependencies.publicTimetable ?? !dependencies.fetcher;
   client.ojp = dependencies.ojpClient !== undefined ? dependencies.ojpClient
     : dependencies.fetcher ? null : await OjpClient.connect(signal);
-  const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher);
+  const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace);
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
     originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null, waypoints,
@@ -567,7 +568,7 @@ export async function extend(session: SearchSession, progress: Progress, publish
       const candidates = [...await nearby(from, client), ...MAJOR_STATIONS.map(s => ({ ...s, kind: "train" }))];
       const neighbors = [...new Map(candidates.map(s => [s.id, s])).values()]
         .filter(s => s.id !== id && haversineKm(from, s) > .001 && (session.cyclingClient
-          ? haversineKm(from, s) / MAX_CYCLING_SPEED_KMH * 60 : cyclingMinutes(haversineKm(from, s))) <= o.maxIntermediateMinutes)
+          ? haversineKm(from, s) / maxCyclingSpeed(session.options.cyclingPace) * 60 : cyclingMinutes(haversineKm(from, s))) <= o.maxIntermediateMinutes)
         .sort((a, b) => haversineKm(a, destination) - haversineKm(b, destination) || a.id.localeCompare(b.id))
         .slice(0, SEARCH_LIMITS.neighborsPerTransfer);
       for (const neighbor of neighbors) {

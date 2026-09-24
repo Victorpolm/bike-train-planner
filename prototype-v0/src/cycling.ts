@@ -1,3 +1,4 @@
+import { pacedRidingSeconds, maxCyclingSpeed, type CyclingPace } from "./cyclingPace.ts";
 import { haversineKm, type Point } from "./routing.ts";
 
 export type CyclePoint = Point & { elevationM: number | null; distanceM: number };
@@ -13,7 +14,7 @@ export type CyclingRoute = {
   ridingSeconds: number; minutes: number; ascentM: number | null; descentM: number | null;
   elevation: CyclePoint[]; elevationCoverage: number; steep: SlopeSection[];
   sections: CycleSection[]; startGapM: number; endGapM: number; connectorMinutes: number;
-  source: "BRouter" | "OSRM" | "same place"; fetchedAt: number;
+  source: "BRouter" | "OSRM" | "same place"; fetchedAt: number; pace?: CyclingPace;
 };
 export const CYCLING_PROFILE = "trekking";
 export const MAX_CYCLING_SPEED_KMH = 25;
@@ -136,7 +137,7 @@ export function finalClimb(route: CyclingRoute) {
   return { distanceM: end - start, ascentM: Math.round(ascentM), maxGrade };
 }
 
-export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetchedAt = Date.now()): CyclingRoute {
+export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetchedAt = Date.now(), pace?: CyclingPace): CyclingRoute {
   const collection = data as { features?: { geometry?: { type?: string; coordinates?: unknown[][] }; properties?: Record<string, unknown> }[] };
   const feature = collection?.features?.find(f => f.geometry?.type === "LineString"), properties = feature?.properties ?? {};
   const coordinates = feature?.geometry?.coordinates;
@@ -182,10 +183,12 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
     if (points[cursor].distanceM < distanceM) sections.push(unknown(points[cursor].distanceM, distanceM));
   }
   if (!sections.length) sections.push(unknown(0, distanceM));
-  const ridingSeconds = Math.max(seconds, distanceM / 1000 / MAX_CYCLING_SPEED_KMH * 3600);
+  const terrain = elevationProfile(points);
+  const ridingSeconds = Math.max(pace ? pacedRidingSeconds(terrain.elevation, distanceM / 1000, pace) : seconds,
+    distanceM / 1000 / maxCyclingSpeed(pace) * 3600);
   return { id: cyclingKey(from, to), from, to, points, distanceKm: distanceM / 1000, ridingSeconds,
     minutes: Math.ceil(ridingSeconds / 60 + connectorMinutes), startGapM, endGapM, connectorMinutes,
-    source: "BRouter", fetchedAt, sections, ...elevationProfile(points) };
+    source: "BRouter", fetchedAt, sections, pace, ...terrain };
 }
 
 export function breakdown(route: CyclingRoute, property: "surface" | "infrastructure" | "speedLimit") {

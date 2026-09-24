@@ -1,3 +1,4 @@
+import { paceDescription } from "./cyclingPace";
 import { useId } from "react";
 import { breakdown, finalClimb, pointAlong, STEEP_PERCENT, type CyclingRoute } from "./cycling";
 import { formatMinutes } from "./routing";
@@ -38,7 +39,10 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
       <div><dt>Ascent</dt><dd>{metres(route.ascentM)}</dd></div>
       <div><dt>Descent</dt><dd>{metres(route.descentM)}</dd></div>
     </dl>
-    <p className="cycle-caption">{route.source === "OSRM" ? "Backup bicycle route from OSRM. Elevation and road attributes are unavailable for this leg." : "Times use a touring bicycle at moderate effort."} Terrain and riding pace affect the estimate.</p>
+    <p className="cycle-caption">{route.pace ? `Estimated at ${paceDescription(route.pace)}. Time is calculated along the elevation profile; downhill speed is capped at 45 km/h.` : "Times use the cycling provider’s touring estimate."}
+      {route.elevationCoverage < .999 && " Elevation is missing on some or all of this route: those parts use your flat-ground pace, so hill timing is incomplete."}
+      {route.source === "OSRM" && " Backup bicycle route from OSRM; road attributes are unavailable."}
+      {" "}Wind, traffic stops, rider fatigue and battery range are not modelled.</p>
     {route.startGapM + route.endGapM > 1 && <p className="cycle-caption">Connected to a nearby path: {Math.round(route.startGapM)} m at the start and {Math.round(route.endGapM)} m at the end. Journey timing includes about {Math.ceil(route.connectorMinutes)} min of walking with your bike for these dotted links. Check that you can reach the path; entrance access is unverified.</p>}
     <div className="elevation-heading"><h4>Elevation along this leg</h4><span>{Math.round(route.elevationCoverage * 100)}% covered</span></div>
     {elevations.length > 1 ? <>
@@ -46,7 +50,7 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
         onPointerMove={event => {
           const box = event.currentTarget.getBoundingClientRect(); pick(((event.clientX - box.left) / box.width * 600 - 46) / 534 * route.distanceKm * 1000);
         }}>
-        <title id={`${id}-chart-title`}>Elevation in metres over {route.distanceKm.toFixed(1)} kilometres. Use the slider to inspect a point on the map.</title>
+        <title id={`${id}-chart-title`}>{`Elevation in metres over ${route.distanceKm.toFixed(1)} kilometres. Use the slider to inspect a point on the map.`}</title>
         {[low, (low + high) / 2, high].map(tick => <g key={tick}><line x1="46" x2="580" y1={y(tick)} y2={y(tick)} className="elevation-grid" /><text x="39" y={y(tick) + 4} textAnchor="end">{Math.round(tick)}</text></g>)}
         <path d={path} className="elevation-path" />
         {route.steep.map((s, i) => <line key={i} x1={x(s.startM)} x2={x(s.endM)} y1="153" y2="153" className={s.gradePercent > 0 ? "slope-up" : "slope-down"} />)}

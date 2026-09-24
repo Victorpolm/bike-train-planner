@@ -1,3 +1,4 @@
+import { validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { cachedCycling, type CyclingRoute } from "./cycling.ts";
 import { type BusPreference } from "./busCarriage.ts";
@@ -17,6 +18,7 @@ export type Options = {
   endpointPreference: EndpointPreference;
   busPreference: BusPreference;
   bicycleScope?: BicycleScope;
+  cyclingPace?: CyclingPace;
 };
 export const DEFAULT_OPTIONS: Options = {
   maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60,
@@ -45,6 +47,7 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 };
 
 export function validateOptions(o: Options) {
+  if (o.cyclingPace) validateCyclingPace(o.cyclingPace);
   const bounds: [keyof Options, number, number][] = [
     ["maxBikeMinutes", 0, 1440], ["maxAccessMinutes", 0, 1440], ["maxEgressMinutes", 0, 1440],
     ["maxIntermediateMinutes", 0, 1440], ["maxBoardings", 1, 8], ["horizonMinutes", 30, 1440],

@@ -30,7 +30,7 @@ export function bicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | 
   const policy = busCarriage(leg);
   if (policy?.permission === "not-allowed") return "prohibited";
   const e = applicableBicycleEvidence(leg);
-  if (!e || e.permission === "unknown") return sobMainlineRule(leg) || sbbInterRegioRule(leg) ? "confirmed" : "uncertain";
+  if (!e || e.permission === "unknown") return sobMainlineRule(leg) || sbbInterRegioRule(leg) || policy?.verifiesPermission ? "confirmed" : "uncertain";
   return e.permission === "allowed" ? "confirmed" : "prohibited";
 }
 export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, scope: BicycleScope = "allow-uncertain") {
@@ -44,7 +44,7 @@ export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, sc
 }
 export const bicyclePermissionLabel = (leg: TransitLeg) => {
   const permission = bicyclePermission(leg);
-  return permission === "confirmed" ? "Bicycle permission confirmed for this service"
+  return permission === "confirmed" ? "Bicycle access verified for this service"
     : permission === "prohibited" ? "Bicycles not permitted" : "Bicycle permission uncertain for this service";
 };
 

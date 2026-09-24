@@ -35,8 +35,9 @@ export default function BicycleCarriageDetails({ leg, onEvidence }: { leg: Trans
   const notes = [...new Set([...(leg.ojp?.attributes ?? []), ...leg.bicycleAttributes ?? [], ...detail?.rule.attributes ?? []]
     .filter(a => /^A__V[NRB]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text)).map(a => a.text))];
   return <div className={`bicycle-carriage permission-${rule.permission}`}>
-    <strong>{prohibited ? "Bicycles not allowed" : rule.permission === "confirmed" ? "Bicycles allowed · conditions apply" : "Bicycle permission unknown"}</strong>
+    <strong>{prohibited ? "Bicycles not allowed" : rule.permission === "confirmed" ? "Bicycle access verified · conditions apply" : "Bicycle permission unknown"}</strong>
     {prohibited ? <p>This service appears only in the all-public-transport comparison. Choose another service to travel with your bicycle.</p> : <>
+      {rule.permission === "confirmed" && (rule.bikeTicket === "unknown" || rule.bikeReservation === "unknown") && <p>Permission is verified. Ticket or reservation details below still need confirmation.</p>}
       <dl>
         <div><dt>Bike ticket or pass</dt><dd>{requirement(rule.bikeTicket)}</dd></div>
         <div><dt>Bike-space reservation</dt><dd>{requirement(rule.bikeReservation)}</dd></div>

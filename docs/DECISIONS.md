@@ -319,3 +319,14 @@ This file records important project choices. Do not silently rewrite old decisio
 **Discovery:** Probe up to two useful rail exits at the original boarding-ready time before spending the road budget on long early exits. Check their cycling finishes promptly and refine other unchecked exits using actual road times. Reuse directed cycling links when the same station ID has slightly different provider coordinates. The finite search is still sampled, not globally optimal.
 
 **Dated result:** On 2 November at 23:00, the whole-trip query omits IR35 23:12–00:49 to Chur. With that train acquired, live-source replay plus fresh BRouter links produces Chur cycling (151 min) and arrival about 03:20. Some September nights instead have a bicycle-prohibited replacement bus; never generalize this outcome across dates. See EXPERIMENTS.md.
+
+
+## 2026-09-24 — Allowed means verified; configurable rider and electric timing
+
+**User clarification:** Permission is verified whenever applicable evidence says the bicycle is allowed. Ticket and reservation requirements are separate. Support slower, stronger and electric-bike riders; uphill differences should exceed a uniform flat-speed discount.
+
+**Fix:** Every journey card previously repeated the selected “Allow uncertain permission” filter, making verified journeys appear unverified. Show actual permission on cards, label the filter once, and name unknown services in mixed cases. Confirm ordinary reviewed ZVV-operator/tpg buses and trams from their applicable published rules, with sources; this supersedes the previous decision to leave those conditional rules unverified. Preserve prohibitions, replacement exceptions and unknown PostBus routes.
+
+**Timing decision:** Keep BRouter touring road selection, but calculate configurable timing locally over its smoothed elevation intervals. Flat speed calibrates constant riding power, naturally amplifying stronger riders' uphill advantage. Electric adds a documented heuristic for climbing support fading near 25 km/h. Preserve walking connectors, missing-elevation disclosure and all solver budgets. Profile-aware caches and 45 km/h lower bounds apply to every routing phase. Do not claim physical calibration, battery prediction, legal-speed modelling or a complete national graph. See CYCLING_ROUTES.md for formula and assumptions.
+
+**Verification:** 145 tests, TypeScript and production builds pass. Server-render checks cover controls, the slope table, cycling explanation and verified PostBus prerequisites. Browser preview infrastructure is unavailable; no browser interaction/visual check is claimed. No remaining-space or booking integration is introduced.

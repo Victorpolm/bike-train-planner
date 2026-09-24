@@ -1,6 +1,7 @@
 import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
-import { cachedCycling, cyclingKey, CYCLING_PROFILE, MAX_CYCLING_SPEED_KMH, MAX_ENDPOINT_GAP_METRES, EndpointSnapError, parseCyclingRoute, samePlace, zeroCycling, type CyclingRoute } from "./cycling.ts";
+import { cachedCycling, cyclingKey, CYCLING_PROFILE, MAX_ENDPOINT_GAP_METRES, EndpointSnapError, parseCyclingRoute, samePlace, zeroCycling, type CyclingRoute } from "./cycling.ts";
 import type { Point } from "./routing.ts";
+import { maxCyclingSpeed, validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { fallbackCycling } from "./cyclingFallback.ts";
 
 export const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
@@ -43,12 +44,15 @@ export class CyclingClient {
   private cooldown = 0;
   private attempts = new Map<string, number>();
   readonly signal: AbortSignal;
+  readonly pace?: CyclingPace;
   private fetcher: typeof fetch;
   private gapMs: number;
   private useCache: boolean;
   private fallbackFetcher: typeof fetch | null;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true,
-    fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null) {
+    fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, pace?: CyclingPace) {
+    if (pace) validateCyclingPace(pace);
+    this.pace = pace ? { ...pace } : undefined;
     this.signal = signal; this.fetcher = fetcher; this.gapMs = gapMs; this.useCache = useCache;
     this.fallbackFetcher = fallbackFetcher;
   }
@@ -62,7 +66,8 @@ export class CyclingClient {
     const equivalent = cachedCycling(this.routes, a, b);
     if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
-    const cached = this.useCache ? cache.get(key) : undefined;
+    const cacheKey = `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    const cached = this.useCache ? cache.get(cacheKey) : undefined;
     if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }
     const task = this.queue.then(async () => {
       this.signal.throwIfAborted();
@@ -76,14 +81,14 @@ export class CyclingClient {
         this.failureKinds.clear();
         for (const failure of this.failedLinks.values()) this.failureKinds.add(failure.kind);
         if (this.useCache) {
-          cache.delete(key); cache.set(key, route);
+          cache.delete(cacheKey); cache.set(cacheKey, route);
           while (cache.size > CYCLING_LIMITS.cacheEntries) cache.delete(cache.keys().next().value!);
         }
         return route;
       };
       const params = new URLSearchParams({ lonlats: `${a.lon},${a.lat}|${b.lon},${b.lat}`, profile: CYCLING_PROFILE,
         alternativeidx: "0", format: "geojson", "profile:processUnusedTags": "1", "profile:allow_steps": "0",
-        "profile:allow_ferries": "0", "profile:maxSpeed": String(MAX_CYCLING_SPEED_KMH),
+        "profile:allow_ferries": "0", "profile:maxSpeed": String(maxCyclingSpeed(this.pace)),
         "profile:waypointCatchingRange": String(MAX_ENDPOINT_GAP_METRES) });
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -99,7 +104,7 @@ export class CyclingClient {
           if (delay > 10_000 || delay >= remaining()) {
             if (this.fallbackFetcher) {
               this.requests++;
-              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher)); }
+              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace)); }
               catch { this.signal.throwIfAborted(); }
             }
             return null;
@@ -111,7 +116,7 @@ export class CyclingClient {
             const data = await fetchJson<unknown>(`https://brouter.de/brouter?${params}`, this.signal,
               Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fetcher);
             this.signal.throwIfAborted();
-            const route = parseCyclingRoute(data, a, b);
+            const route = parseCyclingRoute(data, a, b, Date.now(), this.pace);
             this.cooldown = 0;
             return remember(route);
           } catch (error) {
@@ -122,7 +127,7 @@ export class CyclingClient {
             if (rateLimited) this.cooldown = Date.now() + (attempt === 0 ? delay : Math.max(delay, 60_000));
             if (temporary && this.fallbackFetcher && this.requests < CYCLING_LIMITS.requests && remaining() > 0) {
               this.requests++;
-              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher)); }
+              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace)); }
               catch { this.signal.throwIfAborted(); }
             }
             if (temporary && !this.fallbackFetcher && attempt === 0 && delay <= 10_000 && delay < remaining() && this.requests < CYCLING_LIMITS.requests) {

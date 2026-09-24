@@ -4,6 +4,7 @@ export type BusPreference = "known-rules" | "include-unknown" | "no-buses";
 export type BusCarriage = {
   permission: "conditional" | "not-allowed" | "unknown";
   operator: string;
+  verifiesPermission?: boolean;
   reservation: "check-service" | "unknown" | "not-applicable";
   reservationAvailability: "unknown";
   capacity: "unknown";
@@ -13,8 +14,8 @@ export type BusCarriage = {
 };
 
 const POSTBUS = { title: "PostBus bicycle rules", url: "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike", checked: "2026-09-24" };
-const ZVV = { title: "ZVV bicycle rules", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-20" };
-const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/helpful-tips/cyclists", checked: "2026-09-20" };
+const ZVV = { title: "ZVV bicycle rules", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-24" };
+const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/helpful-tips/cyclists", checked: "2026-09-24" };
 const normalize = (value?: string | null) => value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
 const postbus = new Set(["PAG", "POSTAUTO", "POSTAUTO AG", "POSTBUS", "OJP:801"]);
 const zvvOperators: Record<string, string> = {
@@ -31,10 +32,10 @@ export function isBus(leg: TransitLeg): boolean {
   return leg.mode === "transit" && ["B", "BUS", "NFB", "TROLLEYBUS", "COACH", "EV", "SEV"].includes(normalize(leg.category));
 }
 
-// Operator policies are conditional guidance, not confirmation for a departure.
-// Dated timetable attributes are handled separately by the service adapter.
+// Reviewed policies can establish permission for a matching mode/operator.
+// Conditions (ticket, space) are separate; dated prohibitions take precedence.
 export function busCarriage(leg: TransitLeg): BusCarriage | null {
-  if (!isBus(leg)) return null;
+  if (!isBus(leg) && !(leg.mode === "transit" && ["T", "TRAM"].includes(normalize(leg.category)))) return null;
   const operator = normalize(leg.operator);
   const unknown: BusCarriage = {
     permission: "unknown", operator: leg.operator || "Operator not supplied",
@@ -47,18 +48,18 @@ export function busCarriage(leg: TransitLeg): BusCarriage | null {
   // Replacement vehicles must not inherit an operator's ordinary bus policy.
   if (["EV", "SEV"].includes(normalize(leg.category))) return { ...unknown,
     instructions: ["This is a replacement service. Confirm bicycle carriage directly for this departure; ordinary operator rules may not apply."] };
-  if (postbus.has(operator)) return { ...unknown, operator: "PostBus", permission: "conditional", ticket: "required",
+  if (isBus(leg) && postbus.has(operator)) return { ...unknown, operator: "PostBus", permission: "conditional", ticket: "required",
     reservation: "check-service", source: POSTBUS, instructions: [
       "Check this departure in the official timetable: some routes prohibit bicycles. Selected tourist routes require a bike reservation from May to October.",
       "Have a bicycle ticket or pass and make any required reservation before departure. Load and unload the bike yourself, using the rack or trailer when provided.",
       "Space is limited; the driver decides if necessary. Wheelchairs and pushchairs have priority. Keep doors and aisles clear.",
     ] };
-  if (zvvOperators[operator]) return { ...unknown, operator: zvvOperators[operator], permission: "conditional",
+  if (zvvOperators[operator]) return { ...unknown, operator: zvvOperators[operator], permission: "conditional", verifiesPermission: true,
     ticket: "required", source: ZVV, instructions: [
       "A clean bicycle can travel if there is enough space and you have a valid bicycle ticket. Carriage is not guaranteed.",
-      "Load and unload it yourself. Use the second door from the front on buses; check the official timetable for restrictions on this departure.",
+      "Load and unload it yourself. Use the second door from the front on buses or the rear section of trams. Dated service restrictions take precedence.",
     ] };
-  if (["TPG", "TRANSPORTS PUBLICS GENEVOIS"].includes(operator)) return { ...unknown, operator: "tpg", permission: "conditional",
+  if (["TPG", "TRANSPORTS PUBLICS GENEVOIS"].includes(operator)) return { ...unknown, operator: "tpg", permission: "conditional", verifiesPermission: true,
     ticket: "check-fare", source: TPG, instructions: [
       "Bicycles can travel if space allows and other passengers are not obstructed. Remain beside your bike and keep it stable.",
       "Check the bicycle fare for your route; Zone 10 normally requires a reduced-fare ticket. Tandems, recumbents, trailers and other bulky bikes are excluded.",
@@ -73,7 +74,8 @@ export function busCarriageLabel(rule: BusCarriage): string {
 
 export function transitAllowed(leg: TransitLeg, preference: BusPreference): boolean {
   const rule = busCarriage(leg);
-  if (!rule) return true; // Train/tram/other carriage remains explicitly unverified.
+  if (!isBus(leg)) return rule?.permission !== "not-allowed";
+  if (!rule) return true;
   return preference !== "no-buses" && rule.permission !== "not-allowed"
     && (rule.permission === "conditional" || preference === "include-unknown");
 }

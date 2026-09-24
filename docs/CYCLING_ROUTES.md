@@ -1,6 +1,6 @@
 # Routed cycling and road profiles
 
-_Implemented 2026-09-20; resilience updated 2026-09-24. Own-bicycle, Switzerland-first prototype._
+_Implemented 2026-09-20; rider profiles and timing updated 2026-09-24. Own-bicycle, Switzerland-first prototype._
 
 ## What changed
 
@@ -16,23 +16,48 @@ The browser requests `https://brouter.de/brouter` using the documented `lonlats`
 
 Current defaults:
 
-- `trekking`: a touring/general-purpose bicycle, using the provider's moderate-effort model;
-- profile `maxSpeed=25` km/h; route duration is never accepted below distance / 25 km/h;
+- `trekking`: touring/general-purpose road selection; the app now estimates time for the chosen rider;
+- profile `maxSpeed=45` km/h for configured rider profiles; geometric feasibility bounds use the same maximum;
 - `allow_steps=0` and `allow_ferries=0`: avoid treating stairs or an unscheduled ferry as a cycling connection;
 - `processUnusedTags=1`: retain available road attributes for analysis;
 - one provider route per directed pair, not a fastest/comfort/low-climb alternatives search.
 
-The public service is a prototype dependency, not a contracted service with a reliability guarantee. Requests reveal the selected coordinates to BRouter. No address history is persisted by this application. Before wider use, operate a suitable routing backend or agree appropriate hosted-service capacity; keep the adapter replaceable. Bike type, fitness, load, wind, weather and user-specific pace remain uncalibrated. The engine's [trekking profile](https://github.com/abrensch/brouter/blob/master/misc/profiles2/trekking.brf) documents its travel-time model and preferences.
+The public service is a prototype dependency, not a contracted service with a reliability guarantee. Requests reveal the selected coordinates to BRouter. No address history is persisted by this application. Before wider use, operate a suitable routing backend or agree appropriate hosted-service capacity; keep the adapter replaceable. Flat pace and electric climbing support are configurable; actual rider mass, load, wind, weather and fatigue remain uncalibrated. The engine's [trekking profile](https://github.com/abrensch/brouter/blob/master/misc/profiles2/trekking.brf) documents its travel-time model and preferences.
+
+## Adjustable pace and elevation calculation
+
+Preferences offers Relaxed (15 km/h), Regular (20), Strong (28), and Electric bike (23). Flat-ground speed is editable from 8 to 35 km/h in 0.5 km/h steps. Editing a preset shows Custom pace and retains its electric-assistance setting. The expandable slope table updates immediately. These are planning presets, not measurements of the user.
+
+The app computes riding time locally from the road elevation profile. It does not multiply an entire ride by one fixed percentage. Following the constant-power resistance equation in BRouter's [StdPath implementation](https://github.com/abrensch/brouter/blob/master/brouter-core/src/main/java/btools/router/StdPath.java), calibrate power from the chosen flat speed:
+
+`P_flat = (m × 9.81 × 0.01 + 0.225 × v_flat²) × v_flat`
+
+For each approximately 100 m smoothed elevation interval, solve the positive speed in:
+
+`P_flat + P_assist = (m × 9.81 × (0.01 + grade) + 0.225 × v²) × v`
+
+Speeds in these equations are m/s; grade is vertical rise divided by horizontal distance (6% = 0.06). Mass is an assumed rider-plus-bike 90 kg, or 105 kg for Electric. Sum `distance / speed` across intervals, then add endpoint walking at 4 km/h and round the full link up to whole minutes. Descents are capped at 45 km/h. Stronger riders gain proportionally more on climbs because the chosen flat speed corresponds to substantially more power.
+
+**Electric model assumption:** add climbing power up to 250 W, increasing linearly from zero on flat terrain to full assistance at 3% grade, with assistance fading linearly between 20 and 25 km/h. This is a heuristic for a typical assisted ride, not a calibrated motor specification. Flat pace remains exactly the chosen speed. Battery range, assistance settings, rider weight, wind, stops, surface-dependent resistance, posted limits and fatigue are not modelled by this timing calculation. Route selection still uses BRouter's touring preferences.
+
+| Preset | Flat | Sustained 6% climb | Sustained 10% climb |
+|---|---:|---:|---:|
+| Relaxed | 15 km/h | 3.1 km/h | 2.0 km/h |
+| Regular | 20 km/h | 5.1 km/h | 3.2 km/h |
+| Strong | 28 km/h | 9.9 km/h | 6.4 km/h |
+| Electric | 23 km/h | 17.4 km/h | 11.7 km/h |
+
+These are model outputs, not validated riding measurements. Missing elevation intervals use flat speed and are explicitly flagged; OSRM fallback has no elevation adjustment. Cached timings include both flat pace and assistance, preventing reuse across different riders. Every station link, intermediate transfer, ordered visit and independent cycling-only comparison uses the selected pace. The optional low-level no-pace API retains legacy provider timing for historical fixtures; the app always supplies a pace.
 
 ### Backup for temporary service failures
 
-Temporary BRouter timeouts, network errors and transient server responses can use the independent [FOSSGIS OSRM bicycle service](https://routing.openstreetmap.de/about.html). Calls use its `routed-bike` endpoint, preserve directed road geometry and estimated time, and pass the same distance/speed/endpoint checks. Only replies with all steps explicitly in cycling mode are accepted: ferries, trains and pushing-bike sections are excluded. The backup does not provide elevation or surface/infrastructure tags; these remain unknown and the interface identifies OSRM. The primary touring model and the backup bicycle profile can yield different paths and time estimates.
+Temporary BRouter timeouts, network errors and transient server responses can use the independent [FOSSGIS OSRM bicycle service](https://routing.openstreetmap.de/about.html). Calls use its `routed-bike` endpoint, preserve directed road geometry and use the selected flat pace where elevation is unavailable, and pass the same distance/speed/endpoint checks. Only replies with all steps explicitly in cycling mode are accepted: ferries, trains and pushing-bike sections are excluded. The backup does not provide elevation or surface/infrastructure tags; these remain unknown and the interface identifies OSRM. The primary touring model and the backup bicycle profile can yield different paths and time estimates.
 
 The [provider usage policy](https://routing.openstreetmap.de/about.html) requires attribution, a fix-the-map link and at most one request per second. One browser-wide serialized queue covers both cycling streams. The browser supplies its normal user agent/referrer. No bulk downloading is performed. Requested coordinates are sent to this service when it is used; see its linked privacy policy. A conclusive no-route or off-network result does not trigger fallback. Wider or multi-user deployment still needs an appropriately provisioned road service.
 
 ## Train feasibility and budgets
 
-For a cycling link, the provider's route time replaces `haversine distance / 15 km/h`. Readiness is previous arrival + routed link duration + the existing boarding buffer. The same durations enter cumulative cycling-leg limits, elapsed time and category ranking. Outbound and inbound routes are computed independently: one-way streets and slopes can make them different.
+For a cycling link, the selected rider's time along the actual road geometry replaces `haversine distance / 15 km/h`. Readiness is previous arrival + routed link duration + the existing boarding buffer. The same durations enter cumulative cycling-leg limits, elapsed time and category ranking. Outbound and inbound routes are computed independently: one-way streets and slopes can make them different.
 
 The current cycling-leg budget conservatively includes the small walking connectors described below. The UI's separate walking total still represents timed walking transfers supplied by the transit service; the cycling details identify connector time explicitly. The active-time objective counts all elapsed cycling-leg time plus timed walking, excluding waiting. These are estimates, not guarantees that a particular rider can catch a train.
 
@@ -55,7 +80,7 @@ This does not verify the presence of a gate, a crossing or an accessible station
 | Display | Calculation / source | Important limit |
 |---|---|---|
 | Distance | Provider's `track-length`, in metres | Excludes the separately reported endpoint gaps. |
-| Estimated ride | Provider `total-time`, with the 25 km/h lower-duration bound | An estimated riding/pushing model, not a promised arrival; connector time is additional. |
+| Estimated ride | Selected rider power integrated over the elevation profile, with a 45 km/h downhill cap | A planning estimate, not a promised arrival; connector walking is additional. Missing elevations use flat pace. |
 | Elevation | Route geometry altitude; approximately 100 m sampling with short symmetric smoothing | Missing samples stay missing. Short ramps, bridges and tunnels may be inaccurate. |
 | Ascent/descent | Sum positive/negative differences on the same smoothed profile | Both are unknown if the profile is incomplete; never mistake BRouter `plain-ascend` (net change) for cumulative ascent. |
 | Steep sections | At least 6% uphill or −6% downhill on roughly 100 m samples; merge consecutive same-sign sections | Very short slopes may be missed. The map/profile use the same section positions. |

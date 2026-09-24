@@ -10,6 +10,7 @@ import { journeySteps } from "./itinerary";
 import { exploredStops } from "./mapData";
 import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
+import { CYCLING_PRESETS, DEFAULT_CYCLING_PACE, slopeSpeedKmh, type CyclingPace, type CyclingPreset } from "./cyclingPace";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 import { bicycleJourneySummary } from "./bicycleCarriage";
@@ -29,7 +30,7 @@ function CyclingCard({ comparison, selected, start, maxBikeMinutes, fastest, onS
     <span className="arrival-summary">Estimated arrival <b>{clock.format(comparison.arrival)}</b>
       {day.format(comparison.arrival) !== day.format(start) && ` · ${day.format(comparison.arrival)}`}</span>
     <span className="cycling-summary">{comparison.distanceKm.toFixed(1)} km along roads and paths</span>
-    <span className="comparison-caution">Estimated touring-bike time, including short walking access to the path. Select to explore elevation and surfaces.</span>
+    <span className="comparison-caution">Estimated using your cycling profile, including short walking access to the path. Select to explore elevation and surfaces.</span>
     {comparison.minutes > maxBikeMinutes && <span className="comparison-caution">Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.</span>}
     <span className="journey-plan-toggle">{selected ? "Shown on the map" : "Show cycling route on map"}</span>
   </button>;
@@ -44,13 +45,14 @@ function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelec
   const prohibited = j.transitLegs.some(leg => leg.mode === "transit" && bicyclePermission(leg) === "prohibited");
   const m = metrics(j), finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
   const busSummary = bicycleJourneySummary(j.transitLegs);
+  const verified = j.transitLegs.filter(l => l.mode === "transit").every(l => bicyclePermission(l) === "confirmed");
   return <button type="button" className={`journey-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
     {(sameWins ? wins.slice(0, 1) : wins).map(win => <span className={`scope-win scope-${win.scope}`} key={win.scope}>
-      <strong>{sameWins ? wins.map(w => scopeLabels[w.scope]).join(" · ") : scopeLabels[win.scope]}</strong>
       <span className="category-badges">{win.categories.map(c => <span key={c}>{c === "Fastest" ? "Fastest with transit" : c}</span>)}</span>
       {win.extraMinutes > 0 && <span className="tradeoff">{formatMinutes(win.extraMinutes)} longer than the fastest in this group</span>}
     </span>)}
+    {busSummary && <span className={`journey-permission permission-${prohibited ? "prohibited" : verified ? "confirmed" : "uncertain"}`}>{busSummary}</span>}
     {prohibited && <span className="permission-warning">Comparison only: bicycles are prohibited on at least one service. This is not a journey you can take with your bicycle.</span>}
     <span className="journey-topline"><strong>{formatMinutes(j.totalMinutes)}</strong>
       <span>{m.boardings} boarding{m.boardings === 1 ? "" : "s"} · {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
@@ -59,7 +61,6 @@ function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelec
     {day.format(finalArrival) !== day.format(j.startTime) && <span className="comparison-caution">Next-day arrival. Total time includes waiting.</span>}
     <span className="route-services">{j.services.join(" → ")}</span>
     <span className="comparison-caution">Waiting and boarding: {formatMinutes(waitingMinutes(j))}</span>
-    {busSummary && <span className="bus-summary">{busSummary}</span>}
     <span className="cycling-summary"><b>{formatMinutes(m.active)} cycling or walking</b>
       {" "}· cycling ≈ {formatMinutes(m.bike)} · walking {formatMinutes(m.walk)}</span>
     <span className="cycling-summary">Active time at start {formatMinutes(m.activeStart)} · arrival {formatMinutes(m.activeEnd)}
@@ -84,12 +85,14 @@ export default function App() {
   const [pointNotice, setPointNotice] = useState("");
   const [cycleFocus, setCycleFocus] = useState<CycleFocus | null>(null);
   const [mode, setMode] = useState<ModelMode>("baseline");
+  const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">("regular");
+  const [cyclingPace, setCyclingPace] = useState<CyclingPace>(DEFAULT_CYCLING_PACE);
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date(Date.now() + 60 * 60_000)));
-  const options = useMemo(() => preferenceOptions(cycling, endpoint, "include-unknown", bicycleScope), [cycling, endpoint, bicycleScope]);
+  const options = useMemo(() => preferenceOptions(cycling, endpoint, "include-unknown", bicycleScope, cyclingPace), [cycling, endpoint, bicycleScope, cyclingPace]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -268,6 +271,15 @@ export default function App() {
         <p className="bus-preference-help" id="bicycle-access-help">{bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other public transport.</p>
         <details className="preferences"><summary>Preferences · optional</summary>
           <div className="preference-grid">
+            <label><span>Riding profile</span><select disabled={loading} value={ridingPreset}
+              onChange={e => { invalidate(); const preset = e.target.value as CyclingPreset; setRidingPreset(preset);
+                setCyclingPace({ flatSpeedKmh: CYCLING_PRESETS[preset].flatSpeedKmh, electricAssist: CYCLING_PRESETS[preset].electricAssist }); }}>
+              {ridingPreset === "custom" && <option value="custom" disabled>Custom pace</option>}
+              {Object.entries(CYCLING_PRESETS).map(([key, value]) => <option key={key} value={key}>{value.label} · {value.flatSpeedKmh} km/h</option>)}
+            </select></label>
+            <label><span>Your flat-ground speed · km/h</span><input type="number" min="8" max="35" step="0.5" required
+              disabled={loading} value={Number.isNaN(cyclingPace.flatSpeedKmh) ? "" : cyclingPace.flatSpeedKmh} aria-describedby="cycling-pace-help"
+              onChange={e => { invalidate(); setRidingPreset("custom"); setCyclingPace(p => ({ ...p, flatSpeedKmh: e.target.valueAsNumber })); }} /></label>
             <label><span>How much cycling?</span><select disabled={loading} value={cycling}
               onChange={e => { invalidate(); setCycling(e.target.value as CyclingPreference); }}>
               <option value="less">Less · up to 40 min total</option><option value="balanced">Balanced · up to 90 min total</option>
@@ -279,13 +291,26 @@ export default function App() {
               <option value="none">Just the three main categories</option><option value="start">Less cycling or walking at start</option><option value="end">Less cycling or walking at arrival</option>
             </select></label>
           </div>
+          <p id="cycling-pace-help">Adjust the preset to your usual speed on flat ground. Climbs are calculated from your riding power, so stronger riders gain more uphill.
+            {cyclingPace.electricAssist ? " Electric assistance adds climbing power and fades near 25 km/h." : " Descents can be faster than your flat pace."}
+            {" "}This setting changes station access, transfers and arrival times. Wind, traffic stops and battery range are not modelled.</p>
+          {Number.isFinite(cyclingPace.flatSpeedKmh) && cyclingPace.flatSpeedKmh >= 8 && cyclingPace.flatSpeedKmh <= 35 && <details className="pace-model">
+            <summary>How hills change your speed</summary>
+            <table><thead><tr><th scope="col">Terrain</th><th scope="col">Estimated speed</th></tr></thead><tbody>
+              {[[0, "Flat"], [.03, "3% climb"], [.06, "6% climb"], [.1, "10% climb"]].map(([grade, label]) => <tr key={label}>
+                <th scope="row">{label}</th><td>{slopeSpeedKmh(Number(grade), cyclingPace).toFixed(1)} km/h</td></tr>)}
+            </tbody></table>
+            <p>Planning assumptions: rider plus bicycle {cyclingPace.electricAssist ? "105" : "90"} kg; touring-bike rolling and air resistance.
+              {cyclingPace.electricAssist && " The model adds up to 250 W of climbing help, fading between 20 and 25 km/h; actual motors and assistance settings vary."}
+              {" "}Downhill speed is capped at 45 km/h. Missing elevation uses flat-ground speed.</p>
+          </details>}
           <p>{cycling === "unrestricted" ? "No separate cycling cap; shorter rides are also included."
             : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}
             {" "}Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours overall, including waiting.</p>
         </details>
         <button className="search-button" type="submit" disabled={loading}>{loading ? "Finding journeys…" : "Find journeys"}</button>
       </form>
-      <div className="assumptions"><span><b>Touring bicycle</b> · routed times</span><span><b>3 min</b> before each boarding</span>
+      <div className="assumptions"><span><b>{cyclingPace.electricAssist ? "Electric bike" : "Bicycle"}</b> · {cyclingPace.flatSpeedKmh || "—"} km/h on flat ground</span><span><b>3 min</b> before each boarding</span>
         <span><b>{session ? `${day.format(session.start)}, ${clock.format(session.start)}` : departureMode === "now" ? "Leave now" : "Chosen departure"}</b> · Swiss time</span>
         <span>Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight waiting</span></div>
       {loading && <div className="loading-block" role="status"><div className="progress-track"><i /></div>
@@ -313,14 +338,14 @@ export default function App() {
         {!proposals.length && loading && <p className="comparison-note">Checking cycling paths and train connections. Options appear as they are found.</p>}
         <div className="permission-summary">
           {recommendation.groups.map(group => <div key={group.scope} className={`permission-group scope-${group.scope}`}>
-              <h3>{scopeLabels[group.scope]}</h3>
+              <h3>Search filter: {bicycleScopeOptions[group.scope]}</h3>
               {group.scope === "all-transit" && <p>Bicycle restrictions are ignored in this comparison. It can include services that prohibit bicycles; these are labelled on the journey.</p>}
               {group.proposals.length ? <p>{group.proposals.length} recommendation{group.proposals.length === 1 ? "" : "s"} · fastest with transit {formatMinutes(Math.min(...group.proposals.map(p => p.journey.totalMinutes)))}</p>
                 : <p>{group.scope === "confirmed"
                   ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
                   : loading ? "Checking possible journeys…" : "No journey found in this limited search."}</p>}
             </div>)}
-          <p className="comparison-caution">Confirmed permission concerns your bicycle on every service according to the provider. Open a journey for ticket and reservation requirements. Permission does not reserve a place. Service notes and applicable published rules are identified separately. Missing evidence stays unverified.</p>
+          <p className="comparison-caution">Verified access means bicycles are permitted on every transit leg, based on service data or applicable published operator rules. Open a journey for ticket and reservation requirements. Unknown ticket or reservation details do not change verified permission. Permission does not reserve a place.</p>
         </div>
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
           <strong>{scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}: </strong>

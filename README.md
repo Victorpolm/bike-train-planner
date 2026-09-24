@@ -1,6 +1,6 @@
 # Bike + Train Journey Planner
 
-**Latest source update (24 September 2026):** One bicycle-access selector now controls every public-transport mode. Public timetable bicycle symbols and sourced operator rules improve permission, ticket and reservation information. Rail-exit queries and station-identity route reuse fix missed overnight cycling finishes, including Zürich–Chur–Laax. [Current state](docs/PROJECT_STATE.md) · [regressions and dated results](docs/EXPERIMENTS.md).
+**Latest source update (24 September 2026):** Allowed bicycle access is shown as verified independently of ticket/reservation uncertainty. Reviewed bus/tram policies expand coverage. Adjustable Relaxed/Regular/Strong/Electric profiles use flat speed and slope-dependent power to calculate cycling times, station readiness and arrival. [Current state](docs/PROJECT_STATE.md) · [regressions and dated results](docs/EXPERIMENTS.md).
 
 Public search.ch bicycle conditions work without an API key. The existing OJP integration remains available when the Site's separate server secret is configured; GitHub Actions access is already verified. Remaining bicycle spaces and booking transactions remain outside scope.
 
@@ -12,11 +12,11 @@ Research and prototype for a bicycle + public-transport journey planner, initial
 
 Sign in with the ChatGPT account that owns the Site. Access is restricted to that account; the link does not make the website public. You can always return here and click this link to use the planner without installing anything.
 
-For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. Private version 16 was verified on 24 September at 20:00 UTC, including the access selector and overnight fixes. See [publication status](docs/WEBSITE.md) for the deployed revision; source updates and publication are recorded separately.
+For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. Private version 17 was verified on 24 September at 20:43 UTC, including actual verified-access labels and configurable cycling profiles. See [publication status](docs/WEBSITE.md) for the deployed revision; source updates and publication are recorded separately.
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 
-**Buses with bicycles:** [Bus carriage rules](docs/BUS_BICYCLES.md) documents the new bus preference, sourced operator conditions, prohibited/unverified services, practical boarding information and remaining departure-rule gaps; live bicycle-space availability is explicitly deferred.
+**Bicycles on public transport:** [Permission and prerequisites](docs/BICYCLE_PERMISSION_AND_OJP.md) documents the current all-mode choice. [Bus carriage rules](docs/BUS_BICYCLES.md) records sourced operator conditions, prohibited/unverified services, practical boarding information and remaining departure-rule gaps; live bicycle-space availability is explicitly deferred.
 
 **Next work:** [App roadmap](docs/APP_ROADMAP.md) records routing-engine evaluation, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
 

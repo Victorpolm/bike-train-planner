@@ -222,7 +222,8 @@ it("permits 300 routed cycling minutes and queries reachable trains with the abo
   // Synthetic coordinates keep Swiss seed stations outside the discovery radius.
   const a = { id: "A", name: "A", lat: 30.3, lon: 4 }, b = { id: "B", name: "B", lat: 31, lon: 5 };
   const from: Place = { label: "Home", lat: 30, lon: 4 }, to: Place = { label: "Destination", lat: 31.2, lon: 5 };
-  const options = preferenceOptions("unrestricted", "none");
+  // This regression supplies fixed provider durations, independent of rider physics.
+  const options = { ...preferenceOptions("unrestricted", "none"), cyclingPace: undefined };
   let queries = 0;
   const result = await plan(from, to, "baseline", options, new AbortController().signal, () => {}, () => {}, {
     start, gapMs: 0,
@@ -281,7 +282,7 @@ it("continues local discovery after finding transit slower than the direct bicyc
   assert.equal(result.cyclingComparison!.minutes, 14);
   assert.ok(urls.some(u => u.searchParams.get("from") === c.id));
   assert.equal(Math.min(...result.baseline.journeys.map(j => j.totalMinutes)), 25);
-  assert.equal(result.confirmed!.baseline.journeys.length, 0);
+  assert.equal(result.confirmed!.baseline.journeys.length, 1); // Reviewed VBZ permission also applies here.
   assert.ok(result.client.requests <= 18);
 });
 
