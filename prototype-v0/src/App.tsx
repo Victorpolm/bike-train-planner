@@ -291,7 +291,7 @@ export default function App() {
               <option value="none">Just the three main categories</option><option value="start">Less cycling or walking at start</option><option value="end">Less cycling or walking at arrival</option>
             </select></label>
           </div>
-          <p id="cycling-pace-help">Adjust the preset to your usual speed on flat ground. Climbs are calculated from your riding power, so stronger riders gain more uphill.
+          <p id="cycling-pace-help">These are flat-ground pace presets, not fitness ratings. Choose one and adjust it to your usual moving speed. Climbs are calculated from your riding power, so stronger riders gain more uphill.
             {cyclingPace.electricAssist ? " Electric assistance adds climbing power and fades near 25 km/h." : " Descents can be faster than your flat pace."}
             {" "}This setting changes station access, transfers and arrival times. Wind, traffic stops and battery range are not modelled.</p>
           {Number.isFinite(cyclingPace.flatSpeedKmh) && cyclingPace.flatSpeedKmh >= 8 && cyclingPace.flatSpeedKmh <= 35 && <details className="pace-model">

@@ -26,7 +26,9 @@ The public service is a prototype dependency, not a contracted service with a re
 
 ## Adjustable pace and elevation calculation
 
-Preferences offers Relaxed (15 km/h), Regular (20), Strong (28), and Electric bike (23). Flat-ground speed is editable from 8 to 35 km/h in 0.5 km/h steps. Editing a preset shows Custom pace and retains its electric-assistance setting. The expandable slope table updates immediately. These are planning presets, not measurements of the user.
+Preferences offers City (15 km/h), Relaxed (20), Regular (25, default), Sportive (30), and Electric (25 with climbing assistance). These names describe moving pace on flat ground, not fitness or a universal population average. The five-km/h steps make the four unassisted choices easy to compare. Flat-ground speed is editable from 8 to 35 km/h in 0.5 km/h steps. Editing a preset shows Custom pace and retains its electric-assistance setting. The expandable slope table updates immediately. These are planning presets, not measurements of the user.
+
+The original 25 km/h BRouter setting was a maximum model speed, not an assumed flat-ground average. The current Regular preset explicitly means 25 km/h on flat ground; raising the default from 20 changes resulting cycling durations and train readiness.
 
 The app computes riding time locally from the road elevation profile. It does not multiply an entire ride by one fixed percentage. Following the constant-power resistance equation in BRouter's [StdPath implementation](https://github.com/abrensch/brouter/blob/master/brouter-core/src/main/java/btools/router/StdPath.java), calibrate power from the chosen flat speed:
 
@@ -42,10 +44,11 @@ Speeds in these equations are m/s; grade is vertical rise divided by horizontal 
 
 | Preset | Flat | Sustained 6% climb | Sustained 10% climb |
 |---|---:|---:|---:|
-| Relaxed | 15 km/h | 3.1 km/h | 2.0 km/h |
-| Regular | 20 km/h | 5.1 km/h | 3.2 km/h |
-| Strong | 28 km/h | 9.9 km/h | 6.4 km/h |
-| Electric | 23 km/h | 17.4 km/h | 11.7 km/h |
+| City | 15 km/h | 3.1 km/h | 2.0 km/h |
+| Relaxed | 20 km/h | 5.1 km/h | 3.2 km/h |
+| Regular (default) | 25 km/h | 7.8 km/h | 5.0 km/h |
+| Sportive | 30 km/h | 11.4 km/h | 7.5 km/h |
+| Electric | 25 km/h | 18.3 km/h | 12.3 km/h |
 
 These are model outputs, not validated riding measurements. Missing elevation intervals use flat speed and are explicitly flagged; OSRM fallback has no elevation adjustment. Cached timings include both flat pace and assistance, preventing reuse across different riders. Every station link, intermediate transfer, ordered visit and independent cycling-only comparison uses the selected pace. The optional low-level no-pace API retains legacy provider timing for historical fixtures; the app always supplies a pace.
 

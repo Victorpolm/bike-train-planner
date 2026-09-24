@@ -514,3 +514,10 @@ The offline regression uses an actually returned bicycle-compatible boat leg, ac
 **Recorded real-road replay (no new timetable claim):** The Chur–Laax BRouter response captured earlier on 24 September contains 26.734 km of road geometry and 98.1% usable elevation coverage. Recomputing exactly that path yields Relaxed 262 min, Regular 168 min, Strong 97 min, Electric 75 min, including walking connectors and rounding. Missing elevation uses flat pace. The earlier 151-minute provider-time result remains a historical observation; these new times depend on the chosen rider and are not ride-validated. They do not prove the same departure is available on another date.
 
 **Gate:** 145 app tests pass; frontend and Worker production builds pass. React server rendering verifies speed controls, the slope table, the chosen pace in cycling details and nonempty verified PostBus ticket/reservation guidance. Browser preview is unavailable because its supervised infrastructure is absent.
+
+
+## 2026-09-24 — Five-pace preset revision
+
+The presets are now City 15, Relaxed 20, Regular 25, Sportive 30 and Electric 25 km/h. Regular is the default; all remain editable. The existing regression suite covers every preset's flat calibration, climbing and descending behavior. Controlled station-readiness checks use City (17 min access, ready 08:20) and Sportive (9 min access, ready 08:12). Both primary and independent cycling clients preserve the selected pace. The 9-minute bike budget admits the Sportive case. Earlier recorded-path replay values above belong to the prior presets and remain historical observations.
+
+All 145 tests pass after updating existing fixtures. The calculation and current slope-speed table are documented in CYCLING_ROUTES.md. Browser interaction was not rechecked for this small preset/copy update.

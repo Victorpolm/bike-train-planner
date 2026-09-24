@@ -1,12 +1,13 @@
 export type CyclingPace = { flatSpeedKmh: number; electricAssist: boolean };
 export const CYCLING_PRESETS = {
-  relaxed: { label: "Relaxed rider", flatSpeedKmh: 15, electricAssist: false },
-  regular: { label: "Regular rider", flatSpeedKmh: 20, electricAssist: false },
-  strong: { label: "Strong rider", flatSpeedKmh: 28, electricAssist: false },
-  electric: { label: "Electric bike", flatSpeedKmh: 23, electricAssist: true },
+  city: { label: "City", flatSpeedKmh: 15, electricAssist: false },
+  relaxed: { label: "Relaxed", flatSpeedKmh: 20, electricAssist: false },
+  regular: { label: "Regular", flatSpeedKmh: 25, electricAssist: false },
+  sportive: { label: "Sportive", flatSpeedKmh: 30, electricAssist: false },
+  electric: { label: "Electric", flatSpeedKmh: 25, electricAssist: true },
 } as const;
 export type CyclingPreset = keyof typeof CYCLING_PRESETS;
-export const DEFAULT_CYCLING_PACE: CyclingPace = { flatSpeedKmh: 20, electricAssist: false };
+export const DEFAULT_CYCLING_PACE: CyclingPace = { flatSpeedKmh: CYCLING_PRESETS.regular.flatSpeedKmh, electricAssist: false };
 export const MAX_PROFILE_SPEED_KMH = 45;
 export const maxCyclingSpeed = (pace?: CyclingPace) => pace ? MAX_PROFILE_SPEED_KMH : 25;
 export function validateCyclingPace(pace: CyclingPace) {

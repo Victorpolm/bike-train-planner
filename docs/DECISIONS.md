@@ -330,3 +330,12 @@ This file records important project choices. Do not silently rewrite old decisio
 **Timing decision:** Keep BRouter touring road selection, but calculate configurable timing locally over its smoothed elevation intervals. Flat speed calibrates constant riding power, naturally amplifying stronger riders' uphill advantage. Electric adds a documented heuristic for climbing support fading near 25 km/h. Preserve walking connectors, missing-elevation disclosure and all solver budgets. Profile-aware caches and 45 km/h lower bounds apply to every routing phase. Do not claim physical calibration, battery prediction, legal-speed modelling or a complete national graph. See CYCLING_ROUTES.md for formula and assumptions.
 
 **Verification:** 145 tests, TypeScript and production builds pass. Server-render checks cover controls, the slope table, cycling explanation and verified PostBus prerequisites. Browser preview infrastructure is unavailable; no browser interaction/visual check is claimed. No remaining-space or booking integration is introduced.
+
+
+## 2026-09-24 — Five neutral pace presets
+
+**User request:** Use four nonjudgmental names for 15, 20, 25 and 30 km/h flat speeds, with five profiles overall. Keep Electric as the fifth from the preceding request.
+
+**Decision:** City 15, Relaxed 20, Regular 25 (default), Sportive 30, Electric 25 km/h with the existing climbing assistance. Values remain editable from 8 to 35 km/h. Names indicate pace choices, not fitness ratings; they are configurable planning references rather than measured population averages. Five-km/h steps are simple to compare. Electric and Regular share a flat reference but have distinct climbing behavior.
+
+**Clarification:** The original BRouter override of 25 km/h capped model speed; it did not assert 25 km/h as the flat-ground average. This change deliberately makes Regular's flat speed 25 instead of the previous 20. The slope-power formula, electric-assistance rule and 45 km/h downhill cap are unchanged. Existing timing regressions are updated for the new presets; no new unrelated feature is introduced.

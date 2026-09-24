@@ -14,7 +14,7 @@ it("matches editable flat speeds and gives stronger riders a larger advantage on
     assert.ok(slopeSpeedKmh(-.08, preset) > preset.flatSpeedKmh);
     assert.ok(slopeSpeedKmh(-.3, preset) <= 45);
   }
-  const { regular, strong, electric } = CYCLING_PRESETS;
+  const { relaxed: regular, sportive: strong, electric } = CYCLING_PRESETS;
   const flatGain = strong.flatSpeedKmh / regular.flatSpeedKmh;
   assert.ok(slopeSpeedKmh(.08, strong) / slopeSpeedKmh(.08, regular) > flatGain + .3);
   assert.ok(slopeSpeedKmh(.08, electric) > slopeSpeedKmh(.08, strong));
@@ -28,11 +28,11 @@ it("matches editable flat speeds and gives stronger riders a larger advantage on
 it("sums uphill and downhill time separately even when net elevation gain is zero", () => {
   const flat = [{ distanceM: 0, elevationM: 400 }, { distanceM: 1000, elevationM: 400 }, { distanceM: 2000, elevationM: 400 }];
   const hills = flat.map((point, i) => ({ ...point, elevationM: i === 1 ? 480 : 400 }));
-  const regular = pacedRidingSeconds(flat, 2, CYCLING_PRESETS.regular);
+  const regular = pacedRidingSeconds(flat, 2, CYCLING_PRESETS.relaxed);
   assert.ok(Math.abs(regular - 360) < .001);
-  assert.ok(pacedRidingSeconds(hills, 2, CYCLING_PRESETS.regular) > regular * 2);
-  assert.ok(pacedRidingSeconds(hills, 2, CYCLING_PRESETS.strong) < pacedRidingSeconds(hills, 2, CYCLING_PRESETS.regular));
-  assert.ok(Math.abs(pacedRidingSeconds(flat.map(p => ({ ...p, elevationM: null })), 2, CYCLING_PRESETS.regular) - regular) < .001);
+  assert.ok(pacedRidingSeconds(hills, 2, CYCLING_PRESETS.relaxed) > regular * 2);
+  assert.ok(pacedRidingSeconds(hills, 2, CYCLING_PRESETS.sportive) < pacedRidingSeconds(hills, 2, CYCLING_PRESETS.relaxed));
+  assert.ok(Math.abs(pacedRidingSeconds(flat.map(p => ({ ...p, elevationM: null })), 2, CYCLING_PRESETS.relaxed) - regular) < .001);
 });
 
 const from = { label: "Home", lat: 30, lon: 4 }, station = { id: "A", name: "Station", lat: 30.036, lon: 4 };
@@ -48,16 +48,16 @@ it("uses pace for catching a train and for the total cycling budget, preserving 
     mode: "transit", from: "Station", to: "Destination", fromId: "A", toId: "B", service: `R ${dep}`, serviceName: null,
     direction: null, departure: at(dep), arrival: at(dep + 10), departurePlatform: null, arrivalPlatform: null,
   } });
-  for (const [preset, arrival] of [[CYCLING_PRESETS.relaxed, 50], [CYCLING_PRESETS.strong, 22]] as const) {
+  for (const [preset, arrival] of [[CYCLING_PRESETS.city, 50], [CYCLING_PRESETS.sportive, 22]] as const) {
     const route = parseCyclingRoute(data, from, station, Date.now(), preset);
     network.cycling = new Map([[cyclingKey(from, station), route]]);
     const options = { ...DEFAULT_OPTIONS, cyclingPace: preset, maxEgressMinutes: 0 };
     assert.equal(Math.min(...solve(network, from, to, start, options, "baseline").journeys.map(j => j.totalMinutes)), arrival);
-    assert.equal(solve(network, from, to, start, { ...options, maxBikeMinutes: 9 }, "baseline").journeys.length > 0, preset === CYCLING_PRESETS.strong);
+    assert.equal(solve(network, from, to, start, { ...options, maxBikeMinutes: 9 }, "baseline").journeys.length > 0, preset === CYCLING_PRESETS.sportive);
   }
   const offsetFrom = { ...from, lon: from.lon - .001 };
-  const slow = parseCyclingRoute(data, offsetFrom, station, Date.now(), CYCLING_PRESETS.relaxed);
-  const fast = parseCyclingRoute(data, offsetFrom, station, Date.now(), CYCLING_PRESETS.strong);
+  const slow = parseCyclingRoute(data, offsetFrom, station, Date.now(), CYCLING_PRESETS.city);
+  const fast = parseCyclingRoute(data, offsetFrom, station, Date.now(), CYCLING_PRESETS.sportive);
   assert.ok(slow.connectorMinutes > 1); assert.equal(slow.connectorMinutes, fast.connectorMinutes);
 });
 
@@ -75,11 +75,11 @@ it("isolates cached timings by flat pace and electric assistance across search c
 it("uses the selected pace on backup paths while keeping missing elevation explicit", () => {
   const response = { code: "Ok", routes: [{ distance: distance * 1000, duration: 900,
     geometry: { ...geometry, coordinates: geometry.coordinates.map(p => p.slice(0, 2)) }, legs: [{ steps: [{ mode: "cycling" }] }] }] };
-  const slow = parseFallbackRoute(response, from, station, CYCLING_PRESETS.relaxed);
-  const fast = parseFallbackRoute(response, from, station, CYCLING_PRESETS.strong);
+  const slow = parseFallbackRoute(response, from, station, CYCLING_PRESETS.city);
+  const fast = parseFallbackRoute(response, from, station, CYCLING_PRESETS.sportive);
   assert.equal(fast.source, "OSRM"); assert.equal(fast.ascentM, null); assert.equal(fast.elevationCoverage, 0);
-  assert.ok(slow.minutes > fast.minutes); assert.equal(fast.pace?.flatSpeedKmh, 28);
-  assert.ok(Math.abs(fast.ridingSeconds - distance / 28 * 3600) < .001);
+  assert.ok(slow.minutes > fast.minutes); assert.equal(fast.pace?.flatSpeedKmh, 30);
+  assert.ok(Math.abs(fast.ridingSeconds - distance / 30 * 3600) < .001);
 });
 
 it("propagates the selected pace to timetable readiness and the independent cycling comparison", async () => {
@@ -88,7 +88,7 @@ it("propagates the selected pace to timetable readiness and the independent cycl
   const to = { label: "Destination", stopId: "B", lat: 31, lon: 4 };
   const b = { id: "B", name: "Destination", ...to };
   const stationData = (p: typeof station) => ({ id: p.id, name: p.name, icon: "train", coordinate: { x: p.lat, y: p.lon } });
-  for (const pace of [CYCLING_PRESETS.relaxed, CYCLING_PRESETS.strong]) {
+  for (const pace of [CYCLING_PRESETS.city, CYCLING_PRESETS.sportive]) {
     const queryTimes: string[] = [];
     const result = await plan(from, to, "baseline", { ...preferenceOptions("balanced", "none", "include-unknown", "allow-uncertain", pace), maxEgressMinutes: 0 },
       new AbortController().signal, () => {}, () => {}, { start: new Date("2026-09-25T08:00:00+02:00"), gapMs: 0,
@@ -109,7 +109,7 @@ it("propagates the selected pace to timetable readiness and the independent cycl
         },
       });
     await result.cyclingTask;
-    assert.equal(queryTimes[0], pace === CYCLING_PRESETS.relaxed ? "08:20" : "08:12");
+    assert.equal(queryTimes[0], pace === CYCLING_PRESETS.city ? "08:20" : "08:12");
     assert.equal(result.cyclingClient?.pace?.flatSpeedKmh, pace.flatSpeedKmh);
     assert.equal(result.comparisonClient?.pace?.flatSpeedKmh, pace.flatSpeedKmh);
     assert.equal(result.cyclingComparison?.routes?.[0].pace?.flatSpeedKmh, pace.flatSpeedKmh);
