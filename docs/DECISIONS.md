@@ -304,3 +304,18 @@ This file records important project choices. Do not silently rewrite old decisio
 **Road-service resilience:** A temporary BRouter outage can use the independent FOSSGIS OSRM bicycle service. Serialize backup calls across both cycling streams at no more than one per second. Validate geometry, distance, duration and endpoint gaps using the existing checks; reject any returned step whose mode is not cycling, including ferries, trains and pushing-bike sections. Identify the provider and retain missing elevation/road attributes as unknown. This is a road-network fallback, never a straight-line substitute. Conclusive off-network/disconnected-path responses are not rerouted through another provider.
 
 **Limits:** Public services can still be unavailable or rate-limited, and sampling remains incomplete. No new national dataset, routing-engine migration, bicycle-capacity query or booking integration is implied. See the dated regressions and live checks in [EXPERIMENTS.md](EXPERIMENTS.md).
+
+
+## 2026-09-24 — All-mode access choice, public bicycle symbols and overnight exits
+
+**Latest request:** Replace the bus-only choice with three all-public-transport access levels, use public prerequisite information, and investigate premature train exits on late Zürich–Laax journeys with Above 150 minutes cycling.
+
+**Decision:** One selected scope controls feasibility before dominance and ranking; show only its category winners. Keep the independent solver capability internally. Explicitly included prohibitions remain visibly prohibited. This supersedes the previous bus selector and simultaneous three-group display.
+
+**Data finding:** Transport API connection objects drop bicycle symbols exposed by their underlying public search.ch source. Read that feed directly, preserving `VN`, `VR`, `VB`, exact dated segment identity and original notes. Keep source URLs/review dates. No extra detail call per leg is needed. All timetable calls share the existing cap/retry/cooldown logic. OJP remains preferred if configured, but its missing Site runtime secret no longer blocks public service notes.
+
+**Reviewed rules:** Narrow domestic SBB IR and SOB mainline policies may confirm access for the matching operator/service, visibly identified as published-rule evidence. SBB IR and SOB mainline reservation defaults are separate from service notes; explicit bans, mandatory reservations and reservation conflicts override defaults. Other conditional operator policies remain unverified. No remaining-space lookup or booking transaction is added.
+
+**Discovery:** Probe up to two useful rail exits at the original boarding-ready time before spending the road budget on long early exits. Check their cycling finishes promptly and refine other unchecked exits using actual road times. Reuse directed cycling links when the same station ID has slightly different provider coordinates. The finite search is still sampled, not globally optimal.
+
+**Dated result:** On 2 November at 23:00, the whole-trip query omits IR35 23:12–00:49 to Chur. With that train acquired, live-source replay plus fresh BRouter links produces Chur cycling (151 min) and arrival about 03:20. Some September nights instead have a bicycle-prohibited replacement bus; never generalize this outcome across dates. See EXPERIMENTS.md.

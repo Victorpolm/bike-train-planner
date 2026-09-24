@@ -28,7 +28,7 @@ The core product plans journeys where a bicycle accompanies the traveller throug
 
 The immediate objective is a web prototype that produces useful real journeys in a small Swiss pilot area. Read `docs/PROJECT_STATE.md` for the current implementation rather than treating these instructions or an uploaded snapshot as live state. The app has progressed to a bounded multi-label timetable experiment with routed cycling, Baseline/Extended models, ordered visits and category comparisons; it is not a complete national router.
 
-Compare three independently optimized transit sets: permission confirmed on every leg; uncertain permission permitted but known prohibitions excluded; and all public transport as a labelled comparison that ignores bicycle restrictions. Preserve each set's winners before merging identical journeys. An unrestricted comparison is not permission to take a bicycle on a prohibited service.
+Offer one bicycle-access selector for every public-transport mode: verified access only; also allow unverified access; also include prohibited services. Apply the selected scope before routing and dominance, then present its category winners. Keep exact dated evidence separate from narrowly applicable reviewed operator/service rules. Explicit service bans override those rules. Including prohibited services does not permit taking a bicycle on them.
 
 Investigate OJP TripInfo for dated-service and stop-specific carriage evidence. Missing evidence remains unknown. Do not integrate remaining bicycle spaces, occupancy, reservation availability or booking yet. Distinguish available Swiss GTFS/OSM sources from data actually imported, and repository source changes from a verified website publication.
 

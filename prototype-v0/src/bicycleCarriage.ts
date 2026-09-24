@@ -1,6 +1,7 @@
 import { applicableBicycleEvidence, bicyclePermission, type BicycleEvidence } from "./bicyclePermission.ts";
 import { busCarriage } from "./busCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
+import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB_IR_BICYCLES } from "./operatorBicycleRules.ts";
 
 export type BicycleAttribute = { code: string; text: string; scope: "service" | "segment" | "stop" };
 export type CarriageRule = {
@@ -45,18 +46,29 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
 export function carriageForLeg(leg: TransitLeg) {
   const evidence = applicableBicycleEvidence(leg), policy = busCarriage(leg);
   const requirements = evidence?.prerequisites;
+  const sob = sobMainlineRule(leg);
+  const sbbIR = sbbInterRegioRule(leg);
+  const operatorPermissionSource = sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : undefined;
+  const reservationFallback = !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && (sob || sbbIR);
   const sbb = ["SBB", "SBB CFF FFS", "CFF", "FFS", "ojp:11"].includes(leg.operator ?? "");
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
-    ? requirements.bikeTicket : sbb || policy?.ticket === "required" ? "required" : "unknown";
-  const ticketSource = requirements?.ticketSource ?? (sbb ? SBB_BICYCLES : policy?.source);
+    ? requirements.bikeTicket : sbb || sob || policy?.ticket === "required" ? "required" : "unknown";
+  const ticketSource = requirements?.ticketSource ?? (sob ? SOB_BICYCLES : sbb ? SBB_BICYCLES : policy?.source);
   return {
     permission: bicyclePermission(leg), evidence,
     bikeTicket,
-    bikeReservation: requirements?.bikeReservation ?? "unknown",
+    bikeReservation: requirements?.bikeReservation && requirements.bikeReservation !== "unknown" ? requirements.bikeReservation : reservationFallback ? "not-required" : "unknown",
+    reservationSource: reservationFallback && (!requirements || requirements.bikeReservation === "unknown") ? sob ? SOB_RESERVATIONS : SBB_IR_BICYCLES : undefined,
+    permissionSource: !evidence || evidence.permission === "unknown" ? operatorPermissionSource : undefined,
     ticketSource,
-    bookingUrl: requirements?.bookingUrl ?? (sbb || ["PAG", "POSTAUTO", "PostBus", "ojp:801"].includes(leg.operator ?? "") ? "https://www.sbb.ch/en" : undefined),
-    guidance: policy?.instructions ?? [],
-    policySource: policy?.source,
+    bookingUrl: requirements?.bookingUrl ?? ticketSource?.url,
+    guidance: sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
+      "Bicycle spaces on these SOB trains cannot be reserved. Carriage depends on space; follow the crew’s instructions."] : sbbIR ? [
+      "For a standard bicycle up to two metres long: load and unload it yourself and use the designated bicycle area.",
+      "Take a bicycle ticket or pass. Carriage depends on space; keep doors and aisles clear and follow staff instructions.",
+      "The normal domestic InterRegio rule does not require a bicycle reservation. Any dated service restriction shown above takes precedence.",
+    ] : policy?.instructions ?? [],
+    policySource: operatorPermissionSource ?? policy?.source,
   };
 }
 

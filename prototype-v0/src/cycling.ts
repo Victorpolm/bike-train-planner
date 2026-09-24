@@ -41,7 +41,14 @@ export function zeroCycling(a: Point, b: Point): CyclingRoute {
     startGapM: 0, endGapM: 0, connectorMinutes: 0, source: "same place", fetchedAt: Date.now() };
 }
 export function cachedCycling(routes: ReadonlyMap<string, CyclingRoute | null>, a: Located, b: Located): CyclingRoute | null {
-  return samePlace(a, b) ? zeroCycling(a, b) : routes.get(cyclingKey(a, b)) ?? null;
+  if (samePlace(a, b)) return zeroCycling(a, b);
+  const exact = routes.get(cyclingKey(a, b));
+  if (exact) return exact;
+  // Timetable providers use slightly different coordinates for the same stop.
+  // Preserve an already routed link by stop identity instead of losing it when
+  // a later response updates that stop's coordinates. Pins still match exactly.
+  return [...routes.entries()].find(([key, route]) => route && key === cyclingKey(route.from, route.to)
+    && samePlace(route.from, a) && samePlace(route.to, b))?.[1] ?? null;
 }
 const validPoint = (p: Point) => Number.isFinite(p.lat) && Number.isFinite(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
 const number = (value: unknown): number | null => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;

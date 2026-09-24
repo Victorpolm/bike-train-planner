@@ -392,3 +392,15 @@ button:disabled { cursor: default; opacity: .65; }
 .bicycle-carriage .carriage-source, .bicycle-carriage .carriage-check { font-size: .76rem; color: #58615b; }
 .reservation-required { font-weight: 600; }
 @media (max-width: 440px) { .bicycle-carriage dl > div { grid-template-columns: 1fr; gap: .15rem; } }
+
+.bicycle-access { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 8px; }
+.bicycle-access legend { font-weight: 650; margin-bottom: 8px; }
+.bicycle-access label { display: flex; align-items: flex-start; gap: 10px; padding: 11px; border: 1px solid #cfd4cc; border-radius: 8px; line-height: 1.45; cursor: pointer; }
+.bicycle-access label.selected { border-color: #195e4d; background: #f0f5f2; }
+.bicycle-access input { width: 18px; height: 18px; flex: 0 0 18px; margin: 2px 0 0; accent-color: #195e4d; }
+.bicycle-access input:focus-visible { outline: 3px solid #a4c6b9; outline-offset: 3px; }
+.bicycle-carriage ul { padding-left: 20px; margin: .6rem 0; list-style: disc; }
+.bicycle-carriage li { margin: .35rem 0; padding: 0; display: list-item; }
+.operator-guidance { margin-top: .8rem; padding-top: .3rem; border-top: 1px solid #deded2; }
+.operator-guidance a { font-size: .8rem; }
+.timetable-attribution { margin: 10px 0; font-size: 12px; color: var(--muted); }

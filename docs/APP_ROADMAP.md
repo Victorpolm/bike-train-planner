@@ -1,5 +1,7 @@
 # App roadmap: bike + public transport
 
+**24 September current delivery:** The all-mode bicycle-access selector, keyless public bicycle symbols, scoped operator rules and overnight rail-exit discovery are implemented. See [PROJECT_STATE.md](PROJECT_STATE.md); older bus-only/three-visible-comparison descriptions below are historical.
+
 _Updated 2026-09-21. Implemented features are identified below; remaining work is not implied to be delivered._
 
 ## Product direction

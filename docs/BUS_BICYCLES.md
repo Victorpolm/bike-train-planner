@@ -1,5 +1,7 @@
 # Buses with an accompanied bicycle
 
+**24 September update:** The bus-only form choice has been replaced by one access selector for **all public transport**. Public timetable symbols now supply dated prohibitions/reservation requirements, separately from this general bus-policy registry. [Current rules and sources](BICYCLE_PERMISSION_AND_OJP.md). The former form behavior described below is historical.
+
 _Policies reviewed: 2026-09-20; search presentation updated: 2026-09-21. Scope: one standard, unfolded bicycle._
 
 ## What the app now does

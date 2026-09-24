@@ -59,6 +59,8 @@ export class CyclingClient {
     if (samePlace(a, b)) return Promise.resolve(zeroCycling(a, b));
     const key = cyclingKey(a, b);
     if (this.routes.has(key)) return Promise.resolve(this.routes.get(key)!);
+    const equivalent = cachedCycling(this.routes, a, b);
+    if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
     const cached = this.useCache ? cache.get(key) : undefined;
     if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }

@@ -1,5 +1,7 @@
 # Data sources and data risks
 
+**24 September current update:** Keyless connections now come directly from [search.ch](https://search.ch/timetable/api/help), preserving dated bicycle symbols. Transport API remains for nearby stops and departure boards. [Permission contract](BICYCLE_PERMISSION_AND_OJP.md) documents code meanings, scoped operator defaults and the distinction from remaining-space availability. This supersedes older statements below that no carriage attributes are interpreted.
+
 ## Principle
 
 Data quality is likely a larger project risk than frontend architecture.

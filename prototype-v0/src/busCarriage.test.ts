@@ -29,7 +29,7 @@ it("keeps operator/category evidence and never treats missing metadata as bicycl
   const postbus = busCarriage(parsed)!;
   assert.equal(postbus.permission, "conditional"); assert.equal(postbus.reservation, "check-service");
   assert.equal(postbus.capacity, "unknown"); assert.equal(postbus.reservationAvailability, "unknown");
-  assert.equal(postbus.source?.checked, "2026-09-20");
+  assert.equal(postbus.source?.checked, "2026-09-24");
   for (const operator of [null, "Unknown", "PAG subcontractor", "8"]) {
     const unknown = busCarriage(leg(operator))!;
     assert.equal(unknown.permission, "unknown"); assert.equal(unknown.source, undefined);

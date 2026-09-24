@@ -1,0 +1,3440 @@
+{
+  "captured": "2026-09-24",
+  "description": "Reduced public search.ch station-to-station responses. No disruptions or personal coordinates. November samples test the omitted early train; September replacement service contains a bicycle ban.",
+  "overnight": {
+    "url": "https://search.ch/fahrplan/Z%C3%BCrich-HB..Laax-GR,posta?time=23.00&date=11%2F02%2F2026",
+    "connections": [
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 00:23:00",
+            "track": "7",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002395_000082_000131_0af06f5_0",
+            "operator": "SOB-sob",
+            "terminal": "Landquart",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_3.6_SN": "Cateringzone / Automaten",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509002",
+              "name": "Landquart",
+              "lat": 46.967428,
+              "lon": 9.554043,
+              "arrival": "2026-11-03 01:39:00",
+              "track": "4"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-11-03 00:31:00",
+                "arrival": "2026-11-03 00:31:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-11-03 00:40:00",
+                "arrival": "2026-11-03 00:40:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-11-03 00:48:00",
+                "arrival": "2026-11-03 00:48:00"
+              },
+              {
+                "stopid": "8503225",
+                "name": "Ziegelbrücke",
+                "lat": 47.136149,
+                "lon": 9.06005,
+                "departure": "2026-11-03 01:03:00",
+                "arrival": "2026-11-03 01:02:00"
+              },
+              {
+                "stopid": "8509416",
+                "name": "Unterterzen",
+                "lat": 47.113845,
+                "lon": 9.255007,
+                "departure": "2026-11-03 01:13:00",
+                "arrival": "2026-11-03 01:13:00"
+              },
+              {
+                "stopid": "8509414",
+                "name": "Walenstadt",
+                "lat": 47.11987,
+                "lon": 9.312972,
+                "departure": "2026-11-03 01:17:00",
+                "arrival": "2026-11-03 01:17:00"
+              },
+              {
+                "stopid": "8509413",
+                "name": "Flums",
+                "lat": 47.096611,
+                "lon": 9.347917,
+                "departure": "2026-11-03 01:21:00",
+                "arrival": "2026-11-03 01:21:00"
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 01:27:00",
+                "arrival": "2026-11-03 01:27:00"
+              },
+              {
+                "stopid": "8509004",
+                "name": "Bad Ragaz",
+                "lat": 47.010305,
+                "lon": 9.505217,
+                "departure": "2026-11-03 01:32:00",
+                "arrival": "2026-11-03 01:32:00"
+              },
+              {
+                "stopid": "8509003",
+                "name": "Maienfeld",
+                "lat": 47.003833,
+                "lon": 9.52921,
+                "departure": "2026-11-03 01:34:00",
+                "arrival": "2026-11-03 01:34:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509002",
+            "name": "Landquart",
+            "lat": 46.967428,
+            "lon": 9.554043,
+            "departure": "2026-11-03 04:24:00",
+            "arrival": "2026-11-03 01:39:00",
+            "track": "8B",
+            "type": "express_train",
+            "line": "RE7",
+            "tripid": "T2026_001707_000072_038001_118c711_0",
+            "operator": "RhB",
+            "terminal": "Ilanz",
+            "*G": "RE",
+            "*L": "7",
+            "attributes": {
+              "0_2.9_GR": "GRUPPEN: Reservierung obligatorisch"
+            },
+            "exit": {
+              "stopid": "8509171",
+              "name": "Ilanz",
+              "lat": 46.775242,
+              "lon": 9.207709,
+              "arrival": "2026-11-03 05:15:00",
+              "track": "1"
+            },
+            "stops": [
+              {
+                "stopid": "8509056",
+                "name": "Landquart Ried",
+                "lat": 46.95724,
+                "lon": 9.560948,
+                "departure": "2026-11-03 04:26:00",
+                "arrival": "2026-11-03 04:26:00"
+              },
+              {
+                "stopid": "8509055",
+                "name": "Igis",
+                "lat": 46.949655,
+                "lon": 9.564788,
+                "departure": "2026-11-03 04:28:00",
+                "arrival": "2026-11-03 04:28:00"
+              },
+              {
+                "stopid": "8509054",
+                "name": "Zizers",
+                "lat": 46.934886,
+                "lon": 9.559618,
+                "departure": "2026-11-03 04:30:00",
+                "arrival": "2026-11-03 04:30:00"
+              },
+              {
+                "stopid": "8509053",
+                "name": "Untervaz-Trimmis",
+                "lat": 46.919047,
+                "lon": 9.559216,
+                "departure": "2026-11-03 04:34:00",
+                "arrival": "2026-11-03 04:33:00"
+              },
+              {
+                "stopid": "8509006",
+                "name": "Chur Wiesental",
+                "lat": 46.861904,
+                "lon": 9.531447,
+                "departure": "2026-11-03 04:39:00",
+                "arrival": "2026-11-03 04:39:00"
+              },
+              {
+                "stopid": "8509000",
+                "name": "Chur",
+                "lat": 46.853078,
+                "lon": 9.528926,
+                "departure": "2026-11-03 04:43:00",
+                "arrival": "2026-11-03 04:41:00"
+              },
+              {
+                "stopid": "8509183",
+                "name": "Reichenau-Tamins",
+                "lat": 46.823949,
+                "lon": 9.413086,
+                "departure": "2026-11-03 04:51:00",
+                "arrival": "2026-11-03 04:51:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509171",
+            "name": "Ilanz",
+            "lat": 46.775242,
+            "lon": 9.207709,
+            "departure": "2026-11-03 05:15:00",
+            "arrival": "2026-11-03 05:15:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575120",
+              "name": "Ilanz, Bahnhof/Post",
+              "lat": 46.775171,
+              "lon": 9.207667,
+              "arrival": "2026-11-03 05:17:00"
+            }
+          },
+          {
+            "stopid": "8575120",
+            "name": "Ilanz, Bahnhof/Post",
+            "lat": 46.775171,
+            "lon": 9.207667,
+            "departure": "2026-11-03 05:30:00",
+            "arrival": "2026-11-03 05:17:00",
+            "track": "C",
+            "type": "post",
+            "line": "411",
+            "tripid": "T2026_841107_000801_236001_6500986_0",
+            "operator": "PAG",
+            "terminal": "Fidaz, Pinut",
+            "*G": "B",
+            "*L": "411",
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-11-03 05:50:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8575009",
+                "name": "Ilanz, Spital",
+                "lat": 46.77677,
+                "lon": 9.206082,
+                "departure": "2026-11-03 05:31:00",
+                "arrival": "2026-11-03 05:31:00"
+              },
+              {
+                "stopid": "8582579",
+                "name": "Schluein, Casanova",
+                "lat": 46.77745,
+                "lon": 9.211003,
+                "departure": "2026-11-03 05:32:00",
+                "arrival": "2026-11-03 05:32:00"
+              },
+              {
+                "stopid": "8575010",
+                "name": "Schluein, Caglia Liunga",
+                "lat": 46.78239,
+                "lon": 9.220793,
+                "departure": "2026-11-03 05:34:00",
+                "arrival": "2026-11-03 05:34:00"
+              },
+              {
+                "stopid": "8509729",
+                "name": "Schluein, vitg",
+                "lat": 46.788483,
+                "lon": 9.226483,
+                "departure": "2026-11-03 05:35:00",
+                "arrival": "2026-11-03 05:35:00"
+              },
+              {
+                "stopid": "8575011",
+                "name": "Schluein, Falerin",
+                "lat": 46.789012,
+                "lon": 9.23292,
+                "departure": "2026-11-03 05:36:00",
+                "arrival": "2026-11-03 05:36:00"
+              },
+              {
+                "stopid": "8581911",
+                "name": "Sagogn, Carnetg",
+                "lat": 46.790037,
+                "lon": 9.24836,
+                "departure": "2026-11-03 05:38:00",
+                "arrival": "2026-11-03 05:38:00"
+              },
+              {
+                "stopid": "8575012",
+                "name": "Sagogn, Vitg dadens",
+                "lat": 46.789725,
+                "lon": 9.251585,
+                "departure": "2026-11-03 05:39:00",
+                "arrival": "2026-11-03 05:39:00"
+              },
+              {
+                "stopid": "8509728",
+                "name": "Sagogn, Vitg dado",
+                "lat": 46.791542,
+                "lon": 9.256716,
+                "departure": "2026-11-03 05:42:00",
+                "arrival": "2026-11-03 05:42:00"
+              },
+              {
+                "stopid": "8581051",
+                "name": "Sagogn, Fanaus",
+                "lat": 46.79381,
+                "lon": 9.257789,
+                "departure": "2026-11-03 05:43:00",
+                "arrival": "2026-11-03 05:43:00"
+              },
+              {
+                "stopid": "8579811",
+                "name": "Sagogn, Storta pintga",
+                "lat": 46.793687,
+                "lon": 9.254745,
+                "departure": "2026-11-03 05:43:00",
+                "arrival": "2026-11-03 05:43:00"
+              },
+              {
+                "stopid": "8509725",
+                "name": "Laax GR, Caltgera",
+                "lat": 46.798734,
+                "lon": 9.256527,
+                "departure": "2026-11-03 05:47:00",
+                "arrival": "2026-11-03 05:47:00"
+              },
+              {
+                "stopid": "8574874",
+                "name": "Laax GR, Demvitg",
+                "lat": 46.802629,
+                "lon": 9.256029,
+                "departure": "2026-11-03 05:48:00",
+                "arrival": "2026-11-03 05:48:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-11-03 05:50:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 05:12:00",
+            "track": "7",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002351_000082_000101_36a138e_0",
+            "operator": "SOB-sob",
+            "terminal": "Chur",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_3.6_SN": "Cateringzone / Automaten",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 06:48:00",
+              "track": "7"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-11-03 05:21:00",
+                "arrival": "2026-11-03 05:21:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-11-03 05:31:00",
+                "arrival": "2026-11-03 05:31:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-11-03 05:41:00",
+                "arrival": "2026-11-03 05:39:00"
+              },
+              {
+                "stopid": "8503225",
+                "name": "Ziegelbrücke",
+                "lat": 47.136149,
+                "lon": 9.06005,
+                "departure": "2026-11-03 06:00:00",
+                "arrival": "2026-11-03 05:56:00"
+              },
+              {
+                "stopid": "8509416",
+                "name": "Unterterzen",
+                "lat": 47.113845,
+                "lon": 9.255007,
+                "departure": "2026-11-03 06:11:00",
+                "arrival": "2026-11-03 06:10:00"
+              },
+              {
+                "stopid": "8509414",
+                "name": "Walenstadt",
+                "lat": 47.11987,
+                "lon": 9.312972,
+                "departure": "2026-11-03 06:15:00",
+                "arrival": "2026-11-03 06:15:00"
+              },
+              {
+                "stopid": "8509413",
+                "name": "Flums",
+                "lat": 47.096611,
+                "lon": 9.347917,
+                "departure": "2026-11-03 06:19:00",
+                "arrival": "2026-11-03 06:18:00"
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 06:27:00",
+                "arrival": "2026-11-03 06:25:00"
+              },
+              {
+                "stopid": "8509004",
+                "name": "Bad Ragaz",
+                "lat": 47.010305,
+                "lon": 9.505217,
+                "departure": "2026-11-03 06:31:00",
+                "arrival": "2026-11-03 06:31:00"
+              },
+              {
+                "stopid": "8509003",
+                "name": "Maienfeld",
+                "lat": 47.003833,
+                "lon": 9.52921,
+                "departure": "2026-11-03 06:34:00",
+                "arrival": "2026-11-03 06:34:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-11-03 06:39:00",
+                "arrival": "2026-11-03 06:39:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "departure": "2026-11-03 06:48:00",
+            "arrival": "2026-11-03 06:48:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575112",
+              "name": "Chur, Postautostation",
+              "lat": 46.852875,
+              "lon": 9.527724,
+              "arrival": "2026-11-03 06:51:00"
+            }
+          },
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-11-03 06:58:00",
+            "arrival": "2026-11-03 06:51:00",
+            "track": "N",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881015_000801_236001_1aadced_0",
+            "operator": "PAG",
+            "terminal": "Falera, center",
+            "*G": "B",
+            "*L": "81",
+            "attributes": {
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-11-03 07:48:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574493",
+                "name": "Chur, Malteser",
+                "lat": 46.848402,
+                "lon": 9.529243,
+                "departure": "2026-11-03 07:00:00"
+              },
+              {
+                "stopid": "8574666",
+                "name": "Chur, Brambrüeschb./Stadthalle",
+                "lat": 46.847487,
+                "lon": 9.525626,
+                "departure": "2026-11-03 07:01:00"
+              },
+              {
+                "stopid": "8574667",
+                "name": "Chur, Kaserne/Kornquader",
+                "lat": 46.84694,
+                "lon": 9.519126,
+                "departure": "2026-11-03 07:02:00"
+              },
+              {
+                "stopid": "8574668",
+                "name": "Chur, Strassenverkehrsamt",
+                "lat": 46.846707,
+                "lon": 9.516573,
+                "departure": "2026-11-03 07:02:00"
+              },
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-11-03 07:03:00"
+              },
+              {
+                "stopid": "8509730",
+                "name": "Tamins, Unterdorf",
+                "lat": 46.827878,
+                "lon": 9.40855,
+                "departure": "2026-11-03 07:12:00",
+                "arrival": "2026-11-03 07:11:00"
+              },
+              {
+                "stopid": "8509726",
+                "name": "Trin, Platta",
+                "lat": 46.827306,
+                "lon": 9.382034,
+                "departure": "2026-11-03 07:15:00",
+                "arrival": "2026-11-03 07:15:00"
+              },
+              {
+                "stopid": "8581027",
+                "name": "Trin, Quadris",
+                "lat": 46.828809,
+                "lon": 9.366631,
+                "departure": "2026-11-03 07:16:00",
+                "arrival": "2026-11-03 07:16:00"
+              },
+              {
+                "stopid": "8509895",
+                "name": "Trin, Dorf",
+                "lat": 46.828256,
+                "lon": 9.361538,
+                "departure": "2026-11-03 07:19:00",
+                "arrival": "2026-11-03 07:19:00"
+              },
+              {
+                "stopid": "8583228",
+                "name": "Trin, Portalavanda",
+                "lat": 46.828147,
+                "lon": 9.358387,
+                "departure": "2026-11-03 07:19:00",
+                "arrival": "2026-11-03 07:19:00"
+              },
+              {
+                "stopid": "8509731",
+                "name": "Trin, Porclis",
+                "lat": 46.826805,
+                "lon": 9.350972,
+                "departure": "2026-11-03 07:20:00",
+                "arrival": "2026-11-03 07:20:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-11-03 07:23:00",
+                "arrival": "2026-11-03 07:23:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-11-03 07:24:00",
+                "arrival": "2026-11-03 07:24:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-11-03 07:25:00",
+                "arrival": "2026-11-03 07:25:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-11-03 07:27:00",
+                "arrival": "2026-11-03 07:27:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-11-03 07:29:00",
+                "arrival": "2026-11-03 07:29:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-11-03 07:33:00",
+                "arrival": "2026-11-03 07:31:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-11-03 07:33:00",
+                "arrival": "2026-11-03 07:33:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-11-03 07:34:00",
+                "arrival": "2026-11-03 07:34:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-11-03 07:36:00",
+                "arrival": "2026-11-03 07:36:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-11-03 07:37:00",
+                "arrival": "2026-11-03 07:37:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-11-03 07:38:00",
+                "arrival": "2026-11-03 07:38:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-11-03 07:42:00",
+                "arrival": "2026-11-03 07:41:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-11-03 07:43:00",
+                "arrival": "2026-11-03 07:43:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-11-03 07:44:00",
+                "arrival": "2026-11-03 07:44:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-11-03 07:48:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 06:07:00",
+            "track": "5",
+            "type": "express_train",
+            "line": "IC 3",
+            "tripid": "T2026_000757_000011_000101_e930ad4_0",
+            "operator": "SBB",
+            "terminal": "Chur",
+            "*G": "IC",
+            "*L": "3",
+            "attributes": {
+              "0_1.11_WR": "Restaurant",
+              "0_5.13_RZ": "Ruhezone in 1. Klasse",
+              "1_4.2_VB": "VELOS: Platzzahl eingeschränkt",
+              "1_5.14_BZ": "Businesszone in 1. Klasse",
+              "1_5.1_FZ": "Familienzone ohne Spielplatz",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 07:22:00",
+              "track": "9"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 07:03:00",
+                "arrival": "2026-11-03 07:02:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-11-03 07:12:00",
+                "arrival": "2026-11-03 07:11:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "departure": "2026-11-03 07:22:00",
+            "arrival": "2026-11-03 07:22:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575112",
+              "name": "Chur, Postautostation",
+              "lat": 46.852875,
+              "lon": 9.527724,
+              "arrival": "2026-11-03 07:25:00"
+            }
+          },
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-11-03 07:28:00",
+            "arrival": "2026-11-03 07:25:00",
+            "track": "N",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881017_000801_236001_c5ab3ac_0",
+            "operator": "PAG",
+            "terminal": "Falera, center",
+            "*G": "B",
+            "*L": "81",
+            "attributes": {
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-11-03 08:18:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574493",
+                "name": "Chur, Malteser",
+                "lat": 46.848402,
+                "lon": 9.529243,
+                "departure": "2026-11-03 07:30:00"
+              },
+              {
+                "stopid": "8574666",
+                "name": "Chur, Brambrüeschb./Stadthalle",
+                "lat": 46.847487,
+                "lon": 9.525626,
+                "departure": "2026-11-03 07:31:00"
+              },
+              {
+                "stopid": "8574667",
+                "name": "Chur, Kaserne/Kornquader",
+                "lat": 46.84694,
+                "lon": 9.519126,
+                "departure": "2026-11-03 07:32:00"
+              },
+              {
+                "stopid": "8574668",
+                "name": "Chur, Strassenverkehrsamt",
+                "lat": 46.846707,
+                "lon": 9.516573,
+                "departure": "2026-11-03 07:32:00"
+              },
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-11-03 07:33:00"
+              },
+              {
+                "stopid": "8509730",
+                "name": "Tamins, Unterdorf",
+                "lat": 46.827878,
+                "lon": 9.40855,
+                "departure": "2026-11-03 07:42:00",
+                "arrival": "2026-11-03 07:41:00"
+              },
+              {
+                "stopid": "8509726",
+                "name": "Trin, Platta",
+                "lat": 46.827306,
+                "lon": 9.382034,
+                "departure": "2026-11-03 07:45:00",
+                "arrival": "2026-11-03 07:45:00"
+              },
+              {
+                "stopid": "8581027",
+                "name": "Trin, Quadris",
+                "lat": 46.828809,
+                "lon": 9.366631,
+                "departure": "2026-11-03 07:46:00",
+                "arrival": "2026-11-03 07:46:00"
+              },
+              {
+                "stopid": "8509895",
+                "name": "Trin, Dorf",
+                "lat": 46.828256,
+                "lon": 9.361538,
+                "departure": "2026-11-03 07:49:00",
+                "arrival": "2026-11-03 07:49:00"
+              },
+              {
+                "stopid": "8583228",
+                "name": "Trin, Portalavanda",
+                "lat": 46.828147,
+                "lon": 9.358387,
+                "departure": "2026-11-03 07:49:00",
+                "arrival": "2026-11-03 07:49:00"
+              },
+              {
+                "stopid": "8509731",
+                "name": "Trin, Porclis",
+                "lat": 46.826805,
+                "lon": 9.350972,
+                "departure": "2026-11-03 07:50:00",
+                "arrival": "2026-11-03 07:50:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-11-03 07:53:00",
+                "arrival": "2026-11-03 07:53:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-11-03 07:54:00",
+                "arrival": "2026-11-03 07:54:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-11-03 07:55:00",
+                "arrival": "2026-11-03 07:55:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-11-03 07:57:00",
+                "arrival": "2026-11-03 07:57:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-11-03 07:59:00",
+                "arrival": "2026-11-03 07:59:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-11-03 08:03:00",
+                "arrival": "2026-11-03 08:01:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-11-03 08:03:00",
+                "arrival": "2026-11-03 08:03:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-11-03 08:04:00",
+                "arrival": "2026-11-03 08:04:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-11-03 08:06:00",
+                "arrival": "2026-11-03 08:06:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-11-03 08:07:00",
+                "arrival": "2026-11-03 08:07:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-11-03 08:08:00",
+                "arrival": "2026-11-03 08:08:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-11-03 08:12:00",
+                "arrival": "2026-11-03 08:11:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-11-03 08:13:00",
+                "arrival": "2026-11-03 08:13:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-11-03 08:14:00",
+                "arrival": "2026-11-03 08:14:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-11-03 08:18:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 06:38:00",
+            "track": "12",
+            "type": "express_train",
+            "line": "IC 3",
+            "tripid": "T2026_000557_000011_000101_e6835eb_0",
+            "operator": "SBB",
+            "terminal": "Chur",
+            "*G": "IC",
+            "*L": "3",
+            "attributes": {
+              "0_1.11_WR": "Restaurant",
+              "0_5.13_RZ": "Ruhezone in 1. Klasse",
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_4.2_VB": "VELOS: Platzzahl eingeschränkt",
+              "1_5.14_BZ": "Businesszone in 1. Klasse",
+              "1_5.1_FZ": "Familienzone ohne Spielplatz",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 07:52:00",
+              "track": "9"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 07:33:00",
+                "arrival": "2026-11-03 07:32:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-11-03 07:42:00",
+                "arrival": "2026-11-03 07:41:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "departure": "2026-11-03 07:52:00",
+            "arrival": "2026-11-03 07:52:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575112",
+              "name": "Chur, Postautostation",
+              "lat": 46.852875,
+              "lon": 9.527724,
+              "arrival": "2026-11-03 07:55:00"
+            }
+          },
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-11-03 07:58:00",
+            "arrival": "2026-11-03 07:55:00",
+            "track": "N",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881023_000801_236001_b4b5497_0",
+            "operator": "PAG",
+            "terminal": "Falera, center",
+            "*G": "B",
+            "*L": "81",
+            "attributes": {
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-11-03 08:48:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574493",
+                "name": "Chur, Malteser",
+                "lat": 46.848402,
+                "lon": 9.529243,
+                "departure": "2026-11-03 08:00:00"
+              },
+              {
+                "stopid": "8574666",
+                "name": "Chur, Brambrüeschb./Stadthalle",
+                "lat": 46.847487,
+                "lon": 9.525626,
+                "departure": "2026-11-03 08:01:00"
+              },
+              {
+                "stopid": "8574667",
+                "name": "Chur, Kaserne/Kornquader",
+                "lat": 46.84694,
+                "lon": 9.519126,
+                "departure": "2026-11-03 08:02:00"
+              },
+              {
+                "stopid": "8574668",
+                "name": "Chur, Strassenverkehrsamt",
+                "lat": 46.846707,
+                "lon": 9.516573,
+                "departure": "2026-11-03 08:02:00"
+              },
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-11-03 08:03:00"
+              },
+              {
+                "stopid": "8509730",
+                "name": "Tamins, Unterdorf",
+                "lat": 46.827878,
+                "lon": 9.40855,
+                "departure": "2026-11-03 08:12:00",
+                "arrival": "2026-11-03 08:11:00"
+              },
+              {
+                "stopid": "8509726",
+                "name": "Trin, Platta",
+                "lat": 46.827306,
+                "lon": 9.382034,
+                "departure": "2026-11-03 08:15:00",
+                "arrival": "2026-11-03 08:15:00"
+              },
+              {
+                "stopid": "8581027",
+                "name": "Trin, Quadris",
+                "lat": 46.828809,
+                "lon": 9.366631,
+                "departure": "2026-11-03 08:16:00",
+                "arrival": "2026-11-03 08:16:00"
+              },
+              {
+                "stopid": "8509895",
+                "name": "Trin, Dorf",
+                "lat": 46.828256,
+                "lon": 9.361538,
+                "departure": "2026-11-03 08:19:00",
+                "arrival": "2026-11-03 08:19:00"
+              },
+              {
+                "stopid": "8583228",
+                "name": "Trin, Portalavanda",
+                "lat": 46.828147,
+                "lon": 9.358387,
+                "departure": "2026-11-03 08:19:00",
+                "arrival": "2026-11-03 08:19:00"
+              },
+              {
+                "stopid": "8509731",
+                "name": "Trin, Porclis",
+                "lat": 46.826805,
+                "lon": 9.350972,
+                "departure": "2026-11-03 08:20:00",
+                "arrival": "2026-11-03 08:20:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-11-03 08:23:00",
+                "arrival": "2026-11-03 08:23:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-11-03 08:24:00",
+                "arrival": "2026-11-03 08:24:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-11-03 08:25:00",
+                "arrival": "2026-11-03 08:25:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-11-03 08:27:00",
+                "arrival": "2026-11-03 08:27:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-11-03 08:29:00",
+                "arrival": "2026-11-03 08:29:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-11-03 08:33:00",
+                "arrival": "2026-11-03 08:31:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-11-03 08:33:00",
+                "arrival": "2026-11-03 08:33:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-11-03 08:34:00",
+                "arrival": "2026-11-03 08:34:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-11-03 08:36:00",
+                "arrival": "2026-11-03 08:36:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-11-03 08:37:00",
+                "arrival": "2026-11-03 08:37:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-11-03 08:38:00",
+                "arrival": "2026-11-03 08:38:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-11-03 08:42:00",
+                "arrival": "2026-11-03 08:41:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-11-03 08:43:00",
+                "arrival": "2026-11-03 08:43:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-11-03 08:44:00",
+                "arrival": "2026-11-03 08:44:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-11-03 08:48:00"
+          }
+        ]
+      }
+    ]
+  },
+  "chur": {
+    "url": "https://search.ch/fahrplan/Z%C3%BCrich-HB..Chur?time=23.00&date=11%2F02%2F2026",
+    "connections": [
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-02 23:12:00",
+            "track": "6",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002393_000011_000101_ed1ad2d_0",
+            "operator": "SBB",
+            "terminal": "Chur",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 00:49:00",
+              "track": "7"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-11-02 23:21:00",
+                "arrival": "2026-11-02 23:21:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-11-02 23:31:00",
+                "arrival": "2026-11-02 23:31:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-11-02 23:41:00",
+                "arrival": "2026-11-02 23:39:00"
+              },
+              {
+                "stopid": "8503220",
+                "name": "Lachen SZ",
+                "lat": 47.190056,
+                "lon": 8.852704,
+                "departure": "2026-11-02 23:46:00",
+                "arrival": "2026-11-02 23:46:00"
+              },
+              {
+                "stopid": "8503221",
+                "name": "Siebnen-Wangen",
+                "lat": 47.182664,
+                "lon": 8.900711,
+                "departure": "2026-11-02 23:50:00",
+                "arrival": "2026-11-02 23:50:00"
+              },
+              {
+                "stopid": "8503225",
+                "name": "Ziegelbrücke",
+                "lat": 47.136149,
+                "lon": 9.06005,
+                "departure": "2026-11-03 00:00:00",
+                "arrival": "2026-11-02 23:59:00"
+              },
+              {
+                "stopid": "8509416",
+                "name": "Unterterzen",
+                "lat": 47.113845,
+                "lon": 9.255007,
+                "departure": "2026-11-03 00:11:00",
+                "arrival": "2026-11-03 00:10:00"
+              },
+              {
+                "stopid": "8509414",
+                "name": "Walenstadt",
+                "lat": 47.11987,
+                "lon": 9.312972,
+                "departure": "2026-11-03 00:15:00",
+                "arrival": "2026-11-03 00:15:00"
+              },
+              {
+                "stopid": "8509413",
+                "name": "Flums",
+                "lat": 47.096611,
+                "lon": 9.347917,
+                "departure": "2026-11-03 00:19:00",
+                "arrival": "2026-11-03 00:18:00"
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 00:29:00",
+                "arrival": "2026-11-03 00:25:00"
+              },
+              {
+                "stopid": "8509004",
+                "name": "Bad Ragaz",
+                "lat": 47.010305,
+                "lon": 9.505217,
+                "departure": "2026-11-03 00:33:00",
+                "arrival": "2026-11-03 00:33:00"
+              },
+              {
+                "stopid": "8509003",
+                "name": "Maienfeld",
+                "lat": 47.003833,
+                "lon": 9.52921,
+                "departure": "2026-11-03 00:36:00",
+                "arrival": "2026-11-03 00:36:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-11-03 00:40:00",
+                "arrival": "2026-11-03 00:40:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "arrival": "2026-11-03 00:49:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 00:23:00",
+            "track": "7",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002395_000082_000131_0af06f5_0",
+            "operator": "SOB-sob",
+            "terminal": "Landquart",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_3.6_SN": "Cateringzone / Automaten",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509002",
+              "name": "Landquart",
+              "lat": 46.967428,
+              "lon": 9.554043,
+              "arrival": "2026-11-03 01:39:00",
+              "track": "4"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-11-03 00:31:00",
+                "arrival": "2026-11-03 00:31:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-11-03 00:40:00",
+                "arrival": "2026-11-03 00:40:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-11-03 00:48:00",
+                "arrival": "2026-11-03 00:48:00"
+              },
+              {
+                "stopid": "8503225",
+                "name": "Ziegelbrücke",
+                "lat": 47.136149,
+                "lon": 9.06005,
+                "departure": "2026-11-03 01:03:00",
+                "arrival": "2026-11-03 01:02:00"
+              },
+              {
+                "stopid": "8509416",
+                "name": "Unterterzen",
+                "lat": 47.113845,
+                "lon": 9.255007,
+                "departure": "2026-11-03 01:13:00",
+                "arrival": "2026-11-03 01:13:00"
+              },
+              {
+                "stopid": "8509414",
+                "name": "Walenstadt",
+                "lat": 47.11987,
+                "lon": 9.312972,
+                "departure": "2026-11-03 01:17:00",
+                "arrival": "2026-11-03 01:17:00"
+              },
+              {
+                "stopid": "8509413",
+                "name": "Flums",
+                "lat": 47.096611,
+                "lon": 9.347917,
+                "departure": "2026-11-03 01:21:00",
+                "arrival": "2026-11-03 01:21:00"
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 01:27:00",
+                "arrival": "2026-11-03 01:27:00"
+              },
+              {
+                "stopid": "8509004",
+                "name": "Bad Ragaz",
+                "lat": 47.010305,
+                "lon": 9.505217,
+                "departure": "2026-11-03 01:32:00",
+                "arrival": "2026-11-03 01:32:00"
+              },
+              {
+                "stopid": "8509003",
+                "name": "Maienfeld",
+                "lat": 47.003833,
+                "lon": 9.52921,
+                "departure": "2026-11-03 01:34:00",
+                "arrival": "2026-11-03 01:34:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509002",
+            "name": "Landquart",
+            "lat": 46.967428,
+            "lon": 9.554043,
+            "departure": "2026-11-03 04:24:00",
+            "arrival": "2026-11-03 01:39:00",
+            "track": "8B",
+            "type": "express_train",
+            "line": "RE7",
+            "tripid": "T2026_001707_000072_038001_118c711_0",
+            "operator": "RhB",
+            "terminal": "Ilanz",
+            "*G": "RE",
+            "*L": "7",
+            "attributes": {
+              "0_2.9_GR": "GRUPPEN: Reservierung obligatorisch"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 04:41:00",
+              "track": "11"
+            },
+            "stops": [
+              {
+                "stopid": "8509056",
+                "name": "Landquart Ried",
+                "lat": 46.95724,
+                "lon": 9.560948,
+                "departure": "2026-11-03 04:26:00",
+                "arrival": "2026-11-03 04:26:00"
+              },
+              {
+                "stopid": "8509055",
+                "name": "Igis",
+                "lat": 46.949655,
+                "lon": 9.564788,
+                "departure": "2026-11-03 04:28:00",
+                "arrival": "2026-11-03 04:28:00"
+              },
+              {
+                "stopid": "8509054",
+                "name": "Zizers",
+                "lat": 46.934886,
+                "lon": 9.559618,
+                "departure": "2026-11-03 04:30:00",
+                "arrival": "2026-11-03 04:30:00"
+              },
+              {
+                "stopid": "8509053",
+                "name": "Untervaz-Trimmis",
+                "lat": 46.919047,
+                "lon": 9.559216,
+                "departure": "2026-11-03 04:34:00",
+                "arrival": "2026-11-03 04:33:00"
+              },
+              {
+                "stopid": "8509006",
+                "name": "Chur Wiesental",
+                "lat": 46.861904,
+                "lon": 9.531447,
+                "departure": "2026-11-03 04:39:00",
+                "arrival": "2026-11-03 04:39:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "arrival": "2026-11-03 04:41:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 05:12:00",
+            "track": "7",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002351_000082_000101_36a138e_0",
+            "operator": "SOB-sob",
+            "terminal": "Chur",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_3.6_SN": "Cateringzone / Automaten",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 06:48:00",
+              "track": "7"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-11-03 05:21:00",
+                "arrival": "2026-11-03 05:21:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-11-03 05:31:00",
+                "arrival": "2026-11-03 05:31:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-11-03 05:41:00",
+                "arrival": "2026-11-03 05:39:00"
+              },
+              {
+                "stopid": "8503225",
+                "name": "Ziegelbrücke",
+                "lat": 47.136149,
+                "lon": 9.06005,
+                "departure": "2026-11-03 06:00:00",
+                "arrival": "2026-11-03 05:56:00"
+              },
+              {
+                "stopid": "8509416",
+                "name": "Unterterzen",
+                "lat": 47.113845,
+                "lon": 9.255007,
+                "departure": "2026-11-03 06:11:00",
+                "arrival": "2026-11-03 06:10:00"
+              },
+              {
+                "stopid": "8509414",
+                "name": "Walenstadt",
+                "lat": 47.11987,
+                "lon": 9.312972,
+                "departure": "2026-11-03 06:15:00",
+                "arrival": "2026-11-03 06:15:00"
+              },
+              {
+                "stopid": "8509413",
+                "name": "Flums",
+                "lat": 47.096611,
+                "lon": 9.347917,
+                "departure": "2026-11-03 06:19:00",
+                "arrival": "2026-11-03 06:18:00"
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 06:27:00",
+                "arrival": "2026-11-03 06:25:00"
+              },
+              {
+                "stopid": "8509004",
+                "name": "Bad Ragaz",
+                "lat": 47.010305,
+                "lon": 9.505217,
+                "departure": "2026-11-03 06:31:00",
+                "arrival": "2026-11-03 06:31:00"
+              },
+              {
+                "stopid": "8509003",
+                "name": "Maienfeld",
+                "lat": 47.003833,
+                "lon": 9.52921,
+                "departure": "2026-11-03 06:34:00",
+                "arrival": "2026-11-03 06:34:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-11-03 06:39:00",
+                "arrival": "2026-11-03 06:39:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "arrival": "2026-11-03 06:48:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-11-03 06:07:00",
+            "track": "5",
+            "type": "express_train",
+            "line": "IC 3",
+            "tripid": "T2026_000757_000011_000101_e930ad4_0",
+            "operator": "SBB",
+            "terminal": "Chur",
+            "*G": "IC",
+            "*L": "3",
+            "attributes": {
+              "0_1.11_WR": "Restaurant",
+              "0_5.13_RZ": "Ruhezone in 1. Klasse",
+              "1_4.2_VB": "VELOS: Platzzahl eingeschränkt",
+              "1_5.14_BZ": "Businesszone in 1. Klasse",
+              "1_5.1_FZ": "Familienzone ohne Spielplatz",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-11-03 07:22:00",
+              "track": "9"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-11-03 07:03:00",
+                "arrival": "2026-11-03 07:02:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-11-03 07:12:00",
+                "arrival": "2026-11-03 07:11:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "arrival": "2026-11-03 07:22:00"
+          }
+        ]
+      }
+    ]
+  },
+  "postbus": {
+    "url": "https://search.ch/fahrplan/Chur,Postautostation..Laax-GR,posta?time=08.00&date=09%2F25%2F2026",
+    "connections": [
+      {
+        "legs": [
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-09-25 08:28:00",
+            "track": "N",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881025_000801_236001_bc18400_0",
+            "operator": "PAG",
+            "terminal": "Falera, center",
+            "*G": "B",
+            "*L": "81",
+            "attributes": {
+              "0_1.5_VR": "VELOS: Reservierung obligatorisch",
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-09-25 09:18:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574493",
+                "name": "Chur, Malteser",
+                "lat": 46.848402,
+                "lon": 9.529243,
+                "departure": "2026-09-25 08:30:00"
+              },
+              {
+                "stopid": "8574666",
+                "name": "Chur, Brambrüeschb./Stadthalle",
+                "lat": 46.847487,
+                "lon": 9.525626,
+                "departure": "2026-09-25 08:31:00"
+              },
+              {
+                "stopid": "8574667",
+                "name": "Chur, Kaserne/Kornquader",
+                "lat": 46.84694,
+                "lon": 9.519126,
+                "departure": "2026-09-25 08:32:00"
+              },
+              {
+                "stopid": "8574668",
+                "name": "Chur, Strassenverkehrsamt",
+                "lat": 46.846707,
+                "lon": 9.516573,
+                "departure": "2026-09-25 08:32:00"
+              },
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-09-25 08:33:00"
+              },
+              {
+                "stopid": "8509730",
+                "name": "Tamins, Unterdorf",
+                "lat": 46.827878,
+                "lon": 9.40855,
+                "departure": "2026-09-25 08:42:00",
+                "arrival": "2026-09-25 08:41:00"
+              },
+              {
+                "stopid": "8509726",
+                "name": "Trin, Platta",
+                "lat": 46.827306,
+                "lon": 9.382034,
+                "departure": "2026-09-25 08:45:00",
+                "arrival": "2026-09-25 08:45:00"
+              },
+              {
+                "stopid": "8581027",
+                "name": "Trin, Quadris",
+                "lat": 46.828809,
+                "lon": 9.366631,
+                "departure": "2026-09-25 08:46:00",
+                "arrival": "2026-09-25 08:46:00"
+              },
+              {
+                "stopid": "8509895",
+                "name": "Trin, Dorf",
+                "lat": 46.828256,
+                "lon": 9.361538,
+                "departure": "2026-09-25 08:49:00",
+                "arrival": "2026-09-25 08:49:00"
+              },
+              {
+                "stopid": "8583228",
+                "name": "Trin, Portalavanda",
+                "lat": 46.828147,
+                "lon": 9.358387,
+                "departure": "2026-09-25 08:49:00",
+                "arrival": "2026-09-25 08:49:00"
+              },
+              {
+                "stopid": "8509731",
+                "name": "Trin, Porclis",
+                "lat": 46.826805,
+                "lon": 9.350972,
+                "departure": "2026-09-25 08:50:00",
+                "arrival": "2026-09-25 08:50:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-09-25 08:53:00",
+                "arrival": "2026-09-25 08:53:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-09-25 08:54:00",
+                "arrival": "2026-09-25 08:54:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-09-25 08:55:00",
+                "arrival": "2026-09-25 08:55:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-09-25 08:57:00",
+                "arrival": "2026-09-25 08:57:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-09-25 08:59:00",
+                "arrival": "2026-09-25 08:59:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-09-25 09:03:00",
+                "arrival": "2026-09-25 09:01:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-09-25 09:03:00",
+                "arrival": "2026-09-25 09:03:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-09-25 09:04:00",
+                "arrival": "2026-09-25 09:04:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-09-25 09:06:00",
+                "arrival": "2026-09-25 09:06:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-09-25 09:07:00",
+                "arrival": "2026-09-25 09:07:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-09-25 09:08:00",
+                "arrival": "2026-09-25 09:08:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-09-25 09:12:00",
+                "arrival": "2026-09-25 09:11:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-09-25 09:13:00",
+                "arrival": "2026-09-25 09:13:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-09-25 09:14:00",
+                "arrival": "2026-09-25 09:14:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-09-25 09:18:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-09-25 08:57:00",
+            "track": "O",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881027_000801_236001_de8e01d_0",
+            "operator": "PAG",
+            "terminal": "Laax GR, posta",
+            "*G": "EXB",
+            "*L": "81",
+            "attributes": {
+              "0_1.5_VR": "VELOS: Reservierung obligatorisch",
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-09-25 09:42:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-09-25 09:02:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-09-25 09:16:00",
+                "arrival": "2026-09-25 09:16:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-09-25 09:17:00",
+                "arrival": "2026-09-25 09:17:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-09-25 09:18:00",
+                "arrival": "2026-09-25 09:18:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-09-25 09:20:00",
+                "arrival": "2026-09-25 09:20:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-09-25 09:22:00",
+                "arrival": "2026-09-25 09:22:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-09-25 09:26:00",
+                "arrival": "2026-09-25 09:24:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-09-25 09:26:00",
+                "arrival": "2026-09-25 09:26:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-09-25 09:27:00",
+                "arrival": "2026-09-25 09:27:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-09-25 09:29:00",
+                "arrival": "2026-09-25 09:29:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-09-25 09:30:00",
+                "arrival": "2026-09-25 09:30:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-09-25 09:31:00",
+                "arrival": "2026-09-25 09:31:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-09-25 09:35:00",
+                "arrival": "2026-09-25 09:34:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-09-25 09:36:00",
+                "arrival": "2026-09-25 09:36:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-09-25 09:37:00",
+                "arrival": "2026-09-25 09:37:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-09-25 09:42:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-09-25 08:58:00",
+            "track": "N",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881029_000801_236001_a686d6b_0",
+            "operator": "PAG",
+            "terminal": "Falera, center",
+            "*G": "B",
+            "*L": "81",
+            "attributes": {
+              "0_1.5_VR": "VELOS: Reservierung obligatorisch",
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-09-25 09:48:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574493",
+                "name": "Chur, Malteser",
+                "lat": 46.848402,
+                "lon": 9.529243,
+                "departure": "2026-09-25 09:00:00"
+              },
+              {
+                "stopid": "8574666",
+                "name": "Chur, Brambrüeschb./Stadthalle",
+                "lat": 46.847487,
+                "lon": 9.525626,
+                "departure": "2026-09-25 09:01:00"
+              },
+              {
+                "stopid": "8574667",
+                "name": "Chur, Kaserne/Kornquader",
+                "lat": 46.84694,
+                "lon": 9.519126,
+                "departure": "2026-09-25 09:02:00"
+              },
+              {
+                "stopid": "8574668",
+                "name": "Chur, Strassenverkehrsamt",
+                "lat": 46.846707,
+                "lon": 9.516573,
+                "departure": "2026-09-25 09:02:00"
+              },
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-09-25 09:03:00"
+              },
+              {
+                "stopid": "8509730",
+                "name": "Tamins, Unterdorf",
+                "lat": 46.827878,
+                "lon": 9.40855,
+                "departure": "2026-09-25 09:12:00",
+                "arrival": "2026-09-25 09:11:00"
+              },
+              {
+                "stopid": "8509726",
+                "name": "Trin, Platta",
+                "lat": 46.827306,
+                "lon": 9.382034,
+                "departure": "2026-09-25 09:15:00",
+                "arrival": "2026-09-25 09:15:00"
+              },
+              {
+                "stopid": "8581027",
+                "name": "Trin, Quadris",
+                "lat": 46.828809,
+                "lon": 9.366631,
+                "departure": "2026-09-25 09:16:00",
+                "arrival": "2026-09-25 09:16:00"
+              },
+              {
+                "stopid": "8509895",
+                "name": "Trin, Dorf",
+                "lat": 46.828256,
+                "lon": 9.361538,
+                "departure": "2026-09-25 09:19:00",
+                "arrival": "2026-09-25 09:19:00"
+              },
+              {
+                "stopid": "8583228",
+                "name": "Trin, Portalavanda",
+                "lat": 46.828147,
+                "lon": 9.358387,
+                "departure": "2026-09-25 09:19:00",
+                "arrival": "2026-09-25 09:19:00"
+              },
+              {
+                "stopid": "8509731",
+                "name": "Trin, Porclis",
+                "lat": 46.826805,
+                "lon": 9.350972,
+                "departure": "2026-09-25 09:20:00",
+                "arrival": "2026-09-25 09:20:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-09-25 09:23:00",
+                "arrival": "2026-09-25 09:23:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-09-25 09:24:00",
+                "arrival": "2026-09-25 09:24:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-09-25 09:25:00",
+                "arrival": "2026-09-25 09:25:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-09-25 09:27:00",
+                "arrival": "2026-09-25 09:27:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-09-25 09:29:00",
+                "arrival": "2026-09-25 09:29:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-09-25 09:33:00",
+                "arrival": "2026-09-25 09:31:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-09-25 09:33:00",
+                "arrival": "2026-09-25 09:33:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-09-25 09:34:00",
+                "arrival": "2026-09-25 09:34:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-09-25 09:36:00",
+                "arrival": "2026-09-25 09:36:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-09-25 09:37:00",
+                "arrival": "2026-09-25 09:37:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-09-25 09:38:00",
+                "arrival": "2026-09-25 09:38:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-09-25 09:42:00",
+                "arrival": "2026-09-25 09:41:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-09-25 09:43:00",
+                "arrival": "2026-09-25 09:43:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-09-25 09:44:00",
+                "arrival": "2026-09-25 09:44:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-09-25 09:48:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-09-25 09:22:00",
+            "type": "walk",
+            "terminal": "Chur",
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-09-25 09:25:00"
+            }
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "departure": "2026-09-25 09:25:00",
+            "arrival": "2026-09-25 09:25:00",
+            "track": "11CD",
+            "type": "express_train",
+            "line": "RE5",
+            "tripid": "T2026_001727_000072_038001_b6d0cea_0",
+            "operator": "RhB",
+            "terminal": "Ilanz",
+            "*G": "RE",
+            "*L": "5",
+            "attributes": {
+              "0_2.9_GR": "GRUPPEN: Reservierung obligatorisch"
+            },
+            "exit": {
+              "stopid": "8509171",
+              "name": "Ilanz",
+              "lat": 46.775242,
+              "lon": 9.207709,
+              "arrival": "2026-09-25 09:59:00",
+              "track": "3"
+            },
+            "stops": [
+              {
+                "stopid": "8509167",
+                "name": "Trin",
+                "lat": 46.816605,
+                "lon": 9.359326,
+                "departure": "2026-09-25 09:39:00",
+                "arrival": "2026-09-25 09:39:00"
+              },
+              {
+                "stopid": "8509169",
+                "name": "Valendas-Sagogn",
+                "lat": 46.791672,
+                "lon": 9.275547,
+                "departure": "2026-09-25 09:49:00",
+                "arrival": "2026-09-25 09:49:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509171",
+            "name": "Ilanz",
+            "lat": 46.775242,
+            "lon": 9.207709,
+            "departure": "2026-09-25 09:59:00",
+            "arrival": "2026-09-25 09:59:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575120",
+              "name": "Ilanz, Bahnhof/Post",
+              "lat": 46.775171,
+              "lon": 9.207667,
+              "arrival": "2026-09-25 10:01:00"
+            }
+          },
+          {
+            "stopid": "8575120",
+            "name": "Ilanz, Bahnhof/Post",
+            "lat": 46.775171,
+            "lon": 9.207667,
+            "departure": "2026-09-25 10:04:00",
+            "arrival": "2026-09-25 10:01:00",
+            "track": "C",
+            "type": "post",
+            "line": "411",
+            "tripid": "T2026_841177_000801_236001_ef7d215_0",
+            "operator": "PAG",
+            "terminal": "Fidaz, Pinut",
+            "*G": "B",
+            "*L": "411",
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-09-25 10:16:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8575009",
+                "name": "Ilanz, Spital",
+                "lat": 46.77677,
+                "lon": 9.206082,
+                "departure": "2026-09-25 10:05:00",
+                "arrival": "2026-09-25 10:05:00"
+              },
+              {
+                "stopid": "8582579",
+                "name": "Schluein, Casanova",
+                "lat": 46.77745,
+                "lon": 9.211003,
+                "departure": "2026-09-25 10:06:00",
+                "arrival": "2026-09-25 10:06:00"
+              },
+              {
+                "stopid": "8575010",
+                "name": "Schluein, Caglia Liunga",
+                "lat": 46.78239,
+                "lon": 9.220793,
+                "departure": "2026-09-25 10:08:00",
+                "arrival": "2026-09-25 10:08:00"
+              },
+              {
+                "stopid": "8509729",
+                "name": "Schluein, vitg",
+                "lat": 46.788483,
+                "lon": 9.226483,
+                "departure": "2026-09-25 10:09:00",
+                "arrival": "2026-09-25 10:09:00"
+              },
+              {
+                "stopid": "8509725",
+                "name": "Laax GR, Caltgera",
+                "lat": 46.798734,
+                "lon": 9.256527,
+                "departure": "2026-09-25 10:13:00",
+                "arrival": "2026-09-25 10:13:00"
+              },
+              {
+                "stopid": "8574874",
+                "name": "Laax GR, Demvitg",
+                "lat": 46.802629,
+                "lon": 9.256029,
+                "departure": "2026-09-25 10:14:00",
+                "arrival": "2026-09-25 10:14:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-09-25 10:16:00"
+          }
+        ]
+      }
+    ]
+  },
+  "replacement": {
+    "url": "https://search.ch/fahrplan/Z%C3%BCrich-HB..Laax-GR,posta?time=23.00&date=09%2F24%2F2026",
+    "connections": [
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-09-25 00:24:00",
+            "track": "7",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002395_000082_000111_6e0dc41_0",
+            "operator": "SOB-sob",
+            "terminal": "Ziegelbrücke",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_2.18_BA": "Fahrplanänderung",
+              "1_3.6_SN": "Cateringzone / Automaten",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8503225",
+              "name": "Ziegelbrücke",
+              "lat": 47.136149,
+              "lon": 9.06005,
+              "arrival": "2026-09-25 01:03:00",
+              "track": "9"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-09-25 00:32:00",
+                "arrival": "2026-09-25 00:32:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-09-25 00:41:00",
+                "arrival": "2026-09-25 00:41:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-09-25 00:49:00",
+                "arrival": "2026-09-25 00:49:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8503225",
+            "name": "Ziegelbrücke",
+            "lat": 47.136149,
+            "lon": 9.06005,
+            "departure": "2026-09-25 01:03:00",
+            "arrival": "2026-09-25 01:03:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8595640",
+              "name": "Ziegelbrücke, Bahnhof Süd",
+              "lat": 47.136567,
+              "lon": 9.059139,
+              "arrival": "2026-09-25 01:06:00"
+            }
+          },
+          {
+            "stopid": "8595640",
+            "name": "Ziegelbrücke, Bahnhof Süd",
+            "lat": 47.136567,
+            "lon": 9.059139,
+            "departure": "2026-09-25 01:08:00",
+            "arrival": "2026-09-25 01:06:00",
+            "track": "D",
+            "type": "bus",
+            "line": "EV2",
+            "tripid": "T2026_011215_007231_238001_dca1dc4_0",
+            "operator": "SBB-EV",
+            "terminal": "Chur, Gürtelstrasse",
+            "*G": "EV",
+            "*L": "EV2",
+            "attributes": {
+              "0_1.6_VN": "VELOS: Keine Beförderung möglich",
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8572111",
+              "name": "Chur, Gürtelstrasse",
+              "lat": 46.854346,
+              "lon": 9.52849,
+              "arrival": "2026-09-25 02:38:00",
+              "track": "G"
+            },
+            "stops": [
+              {
+                "stopid": "8595380",
+                "name": "Unterterzen, Bahnhof",
+                "lat": 47.113899,
+                "lon": 9.255589,
+                "departure": "2026-09-25 01:28:00",
+                "arrival": "2026-09-25 01:28:00"
+              },
+              {
+                "stopid": "8578567",
+                "name": "Walenstadt, Bahnhof",
+                "lat": 47.119965,
+                "lon": 9.312053,
+                "departure": "2026-09-25 01:34:00",
+                "arrival": "2026-09-25 01:34:00"
+              },
+              {
+                "stopid": "8574776",
+                "name": "Flums, Bahnhof",
+                "lat": 47.096396,
+                "lon": 9.347909,
+                "departure": "2026-09-25 01:40:00",
+                "arrival": "2026-09-25 01:40:00"
+              },
+              {
+                "stopid": "8574614",
+                "name": "Sargans, Bahnhof",
+                "lat": 47.045668,
+                "lon": 9.444908,
+                "departure": "2026-09-25 01:51:00",
+                "arrival": "2026-09-25 01:51:00"
+              },
+              {
+                "stopid": "8575114",
+                "name": "Bad Ragaz, Bahnhof",
+                "lat": 47.010119,
+                "lon": 9.505052,
+                "departure": "2026-09-25 02:05:00",
+                "arrival": "2026-09-25 02:05:00"
+              },
+              {
+                "stopid": "8574563",
+                "name": "Maienfeld, Bahnhof",
+                "lat": 47.004043,
+                "lon": 9.528995,
+                "departure": "2026-09-25 02:11:00",
+                "arrival": "2026-09-25 02:11:00"
+              },
+              {
+                "stopid": "8574569",
+                "name": "Landquart, Bahnhof",
+                "lat": 46.967773,
+                "lon": 9.554897,
+                "departure": "2026-09-25 02:19:00",
+                "arrival": "2026-09-25 02:19:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8572111",
+            "name": "Chur, Gürtelstrasse",
+            "lat": 46.854346,
+            "lon": 9.52849,
+            "departure": "2026-09-25 02:38:00",
+            "arrival": "2026-09-25 02:38:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-09-25 02:41:00"
+            }
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "departure": "2026-09-25 04:43:00",
+            "arrival": "2026-09-25 02:41:00",
+            "track": "11",
+            "type": "express_train",
+            "line": "RE7",
+            "tripid": "T2026_001707_000072_038001_118c711_0",
+            "operator": "RhB",
+            "terminal": "Ilanz",
+            "*G": "RE",
+            "*L": "7",
+            "attributes": {
+              "0_2.9_GR": "GRUPPEN: Reservierung obligatorisch"
+            },
+            "exit": {
+              "stopid": "8509171",
+              "name": "Ilanz",
+              "lat": 46.775242,
+              "lon": 9.207709,
+              "arrival": "2026-09-25 05:15:00",
+              "track": "1"
+            },
+            "stops": [
+              {
+                "stopid": "8509183",
+                "name": "Reichenau-Tamins",
+                "lat": 46.823949,
+                "lon": 9.413086,
+                "departure": "2026-09-25 04:51:00",
+                "arrival": "2026-09-25 04:51:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509171",
+            "name": "Ilanz",
+            "lat": 46.775242,
+            "lon": 9.207709,
+            "departure": "2026-09-25 05:15:00",
+            "arrival": "2026-09-25 05:15:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575120",
+              "name": "Ilanz, Bahnhof/Post",
+              "lat": 46.775171,
+              "lon": 9.207667,
+              "arrival": "2026-09-25 05:17:00"
+            }
+          },
+          {
+            "stopid": "8575120",
+            "name": "Ilanz, Bahnhof/Post",
+            "lat": 46.775171,
+            "lon": 9.207667,
+            "departure": "2026-09-25 05:30:00",
+            "arrival": "2026-09-25 05:17:00",
+            "track": "C",
+            "type": "post",
+            "line": "411",
+            "tripid": "T2026_841107_000801_236001_6500986_0",
+            "operator": "PAG",
+            "terminal": "Fidaz, Pinut",
+            "*G": "B",
+            "*L": "411",
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-09-25 05:50:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8575009",
+                "name": "Ilanz, Spital",
+                "lat": 46.77677,
+                "lon": 9.206082,
+                "departure": "2026-09-25 05:31:00",
+                "arrival": "2026-09-25 05:31:00"
+              },
+              {
+                "stopid": "8582579",
+                "name": "Schluein, Casanova",
+                "lat": 46.77745,
+                "lon": 9.211003,
+                "departure": "2026-09-25 05:32:00",
+                "arrival": "2026-09-25 05:32:00"
+              },
+              {
+                "stopid": "8575010",
+                "name": "Schluein, Caglia Liunga",
+                "lat": 46.78239,
+                "lon": 9.220793,
+                "departure": "2026-09-25 05:34:00",
+                "arrival": "2026-09-25 05:34:00"
+              },
+              {
+                "stopid": "8509729",
+                "name": "Schluein, vitg",
+                "lat": 46.788483,
+                "lon": 9.226483,
+                "departure": "2026-09-25 05:35:00",
+                "arrival": "2026-09-25 05:35:00"
+              },
+              {
+                "stopid": "8575011",
+                "name": "Schluein, Falerin",
+                "lat": 46.789012,
+                "lon": 9.23292,
+                "departure": "2026-09-25 05:36:00",
+                "arrival": "2026-09-25 05:36:00"
+              },
+              {
+                "stopid": "8581911",
+                "name": "Sagogn, Carnetg",
+                "lat": 46.790037,
+                "lon": 9.24836,
+                "departure": "2026-09-25 05:38:00",
+                "arrival": "2026-09-25 05:38:00"
+              },
+              {
+                "stopid": "8575012",
+                "name": "Sagogn, Vitg dadens",
+                "lat": 46.789725,
+                "lon": 9.251585,
+                "departure": "2026-09-25 05:39:00",
+                "arrival": "2026-09-25 05:39:00"
+              },
+              {
+                "stopid": "8509728",
+                "name": "Sagogn, Vitg dado",
+                "lat": 46.791542,
+                "lon": 9.256716,
+                "departure": "2026-09-25 05:42:00",
+                "arrival": "2026-09-25 05:42:00"
+              },
+              {
+                "stopid": "8581051",
+                "name": "Sagogn, Fanaus",
+                "lat": 46.79381,
+                "lon": 9.257789,
+                "departure": "2026-09-25 05:43:00",
+                "arrival": "2026-09-25 05:43:00"
+              },
+              {
+                "stopid": "8579811",
+                "name": "Sagogn, Storta pintga",
+                "lat": 46.793687,
+                "lon": 9.254745,
+                "departure": "2026-09-25 05:43:00",
+                "arrival": "2026-09-25 05:43:00"
+              },
+              {
+                "stopid": "8509725",
+                "name": "Laax GR, Caltgera",
+                "lat": 46.798734,
+                "lon": 9.256527,
+                "departure": "2026-09-25 05:47:00",
+                "arrival": "2026-09-25 05:47:00"
+              },
+              {
+                "stopid": "8574874",
+                "name": "Laax GR, Demvitg",
+                "lat": 46.802629,
+                "lon": 9.256029,
+                "departure": "2026-09-25 05:48:00",
+                "arrival": "2026-09-25 05:48:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-09-25 05:50:00"
+          }
+        ]
+      },
+      {
+        "legs": [
+          {
+            "stopid": "8503000",
+            "name": "Zürich HB",
+            "lat": 47.377847,
+            "lon": 8.540502,
+            "departure": "2026-09-25 05:12:00",
+            "track": "7",
+            "type": "express_train",
+            "line": "IR 35",
+            "tripid": "T2026_002351_000082_000101_36a138e_0",
+            "operator": "SOB-sob",
+            "terminal": "Chur",
+            "*G": "IR",
+            "*L": "35",
+            "attributes": {
+              "0_8.6_R": "Platzreservierung möglich",
+              "1_3.6_SN": "Cateringzone / Automaten",
+              "1_8.7_FS": "Gratis-Internet mit der App SBB FreeSurf"
+            },
+            "exit": {
+              "stopid": "8509000",
+              "name": "Chur",
+              "lat": 46.853078,
+              "lon": 9.528926,
+              "arrival": "2026-09-25 06:48:00",
+              "track": "7"
+            },
+            "stops": [
+              {
+                "stopid": "0000176",
+                "name": "Zimmerberg-Basistunnel",
+                "lat": 47.351666,
+                "lon": 8.52196
+              },
+              {
+                "stopid": "8503202",
+                "name": "Thalwil",
+                "lat": 47.295971,
+                "lon": 8.564768,
+                "departure": "2026-09-25 05:21:00",
+                "arrival": "2026-09-25 05:21:00"
+              },
+              {
+                "stopid": "8503206",
+                "name": "Wädenswil",
+                "lat": 47.229298,
+                "lon": 8.675205,
+                "departure": "2026-09-25 05:31:00",
+                "arrival": "2026-09-25 05:31:00"
+              },
+              {
+                "stopid": "8503209",
+                "name": "Pfäffikon SZ",
+                "lat": 47.202985,
+                "lon": 8.778123,
+                "departure": "2026-09-25 05:41:00",
+                "arrival": "2026-09-25 05:39:00"
+              },
+              {
+                "stopid": "8503225",
+                "name": "Ziegelbrücke",
+                "lat": 47.136149,
+                "lon": 9.06005,
+                "departure": "2026-09-25 06:00:00",
+                "arrival": "2026-09-25 05:56:00"
+              },
+              {
+                "stopid": "8509416",
+                "name": "Unterterzen",
+                "lat": 47.113845,
+                "lon": 9.255007,
+                "departure": "2026-09-25 06:11:00",
+                "arrival": "2026-09-25 06:10:00"
+              },
+              {
+                "stopid": "8509414",
+                "name": "Walenstadt",
+                "lat": 47.11987,
+                "lon": 9.312972,
+                "departure": "2026-09-25 06:15:00",
+                "arrival": "2026-09-25 06:15:00"
+              },
+              {
+                "stopid": "8509413",
+                "name": "Flums",
+                "lat": 47.096611,
+                "lon": 9.347917,
+                "departure": "2026-09-25 06:19:00",
+                "arrival": "2026-09-25 06:18:00"
+              },
+              {
+                "stopid": "8509411",
+                "name": "Sargans",
+                "lat": 47.044816,
+                "lon": 9.446258,
+                "departure": "2026-09-25 06:27:00",
+                "arrival": "2026-09-25 06:25:00"
+              },
+              {
+                "stopid": "8509004",
+                "name": "Bad Ragaz",
+                "lat": 47.010305,
+                "lon": 9.505217,
+                "departure": "2026-09-25 06:31:00",
+                "arrival": "2026-09-25 06:31:00"
+              },
+              {
+                "stopid": "8509003",
+                "name": "Maienfeld",
+                "lat": 47.003833,
+                "lon": 9.52921,
+                "departure": "2026-09-25 06:34:00",
+                "arrival": "2026-09-25 06:34:00"
+              },
+              {
+                "stopid": "8509002",
+                "name": "Landquart",
+                "lat": 46.967428,
+                "lon": 9.554043,
+                "departure": "2026-09-25 06:39:00",
+                "arrival": "2026-09-25 06:39:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509000",
+            "name": "Chur",
+            "lat": 46.853078,
+            "lon": 9.528926,
+            "departure": "2026-09-25 06:48:00",
+            "arrival": "2026-09-25 06:48:00",
+            "type": "walk",
+            "exit": {
+              "stopid": "8575112",
+              "name": "Chur, Postautostation",
+              "lat": 46.852875,
+              "lon": 9.527724,
+              "arrival": "2026-09-25 06:51:00"
+            }
+          },
+          {
+            "stopid": "8575112",
+            "name": "Chur, Postautostation",
+            "lat": 46.852875,
+            "lon": 9.527724,
+            "departure": "2026-09-25 06:58:00",
+            "arrival": "2026-09-25 06:51:00",
+            "track": "N",
+            "type": "post",
+            "line": "81",
+            "tripid": "T2026_881015_000801_236001_1aadced_0",
+            "operator": "PAG",
+            "terminal": "Falera, center",
+            "*G": "B",
+            "*L": "81",
+            "attributes": {
+              "0_1.5_VR": "VELOS: Reservierung obligatorisch",
+              "1_2.2_NF": "Niederflureinstieg"
+            },
+            "exit": {
+              "stopid": "8509786",
+              "name": "Laax GR, posta",
+              "lat": 46.806492,
+              "lon": 9.258086,
+              "arrival": "2026-09-25 07:48:00",
+              "track": ""
+            },
+            "stops": [
+              {
+                "stopid": "8574493",
+                "name": "Chur, Malteser",
+                "lat": 46.848402,
+                "lon": 9.529243,
+                "departure": "2026-09-25 07:00:00"
+              },
+              {
+                "stopid": "8574666",
+                "name": "Chur, Brambrüeschb./Stadthalle",
+                "lat": 46.847487,
+                "lon": 9.525626,
+                "departure": "2026-09-25 07:01:00"
+              },
+              {
+                "stopid": "8574667",
+                "name": "Chur, Kaserne/Kornquader",
+                "lat": 46.84694,
+                "lon": 9.519126,
+                "departure": "2026-09-25 07:02:00"
+              },
+              {
+                "stopid": "8574668",
+                "name": "Chur, Strassenverkehrsamt",
+                "lat": 46.846707,
+                "lon": 9.516573,
+                "departure": "2026-09-25 07:02:00"
+              },
+              {
+                "stopid": "8574669",
+                "name": "Chur, Kalchbühl",
+                "lat": 46.846305,
+                "lon": 9.510957,
+                "departure": "2026-09-25 07:03:00"
+              },
+              {
+                "stopid": "8509730",
+                "name": "Tamins, Unterdorf",
+                "lat": 46.827878,
+                "lon": 9.40855,
+                "departure": "2026-09-25 07:12:00",
+                "arrival": "2026-09-25 07:11:00"
+              },
+              {
+                "stopid": "8509726",
+                "name": "Trin, Platta",
+                "lat": 46.827306,
+                "lon": 9.382034,
+                "departure": "2026-09-25 07:15:00",
+                "arrival": "2026-09-25 07:15:00"
+              },
+              {
+                "stopid": "8581027",
+                "name": "Trin, Quadris",
+                "lat": 46.828809,
+                "lon": 9.366631,
+                "departure": "2026-09-25 07:16:00",
+                "arrival": "2026-09-25 07:16:00"
+              },
+              {
+                "stopid": "8509895",
+                "name": "Trin, Dorf",
+                "lat": 46.828256,
+                "lon": 9.361538,
+                "departure": "2026-09-25 07:19:00",
+                "arrival": "2026-09-25 07:19:00"
+              },
+              {
+                "stopid": "8583228",
+                "name": "Trin, Portalavanda",
+                "lat": 46.828147,
+                "lon": 9.358387,
+                "departure": "2026-09-25 07:19:00",
+                "arrival": "2026-09-25 07:19:00"
+              },
+              {
+                "stopid": "8509731",
+                "name": "Trin, Porclis",
+                "lat": 46.826805,
+                "lon": 9.350972,
+                "departure": "2026-09-25 07:20:00",
+                "arrival": "2026-09-25 07:20:00"
+              },
+              {
+                "stopid": "8509896",
+                "name": "Trin, Mulin",
+                "lat": 46.834088,
+                "lon": 9.342092,
+                "departure": "2026-09-25 07:23:00",
+                "arrival": "2026-09-25 07:23:00"
+              },
+              {
+                "stopid": "8509723",
+                "name": "Trin Mulin, Crestasee",
+                "lat": 46.834314,
+                "lon": 9.327939,
+                "departure": "2026-09-25 07:24:00",
+                "arrival": "2026-09-25 07:24:00"
+              },
+              {
+                "stopid": "8579809",
+                "name": "Flims Dorf, Auas sparsas",
+                "lat": 46.836254,
+                "lon": 9.317767,
+                "departure": "2026-09-25 07:25:00",
+                "arrival": "2026-09-25 07:25:00"
+              },
+              {
+                "stopid": "8574679",
+                "name": "Flims Dorf, Vallorca",
+                "lat": 46.835564,
+                "lon": 9.296122,
+                "departure": "2026-09-25 07:27:00",
+                "arrival": "2026-09-25 07:27:00"
+              },
+              {
+                "stopid": "8509773",
+                "name": "Flims Dorf, Post",
+                "lat": 46.836647,
+                "lon": 9.287597,
+                "departure": "2026-09-25 07:29:00",
+                "arrival": "2026-09-25 07:29:00"
+              },
+              {
+                "stopid": "8574680",
+                "name": "Flims Dorf, Bergbahnen",
+                "lat": 46.834439,
+                "lon": 9.28229,
+                "departure": "2026-09-25 07:33:00",
+                "arrival": "2026-09-25 07:31:00"
+              },
+              {
+                "stopid": "8574681",
+                "name": "Flims Waldhaus, Promenada",
+                "lat": 46.829774,
+                "lon": 9.28584,
+                "departure": "2026-09-25 07:33:00",
+                "arrival": "2026-09-25 07:33:00"
+              },
+              {
+                "stopid": "8574876",
+                "name": "Flims Waldhaus, Segnes",
+                "lat": 46.827876,
+                "lon": 9.288069,
+                "departure": "2026-09-25 07:34:00",
+                "arrival": "2026-09-25 07:34:00"
+              },
+              {
+                "stopid": "8509774",
+                "name": "Flims Waldhaus, Caumasee",
+                "lat": 46.825913,
+                "lon": 9.28871,
+                "departure": "2026-09-25 07:36:00",
+                "arrival": "2026-09-25 07:36:00"
+              },
+              {
+                "stopid": "8574682",
+                "name": "Flims Waldhaus, Camping",
+                "lat": 46.824901,
+                "lon": 9.281151,
+                "departure": "2026-09-25 07:37:00",
+                "arrival": "2026-09-25 07:37:00"
+              },
+              {
+                "stopid": "8580859",
+                "name": "Laax GR, Staderas",
+                "lat": 46.821783,
+                "lon": 9.270269,
+                "departure": "2026-09-25 07:38:00",
+                "arrival": "2026-09-25 07:38:00"
+              },
+              {
+                "stopid": "8509983",
+                "name": "Laax GR, Bergbahnen",
+                "lat": 46.820011,
+                "lon": 9.265162,
+                "departure": "2026-09-25 07:42:00",
+                "arrival": "2026-09-25 07:41:00"
+              },
+              {
+                "stopid": "8509727",
+                "name": "Laax GR, Rancho",
+                "lat": 46.815771,
+                "lon": 9.266421,
+                "departure": "2026-09-25 07:43:00",
+                "arrival": "2026-09-25 07:43:00"
+              },
+              {
+                "stopid": "8574683",
+                "name": "Laax GR, Marcau",
+                "lat": 46.812732,
+                "lon": 9.263447,
+                "departure": "2026-09-25 07:44:00",
+                "arrival": "2026-09-25 07:44:00"
+              }
+            ]
+          },
+          {
+            "stopid": "8509786",
+            "name": "Laax GR, posta",
+            "lat": 46.806492,
+            "lon": 9.258086,
+            "arrival": "2026-09-25 07:48:00"
+          }
+        ]
+      }
+    ]
+  }
+}

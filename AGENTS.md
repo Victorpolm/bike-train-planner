@@ -17,7 +17,7 @@ The repository is the durable source of truth. Distinguish facts, decisions, hyp
 - Responsive web prototype and an existing owner-private Site; source and publication are separate
 - Bicycle accompanies the traveller through transit
 - Bounded multi-label Baseline/Extended routing with road-routed cycling; preserve raw route attributes
-- Three independent permission comparisons; prohibited services appear only in the all-transit reference
+- One all-public-transport bicycle-access selector with three nested feasibility scopes; apply the selected scope before routing/pruning. Prohibited services appear only when explicitly included, with a warning.
 - TripInfo evidence investigation is active; bicycle-space availability and booking integration are deferred
 - Data quality and bicycle-carriage rules are first-class uncertainties
 

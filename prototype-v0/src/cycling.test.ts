@@ -356,3 +356,14 @@ it("classifies actual provider errors and retains named, bounded diagnostics", a
     assert.ok([...client.warnings].every(w => !/operation killed|unrecognized error|profile not found/.test(w)));
   }
 });
+
+it("reuses a routed cycling link when timetable coordinates change for the same station identity", async () => {
+  const a = { id: "8509000", name: "Chur", lat: 46.853078, lon: 9.528926 }, b = { lat: 46.806492, lon: 9.258086 };
+  let calls = 0;
+  const client = new CyclingClient(new AbortController().signal, async () => { calls++; return response(geometry(a, b, 9000)); }, 0, false);
+  const route = await client.route(a, b); assert.ok(route);
+  const revised = { ...a, lat: 46.85308692, lon: 9.52894226 };
+  assert.equal(client.getCached(revised, b), route);
+  assert.equal(await client.route(revised, b), route); assert.equal(calls, 1);
+  assert.equal(client.getCached(b, revised), null, "direction is still binding");
+});

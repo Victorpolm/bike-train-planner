@@ -1,4 +1,5 @@
 import type { Journey, Place, TransitLeg } from "./routing.ts";
+import { interpretBicycleAttributes, type BicycleAttribute } from "./bicycleCarriage.ts";
 
 export type TransportStop = {
   station?: { id?: string | null; name?: string | null; coordinate?: { x: number | null; y: number | null } } | null;
@@ -17,6 +18,7 @@ export type TransportSection = {
     name?: string | null;
     to?: string | null;
     passList?: TransportStop[];
+    bicycleData?: { attributes: BicycleAttribute[]; source: { title: string; url: string; checked: string } };
   } | null;
   walk?: unknown;
   departure?: TransportStop | null;
@@ -42,7 +44,7 @@ export function transitLegsFromSections(sections?: TransportSection[] | null): T
   return (sections ?? []).map((section) => {
     const service = section.journey;
     const mode = service ? "transit" : section.walk != null ? "walk" : "unknown";
-    return {
+    const leg: TransitLeg = {
       mode,
       from: section.departure?.station?.name || null,
       to: section.arrival?.station?.name || null,
@@ -61,6 +63,16 @@ export function transitLegsFromSections(sections?: TransportSection[] | null): T
       fromId: section.departure?.station?.id ?? undefined,
       toId: section.arrival?.station?.id ?? undefined,
     };
+    if (service?.bicycleData && leg.fromId && leg.toId && leg.departure) {
+      const { attributes, source } = service.bicycleData;
+      const rule = interpretBicycleAttributes(attributes);
+      leg.bicycleAttributes = attributes;
+      leg.bicycleEvidence = { permission: rule.permission, fromId: leg.fromId, toId: leg.toId,
+        departure: leg.departure.toISOString(), service: leg.service, operator: leg.operator ?? null,
+        source, basis: rule.basis, conditions: rule.notes,
+        prerequisites: { bikeTicket: "unknown", bikeReservation: rule.bikeReservation } };
+    }
+    return leg;
   });
 }
 

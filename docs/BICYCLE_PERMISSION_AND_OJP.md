@@ -2,36 +2,33 @@
 
 _Updated 24 September 2026; supersedes the earlier explicit-note-only confirmation rule._
 
-## The three comparisons
+## Current all-mode selector
 
-1. Which useful journey can I take when bicycle permission is confirmed on every public-transport service?
-2. Which useful journey could I take if I also consider services whose bicycle permission remains uncertain?
-3. What public-transport journeys are available if bicycle permission is ignored, with prohibitions clearly labelled as comparison-only?
+The user chooses one nested scope: **verified bicycle access only**, **also allow unverified access**, or **also include services that prohibit bicycles**. It applies to every transit leg, including boats and trams, before feasibility, dominance and ranking. Only the selected scope's category winners are displayed. Baseline, Extended and ordered visits preserve that selection when evidence changes. Internal independent solves remain to prevent a permissive winner from pruning a stricter alternative. This supersedes the earlier three-groups-at-once interface and bus-only selector.
 
-All three searches use the same departure, road routes, cycling budget, requested stops and boarding limits. Each independently chooses fastest with transit, fewest boardings and least cycling or walking, plus the optional endpoint preference. Each has its own 60-minute alternative window. A quicker uncertain service cannot prune a confirmed alternative. The separate cycling-only reference does not remove any group’s transit results.
-
-Identical journey IDs merge only after optimization. One card retains its winning categories and time comparison in each group. If all three recommendation sets match, the page says so and presents one shared result set. A route with confirmed permission can also win the permissive and unrestricted searches; “allow uncertain permission” describes the search, not necessarily that particular route.
-
-## Evidence and current limits
+## Evidence and prerequisites
 
 | Evidence | Treatment |
 |---|---|
-| Positive, sourced evidence for the exact dated service and boarded segment | Eligible for the confirmed search, subject to all other constraints |
-| Exact dated segment returned by a successful `BikeTransport=true` request | Provider-assessed permission; eligible for confirmed unless contradicted by an applicable ban |
-| General operator policy, including conditional PostBus/VBZ rules | Uncertain; does not establish service permission |
-| Missing service permission without a matching bicycle-filter result | Uncertain; never inferred to be allowed |
-| Applicable explicit prohibition or matched operator prohibition | Excluded from confirmed/uncertain searches; allowed only in the labelled all-transit comparison |
-| Available bicycle space or reservation availability | Explicitly deferred; not queried or integrated |
+| Exact dated OJP bicycle-filter match or applicable positive service note | Verified access, subject to stated conditions |
+| search.ch dated `VN` bicycle symbol | Prohibited; excluded unless the all-transit choice is selected |
+| search.ch `VR` / `VB` bicycle symbols | Allowed with required bike reservation / space condition respectively |
+| Reviewed domestic SBB InterRegio or SOB mainline rule, matching operator and service type | Published-rule confirmation, identified separately from dated provider confirmation; explicit bans override it |
+| Other general operator guidance or missing evidence | Unverified; never promoted by operator familiarity alone |
+| Conflicting bicycle reservation conditions | Unknown requirement requiring operator confirmation; no default overrides the conflict |
+| Available bicycle spaces, occupancy or booking availability | Deferred; never queried |
 
-The OJP adapter pairs unfiltered and bicycle-filtered searches and attaches evidence only to the returned dated segments. Explicit prohibitions override a filter match. A missing bicycle note alone remains unknown; a successful bicycle-filter match is positive evidence according to the provider, with ticket/reservation requirements still separate. General policies may explain tickets but cannot confirm an individual departure. Without the Site runtime secret, the Transport API fallback supplies no positive dated-service evidence.
+Ticket and reservation requirements are separate. Reviewed PostBus/SBB/SOB ticket guidance has source and review date. Ordinary passenger-seat or group-reservation notes do not establish bicycle reservation requirements. SOB's named mainline services cannot reserve bicycle spaces; domestic SBB IR has no ordinary bike reservation requirement. A dated mandatory-reservation note takes precedence. The narrow SBB IR rule requires Swiss stop IDs and does not extrapolate to S-Bahn/RE peak periods, international categories or replacement buses. Permission remains conditional on operating rules and space.
 
-The check applies to every transit leg in Baseline, Extended and ordered-stop routing. Evidence must match departure timestamp, service, operator and boarding/alighting IDs, with source and review date. Explicit conditions remain visible. Confirmed permission is distinct from guaranteed boarding: tickets, required reservations and remaining space still need checking.
+Public [search.ch route data](https://search.ch/timetable/api/help) is now used for keyless connections with `show_attributes=1` and `show_coordinates=1`. The current responses expose these fields and permit browser CORS. Transport API still supplies nearby stops/departure boards. Its connection schema drops the underlying bicycle attributes; treating those dropped fields as evidence that all information is unavailable caused many avoidable unknowns. OJP remains preferred when configured. The Site's empty OJP runtime environment does not prevent the new public-feed details.
 
-## Zürich discovery and comparisons
+Exact dated evidence still matches service, operator, departure and boarding/alighting IDs. Timed exit prefixes receive their own segment identity; untimed passage points never become exits. General disruption notices are not interpreted as bans on unrelated trains. Original bike notes remain available; operator guidance is expanded as readable text.
 
-Nearby bus/tram lookup now also runs beside seeded rail hubs and selected stations with a nonzero catchment. Up to four candidates preserve local transport and rail coverage. Up to four initial pair queries reserve a local connection before rail coverage; the overall 18-request cap is unchanged. A transit result slower than the completed cycling-only estimate can trigger bounded outward discovery. Extended discovery retains reachable labels from all three searches. Ordered visits query each distinct scope arrival under the same 18-request budget. All scopes share the selected Avoid buses constraint. Unrestricted discovery must not be interpreted as bicycle feasibility.
+## Discovery and ranking
 
-Each transit card compares time and cycling-or-walking with the routed cycling-only reference, and displays waiting/boarding time. “Fastest with transit” is scoped to a permission group. Cycling receives “Fastest in this search” only when it is at least as fast as all recommendations and within the chosen cycling allowance. No claim of national optimality follows from this sampled graph.
+The same road, boarding and 24-hour constraints apply to the selected scope. Two bounded additional queries probe useful rail exits at the original ready time: an end-to-end Laax timetable can omit a late train to Chur when onward buses run only later. Cycle finishes from these exits are checked promptly. Other unchecked exits are prioritized using arrival/boarding lower bounds; only actual routed cycling durations enter feasibility and ranking. Directed route reuse by station identity prevents a small coordinate change from discarding a checked road link.
+
+The timetable cap remains 18 physical requests, with cooldown/retry limits and short-lived caching. This is sampled discovery, not a complete Swiss graph or a guarantee of global optimality. Categories retain the selected scope's 60-minute alternative window. Cycling only remains a separate comparison.
 
 ## OJP findings and evaluation status
 

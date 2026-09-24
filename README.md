@@ -1,10 +1,8 @@
 # Bike + Train Journey Planner
 
-**Latest source update (24 September 2026):** Fixed useful train exits hidden by nearby bus stops, bounded recovery of temporary provider failures, and preservation of valid cycling-only routes. All three reported Baden cases now return useful options in live checks. [Regressions and live results](docs/EXPERIMENTS.md#2026-09-24--baden-train-exits-short-cycling-and-temporary-failures).
+**Latest source update (24 September 2026):** One bicycle-access selector now controls every public-transport mode. Public timetable bicycle symbols and sourced operator rules improve permission, ticket and reservation information. Rail-exit queries and station-identity route reuse fix missed overnight cycling finishes, including Zürich–Chur–Laax. [Current state](docs/PROJECT_STATE.md) · [regressions and dated results](docs/EXPERIMENTS.md).
 
-Bicycle permission and prerequisites remain separate for every transit leg: permission, bike ticket/pass and bike-space reservation requirement. The three independent comparisons, server-only OJP adapter and scoped TripInfo checks are implemented. [Implementation and live findings](docs/OJP_PERMISSION_2026-09-24.md).
-
-**Access and activation:** The existing GitHub Actions key worked for all nine new train/bus/boat calls, following the earlier 16-call benchmark. The hosted Site needs the same key configured separately as its secret `OJP_API_KEY`; its runtime environment is currently empty. Until then, it uses the fallback timetable and keeps missing permission unknown. No remaining-space or booking integration is included.
+Public search.ch bicycle conditions work without an API key. The existing OJP integration remains available when the Site's separate server secret is configured; GitHub Actions access is already verified. Remaining bicycle spaces and booking transactions remain outside scope.
 
 Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.
 
@@ -14,7 +12,7 @@ Research and prototype for a bicycle + public-transport journey planner, initial
 
 Sign in with the ChatGPT account that owns the Site. Access is restricted to that account; the link does not make the website public. You can always return here and click this link to use the planner without installing anything.
 
-For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. The last verified publication is version 15 (24 September, 18:41 UTC), including the Baden fixes. See [publication status](docs/WEBSITE.md) for the deployed revision; source updates and publication are recorded separately.
+For local Git setup and the publishing workflow, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the hosted website. Private version 16 was verified on 24 September at 20:00 UTC, including the access selector and overnight fixes. See [publication status](docs/WEBSITE.md) for the deployed revision; source updates and publication are recorded separately.
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 

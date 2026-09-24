@@ -1,7 +1,8 @@
 import { DEFAULT_OPTIONS, type EndpointPreference, type Options } from "./model.ts";
+import type { BicycleScope } from "./bicyclePermission.ts";
 import type { BusPreference } from "./busCarriage.ts";
 export type CyclingPreference = "less" | "balanced" | "more" | "unrestricted";
-export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown"): Options {
+export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown", bicycleScope?: BicycleScope): Options {
   const budgets = {
     less: { maxBikeMinutes: 40, maxAccessMinutes: 20, maxEgressMinutes: 20, maxIntermediateMinutes: 10 },
     balanced: { maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60, maxIntermediateMinutes: 20 },
@@ -10,5 +11,5 @@ export function preferenceOptions(cycling: CyclingPreference, endpointPreference
     unrestricted: { maxBikeMinutes: DEFAULT_OPTIONS.horizonMinutes, maxAccessMinutes: DEFAULT_OPTIONS.horizonMinutes,
       maxEgressMinutes: DEFAULT_OPTIONS.horizonMinutes, maxIntermediateMinutes: DEFAULT_OPTIONS.horizonMinutes },
   };
-  return { ...DEFAULT_OPTIONS, ...budgets[cycling], endpointPreference, busPreference };
+  return { ...DEFAULT_OPTIONS, ...budgets[cycling], endpointPreference, busPreference, ...(bicycleScope ? { bicycleScope } : {}) };
 }

@@ -12,7 +12,7 @@ export type BusCarriage = {
   source?: { title: string; url: string; checked: string };
 };
 
-const POSTBUS = { title: "PostBus bicycle rules", url: "https://www3.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike", checked: "2026-09-20" };
+const POSTBUS = { title: "PostBus bicycle rules", url: "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike", checked: "2026-09-24" };
 const ZVV = { title: "ZVV bicycle rules", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-20" };
 const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/helpful-tips/cyclists", checked: "2026-09-20" };
 const normalize = (value?: string | null) => value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
@@ -32,7 +32,7 @@ export function isBus(leg: TransitLeg): boolean {
 }
 
 // Operator policies are conditional guidance, not confirmation for a departure.
-// The timetable feed has no bicycle-space, reservation or trip-permission field.
+// Dated timetable attributes are handled separately by the service adapter.
 export function busCarriage(leg: TransitLeg): BusCarriage | null {
   if (!isBus(leg)) return null;
   const operator = normalize(leg.operator);

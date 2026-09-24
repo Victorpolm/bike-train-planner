@@ -12,6 +12,7 @@ export function recommend(confirmed: Journey[], possible: Journey[], allTransit:
   // slower confirmed journeys that were pruned by an uncertain alternative.
   const groups = ([{ scope: "confirmed", journeys: confirmed }, { scope: "allow-uncertain", journeys: possible },
     { scope: "all-transit", journeys: allTransit }] as const)
+    .filter(group => !options.bicycleScope || group.scope === options.bicycleScope)
     .map(({ scope, journeys }) => ({ scope, proposals: categorize(journeys, options) }));
   const merged = new Map<string, ScopedProposal>();
   for (const { scope, proposals } of groups) for (const proposal of proposals) {
