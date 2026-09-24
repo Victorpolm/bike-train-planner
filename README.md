@@ -1,8 +1,8 @@
 # Bike + Train Journey Planner
 
-**Latest source update:** Three independent comparisons: confirmed bicycle permission, allowing uncertain permission, and all public transport with bicycle rules ignored. Prohibited-bike journeys appear only as clearly labelled comparisons. Identical results merge after optimization. TripInfo inspection tooling is prepared; live TripInfo validation and production OJP integration remain pending. [Permission design](docs/BICYCLE_PERMISSION_AND_OJP.md) · [TripInfo and actual Swiss network coverage](docs/TRIPINFO_AND_NETWORK_COVERAGE.md).
+**Latest source update (24 September 2026):** Bicycle permission and prerequisites for every public-transport leg: allowed/unknown/prohibited, bike ticket or pass, and a separate bike-space reservation requirement. Three independent journey comparisons remain. A server-only OJP adapter and scoped TripInfo checks are implemented. [Implementation and live findings](docs/OJP_PERMISSION_2026-09-24.md).
 
-**OJP API access verified:** All 16 requests in the first live benchmark passed using a GitHub Actions secret. Local Zürich connections and Rapperswil–Renens are present; bicycle notes are useful but incomplete. [Results and next integration step](docs/OJP_BENCHMARK_2026-09-21.md). The website still uses its existing timetable provider.
+**Access and activation:** The existing GitHub Actions key worked for all nine new train/bus/boat calls, following the earlier 16-call benchmark. The hosted Site needs the same key configured separately as its secret `OJP_API_KEY`; its runtime environment is currently empty. Until then, it uses the fallback timetable and keeps missing permission unknown. No remaining-space or booking integration is included.
 
 Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.
 

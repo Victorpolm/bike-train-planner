@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { extend, plan, searchWarnings, type SearchSession } from "./api";
+import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
 import { metrics, type ModelMode, type EndpointPreference } from "./model";
 import { recommend, compareCycling, waitingMinutes, scopeLabels, type ScopedProposal } from "./recommendations";
 import MapView from "./MapView";
@@ -12,7 +12,8 @@ import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
-import { busExclusions, busJourneySummary, type BusPreference } from "./busCarriage";
+import { busExclusions, type BusPreference } from "./busCarriage";
+import { bicycleJourneySummary } from "./bicycleCarriage";
 import { bicyclePermission } from "./bicyclePermission";
 
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit" });
@@ -43,7 +44,7 @@ function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelec
     && win.extraMinutes === wins[0].extraMinutes);
   const prohibited = j.transitLegs.some(leg => leg.mode === "transit" && bicyclePermission(leg) === "prohibited");
   const m = metrics(j), finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
-  const busSummary = busJourneySummary(j.transitLegs);
+  const busSummary = bicycleJourneySummary(j.transitLegs);
   return <button type="button" className={`journey-card${selected ? " selected" : ""}`}
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
     {(sameWins ? wins.slice(0, 1) : wins).map(win => <span className={`scope-win scope-${win.scope}`} key={win.scope}>
@@ -320,10 +321,10 @@ export default function App() {
               {group.scope === "all-transit" && <p>Bicycle restrictions are ignored in this comparison. It can include services that prohibit bicycles; these are labelled on the journey.</p>}
               {group.proposals.length ? <p>{group.proposals.length} recommendation{group.proposals.length === 1 ? "" : "s"} · fastest with transit {formatMinutes(Math.min(...group.proposals.map(p => p.journey.totalMinutes)))}</p>
                 : <p>{group.scope === "confirmed"
-                  ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: the current timetable feed does not verify permission for individual departures."
+                  ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
                   : loading ? "Checking possible journeys…" : "No journey found in this limited search."}</p>}
             </div>)}
-          <p className="comparison-caution">Confirmed permission concerns your bicycle on every service. Available space, tickets and any required reservation still need checking. General operator policies remain in the uncertain group.</p>
+          <p className="comparison-caution">Confirmed permission concerns your bicycle on every service according to the provider. Open a journey for ticket and reservation requirements. Permission does not reserve a place. General operator policies alone remain uncertain.</p>
         </div>
         {session.extended && Number.isFinite(extendedFastest) && <p className="comparison-note">
           <strong>Allow uncertain permission: </strong>
@@ -341,7 +342,11 @@ export default function App() {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
           return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
             expanded={expanded} planId={planId} comparison={cyclingReference} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
-            {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination} />}</div>;
+            {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination}
+              onEvidence={(leg, evidence) => {
+                if (session.client.signal.aborted) return;
+                updateBicycleEvidence(session, leg, evidence, next => setSession(current => current?.network === session.network ? next : current));
+              }} />}</div>;
         })}</div>
         {!!cyclingRoutes.length && <CyclingDetails routes={cyclingRoutes} focus={cycleFocus} onFocus={setCycleFocus} />}
         <details className="search-coverage"><summary>Stops explored ({stops.length})</summary>

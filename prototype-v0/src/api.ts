@@ -1,4 +1,4 @@
-import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station } from "./routing.ts";
+import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import { cyclingKey, MAX_CYCLING_SPEED_KMH, MAX_ENDPOINT_GAP_METRES, samePlace } from "./cycling.ts";
 import { MAJOR_STATIONS } from "./majorStations.ts";
@@ -10,7 +10,8 @@ import { atEndpoint, compareModels, emptyNetwork, solve, validateOptions,
 import { fetchJson, HttpError } from "./http.ts";
 import { geocode, MAX_WAYPOINTS, type TransportLocation } from "./places.ts";
 import { solveWaypoints } from "./waypoints.ts";
-import { BICYCLE_SCOPES, bicycleLegAllowed } from "./bicyclePermission.ts";
+import { BICYCLE_SCOPES, bicycleLegAllowed, type BicycleEvidence } from "./bicyclePermission.ts";
+import { OjpClient, addOjpConnections, applyBicycleEvidence } from "./ojpClient.ts";
 export { geocode } from "./places.ts";
 
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
@@ -30,6 +31,7 @@ export function swissDateParts(date: Date) {
 }
 
 export class TimetableClient {
+  ojp?: OjpClient | null;
   readonly warnings = new Set<string>();
   requests = 0;
   failures = 0;
@@ -46,6 +48,18 @@ export class TimetableClient {
   private fetcher: typeof fetch;
   constructor(signal: AbortSignal, gapMs = 400, fetcher: typeof fetch = fetch, budget = SEARCH_LIMITS.requests) {
     this.signal = signal; this.gapMs = gapMs; this.fetcher = fetcher; this.budget = budget;
+  }
+
+  claimRequests(calls: number) {
+    this.signal.throwIfAborted();
+    if (this.stopped) return false;
+    if (Date.now() >= this.deadline) {
+      this.warnings.add("The search time limit was reached; some connections were not explored."); return false;
+    }
+    if (this.requests + calls > this.budget) {
+      this.warnings.add("Search request limit reached; some connections were not explored."); return false;
+    }
+    this.requests += calls; return true;
   }
 
   get<T>(path: string, params: URLSearchParams): Promise<T | null> {
@@ -170,6 +184,10 @@ export async function findCandidateStations(point: Place, maxMinutes: number, cl
 
 async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date) {
   if (from.id === to.id) return;
+  if (client.ojp) {
+    const result = await client.ojp.connections(from, to, ready, calls => client.claimRequests(calls));
+    if (result) { addOjpConnections(network, result); return; }
+  }
   const dt = swissDateParts(ready);
   // Omitting transportations allows the provider's train, bus, tram and other PT modes in BOTH models.
   const data = await client.get<ConnectionResponse>("connections", new URLSearchParams({
@@ -193,7 +211,7 @@ export type SearchSession = {
   cyclingCandidatePools?: Map<string, Station[]>;
 };
 export function searchWarnings(session: SearchSession): string[] {
-  const warnings = [...session.client.warnings, ...session.cyclingClient?.warnings ?? [],
+  const warnings = [...session.client.warnings, ...session.client.ojp?.warnings ?? [], ...session.cyclingClient?.warnings ?? [],
     ...[...session.comparisonClient?.warnings ?? []].map(w => `Cycling-only comparison — ${w}`)];
   if (session.client.rejectedSections) warnings.push("Some sections lacked usable stops or times and were excluded.");
   if ([session, session.confirmed, session.allTransit].some(s => s?.baseline.limited || s?.extended?.limited)) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
@@ -328,10 +346,15 @@ function refresh(session: SearchSession, extended: boolean, publish: SearchUpdat
   publish({ ...session });
 }
 // Dependency injection keeps the actual async acquisition flow testable without live HTTP.
+export function updateBicycleEvidence(session: SearchSession, leg: TransitLeg, evidence: BicycleEvidence, publish: SearchUpdate) {
+  applyBicycleEvidence(session.network, leg, evidence);
+  refresh(session, !!session.extended, publish);
+}
+
 export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
   dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[];
-    cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch } = {}): Promise<SearchSession> {
+    cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch; ojpClient?: OjpClient | null } = {}): Promise<SearchSession> {
   validateOptions(options);
   if ((dependencies.waypoints?.length ?? 0) > MAX_WAYPOINTS) throw new Error(`Choose up to ${MAX_WAYPOINTS} intermediate stops.`);
   const start = dependencies.start ?? new Date();
@@ -340,6 +363,9 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   const [origin, destination, ...waypoints] = await Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]);
   signal.throwIfAborted();
   const client = new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
+  client.ojp = dependencies.ojpClient !== undefined ? dependencies.ojpClient
+    : dependencies.fetcher ? null : await OjpClient.connect(signal);
+  if (!client.ojp && !dependencies.fetcher) client.warnings.add("Bicycle information is not connected. Service permission remains unknown where no verified rule is available.");
   const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher);
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,

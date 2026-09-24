@@ -1,6 +1,6 @@
 # TripInfo and Swiss network coverage
 
-_Reviewed 21 September 2026. Documentation research and a tested evaluation tool; no live TripInfo result or production OJP integration is claimed._
+_Updated 24 September 2026. Nine live train/bus/boat OJP calls passed; the server adapter and per-leg display are implemented. Hosted activation awaits the Site runtime secret. [Recorded findings](OJP_PERMISSION_2026-09-24.md)._
 
 ## Current decision
 
@@ -22,7 +22,7 @@ These sets are nested, not three mutually exclusive permission labels. A confirm
 
 **Fact from the OJP specification:** Service and call structures support attributes. Codes, text, dated service identity and stop scope must remain available for interpretation. The schema supporting a field does not establish that Switzerland supplies it for each departure. [OJP 2.0 schema documentation](https://vdvde.github.io/OJP/release/2.0/documentation-tables/ojp.html).
 
-**Hypothesis to test:** TripInfo may add useful bicycle restrictions or conditions beyond the same service in a TripRequest. It may also return the same incomplete information. Neither successful lookup nor absence of a prohibition proves positive permission. Compare both responses for the exact dated service and boarded segment before changing evidence classification.
+**Observed:** The three captured TripInfo responses matched their requested service/date and repeated the relevant TripRequest conditions. No additional bicycle conditions appeared in those samples. The app restricts call notes to the boarded interval. Absence of a note alone remains unknown; a dated bicycle-filter match is separately recorded as provider-assessed permission.
 
 ## Reproducible inspection
 
@@ -39,7 +39,7 @@ python3 scripts/ojp_tripinfo.py \
 
 For one live call, configure `OJP_API_KEY` in the environment, choose a new output directory and omit `--dry-run`. The manual **OJP TripInfo permission inspection** Actions workflow uses the existing repository secret and accepts those two references. It makes at most one call, with no retry; captures expire after seven days. It is not triggered by pushes or pull requests. Never put the token in the browser or a committed file.
 
-**Verification status:** Five controlled TripInfo tests pass, alongside the eight existing benchmark tests. Request construction, stop/service scope, identity mismatch, empty delivery, credential redaction and offline dry run are covered. A real TripInfo call still needs to be run and its returned notes reviewed; this document is not a live benchmark.
+**Verification status:** Five controlled TripInfo tests pass, alongside the eight existing benchmark tests. Request construction, stop/service scope, identity mismatch, empty delivery, credential redaction and offline dry run are covered. Three real TripInfo calls and six paired TripRequest calls have since passed. Twelve additional app regressions cover real response interpretation, scoped matching, prohibited-service rerouting, credentials and failure behaviour.
 
 ## Do we have all Swiss public transport and cycle paths?
 
@@ -50,10 +50,10 @@ For one live call, configure `OJP_API_KEY` in the environment, choose a new outp
 | Scheduled land and boat transport | Swiss national GTFS, including boat/ferry categories | Sampled Transport API stops, connections and departure boards; no national GTFS import |
 | Transit geography | Stop coordinates; provider route geometry where available | Observed stops and schematic transit lines, not a full Swiss line map |
 | Cycling network | OpenStreetMap-derived BRouter routing data | Requested road routes and their returned attributes; no full local OSM graph or audited inventory of every cycle path |
-| Bicycle carriage | Curated operator rules and incomplete OJP notes in evaluation | Uncertainty retained; no production service-level confirmation feed |
+| Bicycle carriage | Curated ticket guidance, dated OJP filter matches and reviewed notes | Adapter and per-leg display implemented; Site secret needed for live runtime access |
 
 **Source coverage:** The Swiss platform describes its GTFS as the national scheduled public-transport timetable. Its mode table explicitly includes ship/boat, steam boat, ferry and catamaran (extended `route_type=1000`), alongside land modes. This makes it a candidate for a national scheduled graph, but our repository has not imported or audited that feed. A timetable graph and exact line geometry are separate data requirements. [Swiss GTFS documentation](https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/).
 
 **Cycling coverage:** BRouter uses collaboratively maintained OpenStreetMap data and offers worldwide routing data. That does not prove every real cycle path or access restriction is mapped. The current cycling profile also disables ferries: a boat must be represented as an explicit transit leg, not hidden inside a cycling leg. [BRouter documentation](https://brouter.de/brouter/index.html); [implemented cycling profile](CYCLING_ROUTES.md).
 
-**Next evidence:** Inspect dated train, local bus/tram and boat TripInfo results against their TripRequest legs. Separately, inventory national GTFS modes/operators/calendars and an appropriately dated OSM extract before claiming national coverage. These are distinct from remaining bicycle-space availability, which stays outside scope.
+**Next evidence:** Activate the Site runtime secret and check real end-to-end user journeys. Train/bus/boat TripInfo comparison is complete; tram coverage remains untested. Separately, inventory national GTFS modes/operators/calendars and an appropriately dated OSM extract before claiming national coverage. These are distinct from remaining bicycle-space availability, which stays outside scope.

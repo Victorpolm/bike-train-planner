@@ -1,6 +1,6 @@
 # Separate bicycle-permission searches and OJP evaluation
 
-_Decision and implementation: 21 September 2026._
+_Updated 24 September 2026; supersedes the earlier explicit-note-only confirmation rule._
 
 ## The three comparisons
 
@@ -17,12 +17,13 @@ Identical journey IDs merge only after optimization. One card retains its winnin
 | Evidence | Treatment |
 |---|---|
 | Positive, sourced evidence for the exact dated service and boarded segment | Eligible for the confirmed search, subject to all other constraints |
-| General operator policy, including conditional PostBus/VBZ rules | Uncertain; eligible only for the permissive search |
-| Missing service permission, including current train/tram data | Uncertain; never inferred to be allowed |
+| Exact dated segment returned by a successful `BikeTransport=true` request | Provider-assessed permission; eligible for confirmed unless contradicted by an applicable ban |
+| General operator policy, including conditional PostBus/VBZ rules | Uncertain; does not establish service permission |
+| Missing service permission without a matching bicycle-filter result | Uncertain; never inferred to be allowed |
 | Applicable explicit prohibition or matched operator prohibition | Excluded from confirmed/uncertain searches; allowed only in the labelled all-transit comparison |
 | Available bicycle space or reservation availability | Explicitly deferred; not queried or integrated |
 
-The current Transport API adapter does not supply positive service-level evidence. **The confirmed group will normally be empty.** Its message explains that available data cannot confirm a journey, rather than asserting that no bicycle-compatible service exists. This is an intentional data-quality boundary, not a completed carriage-data integration. The evidence type is ready for a trusted adapter; arbitrary upstream fields are not accepted as permission.
+The OJP adapter pairs unfiltered and bicycle-filtered searches and attaches evidence only to the returned dated segments. Explicit prohibitions override a filter match. A missing bicycle note alone remains unknown; a successful bicycle-filter match is positive evidence according to the provider, with ticket/reservation requirements still separate. General policies may explain tickets but cannot confirm an individual departure. Without the Site runtime secret, the Transport API fallback supplies no positive dated-service evidence.
 
 The check applies to every transit leg in Baseline, Extended and ordered-stop routing. Evidence must match departure timestamp, service, operator and boarding/alighting IDs, with source and review date. Explicit conditions remain visible. Confirmed permission is distinct from guaranteed boarding: tickets, required reservations and remaining space still need checking.
 
@@ -34,9 +35,9 @@ Each transit card compares time and cycling-or-walking with the routed cycling-o
 
 ## OJP findings and evaluation status
 
-**Verified from official documentation:** [OJP 2.0 TripRequest](https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/) accepts a `BikeTransport` filter and returns service attributes. The documentation warns of a limitation around services restricted at particular stops. The filter's inclusion alone is not sufficient positive evidence for our confirmed group. The response attributes must be interpreted with their service/segment scope. OJP supports one via point directly; our multiple-stop feature needs separate handling.
+**Verified from official documentation:** [OJP 2.0 TripRequest](https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/) accepts a `BikeTransport` filter and returns service attributes. The documentation warns of a limitation around services restricted at particular stops. A successful filter result now counts as provider-assessed permission for its exact returned segment, subject to explicit prohibitions. This is a documented change from the earlier stricter rule. The response attributes must be interpreted with their service/segment scope. OJP supports one via point directly; our multiple-stop feature needs separate handling.
 
-The [official SDK](https://github.com/openTdataCH/ojp-js) identifies the OJP 2.0 endpoint. [API access](https://opentransportdata.swiss/en/cookbook/development-miscellaneous-cookbook/howto-access-apis/) requires a key sent in an authorization header. The repository Actions secret `OJP_API_KEY` has now been validated: **all 16 live benchmark requests succeeded on 21 September 2026**. OJP returned useful reservation/conditional-carriage notes, but incomplete positive evidence across complete journeys. See [the recorded findings](OJP_BENCHMARK_2026-09-21.md). No engine migration or website backend has been completed.
+The [official SDK](https://github.com/openTdataCH/ojp-js) identifies the OJP 2.0 endpoint. [API access](https://opentransportdata.swiss/en/cookbook/development-miscellaneous-cookbook/howto-access-apis/) requires a key sent in an authorization header. The repository Actions secret `OJP_API_KEY` has now been validated: **all 16 live benchmark requests succeeded on 21 September 2026**. OJP returned useful reservation/conditional-carriage notes, but incomplete positive evidence across complete journeys. See [the recorded findings](OJP_BENCHMARK_2026-09-21.md). No routing-engine migration is implemented. The server-only OJP backend is implemented; hosted activation needs the Site runtime secret. [New live findings](OJP_PERMISSION_2026-09-24.md).
 
 `prototype-v0/scripts/ojp_benchmark.py` prepares or captures two otherwise identical requests with `BikeTransport` off/on. It retains XML plus service IDs, operating dates, stop references, scheduled times and raw attributes. Permission stays `unassessed`; empty responses and request errors are distinguished. Keys stay in a local environment variable, outside the static website and saved files.
 
@@ -57,7 +58,7 @@ The eight cases make at most 16 OJP calls (six requested results each), with 1.3
 
 `ojp_matrix.py` requires unambiguous endpoint matches. The current Zürich reference origin is the public Waserstrasse stop. Personal addresses belong in a private evaluation environment. Küsnacht uses the exact railway-station match, explicitly **not** a reproduction of the user's unspecified origin. Resolved coordinates, provider URLs, local departure offsets and UTC capture times are retained. Other coordinates come from the existing app/recorded fixtures. OJP 2.0's documented Swiss stop references are SLOIDs, not the Transport API's UIC IDs; the matrix uses coordinates and the standalone example above uses SLOIDs.
 
-All requests use scheduled times (`UseRealtimeData=none`) and provider-default access. Results therefore measure service discovery and returned evidence; they do not yet compare the app's routed bicycle access or establish that a particular bicycle connection is catchable. Raw service/stop attributes are retained without promoting filter inclusion to confirmed permission.
+All requests use scheduled times (`UseRealtimeData=none`) and provider-default access. Results therefore measure service discovery and returned evidence; they do not yet compare the app's routed bicycle access or establish that a particular bicycle connection is catchable. The evaluation scripts retain raw service/stop attributes without classification; the reviewed app adapter separately interprets dated filter matches and known codes.
 
 ## Fixed evaluation cases
 
@@ -70,8 +71,14 @@ All requests use scheduled times (`UseRealtimeData=none`) and provider-default a
 
 For each case capture current-app winners in all three groups, all provider returns, time-to-first-result, request failures, access duration, boarding count and unresolved permissions. OJP requests currently use provider-default access, so their raw journey times are **not** equivalent to our bicycle-routing times. Recalculate directed cycling access, boarding readiness and egress before comparing feasible arrivals.
 
-The initial live matrix is complete. Before adopting OJP: confirm the meaning/coverage of bicycle attributes against official departure details, preserve unknowns, handle restrictions at individual stops, and verify later confirmed alternatives are not lost to provider result limits. A static-site migration also needs a server-side credential boundary. These are remaining work, not implemented capabilities.
+The initial matrix and the three-mode TripInfo follow-up are complete. The app now retains exact service/stop scope, checks TripInfo on opened journeys and recomputes all comparisons after new evidence. Provider result limits still make discovery incomplete. OJP access walks are replaced by the app's road-routed cycling; confirmed evidence is never expanded to an unreturned boarding/alighting segment.
+
+## Ticket and reservation prerequisites
+
+Every transit leg displays permission, bike ticket/pass and bike-space reservation independently. Reviewed codes are `A__VN` (ban), `A__VR` (bike reservation required) and `A__VB` (limited bicycle carriage). The observed explicit no-reservation sentence is recognized; its dynamic `I_*` code alone has no meaning. Passenger/group reservation codes are not bicycle requirements. Unknown and conflicting notes stay explicit. Original provider text remains available.
+
+SBB and recognized bus ticket guidance is sourced separately from dated permission. Operator links lead to their ticket/reservation services; the app makes no purchase or reservation and checks no remaining places.
 
 ## TripInfo follow-up and coverage
 
-The user requests TripInfo investigation without remaining-space integration. A single-service evaluation command and manual workflow are now available, with controlled tests but no live TripInfo result yet. Keep raw service/stop evidence separate and permission unassessed until reviewed. [Research, commands, three-set semantics and actual network coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).
+Nine live calls succeeded: paired TripRequests and one TripInfo each for train, bus and boat. Details must match JourneyRef, operating day, boarding/alighting stop references and times. Only calls inside the boarded interval are considered. Missing detail notes do not erase valid filter evidence. [Live results and remaining activation step](OJP_PERMISSION_2026-09-24.md) · [Network coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).

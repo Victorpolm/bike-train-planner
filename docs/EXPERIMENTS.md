@@ -461,3 +461,9 @@ Historical timetable tests explicitly select the old geometric experiment to pre
 **Verification:** 108 app tests, 13 Python tests, TypeScript and production build pass. No dependency or lockfile change. New desktop/mobile visual interactions have not been browser-verified.
 
 **Delivery limitation:** Repository reads were recovered through Git. Native GitHub and Sites calls fail with HTTP 400 `Invalid MCP request metadata`; direct Git has no configured write credential. This records verified local work only, not a successful GitHub push or Site publication. Recheck the remote revision before pushing the prepared change and publish the exact tested application source afterward.
+
+## 2026-09-24 — Dated permission, prerequisites and TripInfo rerouting
+
+Live [Actions run 36034855752](https://github.com/Victorpolm/bike-train-planner/actions/runs/36034855752): nine of nine calls succeeded (three public pairs, bicycle filter off/on, one matched TripInfo per mode). [Detailed findings](OJP_PERMISSION_2026-09-24.md).
+
+The offline regression uses an actually returned bicycle-compatible boat leg, acquires it through the production `plan` flow with both paired calls charged to the existing budget, then injects a matching TripInfo prohibition. Confirmed and uncertain solutions become empty while the all-transit reference remains. Other regressions cover all three real TripInfo identities, notes outside the boarded interval, missing reservation information, passenger-vs-bike reservation codes, conflicts and server-only credential/error boundaries. Existing 108 regressions remain: total 120 pass. Python evaluation tests: 13 pass. TypeScript, Vite frontend and Worker builds pass; Worker smoke checks return HTML, status JSON and a real 404. Browser visual QA was unavailable because the preview service was absent.

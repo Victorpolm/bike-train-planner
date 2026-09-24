@@ -16,7 +16,7 @@ const POSTBUS = { title: "PostBus bicycle rules", url: "https://www3.postauto.ch
 const ZVV = { title: "ZVV bicycle rules", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-20" };
 const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/helpful-tips/cyclists", checked: "2026-09-20" };
 const normalize = (value?: string | null) => value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
-const postbus = new Set(["PAG", "POSTAUTO", "POSTAUTO AG", "POSTBUS"]);
+const postbus = new Set(["PAG", "POSTAUTO", "POSTAUTO AG", "POSTBUS", "OJP:801"]);
 const zvvOperators: Record<string, string> = {
   VBZ: "VBZ", "VERKEHRSBETRIEBE ZÜRICH": "VBZ", VBG: "VBG", "VERKEHRSBETRIEBE GLATTAL": "VBG",
   VZO: "VZO", "VERKEHRSBETRIEBE ZÜRICHSEE UND OBERLAND": "VZO", "STADTBUS WINTERTHUR": "Stadtbus Winterthur",
@@ -43,7 +43,7 @@ export function busCarriage(leg: TransitLeg): BusCarriage | null {
   };
   if (prohibited[operator]) return { ...unknown, operator: prohibited[operator], permission: "not-allowed",
     reservation: "not-applicable", ticket: "not-applicable", source: ZVV,
-    instructions: ["The published operator rules exclude bicycle transport. This bus can appear only in the all-public-transport comparison, not as a journey for your unfolded bicycle."] };
+    instructions: ["The published operator rules exclude bicycle transport. This bus is excluded from journeys with your unfolded bicycle."] };
   // Replacement vehicles must not inherit an operator's ordinary bus policy.
   if (["EV", "SEV"].includes(normalize(leg.category))) return { ...unknown,
     instructions: ["This is a replacement service. Confirm bicycle carriage directly for this departure; ordinary operator rules may not apply."] };
@@ -81,8 +81,7 @@ export function transitAllowed(leg: TransitLeg, preference: BusPreference): bool
 export function busJourneySummary(legs: TransitLeg[]): string | null {
   const rules = legs.map(busCarriage).filter((rule): rule is BusCarriage => !!rule);
   if (!rules.length) return null;
-  return rules.some(rule => rule.permission === "not-allowed") ? "Includes a bus that prohibits bicycles · comparison only"
-    : rules.some(rule => rule.permission === "unknown") ? "Includes a bus with unverified bicycle rules"
+  return rules.some(rule => rule.permission === "unknown") ? "Includes a bus with unverified bicycle rules"
     : "Bus bicycle rules found · check departure, reservation and space";
 }
 

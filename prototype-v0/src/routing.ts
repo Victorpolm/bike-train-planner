@@ -56,6 +56,12 @@ export type TransitLeg = {
   category?: string | null;
   operator?: string | null;
   bicycleEvidence?: BicycleEvidence;
+  ojp?: {
+    journeyRef: string; operatingDay: string; fromRef: string; toRef: string;
+    fromOrder: number; toOrder: number; departure: string; arrival: string;
+    bikeFiltered: boolean;
+    attributes: import("./bicycleCarriage.ts").BicycleAttribute[];
+  };
   direction: string | null;
   fromId?: string;
   toId?: string;

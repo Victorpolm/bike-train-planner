@@ -377,3 +377,18 @@ button:disabled { cursor: default; opacity: .65; }
   .planner-panel { padding: 24px 18px 32px; }
   .map-panel { margin-bottom: 24px; }
 }
+
+.bicycle-carriage { margin-top: 1rem; padding: 1rem; border: 1px solid #cddbd2; border-radius: 10px; background: #f4f9f5; overflow-wrap: anywhere; }
+.bicycle-carriage.permission-uncertain { border-color: #decfa2; background: #fffaf0; }
+.bicycle-carriage.permission-prohibited { border-color: #e1baba; background: #fff4f3; }
+.bicycle-carriage > strong { display: block; color: #234d37; }
+.bicycle-carriage.permission-prohibited > strong { color: #852a25; }
+.bicycle-carriage dl { display: grid; gap: .65rem; margin: .85rem 0; }
+.bicycle-carriage dl > div { display: grid; grid-template-columns: minmax(8rem, 1fr) 1.6fr; gap: .6rem; }
+.bicycle-carriage dt { font-weight: 600; }
+.bicycle-carriage dd { margin: 0; }
+.bicycle-carriage p, .bicycle-carriage li { font-size: .85rem; line-height: 1.5; }
+.bicycle-carriage summary { cursor: pointer; font-size: .85rem; margin-top: .7rem; }
+.bicycle-carriage .carriage-source, .bicycle-carriage .carriage-check { font-size: .76rem; color: #58615b; }
+.reservation-required { font-weight: 600; }
+@media (max-width: 440px) { .bicycle-carriage dl > div { grid-template-columns: 1fr; gap: .15rem; } }

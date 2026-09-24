@@ -277,3 +277,17 @@ This file records important project choices. Do not silently rewrite old decisio
 **Coverage finding:** The app has sampled services and requested BRouter paths, not a complete national transit/boat map or audited inventory of all cycle paths. The national GTFS source includes boat modes but is not imported. Keep source coverage, model coverage and actual app coverage separate.
 
 **Synchronization:** Update the project instruction block, agent scope, current state and related docs. Preserve older dated decisions and experiments as history. A GitHub change does not automatically update pasted ChatGPT instructions or the private Site. See [TripInfo and coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).
+
+## 2026-09-24 — Display dated bicycle permission and prerequisites
+
+**Authorization:** The user says the key is in GitHub and asks to show whether a bicycle is allowed, with prerequisites such as tickets and bike-space reservations. Keep the three comparisons; do not integrate remaining spaces or booking transactions.
+
+**Verified:** Actions run 36034855752 used the existing `OJP_API_KEY` successfully for six paired TripRequests and three TripInfo calls on public train/bus/boat examples. Boat prohibitions disappeared from filtered results; train/bus reservation requirements and explicit bus no-reservation conditions were returned.
+
+**Decision:** A successful `BikeTransport=true` result establishes permission according to OJP for its exact dated service/segment, unless an applicable prohibition overrides it. This replaces the earlier requirement for a separate positive textual note on every filtered leg. A missing note on an unfiltered-only service remains unknown. Tickets, reservations and original provider conditions are separate fields; passenger/group reservation notes are never promoted to bike requirements.
+
+**Implementation:** Worker-protected OJP connections, bounded/paced calls, short-lived caching, scoped TripInfo on journey opening and full three-comparison rerouting after evidence changes. Credentials stay in server runtime environment; no key is included in client assets, logs or captures. The existing private Site identity and audience are preserved.
+
+**Activation boundary:** GitHub Actions and the Site store secrets separately. The Site environment is empty; GitHub does not return stored secret values. Implement and publish the app with a truthful fallback, then configure `OJP_API_KEY` as a Site runtime secret to activate live OJP. No credential-extraction workflow is authorized or introduced.
+
+**Limits:** 120 app tests, 13 Python tests and production build pass; browser QA is blocked by absent managed-preview infrastructure. No complete Swiss GTFS/OSM graph, live capacity, booking or routing-engine migration is implied.

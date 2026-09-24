@@ -43,3 +43,7 @@ The recorded Zürich–Chur–Laax journey retains its `B 81` / `PAG` bus, condi
 Next: obtain reliable departure-level bicycle restrictions/reservation information, expand verified operator identifiers, and separately implement train/tram carriage. Folding, cargo, tandem, trailer and group cases need explicit bicycle-type rules before being offered as covered.
 
 **Current scope:** Remaining bicycle spaces, occupancy and reservation availability are deferred by the 21 September user instruction. Keep published reservation requirements as explanatory conditions only; inspect TripInfo for service-level rules.
+
+## 24 September 2026 integration update
+
+The all-mode OJP adapter and `BicycleCarriageDetails` now supersede the old bus-only display. `ojp:801` maps to PostBus ticket guidance. Dated reservation/no-reservation notes are separate from general operator policy; filter matches can establish provider-assessed permission. Neither general policy nor a bike ticket proves a space exists. [Live findings](OJP_PERMISSION_2026-09-24.md).

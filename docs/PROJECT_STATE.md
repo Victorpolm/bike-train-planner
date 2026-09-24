@@ -1,6 +1,6 @@
 # Project state
 
-_Last consolidated: 2026-09-21. Source implementation and publication status are distinct._
+_Last consolidated: 2026-09-24. Source implementation and publication status are distinct._
 
 ## Objective and scope
 
@@ -22,13 +22,15 @@ The third comparison does not imply a complete national dataset. See [the mathem
 
 ## Bicycle permission and OJP
 
-**Fact:** The production Transport API feed does not supply the positive dated-service evidence required by the strict search. General operator policies remain uncertain. The confirmed group can truthfully be empty even when bicycles are actually permitted.
+**Implemented:** A server-only OJP adapter pairs unfiltered and bicycle-filtered searches. Exact dated filter matches establish permission according to OJP; applicable prohibitions override them. Reviewed service conditions identify bike reservation requirements, explicit no-reservation cases and limited carriage. Unknown notes remain unknown. General operator ticket guidance is separate from service permission.
 
-**Fact:** The first OJP TripRequest benchmark passed all 16 calls using a repository Actions secret. It found useful but incomplete bicycle notes. The website still uses its existing timetable provider. [Recorded results](OJP_BENCHMARK_2026-09-21.md).
+Every transit leg now displays permission, a bike ticket/pass requirement and a separate bike-space reservation requirement, including unknowns. Opening a journey retrieves TripInfo matched to its dated service and boarded interval. New evidence recomputes all three route comparisons. Original provider notes and official operator links remain visible.
 
-**Implemented evaluation tooling:** A bounded TripInfo command and manual workflow request one dated service, preserve service/stop conditions, reject mismatched identities and leave permission unassessed. Official documentation has been reviewed; a live TripInfo result has not yet been captured in this change. [Research, commands and limits](TRIPINFO_AND_NETWORK_COVERAGE.md).
+**Live verification:** The earlier 16-call TripRequest benchmark passed. On 24 September, another nine calls succeeded using the existing GitHub Actions secret: paired TripRequests and one TripInfo each for train, bus and boat. [Live findings and activation](OJP_PERMISSION_2026-09-24.md).
 
-**Decision:** Keep the three comparisons simple. Remaining bicycle spaces, occupancy, reservation availability and booking integration are parked by explicit user instruction. Reservation requirements may remain explanatory conditions; permission is distinct from guaranteed boarding.
+**Activation pending:** The hosted Site has no runtime environment entries. It needs its own secret `OJP_API_KEY`; GitHub does not expose the stored Actions secret for automatic transfer. Until configured and applied through deployment, the published app uses the fallback timetable and preserves unknown permission. The implementation and API access are verified; live website OJP activation is not yet complete.
+
+**Scope:** Remaining bicycle places, occupancy, reservation availability and actual bookings remain deferred. Requirements and booking links are explanatory; permission is not a reservation or guaranteed boarding.
 
 ## Network coverage
 
@@ -38,18 +40,17 @@ The national Swiss GTFS source includes land modes and boat/ferry categories, bu
 
 ## Verification and publication
 
-**Automated verification for this source change:** 108 app tests, 13 Python evaluation tests, TypeScript and the production build pass. New regressions distinguish prohibited/unknown/confirmed winners before dominance, preserve Avoid buses, retain boat categories, and check independently timed onward queries across a requested visit. See [EXPERIMENTS.md](EXPERIMENTS.md).
+120 app tests and 13 Python tests pass, as do TypeScript, the Vite frontend and Worker production builds. Regressions cover exact TripInfo identity/segment matching, train/bus/boat conditions, reservation conflicts, secret handling and rerouting after a new prohibition. Browser visual verification was unavailable because the managed preview service was absent.
 
-**Publication:** The last verified successful private-site publication is version 13, 21 September 2026 at 07:38 UTC, preceding this three-comparison change. This revision has not been deployed. GitHub pushes do not automatically publish the Site. [Website access and development](WEBSITE.md) explains the separate publication step.
+The updated private publication succeeded on 24 September at 18:01:48 UTC from Site commit `c0283e0`, with environment revision 0 (OJP runtime secret still absent). Publication details are tracked in [WEBSITE.md](WEBSITE.md). The existing owner-private Site is reused. GitHub pushes do not automatically publish the Site.
 
 ## Immediate next actions
 
-1. Publish the verified three-comparison source to the existing private Site and check its desktop/mobile presentation.
-2. Run the bounded TripInfo inspection for dated train, bus/tram and boat services; compare notes with TripRequest on the actual boarded segments. Missing notes remain unknown.
-3. Evaluate a server-side OJP adapter and evidence mapping before replacing the website's timetable source. Never expose its API key to the static frontend.
-4. Recheck 3–6 fixed real journeys, recording exact public endpoints, departure, paths, time to first result, missed candidates and unresolved permission.
-5. Compare the sampled approach with OpenTripPlanner and complete timetable/street data; validate cycling times and station entrances against real rides. No RAPTOR/ULTRA or OTP migration is implemented.
-6. Continue user interviews before expanding the product scope.
+1. Configure `OJP_API_KEY` as the existing Site's runtime secret and redeploy its saved version; then check actual live website journeys.
+2. Recheck 3–6 fixed real journeys for timing, road access, missed candidates and permission completeness, including a tram example.
+3. Inspect national GTFS mode/operator/calendar coverage and a dated OSM extract before claiming a complete Swiss graph.
+4. Compare the sampled approach with OpenTripPlanner and complete timetable/street data; validate cycling times and station entrances against rides. No RAPTOR/ULTRA or OTP migration is implemented.
+5. Continue user interviews before expanding the product scope.
 
 ## Remaining risks and parked work
 

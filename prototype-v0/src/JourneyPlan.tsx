@@ -1,8 +1,7 @@
 import { journeySteps } from "./itinerary";
 import { formatMinutes, type Journey, type Place } from "./routing";
 import { journeyStops } from "./mapData";
-import BusCarriageDetails from "./BusCarriageDetails";
-import { bicyclePermission, bicyclePermissionLabel } from "./bicyclePermission";
+import BicycleCarriageDetails, { type EvidenceUpdate } from "./BicycleCarriageDetails";
 
 const clock = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit",
@@ -20,8 +19,8 @@ function PlanTime({ date, start }: { date: Date | null; start: Date }) {
 }
 
 export default function JourneyPlan({
-  id, journey, origin, destination,
-}: { id: string; journey: Journey; origin: Place; destination: Place }) {
+  id, journey, origin, destination, onEvidence,
+}: { id: string; journey: Journey; origin: Place; destination: Place; onEvidence?: EvidenceUpdate }) {
   const stopNumbers = new Map(journeyStops(journey).map(stop => [stop.id, stop.number]));
   return (
     <section id={id} className="journey-plan" aria-labelledby={`${id}-heading`}>
@@ -63,14 +62,7 @@ export default function JourneyPlan({
               {step.mode === "bike" && <p className="plan-note">{step.cyclingRoute
                 ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
                 : "Cycling route details unavailable."}</p>}
-              {leg?.mode === "transit" && <div className="permission-leg">
-                <strong>{bicyclePermissionLabel(leg)}</strong>
-                {bicyclePermission(leg) === "confirmed" && leg.bicycleEvidence && <>
-                  {leg.bicycleEvidence.conditions.map(condition => <p key={condition}>{condition}</p>)}
-                  <p><a href={leg.bicycleEvidence.source.url} target="_blank" rel="noreferrer">{leg.bicycleEvidence.source.title}</a> · checked {leg.bicycleEvidence.source.checked}</p>
-                </>}
-              </div>}
-              {leg && <BusCarriageDetails leg={leg} />}
+              {leg?.mode === "transit" && <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />}
             </li>
           );
         })}

@@ -13,7 +13,7 @@ A Swiss journey-planning experiment comparing cycling and scheduled public trans
 5. Click a card to select its map route. Transit cards also open every bike, train/bus/tram, walking and waiting leg. Numbered map pins mark boarding/alighting stops and show available services, times and platforms; those numbers also appear in the travel plan.
 6. Use **Explored stops** to show/hide candidate and observed timetable stops, and **Fit all stops** to see the whole observed area. These include buses/trams and intermediate stops, not only endpoint railway stations.
 
-**Buses with my bicycle** includes uncertain buses by default, or lets you avoid buses in all three searches. Each model independently solves **Confirmed permission only**, **Allow uncertain permission**, and **All public transport · comparison only**; identical journeys appear once with their category memberships. Every transit leg must have applicable positive service/segment evidence to qualify as confirmed. General operator policies remain uncertain, and known prohibitions are excluded from the first two groups. The third comparison retains them with an explicit warning that the journey cannot be taken with the bicycle. The current feed supplies no service confirmation, so the confirmed group normally explains this missing evidence. Space, tickets and reservations remain separate checks. See [permission searches and the OJP evaluation](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/BICYCLE_PERMISSION_AND_OJP.md).
+**Buses with my bicycle** includes uncertain buses by default, or lets you avoid buses in all three searches. Each model independently solves **Confirmed permission only**, **Allow uncertain permission**, and **All public transport · comparison only**; identical journeys appear once with their category memberships. Every transit leg must have applicable positive service/segment evidence to qualify as confirmed. General operator policies remain uncertain, and known prohibitions are excluded from the first two groups. The third comparison retains them with an explicit warning that the journey cannot be taken with the bicycle. The OJP adapter can supply dated permission from its bicycle filter and reviewed service notes. Every transit leg displays a bike-ticket requirement and a separate bike-space reservation requirement, preserving unknowns. Opening a journey checks TripInfo for the boarded segment. Remaining spaces and booking transactions are not queried. See [permission searches and the OJP evaluation](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/BICYCLE_PERMISSION_AND_OJP.md).
 
 Each transit card compares its total time and cycling-or-walking with the routed bicycle-only journey and shows waiting/boarding time. Cycling is marked fastest and selected by default if it is quickest in this search and within the selected cycling allowance. Transit recommendations remain available in all three comparison scopes even when cycling is faster.
 
@@ -35,7 +35,9 @@ Proposals appear as soon as the necessary road links and a usable timetable resp
 
 ## Run locally
 
-Verified with **Node.js 24**. The current app needs no API keys or backend. The separate OJP evaluation script requires an OJP key for live requests; its dry run is offline.
+Verified with **Node.js 24**. Basic timetable/cycling searches work without a key. For dated bicycle permissions, copy `.env.example` to `.env` and set `OJP_API_KEY` locally. Never use a `VITE_` variable. Vite runs the server-only proxy during development; production uses the Worker in `dist/server/index.js`.
+
+The hosted Site requires its own secret `OJP_API_KEY`. The validated GitHub Actions secret is separate and cannot be read back through GitHub. Without the Site secret, the app uses the fallback timetable and labels missing permissions unknown. `npm run preview` serves frontend assets only; use `npm run dev` for local OJP checks.
 
 ```bash
 npm ci
@@ -74,7 +76,8 @@ The [app roadmap](https://github.com/Victorpolm/bike-train-planner/blob/main/doc
 ## Data and limits
 
 - GeoAdmin address search and Transport API place/stop lookup run independently for suggestions. Selecting a result preserves its coordinates and stop ID, avoiding repeated geocoding.
-- The community [Swiss Transport API](https://transport.opendata.ch/docs.html) for stops, scheduled connections and departure boards. Both models admit buses, trams and other returned public transport.
+- OJP paired unfiltered/bicycle-filtered connections when the server secret is configured, with on-demand TripInfo checks. Both physical calls count against the existing 18-request acquisition budget.
+- The community [Swiss Transport API](https://transport.opendata.ch/docs.html) for stop discovery, departure boards and fallback connections. Both models admit buses, trams and other returned public transport.
 - Existing Swiss rail-hub seed list and OpenStreetMap map tiles.
 - [BRouter](https://brouter.de/) for directed cycling geometry, riding time, OSM-derived road tags and SRTM elevation. The public service is a prototype dependency without an availability guarantee.
 
@@ -112,3 +115,9 @@ The routing service uses HTTP 400 for several causes, including timeouts. The ap
 ## TripInfo and network coverage
 
 The TripInfo script and manual workflow inspect one dated service; they do not configure a website backend or query remaining bicycle spaces. See [TripInfo and Swiss network coverage](../docs/TRIPINFO_AND_NETWORK_COVERAGE.md). No complete national GTFS or OSM graph has been imported; the map contains observed stops and requested routes. See [publication status](../docs/WEBSITE.md) before assuming this source revision is live.
+
+## OJP implementation and verification
+
+`src/ojp.ts` parses dated service/segment evidence and preserves original notes. `src/ojpClient.ts` adds exact returned segments to the graph. `src/bicycleCarriage.ts` interprets reviewed bicycle codes, while `src/BicycleCarriageDetails.tsx` presents permission, tickets and reservations separately for all modes. `server/ojpHandler.ts` keeps credentials in runtime configuration, bounds input/output, paces upstream calls and returns generic errors. Source changes never contain the token.
+
+120 app tests and 13 Python tests pass. Nine live train/bus/boat calls succeeded on 24 September 2026 using the repository secret; public-stop regression responses are in `src/fixtures/ojp-2026-09-24/`. Browser visual verification was unavailable because the managed preview service was absent. This is scheduled data and a sampled graph, not a guarantee of carriage or complete Swiss coverage.

@@ -2,9 +2,6 @@ name: OJP bicycle permission and prerequisites
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: [.github/ojp-permission-run.json]
 
 permissions:
   contents: read
