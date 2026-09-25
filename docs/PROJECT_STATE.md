@@ -20,7 +20,7 @@ The approved Swiss-first proposal is being implemented. [Current delivery and re
 - [GPX instructions](GPX_RECORDING.md) and a local slope-bin analysis tool are ready. No real rider recordings have been supplied or calibrated.
 - Verified 157 application tests, five national timetable tests, five import/GPX tests and 13 existing OJP Python tests. Live Baden and late Zürich–Chur–Laax checks found useful routes; the late search first transit result took 25.3 seconds and the search timed out gracefully at 60 seconds. The preferred initial latency target is not yet met consistently.
 
-Private Site version 19 was verified on 25 September at 11:48 UTC; application files match implementation commit 809e740aab7371c58a9f22dee22f20fa20f1140e. Keep the existing Site owner-only. The GitHub repository is public; this corrects earlier descriptions of it as private. No paid hosting, public access expansion or recurring refresh job has been created. Ask before incurring hosting costs. Europe, additional modes and richer profiles follow Swiss validation.
+Private Site version 20 was verified on 25 September at 13:36 UTC; all 97 tracked application files match implementation commit cead54c468ea570eed97ae551797915f3d3fb5e9, including card prices and named-place search. Keep the existing Site owner-only. The GitHub repository is public; this corrects earlier descriptions of it as private. No paid hosting, public access expansion or recurring refresh job has been created. Ask before incurring hosting costs. Europe, additional modes and richer profiles follow Swiss validation.
 
 ## Objective and scope
 

@@ -16,7 +16,7 @@ Sign in with the ChatGPT account that owns the Site. Access is restricted to tha
 
 Website access and source visibility are separate: this GitHub repository is public. Personal GPX recordings, secrets and downloaded bulk datasets are not committed here. No new paid hosting is authorised; any hosting spend requires the owner's approval first.
 
-For local Git setup and publication, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the website. **Private version 19 was verified on 25 September 2026 at 11:48 UTC**, with train prerequisites, bicycle price options, fare preferences, official parking and bounded searches. The national timetable pilot remains local; no new paid hosting was added.
+For local Git setup and publication, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the website. **Private version 20 was verified on 25 September 2026 at 13:36 UTC**, with prices below boardings and named-place search, including FORTYSEVEN Baden. Train prerequisites, fare preferences, official parking and bounded searches remain available. The national timetable pilot remains local; no new paid hosting was added.
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 
