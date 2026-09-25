@@ -352,3 +352,10 @@ Import official bicycle parking as an optional map layer. Do not turn parking in
 Own Swiss timetable acquisition/search as a separate local service: streaming GTFS into a dated SQLite index, with the three access scopes applied before pruning. The current web runtime cannot contain the measured national service. Keep production disabled until its performance, headway, pathway and disruption gates and hosting decision are resolved. Preserve the live timetable fallback. A global 60-second deadline protects each user search.
 
 Download/audit Swiss OSM coverage and the three pilot station surroundings; retain BRouter for road routing. Missing station-path evidence remains unknown. GPX analysis is local, with no automatic calibration without real rides. Finish and test this Swiss mode before Europe or new travel modes. See SWISS_IMPLEMENTATION.md and GPX_RECORDING.md.
+
+
+## 2026-09-25 — Visible prices and named destinations
+
+Show the supported bicycle ticket/reservation option below the boarding count on every collapsed journey card. Use the existing date/operator-scoped fare calculation and the selected Full Fare/Half Fare/GA/annual-bike-pass profile. Distinguish known bicycle cost, separately priced passenger tickets, unconfirmed charges and prohibited carriage. A zero additional cost requires applicable existing passes; cycling-only shows zero public-transport cost. Do not invent a live total fare.
+
+Add Swiss named-place search with Photon/OpenStreetMap alongside existing address and station lookups. This resolves the coordinate-less FORTYSEVEN Transport API result without hardcoding a venue. Rank the whole result pool before truncating, and require the complete typed query to match before automatically selecting a destination. A partial Baden town match cannot silently replace FORTYSEVEN Baden. Preserve cancellation, independent updates and public-provider rate limits; no new paid host is needed. See PLACE_SEARCH.md.

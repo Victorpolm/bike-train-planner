@@ -2,6 +2,8 @@
 
 **Latest source update (25 September 2026):** Date-aware train bicycle rules, ticket/reservation prices, full fare/Half Fare/GA preferences, official bicycle parking and a 60-second search deadline. A national GTFS service and Swiss OSM audit are implemented as local pilots; they are not a production replacement for live routing. [Implementation and remaining gates](docs/SWISS_IMPLEMENTATION.md) · [GPX recording guide](docs/GPX_RECORDING.md) · [tests and dated results](docs/EXPERIMENTS.md).
 
+Journey cards now show the supported bicycle price directly below the boarding count, with passenger fares and unconfirmed charges kept explicit. [Named-place search](docs/PLACE_SEARCH.md) adds Swiss venues and landmarks: “fortyseven baden” selects the bath at Grosse Bäder 1, with its actual coordinates.
+
 Public search.ch bicycle conditions work without an API key. The existing OJP integration remains available when the Site's separate server secret is configured; GitHub Actions access is already verified. Remaining bicycle spaces and booking transactions remain outside scope.
 
 Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.

@@ -15,6 +15,8 @@ export type Place = Point & {
   label: string;
   stopId?: string;
   kind?: string;
+  detail?: string;
+  source?: "photon";
 };
 
 export type Station = Point & {

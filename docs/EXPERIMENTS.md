@@ -551,3 +551,14 @@ python3 -m unittest discover -s prototype-v0/scripts -p 'test_*.py'
 ~~~
 
 Use a writable TMPDIR if the execution environment has no writable system temporary directory. See SWISS_IMPLEMENTATION.md for production gates.
+
+
+## 2026-09-25 — Card prices and FORTYSEVEN destination regression
+
+Cause: bicycle prices were inside the expanded itinerary only. The collapsed card now includes them immediately after boardings and responds to the existing fare profile. Regression cases cover Full Fare/Half Fare passenger-price separation, GA and annual-pass additional costs, required and unknown reservations, unsupported dates/operators and prohibited carriage.
+
+The live Transport API returned the FORTYSEVEN venue name with null coordinates; GeoAdmin returned Baden municipality/geographic names. The former first-response geocoder could choose that partial town result. A captured public Photon fixture returns the bath and two car parks. Tests verify coordinate order/validity, Swiss-country filtering, no fake transit stop identity, ranking a delayed venue above eight early station/town results, whole-query geocoding, and HTTP 429 cooldown. Existing cancellation and immediate-station/address cases still pass.
+
+Final live lookup: station/geographic suggestions arrived at 8.396 and 8.933 seconds; the bath became the first suggestion at 8.937 seconds. Submitting the same typed query selected latitude 47.4813202, longitude 8.3128908, with label Fortyseven Baden and Bath / spa · Grosse Bäder 1 · 5400 Baden. These are external service observations, not a latency guarantee. A separate response-header check confirmed browser cross-origin access. The initial six-second Photon deadline was too short for the observed service latency; the final independent deadline is 20 seconds, matching existing place providers.
+
+All 163 application tests pass. TypeScript and frontend/Worker production builds pass. React server-render checks on the actual collapsed JourneyCard verify that prices follow boardings and precede arrival details, for full fare, Half Fare, GA, annual bike pass and cycling-only states. Browser interaction/visual verification was not available; no visual pass is claimed. The unrelated national-import and Python suites were not rerun for this UI/geocoding change.

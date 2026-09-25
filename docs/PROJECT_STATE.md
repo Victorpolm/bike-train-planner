@@ -2,6 +2,12 @@
 
 _Last consolidated: 2026-09-25. Source implementation and publication status are distinct._
 
+## 25 September card prices and named destinations
+
+Collapsed journey cards show bicycle ticket/reservation price options immediately below boardings, using the current fare profile. GA and an annual bike pass affect additional cost; full/Half Fare passenger tickets remain separate quotes. Unsupported or prohibited journeys never receive an invented total.
+
+Place input combines existing stations/addresses with Swiss OpenStreetMap venues through Photon, with categories and addresses. Whole-query relevance is ranked before limiting suggestions. Typing “fortyseven baden” resolves the bath rather than automatically accepting Baden town. See [place-search scope and sources](PLACE_SEARCH.md). Verified 163 application tests and production builds, a live FORTYSEVEN lookup, and collapsed-card server rendering; no new browser visual check is claimed.
+
 ## 25 September implementation update
 
 The approved Swiss-first proposal is being implemented. [Current delivery and release gates](SWISS_IMPLEMENTATION.md) supersede older coverage statements below where explicitly noted.

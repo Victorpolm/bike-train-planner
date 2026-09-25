@@ -3,7 +3,7 @@ import { it } from "node:test";
 import { operatorBicycleRule, sbbIcReservation } from "./operatorBicycleRules.ts";
 import { bicyclePermission, bicycleLegAllowed } from "./bicyclePermission.ts";
 import { carriageForLeg, interpretBicycleAttributes } from "./bicycleCarriage.ts";
-import { bikeDayPrice, DEFAULT_FARE_PROFILE, fareSummary, readFareProfile } from "./fares.ts";
+import { bikeDayPrice, DEFAULT_FARE_PROFILE, fareCardSummary, fareSummary, readFareProfile } from "./fares.ts";
 import { parseBikeParking } from "./bikeParking.ts";
 import { handleParking } from "../server/parkingHandler.ts";
 import { SearchDeadline } from "./searchDeadline.ts";
@@ -97,6 +97,33 @@ it("bounds price validity and day-pass coverage and does not extrapolate prices 
   const unknown = fareSummary([leg(undefined, { operator: "Unknown railway" })], { passenger: "ga", annualBikePass: true });
   assert.equal(unknown.bikeChf, null); assert.equal(unknown.knownBikeTotal, null);
   assert.deepEqual(readFareProfile({ passenger: "bogus", annualBikePass: "true" }), DEFAULT_FARE_PROFILE);
+});
+
+it("shows the bicycle price on cards while keeping full and Half Fare passenger tickets separate", () => {
+  const ir = leg(undefined, { category: "IR", service: "IR 35" });
+  for (const passenger of ["full", "half-fare"] as const) {
+    const summary = fareCardSummary([ir], { passenger, annualBikePass: false });
+    assert.equal(summary.price, "Bicycle CHF 15.00 + passenger ticket");
+    assert.match(summary.detail, passenger === "full" ? /Full-fare passenger/ : /Half Fare passenger/);
+    assert.match(summary.detail, /route ticket may cost less/);
+  }
+  assert.equal(fareCardSummary([ir], { passenger: "ga", annualBikePass: false }).price, "CHF 15.00 additional cost");
+  assert.equal(fareCardSummary([ir], { passenger: "ga", annualBikePass: true }).price, "CHF 0.00 additional cost");
+  assert.equal(fareCardSummary([leg("2026-09-25T10:00:00+02:00")], { passenger: "ga", annualBikePass: true }).price, "CHF 2.00 additional cost");
+});
+
+it("keeps partial, unsupported and prohibited card prices distinct from complete bicycle prices", () => {
+  const unknownReservation = fareCardSummary([leg(undefined, { service: "IC 284" })], DEFAULT_FARE_PROFILE);
+  assert.equal(unknownReservation.price, "Bicycle CHF 15.00 + other fares to check");
+  assert.match(unknownReservation.detail, /Reservation price unconfirmed/);
+  const unsupported = fareCardSummary([leg(undefined, { operator: "Unknown railway" })], { passenger: "ga", annualBikePass: true });
+  assert.equal(unsupported.price, "Price to check"); assert.match(unsupported.detail, /Check GA coverage/);
+  assert.equal(fareCardSummary([leg("2028-01-01T10:00:00Z")], DEFAULT_FARE_PROFILE).price, "Price to check");
+  const banned = leg();
+  banned.bicycleEvidence = { permission: "prohibited", fromId: banned.fromId!, toId: banned.toId!,
+    departure: banned.departure!.toISOString(), service: banned.service, operator: banned.operator!,
+    source: { title: "Dated timetable", url: "https://example.org", checked: "2026-09-25" }, conditions: [] };
+  assert.equal(fareCardSummary([banned], DEFAULT_FARE_PROFILE).price, "Bicycle travel not permitted");
 });
 
 const parkingFeature = { id: "rack", geometry: { type: "GeometryCollection", geometries: [{ type: "Point", coordinates: [8.5, 47.3] }] },

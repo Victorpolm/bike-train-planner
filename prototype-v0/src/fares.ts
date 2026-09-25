@@ -44,3 +44,23 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile) {
   return { covered, prohibited, passenger, bikeChf, reservationChf, required, unknown, singleDayPass,
     knownBikeTotal: !prohibited && bikeChf !== null && reservationChf !== null ? bikeChf + reservationChf : null };
 }
+
+// Card prices use the same scoped tariff calculation as the expanded itinerary.
+// A bicycle option must never be presented as a complete passenger fare quote.
+export function fareCardSummary(legs: TransitLeg[], profile: FareProfile): { price: string; detail: string } {
+  const fare = fareSummary(legs, profile);
+  if (fare.prohibited) return { price: "Bicycle travel not permitted", detail: "No valid bicycle fare for this comparison." };
+  const passenger = profile.passenger === "ga" ? fare.covered ? "Passenger travel covered by your GA" : "Check GA coverage"
+    : profile.passenger === "half-fare" ? "Half Fare passenger ticket priced separately" : "Full-fare passenger ticket priced separately";
+  const bikeOption = profile.annualBikePass ? "With your annual bike pass" : "Bike Day Pass option; a route ticket may cost less";
+  if (fare.knownBikeTotal !== null) return {
+    price: profile.passenger === "ga" ? `CHF ${fare.knownBikeTotal.toFixed(2)} additional cost`
+      : `Bicycle CHF ${fare.knownBikeTotal.toFixed(2)} + passenger ticket`,
+    detail: `${bikeOption} · ${fare.reservationChf ? "includes bicycle reservations" : "no reservation required"}. ${passenger}.`,
+  };
+  if (fare.bikeChf !== null) return {
+    price: `Bicycle CHF ${fare.bikeChf.toFixed(2)} + ${profile.passenger === "ga" ? "reservations to check" : "other fares to check"}`,
+    detail: `${bikeOption}. Reservation price unconfirmed. ${passenger}.`,
+  };
+  return { price: "Price to check", detail: `Bicycle ticket and reservation quote needed. ${passenger}.` };
+}

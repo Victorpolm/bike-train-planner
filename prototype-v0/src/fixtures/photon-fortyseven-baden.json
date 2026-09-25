@@ -1,0 +1,88 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "W",
+        "osm_id": 481052007,
+        "osm_key": "amenity",
+        "osm_value": "public_bath",
+        "type": "house",
+        "housenumber": "1",
+        "name": "Fortyseven Baden",
+        "street": "Grosse B\u00e4der",
+        "city": "Baden",
+        "county": "Bezirk Baden",
+        "state": "Aargau",
+        "country": "Switzerland",
+        "postcode": "5400",
+        "countrycode": "CH",
+        "extent": [
+          8.3119038,
+          47.4816749,
+          8.3140103,
+          47.480942
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3128908,
+          47.4813202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 12635447491,
+        "osm_key": "amenity",
+        "osm_value": "parking",
+        "type": "house",
+        "name": "B\u00e4der / Fortyseven (Mieter)",
+        "street": "Parkstrasse",
+        "city": "Baden",
+        "county": "Bezirk Baden",
+        "state": "Aargau",
+        "country": "Switzerland",
+        "postcode": "5401",
+        "countrycode": "CH"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3124099,
+          47.4810544
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "osm_type": "N",
+        "osm_id": 11034909306,
+        "osm_key": "amenity",
+        "osm_value": "parking",
+        "type": "house",
+        "housenumber": "1",
+        "name": "B\u00e4der / Fortyseven",
+        "street": "Grosse B\u00e4der",
+        "city": "Baden",
+        "county": "Bezirk Baden",
+        "state": "Aargau",
+        "country": "Switzerland",
+        "postcode": "5400",
+        "countrycode": "CH"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.3123998,
+          47.4810432
+        ]
+      }
+    }
+  ]
+}

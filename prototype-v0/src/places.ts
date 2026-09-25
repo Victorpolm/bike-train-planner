@@ -1,6 +1,7 @@
 import { MAJOR_STATIONS } from "./majorStations.ts";
 import { fetchJson } from "./http.ts";
 import { haversineKm, type Place, type Point } from "./routing.ts";
+import { suggestPointsOfInterest } from "./poiPlaces.ts";
 
 export const MAX_WAYPOINTS = 4;
 export function mapPlace(point: Point): Place {
@@ -62,13 +63,31 @@ export function transportPlaces(data: { stations?: TransportLocation[] }): Place
   return (Array.isArray(data.stations) ? data.stations : []).filter(s => s.name && validPoint(s.coordinate?.x, s.coordinate?.y))
     .map(s => ({ label: s.name, lat: s.coordinate!.x!, lon: s.coordinate!.y!, stopId: s.id ?? undefined, kind: s.icon ?? undefined }));
 }
-export function mergePlaces(...lists: Place[][]): Place[] {
+function uniquePlaces(lists: Place[][]): Place[] {
   const unique = new Map<string, Place>();
   for (const p of lists.flat()) {
     const key = p.stopId ?? `${normalizePlace(p.label)}:${p.lat.toFixed(5)}:${p.lon.toFixed(5)}`;
     if (!unique.has(key)) unique.set(key, p);
   }
-  return [...unique.values()].slice(0, 8);
+  return [...unique.values()];
+}
+export function mergePlaces(...lists: Place[][]): Place[] { return uniquePlaces(lists).slice(0, 8); }
+const words = (text: string) => normalizePlace(text).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+function matchingWords(query: string, place: Place): number {
+  const candidate = words(`${place.label} ${place.detail ?? ""}`);
+  return words(query).filter(word => candidate.some(part => /^\d+$/.test(word) ? part === word : part.startsWith(word))).length;
+}
+function matchesWholeQuery(query: string, place: Place): boolean {
+  const count = words(query).length;
+  return count > 0 && matchingWords(query, place) === count;
+}
+export function rankPlaces(query: string, places: Place[]): Place[] {
+  const key = words(query).join(" ");
+  const score = (place: Place) => (matchesWholeQuery(query, place) ? 1000 : 0) + matchingWords(query, place) * 20
+    + (words(place.label).join(" ") === key ? 100 : words(place.label).join(" ").startsWith(key) ? 50 : 0);
+  // Rank the entire pool before limiting it: early town/station replies must not
+  // fill every slot before a more relevant named destination arrives.
+  return uniquePlaces([places]).sort((a, b) => score(b) - score(a)).slice(0, 8);
 }
 type GeoResponse = { results?: { attrs?: { lat?: number; lon?: number; label?: string; detail?: string } }[] };
 function addressPlaces(data: GeoResponse): Place[] {
@@ -88,7 +107,7 @@ export async function suggestPlaces(query: string, signal: AbortSignal, publish:
   if (signal.aborted) throw signal.reason;
   if (key.length < 2) { publish([]); return { unavailable: false }; }
   if (fetcher === fetch && cache.has(key)) { publish(cache.get(key)!); return { unavailable: false }; }
-  let places = local, successes = 0;
+  let places = local, candidates = local, successes = 0;
   publish(places);
   const transport = `https://transport.opendata.ch/v1/locations?${new URLSearchParams({ query: query.trim(), type: "all" })}`;
   const geo = `https://api3.geo.admin.ch/rest/services/ech/SearchServer?${new URLSearchParams({ searchText: query.trim(), type: "locations", origins: "address,gazetteer,zipcode,gg25", limit: "6", sr: "4326" })}`;
@@ -96,15 +115,19 @@ export async function suggestPlaces(query: string, signal: AbortSignal, publish:
     fetchJson<{ stations?: TransportLocation[] }>(transport, signal, 20_000, fetcher).then(transportPlaces),
     fetchJson<GeoResponse>(geo, signal, 20_000, fetcher).then(addressPlaces),
   ];
+  // Photon explicitly supports search-as-you-type; keep short prefixes local
+  // to the two existing services and honour any public-provider rate limit.
+  if (key.length >= 3) jobs.push(suggestPointsOfInterest(query, signal, fetcher));
   await Promise.allSettled(jobs.map(job => job.then(found => {
     if (signal.aborted) return;
     successes++;
     // Street matches take precedence for an address query, while known rail hubs stay immediate for city queries.
-    places = /\d/.test(query) ? mergePlaces(found, places) : mergePlaces(places, found);
+    candidates = /\d/.test(query) ? [...found, ...candidates] : [...candidates, ...found];
+    places = rankPlaces(query, candidates);
     publish(places);
   })));
   if (signal.aborted) throw signal.reason;
-  if (successes === 2 && fetcher === fetch) {
+  if (successes === jobs.length && fetcher === fetch) {
     if (cache.size >= 50) cache.delete(cache.keys().next().value!);
     cache.set(key, places);
   }
@@ -115,20 +138,23 @@ export async function geocode(searchText: string, signal = new AbortController()
   if (signal.aborted) throw signal.reason;
   const exact = KNOWN_PLACES.find(p => normalizePlace(p.label) === normalizePlace(searchText));
   if (exact) return exact;
-  // Searching typed text can proceed on the first usable provider response.
-  // The autocomplete itself continues collecting suggestions until selection.
+  // A partial town match cannot stand in for a named venue in that town.
+  // Proceed early only when the candidate covers the whole typed query.
   const child = new AbortController(), abort = () => child.abort(signal.reason);
   signal.addEventListener("abort", abort, { once: true });
   return new Promise<Place>((resolve, reject) => {
-    let settled = false;
+    let settled = false, hadSuggestions = false;
     void suggestPlaces(searchText, child.signal, found => {
-      if (!settled && found.length && !signal.aborted) {
-        settled = true; resolve(found[0]); child.abort();
+      hadSuggestions ||= found.length > 0;
+      const match = found.find(place => matchesWholeQuery(searchText, place));
+      if (!settled && match && !signal.aborted) {
+        settled = true; resolve(match); child.abort();
       }
     }, fetcher).then(status => {
       if (!settled) reject(new Error(status.unavailable
         ? "Location lookup is unavailable. Please try again, or choose a suggested station."
-        : `No Swiss location found for “${searchText}”. Try a place, stop or street name.`));
+        : hadSuggestions ? `No exact match for “${searchText}”. Choose a suggestion, add the street address, or select the place on the map.`
+          : `No Swiss location found for “${searchText}”. Try a place, stop or street name.`));
     }).catch(error => { if (!settled) reject(error); })
       .finally(() => signal.removeEventListener("abort", abort));
   });

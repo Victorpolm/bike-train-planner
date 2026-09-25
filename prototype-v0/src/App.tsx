@@ -5,6 +5,7 @@ import { metrics, type ModelMode, type EndpointPreference } from "./model";
 import { recommend, compareCycling, waitingMinutes, scopeLabels, type ScopedProposal } from "./recommendations";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
+import JourneyPrice from "./JourneyPrice";
 import CyclingDetails, { type CycleFocus, type NamedCycleRoute } from "./CyclingDetails";
 import { formatMinutes, type CyclingComparison, type Point } from "./routing";
 import { journeySteps } from "./itinerary";
@@ -28,6 +29,7 @@ function CyclingCard({ comparison, selected, start, maxBikeMinutes, fastest, onS
     onClick={onSelect} aria-pressed={selected}>
     <span className="category-badges"><span>Cycling only · routed</span>{fastest && <span>Fastest in this search</span>}</span>
     <span className="journey-topline"><strong>≈ {formatMinutes(comparison.minutes)}</strong><span>0 boardings</span></span>
+    <span className="journey-price"><b>CHF 0.00 public transport cost</b><small>No public transport tickets needed.</small></span>
     <span className="arrival-summary">Estimated arrival <b>{clock.format(comparison.arrival)}</b>
       {day.format(comparison.arrival) !== day.format(start) && ` · ${day.format(comparison.arrival)}`}</span>
     <span className="cycling-summary">{comparison.distanceKm.toFixed(1)} km along roads and paths</span>
@@ -37,8 +39,8 @@ function CyclingCard({ comparison, selected, start, maxBikeMinutes, fastest, onS
   </button>;
 }
 
-function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelect }: {
-  proposal: ScopedProposal; selected: boolean; expanded: boolean; planId: string; comparison: CyclingComparison | null; onSelect: () => void;
+function JourneyCard({ proposal, selected, expanded, planId, comparison, fareProfile, onSelect }: {
+  proposal: ScopedProposal; selected: boolean; expanded: boolean; planId: string; comparison: CyclingComparison | null; fareProfile: FareProfile; onSelect: () => void;
 }) {
   const { journey: j, wins } = proposal;
   const sameWins = wins.length > 1 && wins.every(win => JSON.stringify(win.categories) === JSON.stringify(wins[0].categories)
@@ -57,6 +59,7 @@ function JourneyCard({ proposal, selected, expanded, planId, comparison, onSelec
     {prohibited && <span className="permission-warning">Comparison only: bicycles are prohibited on at least one service. This is not a journey you can take with your bicycle.</span>}
     <span className="journey-topline"><strong>{formatMinutes(j.totalMinutes)}</strong>
       <span>{m.boardings} boarding{m.boardings === 1 ? "" : "s"} · {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}</span></span>
+    <JourneyPrice legs={j.transitLegs} profile={fareProfile} />
     <span className="arrival-summary">Arrive at your destination at <b>{clock.format(finalArrival)}</b>
       {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}</span>
     {day.format(finalArrival) !== day.format(j.startTime) && <span className="comparison-caution">Next-day arrival. Total time includes waiting.</span>}
@@ -375,7 +378,7 @@ export default function App() {
           {proposals.map((proposal, index) => {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
           return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
-            expanded={expanded} planId={planId} comparison={cyclingReference} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
+            expanded={expanded} planId={planId} comparison={cyclingReference} fareProfile={fareProfile} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
             {expanded && <JourneyPlan fareProfile={fareProfile} id={planId} journey={j} origin={session.origin} destination={session.destination}
               onEvidence={(leg, evidence) => {
                 if (session.client.signal.aborted) return;

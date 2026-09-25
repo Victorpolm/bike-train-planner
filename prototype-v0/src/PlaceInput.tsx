@@ -18,7 +18,7 @@ export default function PlaceInput({ label, value, disabled, onChange }: {
     if (!focused || !open || disabled || value.place || value.text.trim().length < 2) {
       setPlaces([]); setStatus(""); return () => abort.abort();
     }
-    setPlaces(localSuggestions(value.text)); setStatus("Looking up addresses and stops…");
+    setPlaces(localSuggestions(value.text)); setStatus("Looking up places, addresses and stops…");
     const timer = setTimeout(() => {
       void suggestPlaces(value.text, abort.signal, found => {
         if (generation.current === run && !abort.signal.aborted) { setPlaces(found); setActive(-1); }
@@ -27,7 +27,7 @@ export default function PlaceInput({ label, value, disabled, onChange }: {
           ? "Live suggestions are unavailable. You can still choose a listed station or search what you typed."
           : "Choose a suggestion, or search what you typed.");
       }).catch(() => { /* Changing text or focus cancels the previous query. */ });
-    }, 350);
+    }, 500);
     return () => { clearTimeout(timer); abort.abort(); };
   }, [value.text, value.place, focused, open, disabled]);
   function choose(place: Place) {
@@ -35,7 +35,7 @@ export default function PlaceInput({ label, value, disabled, onChange }: {
   }
   return <div className="place-field">
     <label htmlFor={id}><span>{label}</span></label>
-    <input id={id} value={value.text} required disabled={disabled} placeholder="Town, street or station"
+    <input id={id} value={value.text} required disabled={disabled} placeholder="Place, street or station"
       role="combobox" autoComplete="off" spellCheck={false} aria-autocomplete="list" aria-expanded={visible}
       aria-controls={listId} aria-describedby={statusId}
       aria-activedescendant={visible && active >= 0 ? `${id}-option-${active}` : undefined}
@@ -54,10 +54,12 @@ export default function PlaceInput({ label, value, disabled, onChange }: {
         {places.map((place, index) => <li id={`${id}-option-${index}`} key={`${place.stopId ?? place.label}:${place.lat}:${place.lon}`}
           role="option" aria-selected={index === active} className={index === active ? "active" : ""}
           onPointerDown={e => e.preventDefault()} onClick={() => choose(place)}>
-          <strong>{place.label}</strong><small>{place.stopId ? "Public transport stop" : "Address or place"}</small>
+          <strong>{place.label}</strong><small>{place.detail ?? (place.stopId ? "Public transport stop" : "Address or place")}</small>
         </li>)}
       </ul>
       <p role="status">{places.length > 0 ? `${places.length} suggestions. ` : ""}{status}</p>
+      {places.some(place => place.source === "photon") && <p className="place-attribution">Place search: <a href="https://photon.komoot.io/" target="_blank" rel="noreferrer" onPointerDown={e => e.preventDefault()}>Photon</a>
+        {" · "}<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" onPointerDown={e => e.preventDefault()}>© OpenStreetMap contributors</a></p>}
     </div>}
     <span id={statusId} className="sr-only">Type at least two letters. Use arrow keys and Enter to choose a suggestion.</span>
   </div>;
