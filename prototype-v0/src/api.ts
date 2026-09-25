@@ -1,3 +1,5 @@
+import { SearchDeadline, SEARCH_DEADLINE_MS } from "./searchDeadline.ts";
+import { NationalTimetableClient } from "./nationalTimetableClient.ts";
 import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { maxCyclingSpeed } from "./cyclingPace.ts";
 import { CyclingClient } from "./cyclingClient.ts";
@@ -37,6 +39,7 @@ export function swissDateParts(date: Date) {
 const timetableCache = new Map<string, { expires: number; data: unknown }>();
 let timetableCooldown = 0;
 export class TimetableClient {
+  national: NationalTimetableClient | null = null;
   ojp?: OjpClient | null;
   publicTimetable = false;
   readonly warnings = new Set<string>();
@@ -56,7 +59,7 @@ export class TimetableClient {
     try { return await operation(); }
     finally { this.remainingMs -= Math.max(0, Date.now() - started); }
   }
-  readonly signal: AbortSignal;
+  signal: AbortSignal;
   readonly budget: number;
   private gapMs: number;
   private fetcher: typeof fetch;
@@ -220,6 +223,7 @@ export async function findCandidateStations(point: Place, maxMinutes: number, cl
 
 async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date) {
   if (from.id === to.id) return;
+  if (client.national) await client.timed(() => client.national!.add(network, from, to, ready));
   if (client.ojp) {
     const result = await client.timed(() => client.ojp!.connections(from, to, ready, calls => client.claimRequests(calls)));
     if (result) { addOjpConnections(network, result); return; }
@@ -242,6 +246,9 @@ async function connections(network: Network, client: TimetableClient, from: Stop
 }
 
 export type SearchSession = {
+  requestSignal?: AbortSignal;
+  searchElapsedMs?: number;
+  searchIncomplete?: boolean;
   origin: Place; destination: Place; start: Date; options: Options; network: Network; client: TimetableClient;
   originStations: Station[]; destinationStations: Station[]; baseline: Solution; extended: Solution | null; extendedComplete?: boolean;
   confirmed?: { baseline: Solution; extended: Solution | null };
@@ -256,7 +263,7 @@ export type SearchSession = {
   cyclingCandidatePools?: Map<string, Station[]>;
 };
 export function searchWarnings(session: SearchSession): string[] {
-  const warnings = [...session.client.warnings, ...session.client.ojp?.warnings ?? [], ...session.cyclingClient?.warnings ?? [],
+  const warnings = [...session.client.warnings, ...session.client.national?.warnings ?? [], ...session.client.ojp?.warnings ?? [], ...session.cyclingClient?.warnings ?? [],
     ...[...session.comparisonClient?.warnings ?? []].map(w => `Cycling-only comparison — ${w}`)];
   if (session.client.rejectedSections) warnings.push("Some sections lacked usable stops or times and were excluded.");
   if ([session, session.confirmed, session.allTransit].some(s => s?.baseline.limited || s?.extended?.limited)) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
@@ -440,10 +447,10 @@ export function updateBicycleEvidence(session: SearchSession, leg: TransitLeg, e
   refresh(session, !!session.extended, publish);
 }
 
-export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
+async function planInternal(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
   dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[];
-    cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch; ojpClient?: OjpClient | null; publicTimetable?: boolean } = {}): Promise<SearchSession> {
+    cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch; ojpClient?: OjpClient | null; nationalClient?: NationalTimetableClient | null; publicTimetable?: boolean } = {}): Promise<SearchSession> {
   validateOptions(options);
   if ((dependencies.waypoints?.length ?? 0) > MAX_WAYPOINTS) throw new Error(`Choose up to ${MAX_WAYPOINTS} intermediate stops.`);
   const start = dependencies.start ?? new Date();
@@ -455,6 +462,8 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
   client.publicTimetable = dependencies.publicTimetable ?? !dependencies.fetcher;
   client.ojp = dependencies.ojpClient !== undefined ? dependencies.ojpClient
     : dependencies.fetcher ? null : await OjpClient.connect(signal);
+  client.national = dependencies.nationalClient !== undefined ? dependencies.nationalClient
+    : dependencies.fetcher ? null : await NationalTimetableClient.connect(signal);
   const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace);
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
@@ -523,13 +532,13 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
     session.destinationStations = await roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress, true);
     await queryPairs();
   }
-  if (mode === "extended") return extend(session, progress, publish);
+  if (mode === "extended") return extendInternal(session, progress, publish);
   await session.cyclingTask;
   refresh(session, false, publish);
   return { ...session };
 }
 
-export async function extend(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
+async function extendInternal(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
   if (session.extendedComplete) return session;
   if (session.waypoints?.length) {
     session.cyclingClient?.beginPhase();
@@ -638,4 +647,43 @@ async function planWaypointStages(session: SearchSession, mode: ModelMode, progr
   session.extendedComplete = mode === "extended";
   refresh(session, mode === "extended", publish);
   return { ...session };
+}
+
+export type PlanDependencies = NonNullable<Parameters<typeof planInternal>[7]> & { deadlineMs?: number };
+export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
+  signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {}, dependencies: PlanDependencies = {}): Promise<SearchSession> {
+  const deadline = new SearchDeadline(signal, dependencies.deadlineMs ?? SEARCH_DEADLINE_MS);
+  let latest: SearchSession | undefined;
+  const update: SearchUpdate = session => { if (!deadline.signal.aborted) { session.requestSignal = signal; latest = session; publish(session); } };
+  const report: Progress = message => { if (!deadline.signal.aborted) progress(message); };
+  try {
+    const result = await deadline.run(() => planInternal(from, to, mode, options, deadline.signal, report, update, dependencies));
+    return { ...result, requestSignal: signal, searchElapsedMs: Date.now() - deadline.started };
+  } catch (error) {
+    if (!deadline.expired) throw error;
+    if (!latest) throw new Error("The search time limit was reached before the places could be checked. Please try again.");
+    latest.client.warnings.add("Search time limit reached. Completed routes are kept; some alternatives could not be checked.");
+    latest.searchIncomplete = true; latest.searchElapsedMs = Date.now() - deadline.started;
+    refresh(latest, mode === "extended", publish);
+    return { ...latest };
+  }
+}
+
+export async function extend(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
+  if (session.extendedComplete) return session;
+  const deadline = new SearchDeadline(session.requestSignal ?? session.client.signal);
+  session.client.signal = deadline.signal;
+  if (session.client.ojp) session.client.ojp.signal = deadline.signal;
+  if (session.client.national) session.client.national.signal = deadline.signal;
+  if (session.cyclingClient) session.cyclingClient.signal = deadline.signal;
+  if (session.comparisonClient) session.comparisonClient.signal = deadline.signal;
+  const update: SearchUpdate = result => { if (!deadline.signal.aborted) publish(result); };
+  try { return await deadline.run(() => extendInternal(session, message => { if (!deadline.signal.aborted) progress(message); }, update)); }
+  catch (error) {
+    if (!deadline.expired) throw error;
+    session.searchIncomplete = true;
+    session.client.warnings.add("Search time limit reached. Completed routes are kept; some cycling transfers could not be checked.");
+    refresh(session, true, publish);
+    return { ...session };
+  }
 }

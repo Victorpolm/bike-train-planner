@@ -1,0 +1,2 @@
+# Optional OSM audit only; timetable/GPX tools use the Python standard library.
+osmium==4.3.1

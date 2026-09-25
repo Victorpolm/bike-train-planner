@@ -521,3 +521,33 @@ The offline regression uses an actually returned bicycle-compatible boat leg, ac
 The presets are now City 15, Relaxed 20, Regular 25, Sportive 30 and Electric 25 km/h. Regular is the default; all remain editable. The existing regression suite covers every preset's flat calibration, climbing and descending behavior. Controlled station-readiness checks use City (17 min access, ready 08:20) and Sportive (9 min access, ready 08:12). Both primary and independent cycling clients preserve the selected pace. The 9-minute bike budget admits the Sportive case. Earlier recorded-path replay values above belong to the prior presets and remain historical observations.
 
 All 145 tests pass after updating existing fixtures. The calculation and current slope-speed table are documented in CYCLING_ROUTES.md. Browser interaction was not rechecked for this small preset/copy update.
+
+
+## 2026-09-25 — Prerequisites, prices, data imports and end-to-end checks
+
+Verification: **157 application tests**, **5 local timetable tests**, **5 import/GPX tests**, and **13 existing OJP Python tests** passed. New cases cover the IC reservation season/calendar/Swiss date, peak-hour uncertainty, ban/VI precedence, independent staff/ticket attributes, connecting reservations, GA/Half Fare bike costs, tariff validity, parking parsing/failure isolation, deadline/cancellation and completed cycling results. The separate national fixture covers scope-specific pruning, pickup/drop-off, frequency exclusion, transfers, 25:00 departures and DST.
+
+React server rendering verifies verified IR permission, no reservation, required bike ticket, the GA passenger explanation and the CHF 15 bicycle option with no empty bullets. Browser preview is unavailable. A local browser installation could not complete; no desktop/mobile interaction or visual pass is claimed.
+
+Two fresh live checks ran on 25 September against public timetable/road services using the existing Regular 25 km/h profile:
+- Baden short bicycle case, departing 26 September at 10:00 Swiss time: cycling comparison **13 minutes**, plus **5 transit journeys**. Search ended at **60.006 seconds**, keeping results and marking remaining alternatives incomplete.
+- Zürich HB → Laax GR, posta, departing 2 November at 23:00 Swiss time with unrestricted cycling: the **IR35 → Chur → cycle** alternative is present, one boarding, estimated arrival **02:46 Swiss time**. Cycling-only comparison first appeared after **11.768 seconds**; the first transit result after **25.265 seconds**. Whole search ended at **60.022 seconds** with useful results and an incomplete-search warning. These are planning estimates, not measured ride times or universal guarantees; the initial 10–15 second transit target is not consistently met.
+
+The existing relocated golden regressions for HB–IR35–Baden–direct cycling, a short bike trip during provider failure and bus/rail alternatives still pass. Private home addresses are not added to this report.
+
+National import: **474 agencies, 5,172 routes, 104,279 stop/platform records, 634,409 selected trips, 10,002,822 stop events**, six service dates including adjacent days. SQLite **1,631,551,488 bytes**, import **191.2 seconds**. Boat route categories are included. The national pilot finds direct Zürich–Baden, Baden–Zürich and late IR35 to Chur. Query elapsed times were **9.778 s / 0.164 s / 8.011 s**; first/third searches were incomplete, with synchronous query work exceeding the preferred budget. Peak RSS across the process was **550,744 KiB**. This demonstrates a working pilot, not production readiness or complete optimal routing.
+
+The Swiss OSM extract (**546,983,197 bytes**) was streamed successfully: **57,322,045 nodes**, **6,366,660 ways**, including **15,515 highway=cycleway ways**. There are **9,950 bicycle-parking nodes and 6,915 bicycle-parking ways**, which are not deduplicated facilities or necessarily public parking. These have not been merged with the official layer. Station-area inventories for Zürich HB/Baden/Chur identify mapped entrances, elevators, steps and missing bicycle tags; they do not establish connected accessible transfer paths.
+
+The official parking download parsed **1,608 bicycle facilities**; car records are excluded. No occupancy or default-zero price is treated as availability/free parking. Raw GTFS/PBF/parking files and personal GPX are not committed. Source hashes, dates, aggregate counts and public-route benchmark outputs are in [the audit record](SWISS_DATA_AUDIT_2026-09-25.json).
+
+Repeat checks from repository root:
+
+~~~bash
+(cd prototype-v0 && npm test && npm run build)
+node --test tools/swiss_timetable.test.ts
+python3 -m unittest discover -s tools -p 'test_*.py'
+python3 -m unittest discover -s prototype-v0/scripts -p 'test_*.py'
+~~~
+
+Use a writable TMPDIR if the execution environment has no writable system temporary directory. See SWISS_IMPLEMENTATION.md for production gates.

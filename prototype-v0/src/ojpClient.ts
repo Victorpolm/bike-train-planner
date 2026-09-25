@@ -46,7 +46,7 @@ export class OjpClient {
   private cache = new Map<string, Promise<OjpConnections | null>>();
   readonly warnings = new Set<string>();
   private unavailable = false;
-  readonly signal: AbortSignal;
+  signal: AbortSignal;
   private fetcher: typeof fetch;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch) { this.signal = signal; this.fetcher = fetcher; }
   static async connect(signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<OjpClient | null> {

@@ -33,7 +33,7 @@ export default function BicycleCarriageDetails({ leg, onEvidence }: { leg: Trans
     ? { ...leg, bicycleEvidence: withTripInfoRule(leg.bicycleEvidence, detail.rule, detail.checked) } : leg;
   const rule = carriageForLeg(displayLeg), prohibited = rule.permission === "prohibited";
   const notes = [...new Set([...(leg.ojp?.attributes ?? []), ...leg.bicycleAttributes ?? [], ...detail?.rule.attributes ?? []]
-    .filter(a => /^A__V[NRB]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text)).map(a => a.text))];
+    .filter(a => /^A__V[NRBICKT]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text)).map(a => a.text.trim()).filter(Boolean))];
   return <div className={`bicycle-carriage permission-${rule.permission}`}>
     <strong>{prohibited ? "Bicycles not allowed" : rule.permission === "confirmed" ? "Bicycle access verified · conditions apply" : "Bicycle permission unknown"}</strong>
     {prohibited ? <p>This service appears only in the all-public-transport comparison. Choose another service to travel with your bicycle.</p> : <>

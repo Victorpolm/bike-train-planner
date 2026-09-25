@@ -10,7 +10,7 @@ To open it from GitHub, visit the [repository home page](https://github.com/Vict
 
 ## Run from Git on your computer
 
-Install Git and Node.js 24, the version used for verification. Authenticate to GitHub with access to this private repository, then run:
+Install Git and Node.js 24, the version used for verification. The source repository is public; the deployed website is separately owner-private. Then run:
 
 ```bash
 git clone https://github.com/Victorpolm/bike-train-planner.git

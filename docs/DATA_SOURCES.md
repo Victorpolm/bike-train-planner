@@ -211,3 +211,12 @@ A real 20 September 2026 Renens–EPFL response is retained with source URL and 
 [TripInfo and Swiss network coverage](TRIPINFO_AND_NETWORK_COVERAGE.md) distinguishes source availability from imported data. Swiss national GTFS includes land and boat/ferry modes, but this app holds a sampled timetable graph. BRouter returns requested OSM-derived routes; no complete local cycling network or inventory of every path is verified. The map is not a national network map.
 
 TripInfo inspection is implemented as separate evaluation tooling, not a production permission feed. Live confirmation and reviewed service/segment mapping remain pending. Remaining bicycle spaces, occupancy and reservation availability are explicitly deferred. BRouter/SRTM profiles are already implemented; the earlier elevation-priority text concerns higher-resolution terrain and future calibration.
+
+
+## 25 September 2026 implementation
+
+The Swiss national GTFS and Geofabrik OSM extracts were actually downloaded and processed. The timetable now has a local dated SQLite index and an experimental read-only service; production routing still uses the live providers. OSM counts describe mapped objects, not all physical bike paths. Aggregate manifests/hashes are in [SWISS_DATA_AUDIT_2026-09-25.json](SWISS_DATA_AUDIT_2026-09-25.json).
+
+The [official bicycle/car parking feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/) supplies the optional bicycle-parking layer without an API key. The checked dataset has 1,608 BIKE facilities. Nearby-border and incomplete coverage are explicit. Capacity is not occupancy; feed default-zero prices are not reliable free-parking evidence. OSM has additional racks but requires deduplication and access/quality review before combining them.
+
+OJP Fare is a test integration environment requiring its own API product. Production full/Half Fare passenger quotes are not enabled; GA is handled as a coverage question. Published supported bicycle day-pass/reservation prices are shown separately. See [implementation, sources and limits](SWISS_IMPLEMENTATION.md).

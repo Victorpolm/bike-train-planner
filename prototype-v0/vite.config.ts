@@ -3,5 +3,5 @@ import react from "@vitejs/plugin-react";
 import { ojpDevelopment } from "./server/devMiddleware";
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), ojpDevelopment(loadEnv(mode, process.cwd(), "OJP_").OJP_API_KEY)],
+  plugins: [react(), ojpDevelopment(loadEnv(mode, process.cwd(), "OJP_").OJP_API_KEY, loadEnv(mode, process.cwd(), "SWISS_TIMETABLE_"))],
 }));

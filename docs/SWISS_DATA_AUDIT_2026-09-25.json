@@ -1,0 +1,428 @@
+{
+  "gtfs": {
+    "source": "Swiss national GTFS",
+    "source_url": "https://data.opentransportdata.swiss/dataset/timetable-2026-gtfs2020",
+    "imported_at": "2026-09-25T11:24:02.204613+00:00",
+    "requested_dates": [
+      "2026-09-25",
+      "2026-11-02"
+    ],
+    "counts": {
+      "agencies": 474,
+      "routes": 5172,
+      "stops": 104279,
+      "trips": 634409,
+      "stop_times": 10002822,
+      "transfers": 1104046,
+      "frequencies": 752
+    },
+    "warnings": [
+      "Scheduled data; realtime disruptions are not included.",
+      "Only indexed service dates are available; other dates must use a fresh index or live timetable.",
+      "Timetable coverage is not a complete cycle-path or station-access inventory."
+    ],
+    "bike_hint_counts": {
+      "VN": 143720,
+      "VR": 60399,
+      "VB": 266601,
+      "VI": 201,
+      "VT": 619,
+      "VK": 119
+    },
+    "sha256": "b8e2249af2b1b828f8225665d2636bd2c1bf7c7a8e59e7d43b8d77242d28031a",
+    "feed": {
+      "feed_publisher_name": "SBB",
+      "feed_publisher_url": "https://sbb.ch",
+      "feed_lang": "DE",
+      "feed_start_date": "20251214",
+      "feed_end_date": "20261212",
+      "feed_version": "20260923"
+    },
+    "uncompressed_bytes": 4507841711,
+    "indexed_dates": [
+      "2026-09-24",
+      "2026-09-25",
+      "2026-09-26",
+      "2026-11-01",
+      "2026-11-02",
+      "2026-11-03"
+    ],
+    "routes_by_type": {
+      "109": 212,
+      "117": 110,
+      "900": 51,
+      "106": 415,
+      "102": 60,
+      "103": 47,
+      "101": 48,
+      "105": 7,
+      "107": 10,
+      "100": 1,
+      "401": 2,
+      "715": 79,
+      "700": 3431,
+      "1500": 7,
+      "702": 14,
+      "705": 208,
+      "202": 1,
+      "710": 2,
+      "1400": 53,
+      "116": 13,
+      "1300": 296,
+      "1303": 2,
+      "1000": 103
+    },
+    "all_feed_trips": 2558670,
+    "all_feed_stop_times": 41551943,
+    "has_pathways": false,
+    "has_shapes": false,
+    "elapsed_seconds": 191.2,
+    "database_bytes": 1631551488
+  },
+  "osm": {
+    "source": "Geofabrik Switzerland / OpenStreetMap contributors",
+    "source_url": "https://download.geofabrik.de/europe/switzerland.html",
+    "license": "ODbL 1.0",
+    "audited_at": "2026-09-25T11:38:22.669910+00:00",
+    "sha256": "0d457eccd702a71e8c915c41c82ea6a260f60afd2905c90ae7ea238ee361256d",
+    "bytes": 546983197,
+    "counts": {
+      "nodes": 57322045,
+      "bicycle_parking_nodes": 9950,
+      "ways": 6366660,
+      "ways_with_cycle_infrastructure_or_designation": 54216,
+      "bicycle_parking_ways": 6915
+    },
+    "highway_ways": {
+      "motorway_link": 5995,
+      "secondary": 37821,
+      "service": 475355,
+      "residential": 190067,
+      "tertiary": 51174,
+      "trunk_link": 1064,
+      "primary": 35310,
+      "footway": 434590,
+      "path": 230001,
+      "unclassified": 71153,
+      "living_street": 6787,
+      "track": 374085,
+      "steps": 67566,
+      "pedestrian": 7486,
+      "motorway": 8941,
+      "cycleway": 15515,
+      "trunk": 2421,
+      "secondary_link": 718,
+      "tertiary_link": 409,
+      "primary_link": 1155,
+      "construction": 510,
+      "bridleway": 328,
+      "rest_area": 121,
+      "services": 58,
+      "proposed": 279,
+      "via_ferrata": 223,
+      "busway": 91,
+      "corridor": 641,
+      "escape": 6,
+      "platform": 11609,
+      "elevator": 273,
+      "raceway": 173,
+      "ladder": 29,
+      "mountaineering": 3,
+      "scramble": 4,
+      "bus_stop": 116,
+      "road": 39,
+      "crossing": 3,
+      "emergency_bay": 37,
+      "yes": 4,
+      "climbing_route": 2,
+      "planned": 4,
+      "traffic_island": 3,
+      "link": 2,
+      "footway;bus_stop": 1,
+      "emergency bay": 1
+    },
+    "highway_tag_coverage": {
+      "surface": 842067,
+      "oneway": 118594,
+      "maxspeed": 228393,
+      "any_cycleway_tag": 94723,
+      "smoothness": 78540,
+      "bicycle": 107362,
+      "foot": 107753,
+      "lit": 238736,
+      "incline": 54893,
+      "access": 94133
+    },
+    "station_600m_inventory": {
+      "Z\u00fcrich HB": {
+        "entrance_nodes": 278,
+        "barrier_nodes": 509,
+        "elevator_nodes": 37,
+        "footway_ways": 1575,
+        "movement_ways_bicycle_unspecified": 1960,
+        "path_ways": 21,
+        "movement_ways_bicycle_no": 76,
+        "steps_ways": 374,
+        "pedestrian_ways": 81,
+        "movement_ways_dismount": 6,
+        "conveying_ways": 115,
+        "elevator_ways": 40,
+        "corridor_ways": 5
+      },
+      "Baden": {
+        "barrier_nodes": 78,
+        "entrance_nodes": 312,
+        "elevator_nodes": 8,
+        "footway_ways": 566,
+        "pedestrian_ways": 40,
+        "movement_ways_bicycle_unspecified": 776,
+        "steps_ways": 184,
+        "movement_ways_bicycle_no": 20,
+        "movement_ways_dismount": 4,
+        "path_ways": 55,
+        "elevator_ways": 4,
+        "conveying_ways": 2,
+        "corridor_ways": 1
+      },
+      "Chur": {
+        "entrance_nodes": 148,
+        "barrier_nodes": 35,
+        "elevator_nodes": 9,
+        "pedestrian_ways": 71,
+        "footway_ways": 1062,
+        "movement_ways_bicycle_no": 3,
+        "steps_ways": 68,
+        "movement_ways_bicycle_unspecified": 1124,
+        "conveying_ways": 9,
+        "path_ways": 2,
+        "corridor_ways": 2,
+        "movement_ways_dismount": 5
+      }
+    },
+    "limits": [
+      "Object counts, not route length, legal bicycle access or complete real-world coverage.",
+      "Station inventories include nearby streets and do not establish a connected bicycle-compatible transfer.",
+      "OSM bicycle=no does not by itself settle whether pushing a bicycle is permitted; foot and access rules must also be evaluated.",
+      "Map absence means unknown. Escalators, lifts and steps require a station pathway audit before routing use."
+    ]
+  },
+  "local_timetable_benchmark": {
+    "reports": [
+      {
+        "name": "Zurich-Baden",
+        "departure": "2026-09-25T10:00:00+02:00",
+        "elapsedMs": 9778,
+        "incomplete": true,
+        "journeys": [
+          {
+            "boardings": 1,
+            "arrival": "2026-09-25T08:39:00.000Z",
+            "services": [
+              "S 6"
+            ]
+          },
+          {
+            "boardings": 1,
+            "arrival": "2026-09-25T08:21:00.000Z",
+            "services": [
+              "IR 16"
+            ]
+          }
+        ],
+        "warnings": [
+          "Scheduled data; realtime disruptions are not included.",
+          "Only indexed service dates are available; other dates must use a fresh index or live timetable.",
+          "Timetable coverage is not a complete cycle-path or station-access inventory.",
+          "Frequency-based services are not expanded in this timetable pilot.",
+          "Station pathways and realtime changes are not verified. Transfer times use the feed or a minimum three-minute allowance.",
+          "Local timetable search time limit reached; completed routes are kept and some alternatives are missing."
+        ]
+      },
+      {
+        "name": "Baden-Zurich",
+        "departure": "2026-09-25T10:00:00+02:00",
+        "elapsedMs": 164,
+        "incomplete": false,
+        "journeys": [
+          {
+            "boardings": 1,
+            "arrival": "2026-09-25T08:24:00.000Z",
+            "services": [
+              "IR 36"
+            ]
+          }
+        ],
+        "warnings": [
+          "Scheduled data; realtime disruptions are not included.",
+          "Only indexed service dates are available; other dates must use a fresh index or live timetable.",
+          "Timetable coverage is not a complete cycle-path or station-access inventory.",
+          "Frequency-based services are not expanded in this timetable pilot.",
+          "Station pathways and realtime changes are not verified. Transfer times use the feed or a minimum three-minute allowance."
+        ]
+      },
+      {
+        "name": "Zurich-Chur-late",
+        "departure": "2026-11-02T23:00:00+01:00",
+        "elapsedMs": 8011,
+        "incomplete": true,
+        "journeys": [
+          {
+            "boardings": 1,
+            "arrival": "2026-11-02T23:49:00.000Z",
+            "services": [
+              "IR 35"
+            ]
+          }
+        ],
+        "warnings": [
+          "Scheduled data; realtime disruptions are not included.",
+          "Only indexed service dates are available; other dates must use a fresh index or live timetable.",
+          "Timetable coverage is not a complete cycle-path or station-access inventory.",
+          "Frequency-based services are not expanded in this timetable pilot.",
+          "Station pathways and realtime changes are not verified. Transfer times use the feed or a minimum three-minute allowance.",
+          "Local timetable search time limit reached; completed routes are kept and some alternatives are missing."
+        ]
+      }
+    ],
+    "resourceUsage": {
+      "userCPUTime": 18615877,
+      "systemCPUTime": 3073085,
+      "maxRSS": 550744,
+      "sharedMemorySize": 0,
+      "unsharedDataSize": 0,
+      "unsharedStackSize": 0,
+      "minorPageFault": 146335,
+      "majorPageFault": 0,
+      "swappedOut": 0,
+      "fsRead": 0,
+      "fsWrite": 0,
+      "ipcSent": 0,
+      "ipcReceived": 0,
+      "signalsCount": 0,
+      "voluntaryContextSwitches": 1598,
+      "involuntaryContextSwitches": 586
+    }
+  },
+  "live_application_checks": [
+    {
+      "case": "Baden short bicycle journey",
+      "elapsedMs": 60006,
+      "cyclingStatus": "ready",
+      "cyclingMinutes": 13,
+      "transitJourneys": 5,
+      "incomplete": true,
+      "warnings": [
+        "Search time limit reached. Completed routes are kept; some alternatives could not be checked."
+      ]
+    },
+    {
+      "case": "Late Zurich-Chur-Laax",
+      "elapsedMs": 60022,
+      "firstBikeMs": 11768,
+      "firstTransitMs": 25265,
+      "incomplete": true,
+      "journeys": [
+        {
+          "arrival": "2026-11-03T03:51:00.000Z",
+          "exit": "Ziegelbr\u00fccke",
+          "boardings": 1,
+          "services": [
+            "IR 35"
+          ],
+          "minutes": 351
+        },
+        {
+          "arrival": "2026-11-03T01:46:00.000Z",
+          "exit": "Chur",
+          "boardings": 1,
+          "services": [
+            "IR 35"
+          ],
+          "minutes": 226
+        },
+        {
+          "arrival": "2026-11-03T05:09:00.000Z",
+          "exit": "Ilanz",
+          "boardings": 1,
+          "services": [
+            "RE 7"
+          ],
+          "minutes": 429
+        },
+        {
+          "arrival": "2026-11-03T05:09:00.000Z",
+          "exit": "Ilanz",
+          "boardings": 2,
+          "services": [
+            "IR 35",
+            "RE 7"
+          ],
+          "minutes": 429
+        },
+        {
+          "arrival": "2026-11-03T06:48:00.000Z",
+          "exit": "Laax GR, posta",
+          "boardings": 1,
+          "services": [
+            "B 81"
+          ],
+          "minutes": 528
+        },
+        {
+          "arrival": "2026-11-03T06:48:00.000Z",
+          "exit": "Laax GR, posta",
+          "boardings": 2,
+          "services": [
+            "IR 35",
+            "B 81"
+          ],
+          "minutes": 528
+        },
+        {
+          "arrival": "2026-11-03T04:50:00.000Z",
+          "exit": "Laax GR, posta",
+          "boardings": 2,
+          "services": [
+            "RE 7",
+            "B 411"
+          ],
+          "minutes": 410
+        },
+        {
+          "arrival": "2026-11-03T04:50:00.000Z",
+          "exit": "Laax GR, posta",
+          "boardings": 3,
+          "services": [
+            "IR 35",
+            "RE 7",
+            "B 411"
+          ],
+          "minutes": 410
+        },
+        {
+          "arrival": "2026-11-03T07:08:00.000Z",
+          "exit": "Valendas-Sagogn",
+          "boardings": 2,
+          "services": [
+            "IR 35",
+            "RE 7"
+          ],
+          "minutes": 548
+        },
+        {
+          "arrival": "2026-11-03T07:18:00.000Z",
+          "exit": "Castrisch",
+          "boardings": 2,
+          "services": [
+            "IR 35",
+            "RE 7"
+          ],
+          "minutes": 558
+        }
+      ],
+      "warnings": [
+        "Search time limit reached. Completed routes are kept; some alternatives could not be checked."
+      ]
+    }
+  ]
+}

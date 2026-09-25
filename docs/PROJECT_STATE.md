@@ -1,6 +1,20 @@
 # Project state
 
-_Last consolidated: 2026-09-24. Source implementation and publication status are distinct._
+_Last consolidated: 2026-09-25. Source implementation and publication status are distinct._
+
+## 25 September implementation update
+
+The approved Swiss-first proposal is being implemented. [Current delivery and release gates](SWISS_IMPLEMENTATION.md) supersede older coverage statements below where explicitly noted.
+
+- Sourced SBB domestic IC/IR/regional, BLS and ordinary domestic RhB rules expand verified permission. Date/line/season/holiday IC reservations, separate ticket requirements and dated exceptions reduce avoidable unknowns. RhB reservation details remain unknown without service evidence; premium trains are not included in its default.
+- Full fare/Half Fare/GA and annual-bike-pass preferences are stored on the device. Published bicycle day-pass/reservation options appear; passenger total quotes remain pending production fare access and validation.
+- The official parking layer contains 1,608 BIKE facilities in the checked download, with capacity separated from availability. It does not change routing or introduce a park-and-ride mode.
+- One 60-second deadline spans each whole search, including ordered stages. Completed results survive timeout. A separate explicit Extended action gets its own deadline and retains user cancellation.
+- Downloaded/indexed national GTFS and downloaded/audited the Swiss OSM extract. The local timetable service shares bicycle rules and independently searches each scope; production activation, performance, frequencies, disruptions and connected station pathways remain gates. The running website still uses the live providers.
+- [GPX instructions](GPX_RECORDING.md) and a local slope-bin analysis tool are ready. No real rider recordings have been supplied or calibrated.
+- Verified 157 application tests, five national timetable tests, five import/GPX tests and 13 existing OJP Python tests. Live Baden and late Zürich–Chur–Laax checks found useful routes; the late search first transit result took 25.3 seconds and the search timed out gracefully at 60 seconds. The preferred initial latency target is not yet met consistently.
+
+Keep the existing Site owner-only. The GitHub repository is public; this corrects earlier descriptions of it as private. No paid hosting, public access expansion or recurring refresh job has been created. Ask before incurring hosting costs. Europe, additional modes and richer profiles follow Swiss validation.
 
 ## Objective and scope
 
@@ -18,7 +32,7 @@ _Last consolidated: 2026-09-24. Source implementation and publication status are
 - **Usability:** Progressive proposals survive cancellation; journey cards explain all legs, waiting, boarding locations and available platforms. The map shows observed stops and routes. Cycling presets include Above 150 minutes within the 24-hour horizon.
 - **Data acquisition:** Local and rail candidate coverage, bounded outward exploration and an 18-request timetable cap. Two extra bounded rail-exit queries use the original ready time to uncover earlier trains omitted by onward-wait optimization. Their cycling finishes are checked promptly. Other unchecked exits are refined by arrival/boarding objectives. Routes are reused by directed station identity across small coordinate differences. Provider budgets exclude time waiting on the other provider; temporary failures have bounded recovery and rate-limit cooldowns. Ordered-stage queries preserve independently reachable permission-scope times. Sampled acquisition can still miss services and is not globally optimal.
 
-The all-transit choice does not imply a complete national dataset. See [the mathematical model](MATHEMATICAL_MODEL.md), [permission contract](BICYCLE_PERMISSION_AND_OJP.md) and [coverage audit](TRIPINFO_AND_NETWORK_COVERAGE.md).
+The all-transit choice does not imply complete national routing. A national dated index now exists locally; the deployed search still samples live services. See [the mathematical model](MATHEMATICAL_MODEL.md), [permission contract](BICYCLE_PERMISSION_AND_OJP.md) and [current data audit](SWISS_DATA_AUDIT_2026-09-25.json).
 
 ## Bicycle permission and OJP
 

@@ -43,7 +43,7 @@ export class CyclingClient {
   private remainingMs = CYCLING_LIMITS.phaseMs;
   private cooldown = 0;
   private attempts = new Map<string, number>();
-  readonly signal: AbortSignal;
+  signal: AbortSignal;
   readonly pace?: CyclingPace;
   private fetcher: typeof fetch;
   private gapMs: number;

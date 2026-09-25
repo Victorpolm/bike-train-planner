@@ -1,7 +1,7 @@
 import { applicableBicycleEvidence, bicyclePermission, type BicycleEvidence } from "./bicyclePermission.ts";
 import { busCarriage } from "./busCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
-import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB_IR_BICYCLES } from "./operatorBicycleRules.ts";
+import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB_IR_BICYCLES, operatorBicycleRule, isSbb } from "./operatorBicycleRules.ts";
 
 export type BicycleAttribute = { code: string; text: string; scope: "service" | "segment" | "stop" };
 export type CarriageRule = {
@@ -21,20 +21,26 @@ const normalized = (text: string) => text.normalize("NFKC").toLowerCase().replac
 // Only these reviewed service codes and the observed, explicit no-reservation
 // sentence establish a rule. Dynamic I_* codes alone never establish permission.
 export function interpretBicycleAttributes(attributes: BicycleAttribute[], filtered = false): CarriageRule {
-  const relevant = attributes.filter(a => /^A__V[NRB]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text));
+  const relevant = attributes.filter(a => /^A__V[NRBICKT]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text));
   const prohibited = relevant.some(a => a.code === "A__VN" || /^(velos?: keine beförderung möglich|bicycles?: carriage prohibited)\.?$/i.test(a.text.trim()));
   const reservation = relevant.some(a => a.code === "A__VR");
   const noReservation = relevant.some(a => normalized(a.text).startsWith("die mitnahme von velos ist ohne reservation möglich, sofern genügend mitnahmeplätze"));
   const limited = relevant.some(a => a.code === "A__VB");
-  const explicit = prohibited || reservation || noReservation || limited;
+  const staffLoading = relevant.some(a => a.code === "A__VC");
+  const internationalOnly = relevant.some(a => a.code === "A__VI");
+  const explicit = prohibited || reservation || noReservation || limited || staffLoading;
   const notes: string[] = [];
   if (prohibited) notes.push("Bicycles cannot be carried on this service.");
   if (reservation) notes.push("Reserve a bicycle space before boarding. The reservation is separate from the bike ticket.");
   if (noReservation) notes.push("No bicycle reservation is required. Carriage is conditional on sufficient space.");
+  if (staffLoading) notes.push("Bicycle loading is handled by staff. Be at the loading area before departure.");
+  if (internationalOnly) notes.push("Bicycle carriage is restricted to international travel; eligibility must be checked for your boarded segment.");
+  if (relevant.some(a => a.code === "A__VK")) notes.push("Buy the bicycle ticket from the local transport operator.");
+  if (relevant.some(a => a.code === "A__VT")) notes.push("Packaged bicycles are not accepted on this service.");
   if (limited) notes.push("Bicycle carriage is subject to limited space.");
   if (reservation && noReservation) notes.push("The provider gives conflicting reservation conditions. Confirm with the operator before boarding.");
   return {
-    permission: prohibited ? "prohibited" : explicit || filtered ? "allowed" : "unknown",
+    permission: prohibited ? "prohibited" : !internationalOnly && (explicit || filtered) ? "allowed" : "unknown",
     basis: explicit ? "service-rule" : filtered ? "ojp-filter" : "unassessed",
     // Contradictory reservation notes require confirmation; do not silently
     // select the less restrictive reading.
@@ -45,24 +51,24 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
 
 export function carriageForLeg(leg: TransitLeg) {
   const evidence = applicableBicycleEvidence(leg), policy = busCarriage(leg);
-  const requirements = evidence?.prerequisites;
+  const requirements = evidence?.prerequisites, operatorRule = operatorBicycleRule(leg);
   const sob = sobMainlineRule(leg);
   const sbbIR = sbbInterRegioRule(leg);
-  const operatorPermissionSource = sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
-  const reservationFallback = !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && (sob || sbbIR);
-  const sbb = ["SBB", "SBB CFF FFS", "CFF", "FFS", "ojp:11"].includes(leg.operator ?? "");
+  const operatorPermissionSource = operatorRule?.permission === "allowed" ? operatorRule.source : sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
+  const reservationFallback = !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && !!operatorRule;
+  const sbb = isSbb(leg);
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
-    ? requirements.bikeTicket : sbb || sob || policy?.ticket === "required" ? "required" : "unknown";
-  const ticketSource = requirements?.ticketSource ?? (sob ? SOB_BICYCLES : sbb ? SBB_BICYCLES : policy?.source);
+    ? requirements.bikeTicket : sbb || sob || operatorRule?.ticket === "required" || policy?.ticket === "required" ? "required" : "unknown";
+  const ticketSource = requirements?.ticketSource ?? (operatorRule?.source ?? (sbb ? SBB_BICYCLES : policy?.source));
   return {
     permission: bicyclePermission(leg), evidence,
     bikeTicket,
-    bikeReservation: requirements?.bikeReservation && requirements.bikeReservation !== "unknown" ? requirements.bikeReservation : reservationFallback ? "not-required" : "unknown",
-    reservationSource: reservationFallback && (!requirements || requirements.bikeReservation === "unknown") ? sob ? SOB_RESERVATIONS : SBB_IR_BICYCLES : undefined,
+    bikeReservation: requirements?.bikeReservation && requirements.bikeReservation !== "unknown" ? requirements.bikeReservation : reservationFallback ? operatorRule!.reservation : "unknown",
+    reservationSource: reservationFallback && (!requirements || requirements.bikeReservation === "unknown") ? sob ? SOB_RESERVATIONS : operatorRule?.source : undefined,
     permissionSource: !evidence || evidence.permission === "unknown" ? operatorPermissionSource : undefined,
     ticketSource,
     bookingUrl: requirements?.bookingUrl ?? ticketSource?.url,
-    guidance: sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
+    guidance: operatorRule ? operatorRule.instructions : sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
       "Bicycle spaces on these SOB trains cannot be reserved. Carriage depends on space; follow the crew’s instructions."] : sbbIR ? [
       "For a standard bicycle up to two metres long: load and unload it yourself and use the designated bicycle area.",
       "Take a bicycle ticket or pass. Carriage depends on space; keep doors and aisles clear and follow staff instructions.",

@@ -1,3 +1,4 @@
+import { DEFAULT_FARE_PROFILE, readFareProfile, type FareProfile } from "./fares";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
 import { metrics, type ModelMode, type EndpointPreference } from "./model";
@@ -84,6 +85,11 @@ export default function App() {
   const naming = useRef(new Map<string, AbortController>());
   const [pointNotice, setPointNotice] = useState("");
   const [cycleFocus, setCycleFocus] = useState<CycleFocus | null>(null);
+  const [fareProfile, setFareProfile] = useState<FareProfile>(() => {
+    try { return readFareProfile(JSON.parse(localStorage.getItem("bike-train-fare-profile-v1") ?? "null")); }
+    catch { return DEFAULT_FARE_PROFILE; }
+  });
+  useEffect(() => { try { localStorage.setItem("bike-train-fare-profile-v1", JSON.stringify(fareProfile)); } catch { /* Device storage is optional. */ } }, [fareProfile]);
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">("regular");
   const [cyclingPace, setCyclingPace] = useState<CyclingPace>(DEFAULT_CYCLING_PACE);
@@ -270,6 +276,13 @@ export default function App() {
         </fieldset>
         <p className="bus-preference-help" id="bicycle-access-help">{bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other public transport.</p>
         <details className="preferences"><summary>Preferences · optional</summary>
+          <fieldset className="fare-profile"><legend>Tickets · saved on this device</legend>
+            <label><span>Your passenger travelcard</span><select value={fareProfile.passenger} onChange={e => setFareProfile(p => ({ ...p, passenger: e.target.value as FareProfile["passenger"] }))}>
+              <option value="full">Full fare · no travelcard</option><option value="half-fare">Half Fare · Halbtax</option><option value="ga">GA Travelcard</option>
+            </select></label>
+            <label><input type="checkbox" checked={fareProfile.annualBikePass} onChange={e => setFareProfile(p => ({ ...p, annualBikePass: e.target.checked }))} />I already have an annual bike pass</label>
+            <p>Adult fares in 2nd class. Your passenger travelcard and bicycle pass are separate.</p>
+          </fieldset>
           <div className="preference-grid">
             <label><span>Riding profile</span><select disabled={loading} value={ridingPreset}
               onChange={e => { invalidate(); const preset = e.target.value as CyclingPreset; setRidingPreset(preset);
@@ -363,7 +376,7 @@ export default function App() {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
           return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
             expanded={expanded} planId={planId} comparison={cyclingReference} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
-            {expanded && <JourneyPlan id={planId} journey={j} origin={session.origin} destination={session.destination}
+            {expanded && <JourneyPlan fareProfile={fareProfile} id={planId} journey={j} origin={session.origin} destination={session.destination}
               onEvidence={(leg, evidence) => {
                 if (session.client.signal.aborted) return;
                 updateBicycleEvidence(session, leg, evidence, next => setSession(current => current?.network === session.network ? next : current));

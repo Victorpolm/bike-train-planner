@@ -1,3 +1,5 @@
+import FareDetails from "./FareDetails";
+import { DEFAULT_FARE_PROFILE, type FareProfile } from "./fares";
 import { journeySteps } from "./itinerary";
 import { formatMinutes, type Journey, type Place } from "./routing";
 import { journeyStops } from "./mapData";
@@ -19,8 +21,8 @@ function PlanTime({ date, start }: { date: Date | null; start: Date }) {
 }
 
 export default function JourneyPlan({
-  id, journey, origin, destination, onEvidence,
-}: { id: string; journey: Journey; origin: Place; destination: Place; onEvidence?: EvidenceUpdate }) {
+  id, journey, origin, destination, onEvidence, fareProfile = DEFAULT_FARE_PROFILE,
+}: { id: string; journey: Journey; origin: Place; destination: Place; fareProfile?: FareProfile; onEvidence?: EvidenceUpdate }) {
   const stopNumbers = new Map(journeyStops(journey).map(stop => [stop.id, stop.number]));
   return (
     <section id={id} className="journey-plan" aria-labelledby={`${id}-heading`}>
@@ -63,10 +65,12 @@ export default function JourneyPlan({
                 ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
                 : "Cycling route details unavailable."}</p>}
               {leg?.mode === "transit" && <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />}
+              {step.mode === "walk" && <p className="plan-note">Push your bicycle during this transfer. The timetable transfer time is shown; a continuous route suitable for a bicycle, including lifts or steps, has not been verified.</p>}
             </li>
           );
         })}
       </ol>
+      <FareDetails journey={journey} profile={fareProfile} />
       <p className="plan-caution">Bicycle guidance covers a standard, unfolded bicycle. Check uncertain departures with the operator. Permission does not guarantee space or make a reservation; this app does not book bicycle spaces. Times and platforms come from the timetable service.</p>
     </section>
   );

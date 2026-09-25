@@ -339,3 +339,16 @@ This file records important project choices. Do not silently rewrite old decisio
 **Decision:** City 15, Relaxed 20, Regular 25 (default), Sportive 30, Electric 25 km/h with the existing climbing assistance. Values remain editable from 8 to 35 km/h. Names indicate pace choices, not fitness ratings; they are configurable planning references rather than measured population averages. Five-km/h steps are simple to compare. Electric and Regular share a flat reference but have distinct climbing behavior.
 
 **Clarification:** The original BRouter override of 25 km/h capped model speed; it did not assert 25 km/h as the flat-ground average. This change deliberately makes Regular's flat speed 25 instead of the previous 20. The slope-power formula, electric-assistance rule and 45 km/h downhill cap are unchanged. Existing timing regressions are updated for the new presets; no new unrelated feature is introduced.
+
+
+## 2026-09-25 — Swiss-first implementation, private app and cost approval
+
+Implement the approved proposal in stages. Keep the existing Site owner-only and ask before any hosting spend. The existing GitHub repository is public; documentation now distinguishes that from app privacy.
+
+Use reviewed date/line/operator rules to fill missing train prerequisites, with dated prohibitions and conflicts taking precedence. Add full/Half Fare/GA plus annual-bike-pass preferences on the device. Show supported published bicycle charges; do not manufacture passenger prices or use the OJP Fare test environment as a production quote.
+
+Import official bicycle parking as an optional map layer. Do not turn parking into a new park-and-ride routing mode or integrate free-space availability. Keep the bicycle with the traveller in the current mode.
+
+Own Swiss timetable acquisition/search as a separate local service: streaming GTFS into a dated SQLite index, with the three access scopes applied before pruning. The current web runtime cannot contain the measured national service. Keep production disabled until its performance, headway, pathway and disruption gates and hosting decision are resolved. Preserve the live timetable fallback. A global 60-second deadline protects each user search.
+
+Download/audit Swiss OSM coverage and the three pilot station surroundings; retain BRouter for road routing. Missing station-path evidence remains unknown. GPX analysis is local, with no automatic calibration without real rides. Finish and test this Swiss mode before Europe or new travel modes. See SWISS_IMPLEMENTATION.md and GPX_RECORDING.md.

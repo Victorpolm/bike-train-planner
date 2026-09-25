@@ -121,3 +121,8 @@ After the planning foundation works, pilot saved commute templates and shareable
 5. When should the engine comparison replace the experimental Baseline/Extended controls?
 
 These questions do not block the implemented map, cycling and bus-policy work. Next, validate road/entrance access and obtain departure-level carriage information while continuing the routing-engine evaluation; operator guidance alone does not make a journey practically verified.
+
+
+## 25 September 2026 delivery order
+
+Current Swiss mode remains the priority. Train prerequisites, supported bike prices, device-local fare preferences, official parking and a global search deadline are implemented. National GTFS/OSM tools and GPX diagnostics are available locally. Before introducing another mode: complete national service performance/headway/disruption validation, pilot station pathways, live fare validation and rider calibration. New hosting requires owner approval before costs. Then consider richer persistent profiles and separate park-and-ride/other modes; Europe follows validated Swiss behaviour. See [the current implementation and explicit gates](SWISS_IMPLEMENTATION.md).

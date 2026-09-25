@@ -24,7 +24,7 @@ function stop(value: SearchStop): TransportStop {
 }
 export function searchBicycleAttributes(attributes: SearchLeg["attributes"]): BicycleAttribute[] {
   return Object.entries(attributes ?? {}).filter(([, text]) => typeof text === "string")
-    .map(([code, text]) => ({ code: /^\d+_[\d.]+_V[NRB]$/.test(code) ? `A__${code.split("_").at(-1)}` : code,
+    .map(([code, text]) => ({ code: /^\d+_[\d.]+_V[NRBICKT]$/.test(code) ? `A__${code.split("_").at(-1)}` : code,
       text, scope: "service" as const }));
 }
 export function searchSections(data: SearchTimetableResponse, checked = new Date().toISOString()): TransportSection[][] {

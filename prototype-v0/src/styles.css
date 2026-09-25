@@ -414,3 +414,14 @@ button:disabled { cursor: default; opacity: .65; }
 .pace-model table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
 .pace-model th, .pace-model td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: left; }
 .pace-model td { text-align: right; font-variant-numeric: tabular-nums; }
+
+.fare-profile { margin: 0 0 1rem; padding: 1rem; border: 1px solid var(--border, #c9d5db); border-radius: .65rem; }
+.fare-profile label { display: flex; align-items: center; gap: .6rem; margin: .5rem 0; }
+.fare-profile label:first-of-type { display: grid; }
+.fare-profile input[type=checkbox] { width: auto; }
+.fare-profile p, .fare-details p { font-size: .9rem; }
+.fare-details { border-top: 1px solid #c9d5db; margin-top: 1rem; padding-top: 1rem; }
+.fare-details dl { display: grid; gap: .6rem; }
+.fare-details dt { font-weight: 700; }
+.fare-details dd { margin: .2rem 0 0; }
+.parking-information { width: 100%; max-width: 34rem; font-size: .875rem; line-height: 1.4; }

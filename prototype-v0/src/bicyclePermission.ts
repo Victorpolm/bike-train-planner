@@ -1,6 +1,6 @@
 import { busCarriage, isBus, transitAllowed, type BusPreference } from "./busCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
-import { sobMainlineRule, sbbInterRegioRule } from "./operatorBicycleRules.ts";
+import { operatorBicycleRule } from "./operatorBicycleRules.ts";
 
 export const BICYCLE_SCOPES = ["confirmed", "allow-uncertain", "all-transit"] as const;
 export type BicycleScope = typeof BICYCLE_SCOPES[number];
@@ -30,7 +30,9 @@ export function bicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | 
   const policy = busCarriage(leg);
   if (policy?.permission === "not-allowed") return "prohibited";
   const e = applicableBicycleEvidence(leg);
-  if (!e || e.permission === "unknown") return sobMainlineRule(leg) || sbbInterRegioRule(leg) || policy?.verifiesPermission ? "confirmed" : "uncertain";
+  if (e?.permission === "prohibited") return "prohibited";
+  if (e?.conditions.some(note => note.includes("restricted to international travel"))) return "uncertain";
+  if (!e || e.permission === "unknown") return operatorBicycleRule(leg)?.permission === "allowed" || policy?.verifiesPermission ? "confirmed" : "uncertain";
   return e.permission === "allowed" ? "confirmed" : "prohibited";
 }
 export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, scope: BicycleScope = "allow-uncertain") {

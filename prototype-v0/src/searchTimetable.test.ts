@@ -126,8 +126,10 @@ it("applies the domestic SBB InterRegio rule narrowly and keeps explicit reserva
   const leg = [...networkFor(fixture.chur).edges.values()].find(e => e.leg.operator === "SBB" && e.leg.toId === "8509000")!.leg;
   const rule = carriageForLeg(leg);
   assert.equal(rule.permission, "confirmed"); assert.equal(rule.bikeReservation, "not-required");
-  assert.ok(rule.permissionSource?.title.includes("InterRegio"));
-  for (const patch of [{ category: "S" }, { category: "EV" }, { toId: "8000000" }, { operator: "Unknown" }])
+  assert.ok(rule.permissionSource?.title.includes("SBB"));
+  // Reviewed regional rules now establish off-peak carriage as well.
+  assert.equal(bicyclePermission({ ...leg, category: "S" }), "confirmed");
+  for (const patch of [{ category: "EV" }, { toId: "8000000" }, { operator: "Unknown" }])
     assert.equal(bicyclePermission({ ...leg, ...patch }), "uncertain");
   const conflicting = { ...leg, bicycleEvidence: { ...leg.bicycleEvidence!, permission: "allowed" as const,
     conditions: ["The provider gives conflicting reservation conditions. Confirm with the operator before boarding."] } };
