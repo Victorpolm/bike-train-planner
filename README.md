@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**OJP Fare (27 September 2026):** [Ten live random fare checks and the new adapter](docs/OJP_FARE_RESULTS_2026-09-27.md): passenger quotes succeeded for 10/10 journeys and bicycle quotes for 9/10. Estimates are explicitly labeled provider test data. The GitHub secret works; website activation still requires its own runtime secret.
+
 **Implementation update (27 September 2026):** [Swisstopo terrain checks, cycling preferences and fare corrections](docs/SWISSTOPO_AND_FARES_2026-09-27.md) now implement the approved follow-up to the user review. The app distinguishes riding, pushing and carrying, rejects unsuitable climbing passages, and compares Fastest / Simplest / Lower traffic stress candidates. Cards separate passenger, bicycle and reservation prices. Reviewed Zürich-area rail corridors have numeric standard fares; wider fare coverage remains incomplete. No swisstopo data upload is required.
 
 **Latest source update (25 September 2026):** Date-aware train bicycle rules, ticket/reservation prices, full fare/Half Fare/GA preferences, official bicycle parking and a 60-second search deadline. A national GTFS service and Swiss OSM audit are implemented as local pilots; they are not a production replacement for live routing. [Implementation and remaining gates](docs/SWISS_IMPLEMENTATION.md) · [GPX recording guide](docs/GPX_RECORDING.md) · [tests and dated results](docs/EXPERIMENTS.md).

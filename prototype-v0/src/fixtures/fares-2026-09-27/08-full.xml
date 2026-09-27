@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns2:OJP xmlns="https://www.siri.org.uk/siri" xmlns:ojp="https://www.vdv.de/ojp" xmlns:ns2="http://www.vdv.de/ojp" version="2.0">
+  <ns2:OJPResponse>
+    <ns3:ServiceDelivery xmlns:ns3="http://www.siri.org.uk/siri">
+      <ns3:ResponseTimestamp>2026-09-27T15:56:40.308096</ns3:ResponseTimestamp>
+      <ns3:ProducerRef>OJP2NOVA</ns3:ProducerRef>
+      <ns2:OJPFareDelivery>
+        <ns3:ResponseTimestamp>2026-09-27T15:56:40.308096</ns3:ResponseTimestamp>
+        <ns3:Status>true</ns3:Status>
+        <ns2:FareResult>
+          <ns2:Id>fareprobe</ns2:Id>
+          <ns2:TripFareResult>
+            <ns2:FromLegIdRef>2</ns2:FromLegIdRef>
+            <ns2:ToLegIdRef>4</ns2:ToLegIdRef>
+            <ns2:FareProduct>
+              <ns2:FareProductId>125</ns2:FareProductId>
+              <ns2:FareProductName>Streckenbillett</ns2:FareProductName>
+              <ns2:FareAuthorityRef>ch:1:sboid:101704</ns2:FareAuthorityRef>
+              <ns2:FareAuthorityText>Alliance SwissPass</ns2:FareAuthorityText>
+              <ns2:Price>30.80</ns2:Price>
+              <ns2:NetPrice>28.31</ns2:NetPrice>
+              <ns2:Currency>CHF</ns2:Currency>
+              <ns2:VatRate>8.1</ns2:VatRate>
+              <ns2:FareClass>secondClass </ns2:FareClass>
+            </ns2:FareProduct>
+          </ns2:TripFareResult>
+          <ns2:TripFareResult>
+            <ns2:FromLegIdRef>2</ns2:FromLegIdRef>
+            <ns2:ToLegIdRef>4</ns2:ToLegIdRef>
+            <ns2:FareProduct>
+              <ns2:FareProductId>125</ns2:FareProductId>
+              <ns2:FareProductName>Streckenbillett</ns2:FareProductName>
+              <ns2:FareAuthorityRef>ch:1:sboid:101704</ns2:FareAuthorityRef>
+              <ns2:FareAuthorityText>Alliance SwissPass</ns2:FareAuthorityText>
+              <ns2:Price>49.80</ns2:Price>
+              <ns2:NetPrice>45.77</ns2:NetPrice>
+              <ns2:Currency>CHF</ns2:Currency>
+              <ns2:VatRate>8.1</ns2:VatRate>
+              <ns2:FareClass>firstClass</ns2:FareClass>
+            </ns2:FareProduct>
+          </ns2:TripFareResult>
+        </ns2:FareResult>
+      </ns2:OJPFareDelivery>
+    </ns3:ServiceDelivery>
+  </ns2:OJPResponse>
+</ns2:OJP>

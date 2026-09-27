@@ -64,3 +64,9 @@ Current project documentation is authoritative in GitHub. Older project-document
 The Site remains owner-only. The existing GitHub source repository is public; personal recordings and secrets must not be committed. National data files and the experimental service remain local. Ask the owner before any hosting costs or production infrastructure purchase. No recurring data-refresh job or public tunnel was created.
 
 See [implementation and remaining gates](SWISS_IMPLEMENTATION.md) and [GPX recording guide](GPX_RECORDING.md).
+
+## OJP Fare activation (27 September 2026)
+
+The fare adapter accepts the separate server-only `OJP_FARE_API_KEY` and can retrieve its itinerary through `/ojpfare` using that key alone. Keep it secret, with no `VITE_` prefix. Local Vite uses `.env.local`; hosted operation requires the existing Site runtime binding and a deployment to apply it. The GitHub Actions secret has passed ten live fare tests but cannot be read back for transfer. `/api/fares/status` reports configuration presence only, not a successful upstream health check. The Site remains unconfigured until its binding is supplied. [Results and limitations](OJP_FARE_RESULTS_2026-09-27.md).
+
+Private version 22 successfully published at 16:12:28 UTC on 27 September 2026 from Site commit `9f411232376cf36147282cec929a5cf83da54a52`, environment revision 0. It adds the fare adapter and explicit estimate labels; activation remains pending the Site fare secret.

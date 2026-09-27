@@ -1,0 +1,1654 @@
+{
+  "seed": 20260927,
+  "environment": "OJP Fare beta/test",
+  "fare_secret_present": true,
+  "trip_secret_present": true,
+  "cases": [
+    {
+      "number": 1,
+      "from": "Chur",
+      "from_id": "8509000",
+      "to": "Luzern",
+      "to_id": "8505000",
+      "departure": "2026-09-29T12:00:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.34,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "32.60",
+              "NetPrice": "29.96",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "87.00",
+              "NetPrice": "79.95",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.22,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "30.60",
+              "NetPrice": "28.12",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "18.60",
+              "NetPrice": "17.09",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.13,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "25.50",
+              "NetPrice": "23.43",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 1.34,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojpfare"
+      },
+      "trip_id": "ID-8550CE40-BD17-4F96-AFBB-BB9AD5A5E2C8",
+      "legs": [
+        "1",
+        "3"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Chur",
+        "to": "Luzern"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:9000",
+          "to": "ch:1:sloid:3202",
+          "fromName": "Chur",
+          "toName": "Thalwil",
+          "fromPoint": {
+            "lat": 46.85377,
+            "lon": 9.52943
+          },
+          "toPoint": {
+            "lat": 47.29582,
+            "lon": 8.56446
+          },
+          "departure": "2026-09-29T10:11:00Z",
+          "arrival": "2026-09-29T11:38:00Z",
+          "journeyRef": "ch:1:sjyid:100001:2370-002"
+        },
+        {
+          "from": "ch:1:sloid:3202",
+          "to": "ch:1:sloid:5000",
+          "fromName": "Thalwil",
+          "toName": "Luzern",
+          "fromPoint": {
+            "lat": 47.29582,
+            "lon": 8.56446
+          },
+          "toPoint": {
+            "lat": 47.04824,
+            "lon": 8.31044
+          },
+          "departure": "2026-09-29T11:45:00Z",
+          "arrival": "2026-09-29T12:25:00Z",
+          "journeyRef": "ch:1:sjyid:100001:2120-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 32.6,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 18.6,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 25.5,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 2,
+      "from": "Burgdorf",
+      "from_id": "8508005",
+      "to": "Winterthur",
+      "to_id": "8506000",
+      "departure": "2026-09-29T10:45:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.14,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "36.80",
+              "NetPrice": "33.82",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "77.20",
+              "NetPrice": "70.95",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.1,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "20.40",
+              "NetPrice": "18.75",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "34.00",
+              "NetPrice": "31.25",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.21,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "25.50",
+              "NetPrice": "23.43",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 1.14,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-13E27CAC-EC02-4EF3-973A-7983ABAA076E",
+      "legs": [
+        "1",
+        "3"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Lugano",
+        "to": "Winterthur"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:8005",
+          "to": "ch:1:sloid:3001",
+          "fromName": "Burgdorf",
+          "toName": "Zürich Altstetten",
+          "fromPoint": {
+            "lat": 47.06087,
+            "lon": 7.62177
+          },
+          "toPoint": {
+            "lat": 47.39173,
+            "lon": 8.48942
+          },
+          "departure": "2026-09-29T08:53:00Z",
+          "arrival": "2026-09-29T10:00:00Z",
+          "journeyRef": "ch:1:sjyid:100061:2367-001"
+        },
+        {
+          "from": "ch:1:sloid:3001",
+          "to": "ch:1:sloid:6000",
+          "fromName": "Zürich Altstetten",
+          "toName": "Winterthur",
+          "fromPoint": {
+            "lat": 47.39173,
+            "lon": 8.48942
+          },
+          "toPoint": {
+            "lat": 47.50057,
+            "lon": 8.72338
+          },
+          "departure": "2026-09-29T10:09:00Z",
+          "arrival": "2026-09-29T10:38:00Z",
+          "journeyRef": "ch:1:sjyid:100001:19245-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 36.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 20.4,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 25.5,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 3,
+      "from": "Lugano",
+      "from_id": "8505300",
+      "to": "Chur",
+      "to_id": "8509000",
+      "departure": "2026-09-29T12:30:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 0.9,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "79.20",
+              "NetPrice": "72.78",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "69.60",
+              "NetPrice": "63.96",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 0.93,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "39.60",
+              "NetPrice": "36.39",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "34.80",
+              "NetPrice": "31.98",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.98,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "34.80",
+              "NetPrice": "31.98",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 0.96,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-E1EF7671-7819-4514-AF63-208CD6B230F4",
+      "legs": [
+        "1",
+        "3"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Rotkreuz",
+        "to": "Chur"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:5300",
+          "to": "ch:1:sloid:5213",
+          "fromName": "Lugano",
+          "toName": "Bellinzona",
+          "fromPoint": {
+            "lat": 46.00564,
+            "lon": 8.9464
+          },
+          "toPoint": {
+            "lat": 46.19536,
+            "lon": 9.02956
+          },
+          "departure": "2026-09-29T10:30:00Z",
+          "arrival": "2026-09-29T10:46:00Z",
+          "journeyRef": "ch:1:sjyid:100001:150-001"
+        },
+        {
+          "from": "ch:1:sloid:79936",
+          "to": "ch:1:sloid:75112",
+          "fromName": "Bellinzona, Stazione",
+          "toName": "Chur, Postautostation",
+          "fromPoint": {
+            "lat": 46.19434,
+            "lon": 9.02797
+          },
+          "toPoint": {
+            "lat": 46.85288,
+            "lon": 9.52774
+          },
+          "departure": "2026-09-29T10:56:00Z",
+          "arrival": "2026-09-29T13:02:00Z",
+          "journeyRef": "ch:1:sjyid:100602:ded9b50c-47dc-48de-890f-7b8df0578b3f"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 69.6,
+          "productId": "125",
+          "product": "Streckenbillett"
+        },
+        "half-fare": {
+          "chf": 34.8,
+          "productId": "125",
+          "product": "Streckenbillett"
+        },
+        "bicycle": {
+          "chf": 34.8,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 4,
+      "from": "Luzern",
+      "from_id": "8505000",
+      "to": "Winterthur",
+      "to_id": "8506000",
+      "departure": "2026-09-29T08:15:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.12,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "58.00",
+              "NetPrice": "53.3",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "26.80",
+              "NetPrice": "24.63",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.02,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "14.20",
+              "NetPrice": "13.05",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "23.60",
+              "NetPrice": "21.69",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.13,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "17.00",
+              "NetPrice": "15.62",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 0.93,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-E6ECC0AE-5C98-4C3D-805B-6062776D0D0F",
+      "legs": [
+        "1",
+        "3"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Luzern",
+        "to": "Winterthur"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:5000",
+          "to": "ch:1:sloid:3000",
+          "fromName": "Luzern",
+          "toName": "Zürich HB",
+          "fromPoint": {
+            "lat": 47.04829,
+            "lon": 8.3102
+          },
+          "toPoint": {
+            "lat": 47.37877,
+            "lon": 8.53648
+          },
+          "departure": "2026-09-29T06:35:00Z",
+          "arrival": "2026-09-29T07:24:00Z",
+          "journeyRef": "ch:1:sjyid:100001:2571-001"
+        },
+        {
+          "from": "ch:1:sloid:3000",
+          "to": "ch:1:sloid:6000",
+          "fromName": "Zürich HB",
+          "toName": "Winterthur",
+          "fromPoint": {
+            "lat": 47.37877,
+            "lon": 8.53648
+          },
+          "toPoint": {
+            "lat": 47.5005,
+            "lon": 8.72356
+          },
+          "departure": "2026-09-29T07:31:00Z",
+          "arrival": "2026-09-29T07:51:00Z",
+          "journeyRef": "ch:1:sjyid:100001:19135-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 26.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 14.2,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 17,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 5,
+      "from": "Basel SBB",
+      "from_id": "8500010",
+      "to": "Luzern",
+      "to_id": "8505000",
+      "departure": "2026-09-29T13:15:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 0.92,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "62.00",
+              "NetPrice": "56.98",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "1"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "22.80",
+              "NetPrice": "20.95",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "1"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 0.93,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "21.20",
+              "NetPrice": "19.48",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "1"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "12.80",
+              "NetPrice": "11.76",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "1"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 0.94,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "18.00",
+              "NetPrice": "16.54",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "1"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 1.41,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-3A876CE9-0EBC-422B-8516-F937274FDE52",
+      "legs": [
+        "1"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Basel SBB",
+        "to": "Luzern"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:10",
+          "to": "ch:1:sloid:5000",
+          "fromName": "Basel SBB",
+          "toName": "Luzern",
+          "fromPoint": {
+            "lat": 47.5464,
+            "lon": 7.59226
+          },
+          "toPoint": {
+            "lat": 47.04851,
+            "lon": 8.31051
+          },
+          "departure": "2026-09-29T11:16:00Z",
+          "arrival": "2026-09-29T12:30:00Z",
+          "journeyRef": "ch:1:sjyid:100001:2473-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 22.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 12.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 18,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 6,
+      "from": "Basel SBB",
+      "from_id": "8500010",
+      "to": "Genève",
+      "to_id": "8501008",
+      "departure": "2026-09-29T08:15:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.09,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "136.00",
+              "NetPrice": "124.98",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "52.20",
+              "NetPrice": "47.97",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.07,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "29.80",
+              "NetPrice": "27.39",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "47.60",
+              "NetPrice": "43.74",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.17,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "40.00",
+              "NetPrice": "36.76",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "3"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 1.99,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-7793E8A2-C87D-4AF7-8CFC-3DE67C8FF3BB",
+      "legs": [
+        "1",
+        "3"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Basel SBB",
+        "to": "Genève"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:10",
+          "to": "ch:1:sloid:1118",
+          "fromName": "Basel SBB",
+          "toName": "Renens VD",
+          "fromPoint": {
+            "lat": 47.54661,
+            "lon": 7.58743
+          },
+          "toPoint": {
+            "lat": 46.53747,
+            "lon": 6.57888
+          },
+          "departure": "2026-09-29T06:32:00Z",
+          "arrival": "2026-09-29T08:48:00Z",
+          "journeyRef": "ch:1:sjyid:100001:1614-001"
+        },
+        {
+          "from": "ch:1:sloid:1118",
+          "to": "ch:1:sloid:1008",
+          "fromName": "Renens VD",
+          "toName": "Genève",
+          "fromPoint": {
+            "lat": 46.53747,
+            "lon": 6.57888
+          },
+          "toPoint": {
+            "lat": 46.21052,
+            "lon": 6.14242
+          },
+          "departure": "2026-09-29T08:53:00Z",
+          "arrival": "2026-09-29T09:25:00Z",
+          "journeyRef": "ch:1:sjyid:100001:710-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 52.2,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 29.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 40,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 7,
+      "from": "Burgdorf",
+      "from_id": "8508005",
+      "to": "Le Pont",
+      "to_id": "8501100",
+      "departure": "2026-09-29T16:00:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.12,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "55.20",
+              "NetPrice": "50.73",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "5"
+            },
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "93.80",
+              "NetPrice": "86.2",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "5"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.14,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "29.00",
+              "NetPrice": "26.65",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "5"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "40.40",
+              "NetPrice": "37.13",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "5"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.13,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "32.40",
+              "NetPrice": "29.78",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "5"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 1.36,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-EC252B6B-EABE-42B5-BFEF-E3EE2248CBFA",
+      "legs": [
+        "1",
+        "3",
+        "5"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Lugano",
+        "to": "Yverdon-les-Bains"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:8005",
+          "to": "ch:1:sloid:207",
+          "fromName": "Burgdorf",
+          "toName": "Solothurn",
+          "fromPoint": {
+            "lat": 47.06092,
+            "lon": 7.62218
+          },
+          "toPoint": {
+            "lat": 47.20413,
+            "lon": 7.54402
+          },
+          "departure": "2026-09-29T14:15:00Z",
+          "arrival": "2026-09-29T14:42:00Z",
+          "journeyRef": "ch:1:sjyid:100015:16657-001"
+        },
+        {
+          "from": "ch:1:sloid:207",
+          "to": "ch:1:sloid:4200",
+          "fromName": "Solothurn",
+          "toName": "Yverdon-les-Bains",
+          "fromPoint": {
+            "lat": 47.20413,
+            "lon": 7.54402
+          },
+          "toPoint": {
+            "lat": 46.7817,
+            "lon": 6.64075
+          },
+          "departure": "2026-09-29T14:59:00Z",
+          "arrival": "2026-09-29T15:58:00Z",
+          "journeyRef": "ch:1:sjyid:100001:528-001"
+        },
+        {
+          "from": "ch:1:sloid:4774",
+          "to": "ch:1:sloid:70161",
+          "fromName": "Yverdon-les-Bains, gare",
+          "toName": "Le Pont, gare",
+          "fromPoint": {
+            "lat": 46.78117,
+            "lon": 6.63986
+          },
+          "toPoint": {
+            "lat": 46.66837,
+            "lon": 6.3247
+          },
+          "departure": "2026-09-29T16:05:00Z",
+          "arrival": "2026-09-29T17:00:00Z",
+          "journeyRef": "ch:1:sjyid:100694:plan:MA_SCO_10_613_A_46_GAR01_1805"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 55.2,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 29,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 32.4,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 8,
+      "from": "Zürich Triemli",
+      "from_id": "8503054",
+      "to": "Luzern",
+      "to_id": "8505000",
+      "departure": "2026-09-29T12:15:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.07,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "30.80",
+              "NetPrice": "28.31",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "2",
+              "to_leg": "4"
+            },
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "49.80",
+              "NetPrice": "45.77",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "2",
+              "to_leg": "4"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.1,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "15.40",
+              "NetPrice": "14.15",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "2",
+              "to_leg": "4"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "19.00",
+              "NetPrice": "17.46",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "2",
+              "to_leg": "4"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.11,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "15.40",
+              "NetPrice": "14.15",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "2",
+              "to_leg": "4"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 0.98,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-CE0CBDEB-ECE7-4D2E-91D6-E95C56EFA713",
+      "legs": [
+        "2",
+        "4"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Rapperswil",
+        "to": "Luzern"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:3610",
+          "to": "ch:1:sloid:87348",
+          "fromName": "Zürich, Triemli",
+          "toName": "Zürich, Bahnhofplatz/HB",
+          "fromPoint": {
+            "lat": 47.36781,
+            "lon": 8.49534
+          },
+          "toPoint": {
+            "lat": 47.37708,
+            "lon": 8.53977
+          },
+          "departure": "2026-09-29T10:43:00Z",
+          "arrival": "2026-09-29T10:59:00Z",
+          "journeyRef": "ch:1:sjyid:100648:plan:dd0f8aaf-e399-4919-b0ef-f8fa219e7ca1"
+        },
+        {
+          "from": "ch:1:sloid:3000",
+          "to": "ch:1:sloid:5000",
+          "fromName": "Zürich HB",
+          "toName": "Luzern",
+          "fromPoint": {
+            "lat": 47.37855,
+            "lon": 8.53633
+          },
+          "toPoint": {
+            "lat": 47.04824,
+            "lon": 8.31031
+          },
+          "departure": "2026-09-29T11:10:00Z",
+          "arrival": "2026-09-29T11:51:00Z",
+          "journeyRef": "ch:1:sjyid:100001:2625-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 30.8,
+          "productId": "125",
+          "product": "Streckenbillett"
+        },
+        "half-fare": {
+          "chf": 15.4,
+          "productId": "125",
+          "product": "Streckenbillett"
+        },
+        "bicycle": {
+          "chf": 15.4,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    },
+    {
+      "number": 9,
+      "from": "Zug",
+      "from_id": "8502204",
+      "to": "Le Pont",
+      "to_id": "8501100",
+      "departure": "2026-09-29T14:00:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 1.08,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "151.80",
+              "NetPrice": "139.5",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "5"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "73.60",
+              "NetPrice": "67.64",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "5"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 1.18,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "40.20",
+              "NetPrice": "36.94",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "5"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "59.00",
+              "NetPrice": "54.22",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "5"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 400,
+          "seconds": 1.18,
+          "errors": [
+            "\n          "
+          ],
+          "products": []
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 1.64,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-2D60C769-6FEF-46D7-AFF6-4BC283A83BE3",
+      "legs": [
+        "1",
+        "3",
+        "5"
+      ],
+      "has_prices": false,
+      "original_probe_labels": {
+        "from": "Baden",
+        "to": "Yverdon-les-Bains"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:2204",
+          "to": "ch:1:sloid:3000",
+          "fromName": "Zug",
+          "toName": "Zürich HB",
+          "fromPoint": {
+            "lat": 47.17488,
+            "lon": 8.51586
+          },
+          "toPoint": {
+            "lat": 47.37863,
+            "lon": 8.53639
+          },
+          "departure": "2026-09-29T12:31:00Z",
+          "arrival": "2026-09-29T12:54:00Z",
+          "journeyRef": "ch:1:sjyid:100001:878-001"
+        },
+        {
+          "from": "ch:1:sloid:3000",
+          "to": "ch:1:sloid:4200",
+          "fromName": "Zürich HB",
+          "toName": "Yverdon-les-Bains",
+          "fromPoint": {
+            "lat": 47.37863,
+            "lon": 8.53639
+          },
+          "toPoint": {
+            "lat": 46.7817,
+            "lon": 6.64075
+          },
+          "departure": "2026-09-29T13:04:00Z",
+          "arrival": "2026-09-29T14:58:00Z",
+          "journeyRef": "ch:1:sjyid:100001:526-001"
+        },
+        {
+          "from": "ch:1:sloid:4774",
+          "to": "ch:1:sloid:70161",
+          "fromName": "Yverdon-les-Bains, gare",
+          "toName": "Le Pont, gare",
+          "fromPoint": {
+            "lat": 46.78117,
+            "lon": 6.63986
+          },
+          "toPoint": {
+            "lat": 46.66837,
+            "lon": 6.3247
+          },
+          "departure": "2026-09-29T15:05:00Z",
+          "arrival": "2026-09-29T16:00:00Z",
+          "journeyRef": "ch:1:sjyid:100694:plan:MA_SCO_10_613_A_19_GYM01_1650"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 73.6,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 40.2,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": null
+      }
+    },
+    {
+      "number": 10,
+      "from": "Luzern",
+      "from_id": "8505000",
+      "to": "Fribourg/Freiburg",
+      "to_id": "8504100",
+      "departure": "2026-09-29T14:00:00+02:00",
+      "fares": {
+        "full": {
+          "http_status": 200,
+          "seconds": 0.95,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "33.40",
+              "NetPrice": "30.69",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "from_leg": "1",
+              "to_leg": "1"
+            },
+            {
+              "FareProductId": "125",
+              "FareProductName": "Streckenbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "91.00",
+              "NetPrice": "83.63",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "from_leg": "1",
+              "to_leg": "1"
+            }
+          ]
+        },
+        "half-fare": {
+          "http_status": 200,
+          "seconds": 0.89,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "18.80",
+              "NetPrice": "17.28",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "secondClass ",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "1"
+            },
+            {
+              "FareProductId": "84004",
+              "FareProductName": "Sparbillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "32.20",
+              "NetPrice": "29.59",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "FareClass": "firstClass",
+              "RequiredCard": "HTA",
+              "from_leg": "1",
+              "to_leg": "1"
+            }
+          ]
+        },
+        "bicycle": {
+          "http_status": 200,
+          "seconds": 1.64,
+          "errors": [],
+          "products": [
+            {
+              "FareProductId": "40245",
+              "FareProductName": "Velobillett",
+              "FareAuthorityRef": "ch:1:sboid:101704",
+              "FareAuthorityText": "Alliance SwissPass",
+              "Price": "26.50",
+              "NetPrice": "24.35",
+              "Currency": "CHF",
+              "VatRate": "8.1",
+              "from_leg": "1",
+              "to_leg": "1"
+            }
+          ]
+        }
+      },
+      "lookup": {
+        "http_status": 200,
+        "seconds": 0.96,
+        "errors": [],
+        "endpoint": "https://api.opentransportdata.swiss/ojp20"
+      },
+      "trip_id": "ID-2BEF4185-C4DF-436A-B6B0-3226BAB81D04",
+      "legs": [
+        "1"
+      ],
+      "has_prices": true,
+      "original_probe_labels": {
+        "from": "Luzern",
+        "to": "Fribourg/Freiburg"
+      },
+      "matched_transit_segments": [
+        {
+          "from": "ch:1:sloid:5000",
+          "to": "ch:1:sloid:4100",
+          "fromName": "Luzern",
+          "toName": "Fribourg/Freiburg",
+          "fromPoint": {
+            "lat": 47.04851,
+            "lon": 8.31051
+          },
+          "toPoint": {
+            "lat": 46.80256,
+            "lon": 7.15039
+          },
+          "departure": "2026-09-29T12:00:00Z",
+          "arrival": "2026-09-29T13:26:00Z",
+          "journeyRef": "ch:1:sjyid:100001:2524-001"
+        }
+      ],
+      "selected": {
+        "full": {
+          "chf": 33.4,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "half-fare": {
+          "chf": 18.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 26.5,
+          "productId": "40245",
+          "product": "Velobillett"
+        }
+      }
+    }
+  ],
+  "review_note": "Station names corrected from provider XML. Original labels are retained for audit; station IDs and sampled requests are unchanged. Selection uses the app fare parser, gross CHF, second class for passengers and class-independent Bicycle, complete first-to-last transit-leg coverage. OJP beta/test data; not production ticket prices."
+}

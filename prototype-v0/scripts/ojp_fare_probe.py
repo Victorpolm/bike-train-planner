@@ -14,15 +14,16 @@ import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+from zoneinfo import ZoneInfo
 from ojp_benchmark import NS, NoRedirect, add, request_xml
 
 FARE_URL = "https://api.opentransportdata.swiss/ojpfare"
 STATIONS = [("8503000", "Zürich HB"), ("8507000", "Bern"), ("8500010", "Basel SBB"),
             ("8505000", "Luzern"), ("8504100", "Fribourg/Freiburg"), ("8501120", "Lausanne"),
             ("8501008", "Genève"), ("8509000", "Chur"), ("8506302", "St. Gallen"),
-            ("8505300", "Rotkreuz"), ("8502204", "Baden"), ("8506000", "Winterthur"),
-            ("8503054", "Rapperswil"), ("8500218", "Olten"), ("8508005", "Lugano"),
-            ("8503209", "Pfäffikon SZ"), ("8501100", "Yverdon-les-Bains"), ("8504300", "Biel/Bienne")]
+            ("8505300", "Lugano"), ("8502204", "Zug"), ("8506000", "Winterthur"),
+            ("8503054", "Zürich Triemli"), ("8500218", "Olten"), ("8508005", "Burgdorf"),
+            ("8503209", "Pfäffikon SZ"), ("8501100", "Le Pont"), ("8504300", "Biel/Bienne")]
 
 
 def fare_request(trip, context, profile, now):
@@ -117,7 +118,7 @@ def run(output):
     pairs = rng.sample([(a, b) for a in STATIONS for b in STATIONS if a != b], 10)
     day = (datetime.now(timezone.utc) + timedelta(days=2)).date().isoformat()
     for i, (origin, destination) in enumerate(pairs, 1):
-        departure = f"{day}T{rng.randrange(8, 17):02d}:{rng.choice([0, 15, 30, 45]):02d}:00+02:00"
+        departure = datetime.fromisoformat(f"{day}T{rng.randrange(8, 17):02d}:{rng.choice([0, 15, 30, 45]):02d}:00").replace(tzinfo=ZoneInfo("Europe/Zurich")).isoformat()
         case = {"number": i, "from": origin[1], "from_id": origin[0], "to": destination[1], "to_id": destination[0], "departure": departure, "fares": {}}
         report["cases"].append(case)
         # Explicitly verify the fare-only journey lookup needed by the Site.
@@ -128,6 +129,12 @@ def run(output):
         delivery = raw.find(".//o:OJPTripDelivery", NS) if raw is not None else None
         trip = delivery.find("o:TripResult/o:Trip", NS) if delivery is not None else None
         if trip is not None:
+            all_legs = trip.findall("o:Leg", NS)
+            for label, leg, call_name in [("from", all_legs[0], "LegBoard"), ("to", all_legs[-1], "LegAlight")]:
+                resolved = leg.findtext(f"o:TimedLeg/o:{call_name}/o:StopPointName/o:Text", namespaces=NS)
+                if not resolved:
+                    resolved = leg.findtext("o:TransferLeg/o:" + ("LegStart" if label == "from" else "LegEnd") + "/o:Name/o:Text", namespaces=NS)
+                case["resolved_" + label] = resolved
             case["trip_id"] = trip.findtext("o:Id", namespaces=NS)
             case["legs"] = [leg.findtext("o:Id", namespaces=NS) for leg in trip.findall("o:Leg", NS) if leg.find("o:TimedLeg", NS) is not None]
             for profile in ("full", "half-fare", "bicycle"):

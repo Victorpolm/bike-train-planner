@@ -2,6 +2,10 @@
 
 _Last consolidated: 2026-09-27. Source implementation and publication status are distinct._
 
+## 27 September fare integration diagnosis
+
+[OJP Fare implementation and ten live checks](OJP_FARE_RESULTS_2026-09-27.md): the new GitHub Actions fare key works. Full/Half Fare quotes succeeded for 10/10 sampled Swiss journeys and bicycle quotes for 9/10; one NOVA bicycle error remains explicit. Server fare requests and asynchronous journey-card estimates are implemented and 185 tests pass. Quotes are marked beta/test estimates. Site runtime activation still requires its own OJP_FARE_API_KEY binding; GitHub secrets are not transferred or exposed. Owner-private Site version 22 was published at 16:12:28 UTC with environment revision 0. See the report for actual sampled locations.
+
 ## 27 September implementation
 
 [Terrain, fares and permission changes](SWISSTOPO_AND_FARES_2026-09-27.md) implements the approved follow-up to [the earlier review](USER_REVIEW_2026-09-27.md). Swisstopo road/hiking features are checked on demand with explicit matching/coverage limits. Riding, pushing and carrying affect timings and appear on the map and itinerary; alpine/climbing candidates are excluded. Three cycling objectives compare bounded alternatives. No national swisstopo download or new data hosting is required.

@@ -3,6 +3,7 @@ import { domesticSwissLeg, isSbb, sobMainlineRule } from "./operatorBicycleRules
 import { swissDateTimeInput } from "./departure.ts";
 import type { TransitLeg } from "./routing.ts";
 import { publishedRouteFare } from "./fareCatalog.ts";
+import type { OnlineFare } from "./onlineFare.ts";
 
 export type FareProfile = { passenger: "full" | "half-fare" | "ga"; annualBikePass: boolean };
 export const DEFAULT_FARE_PROFILE: FareProfile = { passenger: "full", annualBikePass: false };
@@ -27,7 +28,7 @@ export function chooseBikeTicket(reduced: number | null, dayPass: number | null,
   if (reduced !== null) return { chf: reduced, product: "Reduced bicycle ticket", minimumVerified: dayPass !== null };
   return { chf: null, product: "Bicycle ticket to check", minimumVerified: false };
 }
-export function fareSummary(legs: TransitLeg[], profile: FareProfile) {
+export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: OnlineFare) {
   const transit = legs.filter(l => l.mode === "transit"), rules = transit.map(carriageForLeg);
   const prohibited = rules.some(r => r.permission === "prohibited");
   const covered = transit.length > 0 && transit.every(nationalBikeTariff);
@@ -45,14 +46,17 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile) {
   // The published Swiss rail charge covers connecting trains in one booking.
   const reservationChf = covered && dayPrice !== null && !unknown && !hasCyclingBreak ? required ? 2 : 0 : null;
   const published = publishedRouteFare(legs);
-  const bike = chooseBikeTicket(published?.bicycle ?? null, covered && singleDayPass ? dayPrice : null, covered && profile.annualBikePass);
+  const online = !prohibited && quote && (quote.passenger || quote.bicycle) ? quote : undefined;
+  const bike = chooseBikeTicket(online?.bicycle?.chf ?? published?.bicycle ?? null, covered && singleDayPass ? dayPrice : null, covered && profile.annualBikePass);
   const bikeChf = bike.chf;
-  const passengerChf = profile.passenger === "ga" ? covered ? 0 : null : published
-    ? profile.passenger === "half-fare" ? published.passengerHalf : published.passengerFull : null;
+  const passengerChf = profile.passenger === "ga" ? covered ? 0 : null : online?.passenger?.chf ?? (published
+    ? profile.passenger === "half-fare" ? published.passengerHalf : published.passengerFull : null);
   const passenger = profile.passenger === "ga" ? covered ? "Covered by your valid GA for this Swiss rail journey, in its travel class." : "GA coverage must be checked for every operator and route."
     : profile.passenger === "half-fare" ? "Request the Half Fare (Halbtax) passenger price. The exact fare depends on the route and offer."
       : "Request the full-fare passenger price. Supersaver offers may differ.";
-  return { covered, prohibited, passenger, passengerChf, published, bikeProduct: bike.product, minimumVerified: bike.minimumVerified,
+  return { covered, prohibited, passenger, passengerChf, published, online,
+    bikeProduct: bike.product === "Reduced bicycle ticket" && online?.bicycle ? online.bicycle.product + " · OJP test estimate" : bike.product,
+    minimumVerified: !online && bike.minimumVerified,
     bikeChf, reservationChf, required, unknown, singleDayPass,
     totalChf: !prohibited && passengerChf !== null && bikeChf !== null && reservationChf !== null ? Math.round((passengerChf + bikeChf + reservationChf) * 100) / 100 : null,
     knownBikeTotal: !prohibited && bikeChf !== null && reservationChf !== null ? bikeChf + reservationChf : null };
@@ -60,19 +64,19 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile) {
 
 // The card and expanded details share the same components; unknown prices never
 // disappear into an apparently complete total.
-export function fareRows(legs: TransitLeg[], profile: FareProfile) {
-  const fare = fareSummary(legs, profile);
+export function fareRows(legs: TransitLeg[], profile: FareProfile, quote?: OnlineFare) {
+  const fare = fareSummary(legs, profile, quote);
   const chf = (amount: number | null) => amount === null ? "Quote needed" : `CHF ${amount.toFixed(2)}`;
   return { fare, rows: [
-    { label: "Passenger", value: chf(fare.passengerChf), detail: profile.passenger === "ga" ? fare.covered ? "Covered by your valid GA" : "Check GA coverage" : profile.passenger === "half-fare" ? "Half Fare / Halbtax" : "Full fare · 2nd class" },
+    { label: "Passenger", value: chf(fare.passengerChf), detail: (profile.passenger === "ga" ? fare.covered ? "Covered by your valid GA" : "Check GA coverage" : profile.passenger === "half-fare" ? "Half Fare / Halbtax" : "Full fare · 2nd class") + (fare.online?.passenger ? " · " + fare.online.passenger.product : "") },
     { label: "Bicycle ticket", value: chf(fare.bikeChf), detail: fare.bikeProduct + (fare.minimumVerified ? "" : " · cheapest option not verified") },
     { label: "Bicycle reservation", value: chf(fare.reservationChf), detail: fare.reservationChf === 0 ? "Not required" : fare.reservationChf === 2 ? "Required · connecting trains booked together" : "Requirements or booking price to check" },
   ] };
 }
-export function fareCardSummary(legs: TransitLeg[], profile: FareProfile): { price: string; detail: string } {
-  const fare = fareSummary(legs, profile);
+export function fareCardSummary(legs: TransitLeg[], profile: FareProfile, quote?: OnlineFare): { price: string; detail: string } {
+  const fare = fareSummary(legs, profile, quote);
   if (fare.prohibited) return { price: "Bicycle travel not permitted", detail: "No valid bicycle fare for this comparison." };
-  return { price: fare.totalChf === null ? "Total needs a fare quote" : `CHF ${fare.totalChf.toFixed(2)} additional cost`,
-    detail: fare.published ? "Published standard fares; discounted offers may differ."
+  return { price: fare.totalChf === null ? "Total needs a fare quote" : `CHF ${fare.totalChf.toFixed(2)} ${fare.online ? "estimated additional cost" : "additional cost"}`,
+    detail: fare.online ? "OJP test fare estimate; confirm price and offer conditions before purchase." : fare.published ? "Published standard fares; discounted offers may differ."
       : "Passenger and bicycle route fares are not available for every connection." };
 }

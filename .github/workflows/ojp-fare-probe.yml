@@ -1,9 +1,6 @@
 name: OJP fare ten random journeys
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: [.github/ojp-fare-run.json]
 permissions:
   contents: read
 concurrency:
