@@ -54,7 +54,7 @@ export function carriageForLeg(leg: TransitLeg) {
   const requirements = evidence?.prerequisites, operatorRule = operatorBicycleRule(leg);
   const sob = sobMainlineRule(leg);
   const sbbIR = sbbInterRegioRule(leg);
-  const operatorPermissionSource = operatorRule?.permission === "allowed" ? operatorRule.source : sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
+  const operatorPermissionSource = operatorRule && operatorRule.permission !== "unknown" ? operatorRule.source : sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
   const reservationFallback = !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && !!operatorRule;
   const sbb = isSbb(leg);
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
@@ -65,7 +65,7 @@ export function carriageForLeg(leg: TransitLeg) {
     bikeTicket,
     bikeReservation: requirements?.bikeReservation && requirements.bikeReservation !== "unknown" ? requirements.bikeReservation : reservationFallback ? operatorRule!.reservation : "unknown",
     reservationSource: reservationFallback && (!requirements || requirements.bikeReservation === "unknown") ? sob ? SOB_RESERVATIONS : operatorRule?.source : undefined,
-    permissionSource: !evidence || evidence.permission === "unknown" ? operatorPermissionSource : undefined,
+    permissionSource: operatorRule?.permission === "prohibited" || !evidence || evidence.permission === "unknown" ? operatorPermissionSource : undefined,
     ticketSource,
     bookingUrl: requirements?.bookingUrl ?? ticketSource?.url,
     guidance: operatorRule ? operatorRule.instructions : sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",

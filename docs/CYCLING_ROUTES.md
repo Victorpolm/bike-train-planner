@@ -1,8 +1,10 @@
 # Routed cycling and road profiles
 
+**27 September update:** [Terrain checks and candidate preferences](SWISSTOPO_AND_FARES_2026-09-27.md) supersede the earlier single-path behaviour described below. Pushing/carrying and mapped restrictions now affect timing.
+
 _Implemented 2026-09-20; rider profiles and timing updated 2026-09-24. Own-bicycle, Switzerland-first prototype._
 
-**27 September documentation review:** [User journey findings and proposed route preferences](USER_REVIEW_2026-09-27.md) specifies Fastest, Simplest and Lower traffic stress alternatives and preserves the requested cycling/pushing/carrying distinctions. These are not implemented. The current geometry still comes from one trekking-profile route per directed pair, with the fallback and timing limits described below.
+**Earlier review:** [The pre-implementation findings](USER_REVIEW_2026-09-27.md) are retained as a historical record; the implementation update above is current.
 
 ## What changed
 
@@ -20,9 +22,9 @@ Current defaults:
 
 - `trekking`: touring/general-purpose road selection; the app now estimates time for the chosen rider;
 - profile `maxSpeed=45` km/h for configured rider profiles; geometric feasibility bounds use the same maximum;
-- `allow_steps=0` and `allow_ferries=0`: avoid treating stairs or an unscheduled ferry as a cycling connection;
+- `allow_steps=1` for the new candidate comparison, with explicit walking/carrying classification and a bounded stair-free detour; `allow_ferries=0` excludes unscheduled ferries;
 - `processUnusedTags=1`: retain available road attributes for analysis;
-- one provider route per directed pair, not a fastest/comfort/low-climb alternatives search.
+- up to two genuine candidates per directed pair within the alternative budget; the selected objective compares local riding plus walking time, meaningful turns or a traffic-stress heuristic.
 
 The public service is a prototype dependency, not a contracted service with a reliability guarantee. Requests reveal the selected coordinates to BRouter. No address history is persisted by this application. Before wider use, operate a suitable routing backend or agree appropriate hosted-service capacity; keep the adapter replaceable. Flat pace and electric climbing support are configurable; actual rider mass, load, wind, weather and fatigue remain uncalibrated. The engine's [trekking profile](https://github.com/abrensch/brouter/blob/master/misc/profiles2/trekking.brf) documents its travel-time model and preferences.
 
@@ -42,7 +44,7 @@ For each approximately 100 m smoothed elevation interval, solve the positive spe
 
 Speeds in these equations are m/s; grade is vertical rise divided by horizontal distance (6% = 0.06). Mass is an assumed rider-plus-bike 90 kg, or 105 kg for Electric. Sum `distance / speed` across intervals, then add endpoint walking at 4 km/h and round the full link up to whole minutes. Descents are capped at 45 km/h. Stronger riders gain proportionally more on climbs because the chosen flat speed corresponds to substantially more power.
 
-**Electric model assumption:** add climbing power up to 250 W, increasing linearly from zero on flat terrain to full assistance at 3% grade, with assistance fading linearly between 20 and 25 km/h. This is a heuristic for a typical assisted ride, not a calibrated motor specification. Flat pace remains exactly the chosen speed. Battery range, assistance settings, rider weight, wind, stops, surface-dependent resistance, posted limits and fatigue are not modelled by this timing calculation. Route selection still uses BRouter's touring preferences.
+**Electric model assumption:** add climbing power up to 250 W, increasing linearly from zero on flat terrain to full assistance at 3% grade, with assistance fading linearly between 20 and 25 km/h. This is a heuristic for a typical assisted ride, not a calibrated motor specification. Flat pace remains exactly the chosen speed. Battery range, assistance settings, rider weight, wind, stops, calibrated surface-dependent resistance, posted limits and fatigue are not modelled by this timing calculation. BRouter generates candidates; the selected objective compares them using local estimates. Initial rough-surface speed caps are described in the September update.
 
 | Preset | Flat | Sustained 6% climb | Sustained 10% climb |
 |---|---:|---:|---:|

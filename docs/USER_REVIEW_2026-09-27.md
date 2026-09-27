@@ -1,5 +1,7 @@
 # Journey quality review — 27 September 2026
 
+**Follow-up:** The subsequent implementation is recorded in [terrain, fares and permission changes](SWISSTOPO_AND_FARES_2026-09-27.md). The review below preserves the pre-implementation findings.
+
 **Status: documentation only.** Record the user's observations, inspect the existing implementation, and specify proposed corrections and validation. This review changes no application code, routing settings, deployment, access permissions or hosting. Source inspected: implementation commit cead54c468ea570eed97ae551797915f3d3fb5e9, present at repository HEAD 8b3a1d181884eff68bec53639ef4851e73692812. The last recorded publication is owner-private Site version 20, verified on 25 September; publication was not rechecked in this review.
 
 ## Reported journeys

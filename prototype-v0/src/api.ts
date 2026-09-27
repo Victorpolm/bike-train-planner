@@ -1,4 +1,4 @@
-import { SearchDeadline, SEARCH_DEADLINE_MS } from "./searchDeadline.ts";
+import { SearchDeadline, SEARCH_DEADLINE_MS, TERRAIN_SEARCH_DEADLINE_MS } from "./searchDeadline.ts";
 import { NationalTimetableClient } from "./nationalTimetableClient.ts";
 import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { maxCyclingSpeed } from "./cyclingPace.ts";
@@ -404,7 +404,7 @@ function startCyclingComparison(session: SearchSession, publish: SearchUpdate, f
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
   // One separate serial stream keeps a long bicycle-only route from blocking
   // short station access. Transit and cycling cards publish independently.
-  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace);
+  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference);
   session.comparisonClient = client;
   session.cyclingTask = (async () => {
     const routes = [];
@@ -464,7 +464,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
     : dependencies.fetcher ? null : await OjpClient.connect(signal);
   client.national = dependencies.nationalClient !== undefined ? dependencies.nationalClient
     : dependencies.fetcher ? null : await NationalTimetableClient.connect(signal);
-  const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace);
+  const cyclingClient = dependencies.cyclingClient === null ? undefined : dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference);
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
     originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null, waypoints,
@@ -474,10 +474,14 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   publish({ ...session });
   startCyclingComparison(session, publish, dependencies.cyclingFetcher, dependencies.gapMs);
   if (waypoints.length) return planWaypointStages(session, mode, progress, publish);
-  session.originStations = await roadCandidates(session, origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), "access", progress);
-  publish({ ...session });
-  session.destinationStations = await roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress);
-  publish({ ...session });
+  // Stop discovery at one end can run while the other end's road/terrain
+  // check is pending. Both clients retain their own serialized rate limits.
+  await Promise.all([
+    roadCandidates(session, origin, Math.min(options.maxAccessMinutes, options.maxBikeMinutes), "access", progress)
+      .then(stops => { session.originStations = stops; publish({ ...session }); }),
+    roadCandidates(session, destination, Math.min(options.maxEgressMinutes, options.maxBikeMinutes), "egress", progress)
+      .then(stops => { session.destinationStations = stops; publish({ ...session }); }),
+  ]);
   if (!session.originStations.length || !session.destinationStations.length) {
     await session.cyclingTask;
     signal.throwIfAborted();
@@ -652,7 +656,7 @@ async function planWaypointStages(session: SearchSession, mode: ModelMode, progr
 export type PlanDependencies = NonNullable<Parameters<typeof planInternal>[7]> & { deadlineMs?: number };
 export async function plan(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {}, dependencies: PlanDependencies = {}): Promise<SearchSession> {
-  const deadline = new SearchDeadline(signal, dependencies.deadlineMs ?? SEARCH_DEADLINE_MS);
+  const deadline = new SearchDeadline(signal, dependencies.deadlineMs ?? (options.cyclingRoutePreference ? TERRAIN_SEARCH_DEADLINE_MS : SEARCH_DEADLINE_MS));
   let latest: SearchSession | undefined;
   const update: SearchUpdate = session => { if (!deadline.signal.aborted) { session.requestSignal = signal; latest = session; publish(session); } };
   const report: Progress = message => { if (!deadline.signal.aborted) progress(message); };
@@ -671,7 +675,8 @@ export async function plan(from: string | Place, to: string | Place, mode: Model
 
 export async function extend(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {
   if (session.extendedComplete) return session;
-  const deadline = new SearchDeadline(session.requestSignal ?? session.client.signal);
+  const deadline = new SearchDeadline(session.requestSignal ?? session.client.signal,
+    session.options.cyclingRoutePreference ? TERRAIN_SEARCH_DEADLINE_MS : SEARCH_DEADLINE_MS);
   session.client.signal = deadline.signal;
   if (session.client.ojp) session.client.ojp.signal = deadline.signal;
   if (session.client.national) session.client.national.signal = deadline.signal;

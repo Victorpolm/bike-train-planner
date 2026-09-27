@@ -2,11 +2,13 @@
 
 _Last consolidated: 2026-09-27. Source implementation and publication status are distinct._
 
-## 27 September user review — documentation only
+## 27 September implementation
 
-[Fare, S12 permission and cycling-path review](USER_REVIEW_2026-09-27.md) records the latest reported journeys and proposed corrections. Current fares do not compare reduced bicycle route tickets with the day pass; numeric passenger quotes remain absent. CHF 17 can arise from a CHF 15 pass plus CHF 2 reservation, but the reported itinerary's reservation requirement is unverified. The regional S/RE uncertainty window is too broad for a region-specific rule and does not itself explain a prohibited S12 result. The exact dated S12 evidence remains to be captured.
+[Terrain, fares and permission changes](SWISSTOPO_AND_FARES_2026-09-27.md) implements the approved follow-up to [the earlier review](USER_REVIEW_2026-09-27.md). Swisstopo road/hiking features are checked on demand with explicit matching/coverage limits. Riding, pushing and carrying affect timings and appear on the map and itinerary; alpine/climbing candidates are excluded. Three cycling objectives compare bounded alternatives. No national swisstopo download or new data hosting is required.
 
-Cycling still selects one BRouter trekking route, with local pace/elevation timing and an OSRM fallback. Fastest, Simplest and Lower traffic stress preferences, plus complete cycling/pushing/carrying classification, are documented proposals. This update changes no application code or publication. Five synthetic function probes and official-source checks support the review; they do not reproduce the user's original journeys. The last verified private publication remains version 20 below.
+Cards now separate passenger, bicycle ticket and reservation amounts. A date-scoped published tariff catalogue covers reviewed Zürich–Baden and Zürich–Birmensdorf rail services, comparing the reduced bike fare with the valid day pass. Other passenger/route fares remain unquoted; no nationwide fare coverage is claimed. Regional S-Bahn uncertainty windows are scoped to Zürich/Ticino, and the specific upper-S10 prohibition is isolated. Live dated S12 evidence confirms that restrictions can differ between peak and off-peak departures.
+
+Verified 177 application tests and production build. Browser preview infrastructure is unavailable. Live cycling checks rejected the reported alpine passage and found a stair-free Baden alternative, with partial official matching. See [experiments](EXPERIMENTS.md) for full search probes. Endpoint discovery now overlaps, station-centroid recovery is bounded to the same station within 250 m, and terrain-enabled searches use a 90-second deadline. Private Site version 21 was published at 09:48 UTC from source `d2e3935c9197ac258338c33b7faab4331748f311`; all 105 application files match and owner-only access was rechecked. The final Muri–ETH search returned transit proposals at 71.1 seconds. Baden–Witikon still returned no mixed journey within 90 seconds; this acquisition/performance gap is unresolved.
 
 ## 25 September card prices and named destinations
 

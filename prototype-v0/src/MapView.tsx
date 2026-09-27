@@ -4,6 +4,8 @@ import L from "leaflet";
 import { formatMinutes, type CyclingComparison, type Journey, type Place, type Point } from "./routing";
 import { journeyStops, type ExploredStop } from "./mapData";
 import { pointAlong, type CyclingRoute } from "./cycling";
+import { sectionGeometry } from "./swisstopo";
+import { travelModeLabel } from "./cyclingTerrain";
 
 type MapViewProps = {
   origin: Place | null;
@@ -192,6 +194,13 @@ export default function MapView({
           const section = [a, ...route.points.filter(p => p.distanceM > steep.startM && p.distanceM < steep.endM), b];
           L.polyline(section.map(p => [p.lat, p.lon]), { color: steep.gradePercent > 0 ? "#c15a17" : "#287caf", weight: 6, opacity: .85, interactive: false }).addTo(layer);
         }
+        for (const section of route.sections.filter(s => s.mode && s.mode !== "cycle")) {
+          const geometry = sectionGeometry(route, section.startM, section.endM);
+          if (geometry.length < 2) continue;
+          L.polyline(geometry.map(p => [p.lat, p.lon]), { color: section.mode === "carry" ? "#a63c29" : "#b27212",
+            weight: 7, dashArray: section.mode === "carry" ? "2 7" : "9 5", opacity: .95, bubblingMouseEvents: false })
+            .bindTooltip(textNode(travelModeLabel[section.mode!] + " · " + (section.reasons ?? []).join(" "))).addTo(layer);
+        }
         for (const [a, b] of [[route.from, route.points[0]], [route.points.at(-1)!, route.to]]) {
           L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: COLORS.walk, weight: 3, dashArray: "2 6", interactive: false }).addTo(layer);
         }
@@ -318,6 +327,8 @@ export default function MapView({
       <span><i className="legend-bike" />Cycling leg</span>
       <span><i className="legend-train" />Transit</span>
       <span><i className="legend-walk" />Walking</span>
+      <span><i className="legend-push" />Push bicycle</span>
+      <span><i className="legend-carry" />Carry bicycle</span>
       <span><i className="legend-climb" />Steep climb</span>
       <span><i className="legend-descent" />Steep descent</span>
       <span><i className="legend-stop" />Explored stop</span>

@@ -428,3 +428,12 @@ button:disabled { cursor: default; opacity: .65; }
 .fare-details dt { font-weight: 700; }
 .fare-details dd { margin: .2rem 0 0; }
 .parking-information { width: 100%; max-width: 34rem; font-size: .875rem; line-height: 1.4; }
+/* Terrain warnings remain readable in itinerary cards and the cycling panel. */
+.terrain-summary { margin-block: .75rem; }
+.terrain-summary .cycle-stats { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }
+.cycle-breakdown li.terrain-section { display: flex; align-items: flex-start; flex-direction: column; gap: .3rem; padding-block: .65rem; }
+.terrain-section span { font-size: .9rem; line-height: 1.45; }
+.fare-card-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .15rem .6rem; padding-block: .15rem; }
+.fare-card-row small { grid-column: 1 / -1; }
+.map-legend .legend-push { border-top: 3px dashed #c46b16; background: none; }
+.map-legend .legend-carry { border-top: 3px dotted #9d321f; background: none; }

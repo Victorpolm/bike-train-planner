@@ -24,11 +24,14 @@ function ride(n: Network, a: Stop, b: Stop, depart: number, arrive: number) {
     departurePlatform: null, arrivalPlatform: null } });
 }
 
-it("retains the real Renens–EPFL path, provider riding time and named data gaps", () => {
+it("retains the real Renens–EPFL path and accounts for its mapped pedestrian section", () => {
   const route = parseCyclingRoute(fixture.data, fixture.from, fixture.to);
   assert.equal(route.points.length, 120);
   assert.equal(route.distanceKm, 2.597);
-  assert.equal(route.ridingSeconds, 401);
+  assert.equal(route.terrainBaseSeconds, 401);
+  assert.ok(route.ridingSeconds < 401 && route.ridingSeconds > 398);
+  assert.ok(route.pushingSeconds! > 5);
+  assert.ok(route.sections.some(s => s.mode === "push" && s.tags.highway === "footway"));
   assert.equal(route.minutes, 8); // Includes the short walking connectors, rounded up.
   assert.equal(route.ascentM, 3); assert.equal(route.descentM, 23);
   assert.equal(route.elevationCoverage, 1);

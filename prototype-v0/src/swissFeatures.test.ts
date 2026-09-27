@@ -3,7 +3,7 @@ import { it } from "node:test";
 import { operatorBicycleRule, sbbIcReservation } from "./operatorBicycleRules.ts";
 import { bicyclePermission, bicycleLegAllowed } from "./bicyclePermission.ts";
 import { carriageForLeg, interpretBicycleAttributes } from "./bicycleCarriage.ts";
-import { bikeDayPrice, DEFAULT_FARE_PROFILE, fareCardSummary, fareSummary, readFareProfile } from "./fares.ts";
+import { bikeDayPrice, DEFAULT_FARE_PROFILE, fareCardSummary, fareRows, fareSummary, readFareProfile } from "./fares.ts";
 import { parseBikeParking } from "./bikeParking.ts";
 import { handleParking } from "../server/parkingHandler.ts";
 import { SearchDeadline } from "./searchDeadline.ts";
@@ -99,26 +99,26 @@ it("bounds price validity and day-pass coverage and does not extrapolate prices 
   assert.deepEqual(readFareProfile({ passenger: "bogus", annualBikePass: "true" }), DEFAULT_FARE_PROFILE);
 });
 
-it("shows the bicycle price on cards while keeping full and Half Fare passenger tickets separate", () => {
+it("shows separate published passenger, bicycle and reservation prices below boardings", () => {
   const ir = leg(undefined, { category: "IR", service: "IR 35" });
-  for (const passenger of ["full", "half-fare"] as const) {
-    const summary = fareCardSummary([ir], { passenger, annualBikePass: false });
-    assert.equal(summary.price, "Bicycle CHF 15.00 + passenger ticket");
-    assert.match(summary.detail, passenger === "full" ? /Full-fare passenger/ : /Half Fare passenger/);
-    assert.match(summary.detail, /route ticket may cost less/);
+  for (const [passenger, expected, total] of [["full", 14.2, 21.3], ["half-fare", 7.1, 14.2], ["ga", 0, 7.1]] as const) {
+    const { fare, rows } = fareRows([ir], { passenger, annualBikePass: false });
+    assert.equal(fare.passengerChf, expected); assert.equal(fare.bikeChf, 7.1); assert.equal(fare.totalChf, total);
+    assert.equal(fare.minimumVerified, true); assert.equal(rows.length, 3);
+    assert.equal(rows[1].detail, "Reduced bicycle ticket"); assert.equal(rows[2].value, "CHF 0.00");
   }
-  assert.equal(fareCardSummary([ir], { passenger: "ga", annualBikePass: false }).price, "CHF 15.00 additional cost");
   assert.equal(fareCardSummary([ir], { passenger: "ga", annualBikePass: true }).price, "CHF 0.00 additional cost");
   assert.equal(fareCardSummary([leg("2026-09-25T10:00:00+02:00")], { passenger: "ga", annualBikePass: true }).price, "CHF 2.00 additional cost");
 });
 
-it("keeps partial, unsupported and prohibited card prices distinct from complete bicycle prices", () => {
-  const unknownReservation = fareCardSummary([leg(undefined, { service: "IC 284" })], DEFAULT_FARE_PROFILE);
-  assert.equal(unknownReservation.price, "Bicycle CHF 15.00 + other fares to check");
-  assert.match(unknownReservation.detail, /Reservation price unconfirmed/);
-  const unsupported = fareCardSummary([leg(undefined, { operator: "Unknown railway" })], { passenger: "ga", annualBikePass: true });
-  assert.equal(unsupported.price, "Price to check"); assert.match(unsupported.detail, /Check GA coverage/);
-  assert.equal(fareCardSummary([leg("2028-01-01T10:00:00Z")], DEFAULT_FARE_PROFILE).price, "Price to check");
+it("keeps partial, unsupported and prohibited card prices distinct from complete prices", () => {
+  const partial = fareRows([leg(undefined, { service: "IC 284" })], DEFAULT_FARE_PROFILE);
+  assert.equal(partial.fare.totalChf, null); assert.equal(partial.rows[1].value, "CHF 15.00");
+  assert.match(partial.rows[1].detail, /cheapest option not verified/); assert.equal(partial.rows[2].value, "Quote needed");
+  const unknown = leg(undefined, { operator: "Unknown railway" });
+  assert.equal(fareCardSummary([unknown], { passenger: "ga", annualBikePass: true }).price, "Total needs a fare quote");
+  assert.match(fareRows([unknown], { passenger: "ga", annualBikePass: true }).rows[0].detail, /Check GA coverage/);
+  assert.equal(fareCardSummary([leg("2028-01-01T10:00:00Z")], DEFAULT_FARE_PROFILE).price, "Total needs a fare quote");
   const banned = leg();
   banned.bicycleEvidence = { permission: "prohibited", fromId: banned.fromId!, toId: banned.toId!,
     departure: banned.departure!.toISOString(), service: banned.service, operator: banned.operator!,

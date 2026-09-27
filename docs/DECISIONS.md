@@ -367,3 +367,11 @@ The user requests documentation only for missing/incorrect fares, reported S12 b
 The review distinguishes confirmed fare limitations and a broad regional uncertainty rule from the unreproduced original CHF 17/S12 results. The proposed fare presentation separates passenger, cheapest valid bicycle product and reservation. Proposed cycling preferences remain separate from rider pace and journey ranking; Lower traffic stress is suggested wording for the requested safety preference, without claiming objective safety. Numerical weights and detour allowances are still open. Preserve the earlier request to distinguish cycling, pushing and carrying.
 
 Keep the Site owner-private and require approval before hosting spend. Keep residential addresses, private trace geometry and secrets out of the public repository. This documentation update does not approve a new provider or paid service.
+
+## 2026-09-27 — On-demand official terrain checks and scoped fare tables
+
+The user approved implementing the September review and swisstopo check. Use the existing private server for bounded GeoAdmin queries, retain OSM evidence and unmatched/ambiguous coverage, and exclude climbing passages unsuitable with a bicycle. Compare actual path alternatives for Fastest, Simplest and Lower traffic stress with a capped detour; retain uncertainty and partial results. Do not upload bulk terrain data to the public repository or create paid hosting.
+
+Use actual published reduced fares on audited date/line/zone-scoped corridors, compare bicycle tickets with the valid day pass, and separate passenger, bicycle and reservation components. Do not treat the OJP integration-test fare endpoint as a production quotation source. Preserve exact dated bicycle prohibitions and narrow regional/SZU exceptions. See [implementation and limits](SWISSTOPO_AND_FARES_2026-09-27.md).
+
+The live Muri–ETH probe exposed a timing conflict: first train-exit cycling validation was still pending at 60 seconds. Overlap endpoint discovery without bypassing provider rate limits; use a 90-second global limit when terrain checks are enabled, retain early results and cancellation, and disclose the limit in the loading UI. Legacy non-terrain searches retain 60 seconds. A same-station public-anchor retry addresses disconnected timetable centroids without increasing the existing 250 m connector limit.

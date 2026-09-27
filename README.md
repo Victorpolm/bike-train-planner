@@ -1,6 +1,6 @@
 # Bike + Train Journey Planner
 
-**Documentation review (27 September 2026):** [Reported fare, S12 permission and cycling-path problems](docs/USER_REVIEW_2026-09-27.md), with confirmed implementation gaps, unresolved observations and proposed Fastest / Simplest / Lower traffic stress preferences. Documentation only; application behaviour and publication are unchanged. The current bicycle day-pass option is not a verified cheapest fare.
+**Implementation update (27 September 2026):** [Swisstopo terrain checks, cycling preferences and fare corrections](docs/SWISSTOPO_AND_FARES_2026-09-27.md) now implement the approved follow-up to the user review. The app distinguishes riding, pushing and carrying, rejects unsuitable climbing passages, and compares Fastest / Simplest / Lower traffic stress candidates. Cards separate passenger, bicycle and reservation prices. Reviewed Zürich-area rail corridors have numeric standard fares; wider fare coverage remains incomplete. No swisstopo data upload is required.
 
 **Latest source update (25 September 2026):** Date-aware train bicycle rules, ticket/reservation prices, full fare/Half Fare/GA preferences, official bicycle parking and a 60-second search deadline. A national GTFS service and Swiss OSM audit are implemented as local pilots; they are not a production replacement for live routing. [Implementation and remaining gates](docs/SWISS_IMPLEMENTATION.md) · [GPX recording guide](docs/GPX_RECORDING.md) · [tests and dated results](docs/EXPERIMENTS.md).
 
@@ -18,7 +18,7 @@ Sign in with the ChatGPT account that owns the Site. Access is restricted to tha
 
 Website access and source visibility are separate: this GitHub repository is public. Personal GPX recordings, secrets and downloaded bulk datasets are not committed here. No new paid hosting is authorised; any hosting spend requires the owner's approval first.
 
-For local Git setup and publication, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the website. **Private version 20 was verified on 25 September 2026 at 13:36 UTC**, with prices below boardings and named-place search, including FORTYSEVEN Baden. Train prerequisites, fare preferences, official parking and bounded searches remain available. The national timetable pilot remains local; no new paid hosting was added.
+For local Git setup and publication, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the website. **Private version 21 was published and owner-only access verified on 27 September 2026 at 09:48 UTC**, with swisstopo checks, walking/carrying sections, cycling preferences and separate fare components. [Live regression results and remaining gaps](docs/EXPERIMENTS.md) include the still-unresolved Baden–Witikon mixed-search timeout. Train prerequisites, fare preferences, official parking and bounded searches remain available. The national timetable pilot remains local; no new paid hosting was added.
 
 **Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
 

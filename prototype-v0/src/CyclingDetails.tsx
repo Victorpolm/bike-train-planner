@@ -1,4 +1,5 @@
 import { paceDescription } from "./cyclingPace";
+import CyclingTerrainSummary from "./CyclingTerrainSummary";
 import { useId } from "react";
 import { breakdown, finalClimb, pointAlong, STEEP_PERCENT, type CyclingRoute } from "./cycling";
 import { formatMinutes } from "./routing";
@@ -35,10 +36,11 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
     </select></label> : <p>{label}</p>}
     <dl className="cycle-stats">
       <div><dt>Routed distance</dt><dd>{route.distanceKm.toFixed(1)} km</dd></div>
-      <div><dt>Estimated ride</dt><dd>{formatMinutes(route.ridingSeconds / 60)}</dd></div>
+      <div><dt>Cycling + walking</dt><dd>{formatMinutes(route.minutes)}</dd></div>
       <div><dt>Ascent</dt><dd>{metres(route.ascentM)}</dd></div>
       <div><dt>Descent</dt><dd>{metres(route.descentM)}</dd></div>
     </dl>
+    <CyclingTerrainSummary route={route} />
     <p className="cycle-caption">{route.pace ? `Estimated at ${paceDescription(route.pace)}. Time is calculated along the elevation profile; downhill speed is capped at 45 km/h.` : "Times use the cycling provider’s touring estimate."}
       {route.elevationCoverage < .999 && " Elevation is missing on some or all of this route: those parts use your flat-ground pace, so hill timing is incomplete."}
       {route.source === "OSRM" && " Backup bicycle route from OSRM; road attributes are unavailable."}
@@ -64,7 +66,7 @@ export default function CyclingDetails({ routes, focus, onFocus }: {
       </label>
       <p className="cycle-caption">Hover the profile or the cycling line; use the slider on touch/keyboard. Orange: climbs ≥{STEEP_PERCENT}%. Blue: descents ≤−{STEEP_PERCENT}%, over approximately 100 m. Gaps mean missing elevation.</p>
     </> : <p>Elevation is unavailable for this cycling leg.</p>}
-    <p className="profile-location">At this point: {section?.infrastructure ?? "Unknown infrastructure"} · {section?.surface ?? "Unknown surface"} · posted limit band: {section?.speedLimit ?? "Unknown"}.</p>
+    <p className="profile-location">At this point: {section?.pathType ?? "Unknown path type"} · {section?.infrastructure ?? "Unknown infrastructure"} · {section?.surface ?? "Unknown surface"} · posted limit band: {section?.speedLimit ?? "Unknown"}.</p>
     <div className="finish-climb"><strong>Climbing in the final {(finish.distanceM / 1000).toFixed(1)} km of this leg</strong>
       <p>{metres(finish.ascentM)} ascent · steepest sampled climb {finish.maxGrade === null ? "unknown" : `${finish.maxGrade.toFixed(1)}%`}.</p>
     </div>

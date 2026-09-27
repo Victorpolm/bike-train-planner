@@ -1,4 +1,5 @@
 export const SEARCH_DEADLINE_MS = 60_000;
+export const TERRAIN_SEARCH_DEADLINE_MS = 90_000;
 export class SearchDeadline {
   readonly controller = new AbortController();
   readonly signal = this.controller.signal;

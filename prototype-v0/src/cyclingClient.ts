@@ -1,8 +1,11 @@
 import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
 import { cachedCycling, cyclingKey, CYCLING_PROFILE, MAX_ENDPOINT_GAP_METRES, EndpointSnapError, parseCyclingRoute, samePlace, zeroCycling, type CyclingRoute } from "./cycling.ts";
-import type { Point } from "./routing.ts";
+import { haversineKm, type Point } from "./routing.ts";
+import { MAJOR_STATIONS } from "./majorStations.ts";
 import { maxCyclingSpeed, validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { fallbackCycling } from "./cyclingFallback.ts";
+import { applySwisstopo, simplifyTopoLine, type TopoReply } from "./swisstopo.ts";
+import { chooseCyclingRoute, type RoutePreference } from "./cyclingPreferences.ts";
 
 export const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
 const cache = new Map<string, CyclingRoute>();
@@ -14,6 +17,7 @@ export type CyclingFailure = {
 };
 const placeName = (point: Located) => point.label || point.name || `${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}`;
 function explainFailure(error: unknown): Omit<CyclingFailure, "from" | "to"> {
+  if (error instanceof TerrainRouteError) return { kind: "no-route", message: error.message };
   if (error instanceof EndpointSnapError) return { kind: "off-network", message: error.message };
   const diagnostic = error instanceof HttpError ? { status: error.status, providerDetail: error.detail } : {};
   const detail = diagnostic.providerDetail ?? "";
@@ -31,6 +35,7 @@ function explainFailure(error: unknown): Omit<CyclingFailure, "from" | "to"> {
   // path does not exist. Never tell the user to move a valid pin on that basis.
   return { ...diagnostic, kind: "service", message: "The cycling service could not complete this check. Please try again." };
 }
+class TerrainRouteError extends Error {}
 export class CyclingClient {
   readonly routes = new Map<string, CyclingRoute | null>();
   readonly warnings = new Set<string>();
@@ -49,12 +54,49 @@ export class CyclingClient {
   private gapMs: number;
   private useCache: boolean;
   private fallbackFetcher: typeof fetch | null;
+  private topoRequests = 0;
+  private alternativeRequests = 0;
+  private topoReplies = new Map<string, TopoReply>();
+  private topoCorridors = new Map<string, TopoReply>();
+  private terrainFetcher: typeof fetch | null;
+  readonly routePreference?: RoutePreference;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true,
-    fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, pace?: CyclingPace) {
+    fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, pace?: CyclingPace, routePreference?: RoutePreference,
+    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null) {
     if (pace) validateCyclingPace(pace);
     this.pace = pace ? { ...pace } : undefined;
+    this.routePreference = routePreference;
+    this.terrainFetcher = terrainFetcher;
     this.signal = signal; this.fetcher = fetcher; this.gapMs = gapMs; this.useCache = useCache;
     this.fallbackFetcher = fallbackFetcher;
+  }
+  private async terrainCheck(route: CyclingRoute): Promise<CyclingRoute> {
+    if (!this.routePreference || !this.terrainFetcher || route.blocked) return route;
+    const unavailable = (note: string): CyclingRoute => ({ ...route, topoCheck: { status: "unavailable",
+      matchedMetres: 0, checkedAt: new Date().toISOString(), note } });
+    const points = simplifyTopoLine(route.points).map(({ lat, lon }) => ({ lat, lon }));
+    const key = JSON.stringify(points), cached = this.topoReplies.get(key);
+    if (cached) return applySwisstopo(route, cached);
+    const corridorKey = cyclingKey(route.from, route.to), nearby = this.topoCorridors.get(corridorKey);
+    if (nearby) {
+      const matched = applySwisstopo(route, { ...nearby, complete: false,
+        note: "This alternative was matched against the same nearby official features. Unmatched sections remain unchecked." });
+      if (matched.topoCheck!.matchedMetres >= route.distanceKm * 1000 * .85) return matched;
+    }
+    if (this.topoRequests >= 12) return unavailable("Swisstopo search budget reached; remaining sections are unchecked.");
+    if (points.length > 1500) return unavailable("This path is too detailed for the bounded swisstopo check.");
+    this.topoRequests++;
+    try {
+      const reply = await fetchJson<TopoReply>("/api/terrain", this.signal, 9500,
+        (url, init) => this.terrainFetcher!(url, { ...init, method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ points }) }));
+      this.signal.throwIfAborted();
+      if (!Array.isArray(reply.features) || typeof reply.complete !== "boolean") throw new Error("Incomplete check");
+      if (reply.complete) { this.topoReplies.set(key, reply); this.topoCorridors.set(corridorKey, reply); }
+      return applySwisstopo(route, reply);
+    } catch {
+      this.signal.throwIfAborted();
+      return unavailable("Swisstopo could not complete this check; unverified sections remain unverified.");
+    }
   }
   beginPhase() { this.remainingMs = CYCLING_LIMITS.phaseMs; }
   getCached(a: Located, b: Located) { return cachedCycling(this.routes, a, b); }
@@ -66,7 +108,7 @@ export class CyclingClient {
     const equivalent = cachedCycling(this.routes, a, b);
     if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
-    const cacheKey = `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    const cacheKey = "terrain-v1|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
     if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }
     const task = this.queue.then(async () => {
@@ -74,6 +116,10 @@ export class CyclingClient {
       const started = Date.now();
       const remaining = () => this.remainingMs - Math.max(0, Date.now() - started);
       const remember = (route: CyclingRoute) => {
+        if (route.source === "OSRM" && this.routePreference) route = { ...route, preference: this.routePreference,
+          alternativesChecked: 1, preferenceNote: "Backup cycling service: alternatives, turn counts and traffic-stress preferences could not be compared." };
+        if (route.blocked) throw new TerrainRouteError("No bicycle-suitable checked path: " +
+          [...new Set(route.sections.filter(s => s.mode === "blocked").flatMap(s => s.reasons ?? []))].join(" "));
         this.routes.set(key, route);
         const previous = this.failedLinks.get(key);
         if (previous) this.warnings.delete(`${placeName(a)} → ${placeName(b)}: ${previous.message}`);
@@ -87,9 +133,15 @@ export class CyclingClient {
         return route;
       };
       const params = new URLSearchParams({ lonlats: `${a.lon},${a.lat}|${b.lon},${b.lat}`, profile: CYCLING_PROFILE,
-        alternativeidx: "0", format: "geojson", "profile:processUnusedTags": "1", "profile:allow_steps": "0",
+        alternativeidx: "0", format: "geojson", "profile:processUnusedTags": "1", "profile:allow_steps": this.routePreference ? "1" : "0",
         "profile:allow_ferries": "0", "profile:maxSpeed": String(maxCyclingSpeed(this.pace)),
         "profile:waypointCatchingRange": String(MAX_ENDPOINT_GAP_METRES) });
+      if (this.routePreference) {
+        params.set("timode", "2");
+        params.set("profile:turnInstructionMode", "2");
+        params.set("profile:ignore_cycleroutes", this.routePreference === "fastest" ? "1" : "0");
+        params.set("profile:avoid_unsafe", this.routePreference === "lower-stress" ? "1" : "0");
+      }
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
           if (this.requests >= CYCLING_LIMITS.requests || remaining() <= 0) {
@@ -104,7 +156,7 @@ export class CyclingClient {
           if (delay > 10_000 || delay >= remaining()) {
             if (this.fallbackFetcher) {
               this.requests++;
-              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace)); }
+              try { return remember(await this.terrainCheck(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace))); }
               catch { this.signal.throwIfAborted(); }
             }
             return null;
@@ -116,18 +168,66 @@ export class CyclingClient {
             const data = await fetchJson<unknown>(`https://brouter.de/brouter?${params}`, this.signal,
               Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fetcher);
             this.signal.throwIfAborted();
-            const route = parseCyclingRoute(data, a, b, Date.now(), this.pace);
-            this.cooldown = 0;
+            let route = parseCyclingRoute(data, a, b, Date.now(), this.pace);
+            if (this.routePreference) {
+              // Check the primary path while the route provider computes a genuine
+              // alternative. Unchosen alternatives need no second terrain request.
+              const [checkedPrimary, rawAlternative] = await Promise.all([this.terrainCheck(route), (async () => {
+                if (this.alternativeRequests >= 6 || this.requests >= CYCLING_LIMITS.requests - 4 || remaining() <= 7000) return null;
+                const alternative = new URLSearchParams(params);
+                const stairs = route.sections.some(s => s.tags.highway === "steps");
+                if (stairs || route.blocked) {
+                  alternative.set("profile:allow_steps", "0");
+                  alternative.set("profile:avoid_unsafe", "1");
+                } else alternative.set("alternativeidx", "1");
+                try {
+                  await waitFor(this.gapMs, this.signal); this.lastRequest = Date.now(); this.requests++; this.alternativeRequests++;
+                  const timeout = !stairs && !route.blocked && this.routes.size < 2 ? 2500 : 10000;
+                  const alternate = await fetchJson<unknown>("https://brouter.de/brouter?" + alternative, this.signal,
+                    Math.min(timeout, remaining()), this.fetcher);
+                  return parseCyclingRoute(alternate, a, b, Date.now(), this.pace);
+                } catch (error) {
+                  this.signal.throwIfAborted();
+                  if (error instanceof HttpError && error.status === 429)
+                    this.cooldown = Date.now() + (error.retryAfterMs ?? 60_000);
+                  return null;
+                }
+              })()]);
+              const candidates = [checkedPrimary];
+              if (rawAlternative) {
+                const preliminary = chooseCyclingRoute([checkedPrimary, rawAlternative], this.routePreference);
+                // IDs identify endpoints, so compare the point-array identity here.
+                candidates.push(preliminary?.points === rawAlternative.points ? await this.terrainCheck(rawAlternative) : rawAlternative);
+              }
+              const choice = chooseCyclingRoute(candidates, this.routePreference);
+              if (!choice) throw new TerrainRouteError("No bicycle-suitable checked path: " +
+                [...new Set(candidates.flatMap(r => r.sections.filter(s => s.mode === "blocked").flatMap(s => s.reasons ?? [])))].join(" "));
+              route = choice;
+            }
             return remember(route);
           } catch (error) {
             this.signal.throwIfAborted();
+            // Provider centroids can fall on disconnected indoor/platform ways.
+            // Retry once at the same station's existing public anchor, only
+            // within the already disclosed walking-connector bound. The parsed
+            // route still uses the user's original endpoints and walking time.
+            if (attempt === 0 && error instanceof HttpError && error.status === 400
+              && /no track found|island detected|position not mapped/i.test(error.detail)) {
+              const anchor = (point: Located) => MAJOR_STATIONS.find(s => s.id === (point.id ?? point.stopId)
+                && haversineKm(s, point) * 1000 <= MAX_ENDPOINT_GAP_METRES) ?? point;
+              const aa = anchor(a), bb = anchor(b);
+              if (haversineKm(a, aa) > .001 || haversineKm(b, bb) > .001) {
+                params.set("lonlats", aa.lon + "," + aa.lat + "|" + bb.lon + "," + bb.lat);
+                continue;
+              }
+            }
             const temporary = transientFailure(error);
             const rateLimited = error instanceof HttpError && error.status === 429;
             const delay = error instanceof HttpError && error.retryAfterMs !== null ? error.retryAfterMs : this.gapMs * 5;
             if (rateLimited) this.cooldown = Date.now() + (attempt === 0 ? delay : Math.max(delay, 60_000));
             if (temporary && this.fallbackFetcher && this.requests < CYCLING_LIMITS.requests && remaining() > 0) {
               this.requests++;
-              try { return remember(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace)); }
+              try { return remember(await this.terrainCheck(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace))); }
               catch { this.signal.throwIfAborted(); }
             }
             if (temporary && !this.fallbackFetcher && attempt === 0 && delay <= 10_000 && delay < remaining() && this.requests < CYCLING_LIMITS.requests) {

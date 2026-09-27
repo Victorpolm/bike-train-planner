@@ -1,4 +1,5 @@
 import { handleParking } from "./parkingHandler.ts";
+import { handleSwisstopo } from "./swisstopoHandler.ts";
 import assets from "virtual:bike-assets";
 import { handleTimetable, type TimetableEnvironment } from "./timetableHandler.ts";
 import { handleOjp, type OjpEnvironment } from "./ojpHandler.ts";
@@ -7,6 +8,7 @@ export default {
   async fetch(request: Request, env: OjpEnvironment & TimetableEnvironment): Promise<Response> {
     const path = new URL(request.url).pathname;
     if (path === "/api/parking") return handleParking(request);
+    if (path === "/api/terrain") return handleSwisstopo(request);
     if (path.startsWith("/api/timetable/")) return handleTimetable(request, env);
     if (path.startsWith("/api/ojp/")) return handleOjp(request, env);
     if (!["GET", "HEAD"].includes(request.method)) return new Response("Method not allowed", { status: 405 });

@@ -1,4 +1,5 @@
 import FareDetails from "./FareDetails";
+import CyclingTerrainSummary from "./CyclingTerrainSummary";
 import { DEFAULT_FARE_PROFILE, type FareProfile } from "./fares";
 import { journeySteps } from "./itinerary";
 import { formatMinutes, type Journey, type Place } from "./routing";
@@ -65,6 +66,7 @@ export default function JourneyPlan({
                 ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
                 : "Cycling route details unavailable."}</p>}
               {leg?.mode === "transit" && <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />}
+              {step.mode === "bike" && step.cyclingRoute && <CyclingTerrainSummary route={step.cyclingRoute} />}
               {step.mode === "walk" && <p className="plan-note">Push your bicycle during this transfer. The timetable transfer time is shown; a continuous route suitable for a bicycle, including lifts or steps, has not been verified.</p>}
             </li>
           );

@@ -1,4 +1,5 @@
 import { DEFAULT_FARE_PROFILE, readFareProfile, type FareProfile } from "./fares";
+import { ROUTE_PREFERENCES, routePreferenceLabels, type RoutePreference } from "./cyclingPreferences";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
 import { metrics, type ModelMode, type EndpointPreference } from "./model";
@@ -97,11 +98,12 @@ export default function App() {
   const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">("regular");
   const [cyclingPace, setCyclingPace] = useState<CyclingPace>(DEFAULT_CYCLING_PACE);
   const [cycling, setCycling] = useState<CyclingPreference>("balanced");
+  const [routePreference, setRoutePreference] = useState<RoutePreference>("fastest");
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date(Date.now() + 60 * 60_000)));
-  const options = useMemo(() => preferenceOptions(cycling, endpoint, "include-unknown", bicycleScope, cyclingPace), [cycling, endpoint, bicycleScope, cyclingPace]);
+  const options = useMemo(() => preferenceOptions(cycling, endpoint, "include-unknown", bicycleScope, cyclingPace, routePreference), [cycling, endpoint, bicycleScope, cyclingPace, routePreference]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -287,6 +289,10 @@ export default function App() {
             <p>Adult fares in 2nd class. Your passenger travelcard and bicycle pass are separate.</p>
           </fieldset>
           <div className="preference-grid">
+            <label><span>Cycling path</span><select disabled={loading} value={routePreference}
+              onChange={e => { invalidate(); setRoutePreference(e.target.value as RoutePreference); }}>
+              {ROUTE_PREFERENCES.map(p => <option key={p} value={p}>{routePreferenceLabels[p]}</option>)}
+            </select></label>
             <label><span>Riding profile</span><select disabled={loading} value={ridingPreset}
               onChange={e => { invalidate(); const preset = e.target.value as CyclingPreset; setRidingPreset(preset);
                 setCyclingPace({ flatSpeedKmh: CYCLING_PRESETS[preset].flatSpeedKmh, electricAssist: CYCLING_PRESETS[preset].electricAssist }); }}>
@@ -330,7 +336,7 @@ export default function App() {
         <span><b>{session ? `${day.format(session.start)}, ${clock.format(session.start)}` : departureMode === "now" ? "Leave now" : "Chosen departure"}</b> · Swiss time</span>
         <span>Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight waiting</span></div>
       {loading && <div className="loading-block" role="status"><div className="progress-track"><i /></div>
-        <p>{progress}</p><small>{proposals.length ? "You can open a travel plan while we check more options." : "The timetable service can take around 20 seconds to respond."}</small>
+        <p>{progress}</p><small>{proposals.length ? "You can open a travel plan while we check more options." : "Checking cycling paths, terrain and timetables can take up to 90 seconds. Options appear as they are ready."}</small>
         <button type="button" className="cancel-button" onClick={cancel}>{proposals.length ? "Stop looking · keep these options" : "Stop search"}</button></div>}
       {!loading && progress && <p role="status">{progress}</p>}
       {error && <div className="error-block" role="alert"><strong>We could not complete this search.</strong><p>{error}</p></div>}

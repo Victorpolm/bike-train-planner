@@ -1,5 +1,7 @@
 # Swiss implementation — 25 September 2026
 
+**27 September follow-up:** See [implemented terrain, cycling preference and fare changes](SWISSTOPO_AND_FARES_2026-09-27.md). Numeric local corridor fares and bicycle minima now supplement the earlier pass-only treatment below; nationwide fare coverage remains pending.
+
 The approved direction is Switzerland first: own timetable search, bicycle rules and journey ranking; retain a specialist cycling router. Finish and validate the current bicycle-accompanies-traveller mode before Europe or additional travel modes.
 
 ## Implemented in the web application

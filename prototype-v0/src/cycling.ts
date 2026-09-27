@@ -1,13 +1,16 @@
 import { pacedRidingSeconds, maxCyclingSpeed, type CyclingPace } from "./cyclingPace.ts";
 import { haversineKm, type Point } from "./routing.ts";
+import { analyseCyclingTerrain, type TerrainSection } from "./cyclingTerrain.ts";
+import type { TopoCheck } from "./swisstopo.ts";
+import type { RoutePreference } from "./cyclingPreferences.ts";
 
 export type CyclePoint = Point & { elevationM: number | null; distanceM: number };
-export type Surface = "Paved" | "Compacted" | "Gravel" | "Other unpaved" | "Unknown";
+export type Surface = "Paved" | "Asphalt" | "Compacted" | "Gravel" | "Earth" | "Rock" | "Other unpaved" | "Unknown";
 export type Infrastructure = "Separated cycleway" | "Painted lane" | "Shared with traffic" | "Shared path" | "Unknown";
 export type CycleSection = {
   startM: number; endM: number; surface: Surface; infrastructure: Infrastructure;
   speedLimit: string; tags: Record<string, string>;
-};
+} & Partial<TerrainSection>;
 export type SlopeSection = { startM: number; endM: number; gradePercent: number };
 export type CyclingRoute = {
   id: string; from: Point; to: Point; points: CyclePoint[]; distanceKm: number;
@@ -15,6 +18,8 @@ export type CyclingRoute = {
   elevation: CyclePoint[]; elevationCoverage: number; steep: SlopeSection[];
   sections: CycleSection[]; startGapM: number; endGapM: number; connectorMinutes: number;
   source: "BRouter" | "OSRM" | "same place"; fetchedAt: number; pace?: CyclingPace;
+  pushingSeconds?: number; carryingSeconds?: number; blocked?: boolean; topoCheck?: TopoCheck; terrainBaseSeconds?: number;
+  turnCount?: number; preference?: RoutePreference; alternativesChecked?: number; preferenceNote?: string;
 };
 export const CYCLING_PROFILE = "trekking";
 export const MAX_CYCLING_SPEED_KMH = 25;
@@ -55,6 +60,9 @@ const validPoint = (p: Point) => Number.isFinite(p.lat) && Number.isFinite(p.lon
 const number = (value: unknown): number | null => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
 
 export function classifySurface(tags: Record<string, string>): Surface {
+  if (tags.surface === "asphalt") return "Asphalt";
+  if (["rock", "stone"].includes(tags.surface)) return "Rock";
+  if (["ground", "dirt", "earth", "mud", "clay"].includes(tags.surface)) return "Earth";
   if (/^(asphalt|paved|concrete|paving_stones|sett|cobblestone)$/.test(tags.surface ?? "")) return "Paved";
   if (tags.surface === "compacted") return "Compacted";
   if (/^(gravel|fine_gravel|pebblestone)$/.test(tags.surface ?? "")) return "Gravel";
@@ -184,11 +192,14 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
   }
   if (!sections.length) sections.push(unknown(0, distanceM));
   const terrain = elevationProfile(points);
+  const hints = properties.voicehints;
+  const turnCount = Array.isArray(hints) ? new Set(hints.filter(h => Array.isArray(h)
+    && Number(h[0]) > 0 && Number(h[0]) < points.length - 1).map(h => (h as unknown[])[0])).size : undefined;
   const ridingSeconds = Math.max(pace ? pacedRidingSeconds(terrain.elevation, distanceM / 1000, pace) : seconds,
     distanceM / 1000 / maxCyclingSpeed(pace) * 3600);
-  return { id: cyclingKey(from, to), from, to, points, distanceKm: distanceM / 1000, ridingSeconds,
+  return analyseCyclingTerrain({ id: cyclingKey(from, to), from, to, points, distanceKm: distanceM / 1000, ridingSeconds,
     minutes: Math.ceil(ridingSeconds / 60 + connectorMinutes), startGapM, endGapM, connectorMinutes,
-    source: "BRouter", fetchedAt, sections, pace, ...terrain };
+    source: "BRouter", fetchedAt, sections, pace, turnCount, ...terrain });
 }
 
 export function breakdown(route: CyclingRoute, property: "surface" | "infrastructure" | "speedLimit") {

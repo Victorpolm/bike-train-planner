@@ -29,6 +29,7 @@ export function applicableBicycleEvidence(leg: TransitLeg): BicycleEvidence | un
 export function bicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | "prohibited" {
   const policy = busCarriage(leg);
   if (policy?.permission === "not-allowed") return "prohibited";
+  if (operatorBicycleRule(leg)?.permission === "prohibited") return "prohibited";
   const e = applicableBicycleEvidence(leg);
   if (e?.permission === "prohibited") return "prohibited";
   if (e?.conditions.some(note => note.includes("restricted to international travel"))) return "uncertain";

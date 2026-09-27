@@ -25,7 +25,7 @@ export function sbbInterRegioRule(leg: TransitLeg) {
 
 export type RuleSource = { title: string; url: string; checked: string };
 export type OperatorBicycleRule = {
-  permission: "allowed" | "unknown";
+  permission: "allowed" | "unknown" | "prohibited";
   reservation: "required" | "not-required" | "unknown";
   ticket: "required";
   source: RuleSource;
@@ -49,13 +49,24 @@ function localDate(date: Date) {
   return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"),
     weekday: new Date(Date.UTC(get("year"), get("month") - 1, get("day"))).getUTCDay() };
 }
+export function regionalBicycleWindow(leg: TransitLeg): { morning: [number, number]; label: string } {
+  const names = [leg.from, leg.to].join(" ");
+  const points = [leg.fromPoint, leg.toPoint].filter(p => p !== undefined);
+  const zurich = leg.category?.toUpperCase() === "S" && (/\bZürich\b|\bWinterthur\b|\bStadelhofen\b|\bUrdorf\b|\bBirmensdorf ZH\b/.test(names)
+    || points.length === 2 && points.every(p => p.lat >= 47.15 && p.lat <= 47.7 && p.lon >= 8.2 && p.lon <= 8.95));
+  const ticino = /\bLugano\b|\bBellinzona\b|\bLocarno\b|\bChiasso\b|\bMendrisio\b/.test(names)
+    || points.length === 2 && points.every(p => p.lat >= 45.8 && p.lat <= 46.35 && p.lon >= 8.6 && p.lon <= 9.15);
+  return zurich ? { morning: [6, 8], label: "Zürich S-Bahn" } : ticino ? { morning: [7, 9], label: "Ticino S/RE" }
+    : { morning: [6, 9], label: "Regional network not established" };
+}
 function overlapsRegionalPeak(leg: TransitLeg) {
+  const window = regionalBicycleWindow(leg);
   const start = leg.departure!.getTime(), end = leg.arrival?.getTime() ?? start;
   // Check every local hour touched, including a restriction entirely between
   // departure and arrival. Use real instants so midnight and DST remain sound.
   for (let time = start; time <= Math.max(start, end); time = Math.min(time + 60 * 60_000, end)) {
     const d = localDate(new Date(time));
-    if (d.weekday >= 1 && d.weekday <= 5 && (d.hour >= 6 && d.hour < 9 || d.hour >= 16 && d.hour < 19)) return true;
+    if (d.weekday >= 1 && d.weekday <= 5 && (d.hour >= window.morning[0] && d.hour < window.morning[1] || d.hour >= 16 && d.hour < 19)) return true;
     if (time >= end) break;
   }
   return false;
@@ -90,6 +101,12 @@ export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null
   if (leg.mode !== "transit" || !leg.departure || !Number.isFinite(leg.departure.getTime())) return null;
   const category = norm(leg.category), operator = norm(leg.operator);
   if (["EV", "SEV"].includes(category) || /replacement|ersatz|remplacement/i.test(`${leg.service} ${leg.serviceName ?? ""}`)) return null;
+  if (["SZU", "SZU-SZU", "SIHLTAL ZÜRICH UETLIBERG BAHN"].includes(operator)
+    && /^S\s*10$/.test(norm(leg.service)) && leg.from !== leg.to
+    && [leg.from, leg.to].some(name => /^(Uetliberg|Ringlikon)$/.test(name ?? "")))
+    return { permission: "prohibited", reservation: "not-required", ticket: "required",
+      source: { title: "ZVV: Uitikon Waldegg–Uetliberg bicycle restriction", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-27" },
+      instructions: ["Unfolded bicycles cannot be carried between Uitikon Waldegg and Uetliberg. This rule does not prohibit travel on the lower part of S10 or on S12."] };
   if (sobMainlineRule(leg)) return { permission: "allowed", reservation: "not-required", ticket: "required", source: SOB_BICYCLES,
     instructions: ["Use a bicycle ticket or pass and the designated bicycle compartment. Load and unload the bicycle yourself.",
       "Bicycle spaces on these SOB services cannot be reserved. Carriage depends on space."] };
@@ -110,9 +127,9 @@ export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null
   // Missing regional geography must not create an overbroad permission default.
   const possiblePeakRestriction = ["S", "RE"].includes(category) && overlapsRegionalPeak(leg);
   return { permission: possiblePeakRestriction ? "unknown" : "allowed", ticket: "required",
-    reservation: sbbIcReservation(leg), source: { ...SBB_IR_BICYCLES, title: "SBB bicycle carriage and reservation calendar", checked: "2026-09-25" },
+    reservation: sbbIcReservation(leg), source: { ...SBB_IR_BICYCLES, title: "SBB bicycle carriage and reservation calendar", checked: "2026-09-27" },
     instructions: ["Carry a bicycle ticket or pass as well as your passenger ticket or travelcard. Your adult GA does not include bicycle carriage.",
       "Load and unload the bicycle yourself. Use the marked bicycle area, remove bulky luggage and keep doors clear.",
-      ...(possiblePeakRestriction ? ["Regional peak-hour restrictions may apply. Check the bicycle symbol for this dated departure."] : []),
+      ...(possiblePeakRestriction ? [regionalBicycleWindow(leg).label + ": limited weekday bicycle carriage in the morning and 16:00–19:00. Missing dated permission remains unknown, not prohibited."] : []),
       ...(sbbIcReservation(leg) === "required" ? ["Reserve the bicycle place before departure in SBB Mobile or on SBB.ch. Follow the coach number on the reservation."] : [])] };
 }
