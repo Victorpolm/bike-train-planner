@@ -1,0 +1,32 @@
+name: OJP fare ten random journeys
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/ojp-fare-run.json]
+permissions:
+  contents: read
+concurrency:
+  group: ojp-fare-probe
+  cancel-in-progress: false
+jobs:
+  fares:
+    if: github.repository == 'Victorpolm/bike-train-planner' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Fetch ten random journey fares
+        env:
+          OJP_FARE_API_KEY: ${{ secrets.OJP_FARE_API_KEY }}
+          OJP_API_KEY: ${{ secrets.OJP_API_KEY }}
+        run: python3 prototype-v0/scripts/ojp_fare_probe.py prototype-v0/evaluation-output/fares
+      - name: Preserve completed checks even after failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ojp-fares-${{ github.run_id }}-${{ github.run_attempt }}
+          path: prototype-v0/evaluation-output/fares/
+          retention-days: 30
