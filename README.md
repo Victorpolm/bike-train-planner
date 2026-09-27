@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**Documentation review (27 September 2026):** [Reported fare, S12 permission and cycling-path problems](docs/USER_REVIEW_2026-09-27.md), with confirmed implementation gaps, unresolved observations and proposed Fastest / Simplest / Lower traffic stress preferences. Documentation only; application behaviour and publication are unchanged. The current bicycle day-pass option is not a verified cheapest fare.
+
 **Latest source update (25 September 2026):** Date-aware train bicycle rules, ticket/reservation prices, full fare/Half Fare/GA preferences, official bicycle parking and a 60-second search deadline. A national GTFS service and Swiss OSM audit are implemented as local pilots; they are not a production replacement for live routing. [Implementation and remaining gates](docs/SWISS_IMPLEMENTATION.md) · [GPX recording guide](docs/GPX_RECORDING.md) · [tests and dated results](docs/EXPERIMENTS.md).
 
 Journey cards now show the supported bicycle price directly below the boarding count, with passenger fares and unconfirmed charges kept explicit. [Named-place search](docs/PLACE_SEARCH.md) adds Swiss venues and landmarks: “fortyseven baden” selects the bath at Grosse Bäder 1, with its actual coordinates.

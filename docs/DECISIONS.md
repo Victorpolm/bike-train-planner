@@ -359,3 +359,11 @@ Download/audit Swiss OSM coverage and the three pilot station surroundings; reta
 Show the supported bicycle ticket/reservation option below the boarding count on every collapsed journey card. Use the existing date/operator-scoped fare calculation and the selected Full Fare/Half Fare/GA/annual-bike-pass profile. Distinguish known bicycle cost, separately priced passenger tickets, unconfirmed charges and prohibited carriage. A zero additional cost requires applicable existing passes; cycling-only shows zero public-transport cost. Do not invent a live total fare.
 
 Add Swiss named-place search with Photon/OpenStreetMap alongside existing address and station lookups. This resolves the coordinate-less FORTYSEVEN Transport API result without hardcoding a venue. Rank the whole result pool before truncating, and require the complete typed query to match before automatically selecting a destination. A partial Baden town match cannot silently replace FORTYSEVEN Baden. Preserve cancellation, independent updates and public-provider rate limits; no new paid host is needed. See PLACE_SEARCH.md.
+
+## 2026-09-27 — Document user quality review before implementation
+
+The user requests documentation only for missing/incorrect fares, reported S12 bicycle exclusions and proposed Fastest / Simplest / Safest cycling choices. Record findings and future acceptance checks in [USER_REVIEW_2026-09-27.md](USER_REVIEW_2026-09-27.md); do not change application behaviour or deploy in this turn.
+
+The review distinguishes confirmed fare limitations and a broad regional uncertainty rule from the unreproduced original CHF 17/S12 results. The proposed fare presentation separates passenger, cheapest valid bicycle product and reservation. Proposed cycling preferences remain separate from rider pace and journey ranking; Lower traffic stress is suggested wording for the requested safety preference, without claiming objective safety. Numerical weights and detour allowances are still open. Preserve the earlier request to distinguish cycling, pushing and carrying.
+
+Keep the Site owner-private and require approval before hosting spend. Keep residential addresses, private trace geometry and secrets out of the public repository. This documentation update does not approve a new provider or paid service.

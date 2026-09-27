@@ -2,6 +2,8 @@
 
 _Implemented 2026-09-20; rider profiles and timing updated 2026-09-24. Own-bicycle, Switzerland-first prototype._
 
+**27 September documentation review:** [User journey findings and proposed route preferences](USER_REVIEW_2026-09-27.md) specifies Fastest, Simplest and Lower traffic stress alternatives and preserves the requested cycling/pushing/carrying distinctions. These are not implemented. The current geometry still comes from one trekking-profile route per directed pair, with the fallback and timing limits described below.
+
 ## What changed
 
 **Decision:** Use BRouter's existing cycling engine for the road layer while retaining the current experimental public-transport adapter and Baseline/Extended comparison. This is an incremental road-routing integration, not an OpenTripPlanner deployment or a claim of nationwide multimodal optimality.

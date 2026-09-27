@@ -1,6 +1,12 @@
 # Project state
 
-_Last consolidated: 2026-09-25. Source implementation and publication status are distinct._
+_Last consolidated: 2026-09-27. Source implementation and publication status are distinct._
+
+## 27 September user review — documentation only
+
+[Fare, S12 permission and cycling-path review](USER_REVIEW_2026-09-27.md) records the latest reported journeys and proposed corrections. Current fares do not compare reduced bicycle route tickets with the day pass; numeric passenger quotes remain absent. CHF 17 can arise from a CHF 15 pass plus CHF 2 reservation, but the reported itinerary's reservation requirement is unverified. The regional S/RE uncertainty window is too broad for a region-specific rule and does not itself explain a prohibited S12 result. The exact dated S12 evidence remains to be captured.
+
+Cycling still selects one BRouter trekking route, with local pace/elevation timing and an OSRM fallback. Fastest, Simplest and Lower traffic stress preferences, plus complete cycling/pushing/carrying classification, are documented proposals. This update changes no application code or publication. Five synthetic function probes and official-source checks support the review; they do not reproduce the user's original journeys. The last verified private publication remains version 20 below.
 
 ## 25 September card prices and named destinations
 
