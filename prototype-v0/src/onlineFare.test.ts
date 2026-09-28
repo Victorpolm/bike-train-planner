@@ -64,6 +64,21 @@ it("matches all service times and stops, including legacy-ID cross-provider evid
   assert.equal(matchingFareTrip([trip], shifted), undefined);
   assert.equal(matchingFareTrip([trip], trip.segments.slice(1)), undefined);
 });
+it("matches Zürich HB entrance and OJP platform centroids without relaxing itinerary times or station names", () => {
+  const t = fareTrips(fixture("08", "trip"))[0], expected = structuredClone(t.segments);
+  const board = expected.find(s => s.fromName === "Zürich HB")!;
+  board.from = "8503000";
+  board.fromPoint = { lat: 47.377847, lon: 8.540502 }; // Actual search.ch route result, over 300 m from OJP.
+  assert.ok(matchingFareTrip([t], expected));
+  board.fromName = "Zürich, Bahnhofplatz/HB";
+  assert.equal(matchingFareTrip([t], expected), undefined);
+  board.fromName = "Zürich HB"; board.fromPoint.lon += .01;
+  assert.equal(matchingFareTrip([t], expected), undefined);
+  board.fromPoint.lon -= .01; board.departure = new Date(Date.parse(board.departure) + 60000).toISOString();
+  assert.equal(matchingFareTrip([t], expected), undefined);
+  board.departure = t.segments[1].departure; board.journeyRef = "another-train";
+  assert.equal(matchingFareTrip([t], expected), undefined);
+});
 it("rejects partial products, wrong currency, proto-products, XML entities and missing prices", () => {
   const raw = quoteXml("01", "full");
   for (const altered of [raw.replaceAll("<ns2:ToLegIdRef>3", "<ns2:ToLegIdRef>1"), raw.replaceAll("CHF", "EUR"),
@@ -113,4 +128,16 @@ it("never uses a quote for a route with an intermediate cycling break or grants 
   assert.equal(result.passengerChf, 32.6); assert.equal(result.bikeChf, 15);
   assert.equal(result.minimumVerified, false); assert.equal(leg.bicycleEvidence, undefined);
   assert.match(fareCardSummary([leg], DEFAULT_FARE_PROFILE, online).detail, /test fare estimate/);
+});
+it("keeps fare requests small and stable when graph stops carry cycling geometry", () => {
+  const station = { lat: 47.377847, lon: 8.540502, cyclingRoute: { fetchedAt: 100,
+    points: Array.from({ length: 500 }, () => ({ lat: 47.37, lon: 8.54, elevationM: 400 })) } };
+  const leg: TransitLeg = { mode: "transit", from: "Zürich HB", to: "Bern", fromId: "8503000", toId: "8507000",
+    fromPoint: station, toPoint: { lat: 46.948823, lon: 7.439123 }, departure: new Date("2026-09-29T08:31:00Z"),
+    arrival: new Date("2026-09-29T09:28:00Z"), departurePlatform: null, arrivalPlatform: null,
+    service: "IC 1", serviceName: null, direction: null };
+  const before = JSON.stringify(fareQuery([leg], DEFAULT_FARE_PROFILE));
+  assert.ok(before.length < 1000); assert.ok(!before.includes("cyclingRoute"));
+  station.cyclingRoute.fetchedAt++;
+  assert.equal(JSON.stringify(fareQuery([leg], DEFAULT_FARE_PROFILE)), before);
 });

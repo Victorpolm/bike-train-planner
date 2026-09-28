@@ -65,10 +65,12 @@ export function matchingFareTrip(trips: FareTrip[], expected: FareSegment[]): Fa
   const sameStop = (a: FareSegment, b: FareSegment, role: "from" | "to") => {
     if (a[role] === b[role]) return true;
     const ap = a[`${role}Point`], bp = b[`${role}Point`];
-    // Legacy stop IDs and SLOIDs are not interchangeable. Require independent
-    // name, coordinate and timetable agreement instead of inventing a mapping.
+    // Legacy stop IDs and SLOIDs are not interchangeable. Require the same
+    // station name and every scheduled service time. Large stations have
+    // entrances/platform centroids over 300 m apart (observed at Zürich HB).
+    // This is a station identity bound, not a walking/cycling connector limit.
     return !!ap && !!bp && !!name(a[`${role}Name`]) && name(a[`${role}Name`]) === name(b[`${role}Name`])
-      && Math.hypot((ap.lat - bp.lat) * 111320, (ap.lon - bp.lon) * 76000) <= 150;
+      && Math.hypot((ap.lat - bp.lat) * 111320, (ap.lon - bp.lon) * 76000) <= 500;
   };
   return trips.find(t => t.segments.length === expected.length && t.segments.every((s, i) => {
     const e = expected[i];

@@ -2,16 +2,11 @@ import { useEffect, useState } from "react";
 import { fareQuery, type OnlineFare } from "./onlineFare.ts";
 import type { TransitLeg } from "./routing.ts";
 import { fareSummary, type FareProfile } from "./fares.ts";
+import { fetchJson, HttpError } from "./http.ts";
 
 type State = { quote?: OnlineFare; message: string };
 const cache = new Map<string, { expires: number; promise: Promise<State> }>();
 let queue: Promise<unknown> = Promise.resolve();
-let status: { expires: number; promise: Promise<boolean> } | undefined;
-async function connected() {
-  if (!status || status.expires <= Date.now()) status = { expires: Date.now() + 30000,
-    promise: fetch("/api/fares/status", { signal: AbortSignal.timeout(5000) }).then(async r => r.ok && (await r.json()).available === true).catch(() => false) };
-  return status.promise;
-}
 export function useOnlineFare(legs: TransitLeg[], profile: FareProfile): State {
   const query = fareQuery(legs, profile), prohibited = fareSummary(legs, profile).prohibited;
   const key = query && !prohibited && !(profile.passenger === "ga" && profile.annualBikePass) ? JSON.stringify(query) : "";
@@ -22,18 +17,20 @@ export function useOnlineFare(legs: TransitLeg[], profile: FareProfile): State {
     let entry = cache.get(key);
     if (!entry || entry.expires <= Date.now()) {
       const promise = queue.then(async (): Promise<State> => {
-        if (!await connected()) return { message: "Online fares are not connected yet." };
         try {
-          const response = await fetch("/api/fares/quote", { method: "POST", headers: { "Content-Type": "application/json" },
-            body: key, signal: AbortSignal.timeout(60000) });
-          if (!response.ok) return { message: "Online fare unavailable; operator quote needed." };
-          const quote = await response.json() as OnlineFare;
+          // The quote endpoint itself reports missing configuration. A separate
+          // five-second status check used to suppress valid, slower requests.
+          const quote = await fetchJson<OnlineFare>("/api/fares/quote", undefined, 60000, fetch,
+            { method: "POST", headers: { "Content-Type": "application/json" }, body: key });
           return { quote, message: quote.passenger || quote.bicycle ? "OJP test fare estimate · confirm before purchase" : quote.reason ?? "No online fare returned." };
-        } catch { return { message: "Online fare unavailable; operator quote needed." }; }
+        } catch (error) { return { message: error instanceof HttpError && error.status === 503
+          ? "Online fares are not connected yet." : "Online fare unavailable; operator quote needed." }; }
       });
       queue = promise.catch(() => {});
       if (cache.size >= 64) cache.delete(cache.keys().next().value!);
       entry = { expires: Date.now() + 300000, promise }; cache.set(key, entry);
+      const current = entry;
+      void promise.then(value => { current.expires = Date.now() + (value.quote?.passenger || value.quote?.bicycle ? 300000 : 30000); });
     }
     entry.promise.then(value => { if (active) setState({ ...value, key }); });
     return () => { active = false; };

@@ -48,7 +48,7 @@ export function addStationboard(network: Network, journeys: BoardJourney[]): num
     const time = stopTime(departure, "departure");
     if (!departure || !time) { rejected++; continue; }
     const arrival = [...(journey.passList ?? [])].reverse().find(s => {
-      const t = stopTime(s, "arrival"); return t && t > time;
+      const t = stopTime(s, "arrival"); return t && t > time && readStop(s.station);
     });
     if (arrival) rejected += addSections(network, [{ departure, arrival, journey }]);
     else rejected++;

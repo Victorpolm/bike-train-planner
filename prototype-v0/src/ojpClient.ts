@@ -2,12 +2,16 @@ import { haversineKm, type TransitLeg } from "./routing.ts";
 import type { BicycleEvidence } from "./bicyclePermission.ts";
 import type { Network, Stop } from "./model.ts";
 import type { OjpConnections, OjpDetails, OjpReference, OjpStop } from "./ojp.ts";
+import { fetchJson } from "./http.ts";
 
 const SOURCE = "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/";
 const normalize = (s: string) => s.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
 export function addOjpConnections(network: Network, data: OjpConnections) {
   const stop = (s: OjpStop): Stop => {
-    const existing = network.stops.get(s.id) ?? [...network.stops.values()].find(n => normalize(n.name) === normalize(s.name) && haversineKm(n, s) <= .25);
+    // Provider centroids can represent different platforms of the same large
+    // station. Reuse the discovered station node, retaining OJP's exact service
+    // and platform references on the leg. Road connector limits stay unchanged.
+    const existing = network.stops.get(s.id) ?? [...network.stops.values()].find(n => normalize(n.name) === normalize(s.name) && haversineKm(n, s) <= .5);
     if (existing) return existing;
     network.stops.set(s.id, s); return s;
   };
@@ -51,8 +55,8 @@ export class OjpClient {
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch) { this.signal = signal; this.fetcher = fetcher; }
   static async connect(signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<OjpClient | null> {
     try {
-      const r = await fetcher("/api/ojp/status", { signal: AbortSignal.any([signal, AbortSignal.timeout(5000)]), credentials: "same-origin" });
-      if (r.ok && (await r.json()).available === true) return new OjpClient(signal, fetcher);
+      const status = await fetchJson<{ available: boolean }>("/api/ojp/status", signal, 15_000, fetcher);
+      if (status.available === true) return new OjpClient(signal, fetcher);
     } catch { signal.throwIfAborted(); }
     return null;
   }
@@ -62,10 +66,8 @@ export class OjpClient {
     if (this.unavailable || !claim(2)) return Promise.resolve(null);
     const task = (async () => {
       try {
-        const r = await this.fetcher("/api/ojp/connections", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body), signal: AbortSignal.any([this.signal, AbortSignal.timeout(35_000)]), credentials: "same-origin" });
-        if (!r.ok) throw new Error("OJP unavailable");
-        const data = await r.json() as OjpConnections;
+        const data = await fetchJson<OjpConnections>("/api/ojp/connections", this.signal, 35_000, this.fetcher,
+          { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
         if (!Array.isArray(data.legs) || !data.checked || !Array.isArray(data.warnings)) throw new Error("Invalid OJP result");
         data.warnings.forEach(w => this.warnings.add(w));
         return data;
@@ -86,10 +88,8 @@ export function checkOjpTripInfo(ref: OjpReference): Promise<OjpDetails> {
   const key = JSON.stringify(body), cached = detailCache.get(key);
   if (cached && cached.expires > Date.now()) return cached.promise;
   const promise = (async () => {
-    const response = await fetch("/api/ojp/tripinfo", { method: "POST", headers: { "Content-Type": "application/json" },
-      credentials: "same-origin", body: key, signal: AbortSignal.timeout(20_000) });
-    if (!response.ok) throw new Error("The latest service details could not be checked.");
-    return await response.json() as OjpDetails;
+    return await fetchJson<OjpDetails>("/api/ojp/tripinfo", undefined, 20_000, fetch,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: key });
   })();
   if (detailCache.size >= 64) detailCache.delete(detailCache.keys().next().value!);
   detailCache.set(key, { expires: Date.now() + 5 * 60_000, promise });

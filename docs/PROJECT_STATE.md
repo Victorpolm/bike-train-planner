@@ -2,7 +2,11 @@
 
 _Last consolidated: 2026-09-28. Source implementation and publication status are distinct._
 
-## 28 September hosted OJP activation
+## 28 September route-price correction
+
+Private version 28 fixes the reported Zürich–Bern and Zürich–Laax missing passenger fares. Both failures were reproduced through the planner; the provider station centroids disagreed by more than the old matching allowance. Corrected station identity in fares and graph insertion, allowed slower OJP status replies, removed the redundant fare-status gate and kept fare payloads compact/stable. Fresh live searches return passenger CHF 36.20 and CHF 44.60 respectively for the documented 29 September departures. These remain OJP test estimates. Malformed stationboard tails now retain valid exits; least-cycling cards show their time allowance. 195 tests and production builds pass. Search exploration still hit its 90-second limit; browser interaction and the four-versus-eight-pair experiment remain unverified. [Evidence and publication](OJP_ROUTE_FARES_2026-09-28.md).
+
+## 28 September hosted OJP activation (earlier publication)
 
 Both Site secrets are configured and private version 26 uses environment revision 3. A hosted request failure caused by `redirect: "error"` was fixed with manual redirect rejection. Live OJP journey retrieval and full/Half Fare passenger plus bicycle quotes succeed; prices remain OJP test estimates. The client-generated Zürich-Bern fare request also succeeded. 188 app tests and production builds pass. [Deployment, exact checks and review conclusions](OJP_ACTIVATION_2026-09-28.md). The review's stationboard defect, category qualification and sampling comparison remain follow-up work, unchanged by this activation patch.
 

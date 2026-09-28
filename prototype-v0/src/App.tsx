@@ -40,8 +40,8 @@ function CyclingCard({ comparison, selected, start, maxBikeMinutes, fastest, onS
   </button>;
 }
 
-function JourneyCard({ proposal, selected, expanded, planId, comparison, fareProfile, onSelect }: {
-  proposal: ScopedProposal; selected: boolean; expanded: boolean; planId: string; comparison: CyclingComparison | null; fareProfile: FareProfile; onSelect: () => void;
+function JourneyCard({ proposal, selected, expanded, planId, comparison, fareProfile, extraTimeMinutes, onSelect }: {
+  proposal: ScopedProposal; selected: boolean; expanded: boolean; planId: string; comparison: CyclingComparison | null; fareProfile: FareProfile; extraTimeMinutes: number; onSelect: () => void;
 }) {
   const { journey: j, wins } = proposal;
   const sameWins = wins.length > 1 && wins.every(win => JSON.stringify(win.categories) === JSON.stringify(wins[0].categories)
@@ -54,6 +54,7 @@ function JourneyCard({ proposal, selected, expanded, planId, comparison, farePro
     onClick={onSelect} aria-expanded={expanded} aria-controls={planId}>
     {(sameWins ? wins.slice(0, 1) : wins).map(win => <span className={`scope-win scope-${win.scope}`} key={win.scope}>
       <span className="category-badges">{win.categories.map(c => <span key={c}>{c === "Fastest" ? "Fastest with transit" : c}</span>)}</span>
+      {win.categories.some(c => c.startsWith("Least cycling or walking")) && <span className="comparison-caution">Among journeys up to {extraTimeMinutes} minutes longer than the fastest in this group.</span>}
       {win.extraMinutes > 0 && <span className="tradeoff">{formatMinutes(win.extraMinutes)} longer than the fastest in this group</span>}
     </span>)}
     {busSummary && <span className={`journey-permission permission-${prohibited ? "prohibited" : verified ? "confirmed" : "uncertain"}`}>{busSummary}</span>}
@@ -383,7 +384,7 @@ export default function App() {
             ? "Finding a route along roads and paths…" : "A complete cycling route is unavailable. No straight-line route has been substituted."}</p></div>}
           {proposals.map((proposal, index) => {
           const j = proposal.journey, expanded = expandedId === j.id, planId = `journey-plan-${index}`;
-          return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id}
+          return <div key={j.id} className="journey-option"><JourneyCard proposal={proposal} selected={selected?.id === j.id} extraTimeMinutes={session!.options.extraTimeMinutes}
             expanded={expanded} planId={planId} comparison={cyclingReference} fareProfile={fareProfile} onSelect={() => { setSelectedId(j.id); setExpandedId(expanded ? null : j.id); setCycleFocus(null); }} />
             {expanded && <JourneyPlan fareProfile={fareProfile} id={planId} journey={j} origin={session.origin} destination={session.destination}
               onEvidence={(leg, evidence) => {

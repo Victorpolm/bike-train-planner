@@ -1,6 +1,6 @@
 # Website access and development
 
-**Current publication:** Private version 26 was deployed on 28 September 2026 at 07:45:31 UTC with environment revision 3. Both OJP secrets are active, and live journey and fare requests succeed. [Verified requests, runtime fix and limitations](OJP_ACTIVATION_2026-09-28.md).
+**Current publication:** Private version 28 was deployed on 28 September 2026 at 08:55:11 UTC with environment revision 3. Both OJP secrets are active. The reported Zürich–Bern and Zürich–Laax passenger-price failures were reproduced and corrected through the planner's route-to-fare flow. [Exact checks, station corrections and limitations](OJP_ROUTE_FARES_2026-09-28.md).
 
 ## Open the private website
 
@@ -47,7 +47,7 @@ The app uses real road-following cycling and estimated durations. One bicycle-ac
 
 ## Runtime secret
 
-`OJP_API_KEY` and `OJP_FARE_API_KEY` are configured as secrets in this Site's runtime environment as of 28 September. GitHub Actions has separately stored test keys; it does not automatically configure the hosted Site. Never expose keys through workflow artifacts or the frontend. After changing Site secrets, redeploy a saved version to apply the new environment revision. The application checks configuration status before selecting each integration; status alone is not an authenticated provider health check. Public search.ch timetable data remains the fallback.
+`OJP_API_KEY` and `OJP_FARE_API_KEY` are configured as secrets in this Site's runtime environment as of 28 September. GitHub Actions has separately stored test keys; it does not automatically configure the hosted Site. Never expose keys through workflow artifacts or the frontend. After changing Site secrets, redeploy a saved version to apply the new environment revision. OJP routing checks configuration before selecting the provider; fares request a quote directly. Status alone is not an authenticated provider health check. Public search.ch timetable data remains the fallback.
 
 ## 25 September publication (historical)
 

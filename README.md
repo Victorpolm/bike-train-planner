@@ -1,6 +1,6 @@
 # Bike + Train Journey Planner
 
-**OJP active on the website (28 September 2026):** Both Site secrets are configured. A hosted redirect-mode defect was fixed; live OJP journeys and numeric passenger/bicycle fare estimates now succeed. [Activation evidence and remaining limits](docs/OJP_ACTIVATION_2026-09-28.md). Private version 26 is deployed; 188 app tests and production builds pass. Prices remain explicitly labelled OJP test estimates.
+**Route-price correction (28 September 2026):** Zürich–Bern and Zürich–Laax now return numeric passenger fares through the planner. Fixed cross-provider station identity, short configuration-check timeouts and oversized fare payloads; also corrected malformed stationboard tails and clarified the least-cycling category's time allowance. [Exact route checks and limits](docs/OJP_ROUTE_FARES_2026-09-28.md). Private version 28 is deployed; 195 app tests and production builds pass. Prices remain explicitly labelled OJP test estimates.
 
 **Earlier fare validation (27 September 2026):** [Ten live random fare checks](docs/OJP_FARE_RESULTS_2026-09-27.md) returned passenger quotes for 10/10 journeys and bicycle quotes for 9/10.
 

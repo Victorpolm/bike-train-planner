@@ -16,8 +16,12 @@ export function fareQuery(legs: TransitLeg[], profile: FareProfile): FareQuery |
   if (first < 0 || legs.slice(first, last + 1).some(l => l.mode === "bike" || l.mode === "unknown")) return null;
   const transit = legs.filter(l => l.mode === "transit");
   if (transit.length > 8 || transit.some(l => !l.fromId || !l.toId || !l.departure || !l.arrival)) return null;
+  // Graph stops may also contain complete cycling routes and cache timestamps.
+  // Send only coordinates: the extra data exceeded the server's request limit
+  // and changed quote cache keys whenever station access was refined.
+  const point = (p: TransitLeg["fromPoint"]) => p ? { lat: p.lat, lon: p.lon } : undefined;
   return { segments: transit.map(l => ({ from: l.fromId!, to: l.toId!, departure: l.departure!.toISOString(),
     arrival: l.arrival!.toISOString(), fromName: l.from ?? undefined, toName: l.to ?? undefined,
-    fromPoint: l.fromPoint, toPoint: l.toPoint, ...(l.ojp ? { journeyRef: l.ojp.journeyRef } : {}) })),
+    fromPoint: point(l.fromPoint), toPoint: point(l.toPoint), ...(l.ojp ? { journeyRef: l.ojp.journeyRef } : {}) })),
     passenger: profile.passenger, bicycle: !profile.annualBikePass };
 }

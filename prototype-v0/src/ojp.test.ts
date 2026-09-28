@@ -19,6 +19,36 @@ const request = (path = "connections", data: unknown = body, origin?: string) =>
 });
 
 describe("recorded Swiss OJP bicycle evidence", () => {
+  it("connects OJP platform centroids to the selected large station while preserving service identity", () => {
+    const network = emptyNetwork();
+    const zurich = { id: "8503000", name: "Zürich HB", lat: 47.3781762, lon: 8.54021154 };
+    const bern = { id: "8507000", name: "Bern", lat: 46.94883109, lon: 7.43912853 };
+    network.stops.set(zurich.id, zurich); network.stops.set(bern.id, bern);
+    const input = structuredClone(parseOjpConnections(fixture("rail-off"), false).find(l => l.reference)!);
+    input.from = { id: "ch:1:sloid:3000", name: "Zürich HB", lat: 47.37846, lon: 8.53672 };
+    input.to = { id: "ch:1:sloid:7000", name: "Bern", lat: 46.94856, lon: 7.43714 };
+    addOjpConnections(network, { legs: [input], checked, warnings: [] });
+    const edge = [...network.edges.values()][0];
+    assert.equal(edge.from, zurich.id); assert.equal(edge.to, bern.id);
+    assert.deepEqual(edge.leg.ojp, input.reference);
+    input.from = { ...input.from, id: "another-stop", name: "Zürich, Bahnhofplatz/HB" };
+    addOjpConnections(network, { legs: [input], checked, warnings: [] });
+    assert.ok(network.stops.has("another-stop"));
+    input.from = { ...input.from, id: "farther-stop", name: "Zürich HB", lon: 8.52 };
+    addOjpConnections(network, { legs: [input], checked, warnings: [] });
+    assert.ok(network.stops.has("farther-stop"));
+  });
+  it("keeps OJP connected when the hosted status check takes longer than five seconds", async () => {
+    const signal = new AbortController().signal;
+    const client = await OjpClient.connect(signal, async (_url, init) => {
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(resolve, 5200);
+        init?.signal?.addEventListener("abort", () => { clearTimeout(timer); reject(init.signal!.reason); }, { once: true });
+      });
+      return Response.json({ available: true });
+    });
+    assert.ok(client);
+  });
   it("keeps prohibited boat services only in the unrestricted graph", () => {
     assert.ok(boatOff.some(l => l.rule?.permission === "prohibited"));
     assert.ok(!boatOn.some(l => l.rule?.permission === "prohibited"));

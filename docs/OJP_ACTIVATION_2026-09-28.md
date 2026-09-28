@@ -1,5 +1,7 @@
 # Hosted OJP and fare activation
 
+**Follow-up:** The later user-reported Zürich–Bern/Zürich–Laax route-price failures were reproduced and corrected in [private version 28](OJP_ROUTE_FARES_2026-09-28.md). That follow-up also implements the parser and category-label corrections below. This report preserves the earlier version-26 activation evidence.
+
 28 September 2026. Both `OJP_API_KEY` and `OJP_FARE_API_KEY` are now configured as secrets in the existing private Site. Environment revision 3 is deployed. Authenticated journey and fare requests succeed on the hosted application. No credential was copied from GitHub, printed, returned to the browser or committed.
 
 ## Failure found and corrected

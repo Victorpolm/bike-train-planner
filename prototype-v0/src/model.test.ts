@@ -205,6 +205,17 @@ describe("category selection", () => {
 });
 
 describe("recorded timetable normalization", () => {
+  it("retains every usable stationboard exit when the final stop is malformed", () => {
+    const point = (s: Stop, minutes: number) => ({ station: { id: s.id, name: s.name, coordinate: { x: s.lat, y: s.lon } },
+      arrival: time(minutes).toISOString(), departure: time(minutes + 1).toISOString() });
+    const [a, b, c, d] = stops.map((s, i) => point(s, 5 + i * 15));
+    for (const last of [{ ...d, station: null }, { ...d, station: { ...d.station, coordinate: null } }, { ...d, arrival: null }]) {
+      const n = emptyNetwork();
+      addStationboard(n, [{ category: "IC", number: "3", stop: a, passList: [a, b, c, last] }]);
+      assert.deepEqual([...n.edges.values()].map(e => e.to).sort(), ["B", "C"]);
+      assert.equal(solve(n, origin, { ...stops[2], label: "C" }, start, limits, "baseline").journeys[0].changes, 0);
+    }
+  });
   it("routes the recorded Zürich HB → Chur → Laax train, walk and bus itinerary", () => {
     const recorded = JSON.parse(readFileSync(new URL("./fixtures/zurich-laax-2026-09-05.json", import.meta.url), "utf8"));
     const n = emptyNetwork(); assert.equal(addSections(n, recorded.sections), 0);
