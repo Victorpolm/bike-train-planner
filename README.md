@@ -1,6 +1,8 @@
 # Bike + Train Journey Planner
 
-**OJP Fare (27 September 2026):** [Ten live random fare checks and the new adapter](docs/OJP_FARE_RESULTS_2026-09-27.md): passenger quotes succeeded for 10/10 journeys and bicycle quotes for 9/10. Estimates are explicitly labeled provider test data. The GitHub secret works; website activation still requires its own runtime secret.
+**OJP active on the website (28 September 2026):** Both Site secrets are configured. A hosted redirect-mode defect was fixed; live OJP journeys and numeric passenger/bicycle fare estimates now succeed. [Activation evidence and remaining limits](docs/OJP_ACTIVATION_2026-09-28.md). Private version 26 is deployed; 188 app tests and production builds pass. Prices remain explicitly labelled OJP test estimates.
+
+**Earlier fare validation (27 September 2026):** [Ten live random fare checks](docs/OJP_FARE_RESULTS_2026-09-27.md) returned passenger quotes for 10/10 journeys and bicycle quotes for 9/10.
 
 **Implementation update (27 September 2026):** [Swisstopo terrain checks, cycling preferences and fare corrections](docs/SWISSTOPO_AND_FARES_2026-09-27.md) now implement the approved follow-up to the user review. The app distinguishes riding, pushing and carrying, rejects unsuitable climbing passages, and compares Fastest / Simplest / Lower traffic stress candidates. Cards separate passenger, bicycle and reservation prices. Reviewed Zürich-area rail corridors have numeric standard fares; wider fare coverage remains incomplete. No swisstopo data upload is required.
 
@@ -8,7 +10,7 @@
 
 Journey cards now show the supported bicycle price directly below the boarding count, with passenger fares and unconfirmed charges kept explicit. [Named-place search](docs/PLACE_SEARCH.md) adds Swiss venues and landmarks: “fortyseven baden” selects the bath at Grosse Bäder 1, with its actual coordinates.
 
-Public search.ch bicycle conditions work without an API key. The existing OJP integration remains available when the Site's separate server secret is configured; GitHub Actions access is already verified. Remaining bicycle spaces and booking transactions remain outside scope.
+Public search.ch bicycle conditions work without an API key. The OJP integration is now active through the Site's separate server secrets; GitHub Actions keeps its own test credentials. Remaining bicycle spaces and booking transactions remain outside scope.
 
 Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.
 

@@ -1,5 +1,6 @@
 import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpConnections, parseOjpTripInfo,
   type OjpQuery, type OjpReference } from "../src/ojp.ts";
+import { providerFailure } from "./providerFailure.ts";
 
 export type OjpEnvironment = { OJP_API_KEY?: string };
 const ENDPOINT = "https://api.opentransportdata.swiss/ojp20";
@@ -49,17 +50,26 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
       if (pause) await new Promise(resolve => setTimeout(resolve, pause));
       lastCall = Date.now();
       const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15_000);
+      let phase = "request";
       try {
-        const response = await fetcher(ENDPOINT, { method: "POST", redirect: "error", signal: controller.signal,
+        // The hosted runtime rejects redirect:"error". Manual returns 3xx for
+        // rejection below, without forwarding the authorization header.
+        const response = await fetcher(ENDPOINT, { method: "POST", redirect: "manual", signal: controller.signal,
           headers: { Authorization: "Bearer " + key, "Content-Type": "application/xml", Accept: "application/xml" }, body: payload });
         if (!response.ok) {
+          console.warn("OJP upstream HTTP failure", response.status);
           if ([401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
           await response.body?.cancel();
           throw new Error("OJP request failed");
         }
+        phase = "response-body";
         const raw = await boundedText(response, MAX_RESPONSE);
         // Defence against an upstream diagnostic ever echoing credentials.
         return raw.split(key).join("[REDACTED]");
+      } catch (error) {
+        // Do not log exception messages, request bodies, headers or credentials.
+        console.warn("OJP upstream request failed", phase, providerFailure(error));
+        throw error;
       } finally { clearTimeout(timer); }
     });
     queue = task.catch(() => {});
@@ -101,7 +111,10 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
       // Do not cache failed filtered searches as a reusable complete response.
       if (!(data as { warnings?: string[] }).warnings?.length) cache.set(cacheKey, { expires: Date.now() + 5 * 60_000, data });
       return json(data);
-    } catch { return json({ error: "The bicycle information service could not complete this check. Permission remains unverified." }, 502); }
+    } catch {
+      console.warn("OJP journey or service check failed");
+      return json({ error: "The bicycle information service could not complete this check. Permission remains unverified." }, 502);
+    }
   };
 }
 

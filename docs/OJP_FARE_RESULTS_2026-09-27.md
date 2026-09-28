@@ -1,5 +1,7 @@
 # OJP Fare integration and ten random checks
 
+**28 September follow-up:** Both Site secrets are now configured and live hosted journey/fare requests succeed after a redirect-mode fix. [Activation evidence](OJP_ACTIVATION_2026-09-28.md) supersedes the activation-pending statements in this dated report.
+
 27 September 2026. The newly added **GitHub Actions** secret `OJP_FARE_API_KEY` successfully accesses OJP Fare 2.0. The Site runtime still has no environment entries. A repository secret is not automatically a website runtime secret, and stored GitHub secrets cannot be read back for transfer.
 
 ## Observed live results

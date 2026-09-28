@@ -11,6 +11,25 @@ import type { TransitLeg } from "./routing.ts";
 const fixture = (n: string, kind: string) => readFileSync(new URL(`./fixtures/fares-2026-09-27/${n}-${kind}.xml`, import.meta.url), "utf8");
 const quoteXml = (n: string, kind: string) => fixture(n, kind).replaceAll("fareprobe", "farequote");
 const trip = fareTrips(fixture("01", "trip"))[0];
+it("uses the host-supported redirect mode throughout the trip-to-fare exchange", async () => {
+  const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+  const xml = fixture("01", "trip").replaceAll("2026-09-29", day);
+  const query: FareQuery = { segments: fareTrips(xml)[0].segments, passenger: "full", bicycle: false };
+  const originalFetch = globalThis.fetch; let calls = 0;
+  let handler: ReturnType<typeof createFareHandler>;
+  try {
+    globalThis.fetch = async function (_input, options) {
+      if (options?.redirect === "error") throw new TypeError("Unsupported redirect mode: error");
+      assert.equal(options?.redirect, "manual"); calls++;
+      return new Response(String(options?.body).includes("<OJPTripRequest>") ? xml : quoteXml("01", "full"));
+    };
+    handler = createFareHandler(undefined, 0);
+  } finally { globalThis.fetch = originalFetch; }
+  const response = await handler(new Request("https://app.example/api/fares/quote", { method: "POST",
+    headers: { "Content-Type": "application/json" }, body: JSON.stringify(query) }), { OJP_FARE_API_KEY: "test-runtime-key" });
+  const result = await response.json();
+  assert.equal(result.status, "quoted"); assert.equal(result.passenger.chf, 32.6); assert.equal(calls, 2);
+});
 it("reads live full, HTA and class-independent bicycle prices without taking first-class or net prices", () => {
   assert.equal(parseFare(quoteXml("01", "full"), trip, "full")?.chf, 32.6);
   assert.equal(parseFare(quoteXml("01", "half-fare"), trip, "half-fare")?.chf, 18.6);

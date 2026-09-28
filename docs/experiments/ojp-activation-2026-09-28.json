@@ -1,0 +1,146 @@
+{
+  "checked": "2026-09-28",
+  "travel_date": "2026-09-29",
+  "price_environment": "test",
+  "site_version": 26,
+  "site_source": "24f3e32d8988090df18348153f63da67467b368c",
+  "deployment_id": "appgdep_6aba1b0afd8481918d2ba0cb676ac0e9",
+  "environment_revision": 3,
+  "secret_names": [
+    "OJP_API_KEY",
+    "OJP_FARE_API_KEY"
+  ],
+  "journey_check": {
+    "request": {
+      "from": {
+        "id": "8503000",
+        "name": "Zürich HB",
+        "lat": 47.378177,
+        "lon": 8.540192
+      },
+      "to": {
+        "id": "8507000",
+        "name": "Bern",
+        "lat": 46.948825,
+        "lon": 7.439122
+      },
+      "departure": "2026-09-29T10:00:00+02:00"
+    },
+    "http_status": 200,
+    "checked": "2026-09-28T07:46:06.194Z",
+    "normalized_leg_count": 9,
+    "warnings": []
+  },
+  "fare_checks": [
+    {
+      "label": "Chur to Luzern via Thalwil, full-fare adult",
+      "request": {
+        "segments": [
+          {
+            "from": "ch:1:sloid:9000",
+            "to": "ch:1:sloid:3202",
+            "fromName": "Chur",
+            "toName": "Thalwil",
+            "fromPoint": {
+              "lat": 46.85377,
+              "lon": 9.52943
+            },
+            "toPoint": {
+              "lat": 47.29582,
+              "lon": 8.56446
+            },
+            "departure": "2026-09-29T10:11:00Z",
+            "arrival": "2026-09-29T11:38:00Z",
+            "journeyRef": "ch:1:sjyid:100001:2370-002"
+          },
+          {
+            "from": "ch:1:sloid:3202",
+            "to": "ch:1:sloid:5000",
+            "fromName": "Thalwil",
+            "toName": "Luzern",
+            "fromPoint": {
+              "lat": 47.29582,
+              "lon": 8.56446
+            },
+            "toPoint": {
+              "lat": 47.04824,
+              "lon": 8.31044
+            },
+            "departure": "2026-09-29T11:45:00Z",
+            "arrival": "2026-09-29T12:25:00Z",
+            "journeyRef": "ch:1:sjyid:100001:2120-001"
+          }
+        ],
+        "passenger": "full",
+        "bicycle": true
+      },
+      "http_status": 200,
+      "response": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 33.4,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 25.5,
+          "productId": "40245",
+          "product": "Velobillett"
+        },
+        "checked": "2026-09-28T07:46:15.159Z",
+        "environment": "test"
+      }
+    },
+    {
+      "label": "Zürich HB to Bern, Half Fare adult; query produced by real client functions",
+      "request": {
+        "segments": [
+          {
+            "from": "ch:1:sloid:3000",
+            "to": "ch:1:sloid:7000",
+            "departure": "2026-09-29T08:06:00.000Z",
+            "arrival": "2026-09-29T09:24:00.000Z",
+            "fromName": "Zürich HB",
+            "toName": "Bern",
+            "fromPoint": {
+              "id": "ch:1:sloid:3000",
+              "name": "Zürich HB",
+              "lat": 47.37934,
+              "lon": 8.53687
+            },
+            "toPoint": {
+              "id": "ch:1:sloid:7000",
+              "name": "Bern",
+              "lat": 46.94921,
+              "lon": 7.43778
+            },
+            "journeyRef": "ch:1:sjyid:100001:2166-001"
+          }
+        ],
+        "passenger": "half-fare",
+        "bicycle": true
+      },
+      "http_status": 200,
+      "response": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 19.2,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 26.5,
+          "productId": "40245",
+          "product": "Velobillett"
+        },
+        "checked": "2026-09-28T07:47:32.687Z",
+        "environment": "test"
+      }
+    }
+  ],
+  "limits": [
+    "OJP test estimates, not verified purchase offers",
+    "Bicycle amounts are raw route tickets before applicable day-pass comparison",
+    "No browser interaction or complete door-to-door route audit"
+  ]
+}

@@ -93,6 +93,30 @@ describe("recorded Swiss OJP bicycle evidence", () => {
 });
 
 describe("server-only OJP boundary", () => {
+  it("uses the host-supported redirect mode for authenticated OJP requests", async () => {
+    const originalFetch = globalThis.fetch; let calls = 0;
+    let handler: ReturnType<typeof createOjpHandler>;
+    try {
+      globalThis.fetch = async function (_input, options) {
+        if (options?.redirect === "error") throw new TypeError("Unsupported redirect mode: error");
+        assert.equal(options?.redirect, "manual"); calls++;
+        return new Response(fixture("rail-off"));
+      };
+      handler = createOjpHandler(undefined, 0);
+    } finally { globalThis.fetch = originalFetch; }
+    const response = await handler(request(), { OJP_API_KEY: "test-runtime-key" });
+    assert.equal(response.status, 200); assert.equal(calls, 2);
+  });
+  it("rejects an upstream redirect without following it or returning provider diagnostics", async () => {
+    let calls = 0;
+    const handler = createOjpHandler(async (_url, options) => {
+      calls++; assert.equal(options?.redirect, "manual");
+      return new Response("sensitive-provider-diagnostic", { status: 307, headers: { Location: "https://other.example/" } });
+    }, 0);
+    const response = await handler(request(), { OJP_API_KEY: "test-runtime-key" });
+    assert.equal(response.status, 502); assert.equal(calls, 1);
+    assert.ok(!(await response.text()).includes("sensitive-provider-diagnostic"));
+  });
   it("does not send a request without a runtime secret", async () => {
     const handler = createOjpHandler(async () => { throw new Error("Must not fetch"); }, 0);
     assert.equal((await handler(request(), {})).status, 503);

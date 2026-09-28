@@ -1,5 +1,6 @@
 import { fareRequest, fareTripRequest, fareTrips, matchingFareTrip, parseFare } from "./fareProtocol.ts";
 import type { FareQuery, OnlineFare } from "../src/onlineFare.ts";
+import { providerFailure } from "./providerFailure.ts";
 
 export type FareEnvironment = { OJP_FARE_API_KEY?: string; OJP_API_KEY?: string };
 const FARE_ENDPOINT = "https://api.opentransportdata.swiss/ojpfare";
@@ -36,12 +37,21 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
       const pause = Math.max(0, pace - (Date.now() - lastCall));
       if (pause) await new Promise(resolve => setTimeout(resolve, pause)); lastCall = Date.now();
       const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
+      let phase = "request";
       try {
-        const response = await fetcher(endpoint, { method: "POST", redirect: "error", signal: controller.signal,
+        // Reject redirects explicitly; never forward credentials to a Location.
+        const response = await fetcher(endpoint, { method: "POST", redirect: "manual", signal: controller.signal,
           headers: { Authorization: "Bearer " + key, "Content-Type": "application/xml", Accept: "application/xml" }, body: xml });
-        if (!response.ok) { if ([401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
+        if (!response.ok) { console.warn("Fare upstream HTTP failure", endpoint === FARE_ENDPOINT ? "ojpfare" : "ojp20", response.status);
+          if ([401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
           await response.body?.cancel(); throw new Error("Fare service request failed"); }
+        phase = "response-body";
         return (await boundedText(response, 8_000_000)).split(key).join("[REDACTED]");
+      } catch (error) {
+        // Only a fixed exception category is safe to retain in operational logs.
+        console.warn("Fare upstream request failed", endpoint === FARE_ENDPOINT ? "ojpfare" : "ojp20",
+          phase, providerFailure(error));
+        throw error;
       } finally { clearTimeout(timer); }
     });
     queue = job.catch(() => {}); return job;
@@ -80,7 +90,10 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
         const complete = (query.passenger === "ga" || data.passenger) && (!query.bicycle || data.bicycle);
         data.status = complete ? "quoted" : data.passenger || data.bicycle ? "partial" : "unavailable";
         if (!complete) data.reason = "No eligible fare covering the whole transit itinerary was returned for every traveller.";
-      } catch { data.reason = "The online fare service could not complete this check."; }
+      } catch {
+        console.warn("Fare itinerary lookup failed");
+        data.reason = "The online fare service could not complete this check.";
+      }
       return data;
     })();
     pending.set(id, work);

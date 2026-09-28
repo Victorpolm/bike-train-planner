@@ -1,8 +1,12 @@
 # Project state
 
-_Last consolidated: 2026-09-27. Source implementation and publication status are distinct._
+_Last consolidated: 2026-09-28. Source implementation and publication status are distinct._
 
-## 27 September fare integration diagnosis
+## 28 September hosted OJP activation
+
+Both Site secrets are configured and private version 26 uses environment revision 3. A hosted request failure caused by `redirect: "error"` was fixed with manual redirect rejection. Live OJP journey retrieval and full/Half Fare passenger plus bicycle quotes succeed; prices remain OJP test estimates. The client-generated Zürich-Bern fare request also succeeded. 188 app tests and production builds pass. [Deployment, exact checks and review conclusions](OJP_ACTIVATION_2026-09-28.md). The review's stationboard defect, category qualification and sampling comparison remain follow-up work, unchanged by this activation patch.
+
+## 27 September fare integration diagnosis (historical)
 
 [OJP Fare implementation and ten live checks](OJP_FARE_RESULTS_2026-09-27.md): the new GitHub Actions fare key works. Full/Half Fare quotes succeeded for 10/10 sampled Swiss journeys and bicycle quotes for 9/10; one NOVA bicycle error remains explicit. Server fare requests and asynchronous journey-card estimates are implemented and 185 tests pass. Quotes are marked beta/test estimates. Site runtime activation still requires its own OJP_FARE_API_KEY binding; GitHub secrets are not transferred or exposed. Owner-private Site version 22 was published at 16:12:28 UTC with environment revision 0. See the report for actual sampled locations.
 
@@ -62,7 +66,7 @@ Every transit leg now displays permission, a bike ticket/pass requirement and a 
 
 **Public carriage data active:** The keyless search.ch connection feed exposes dated `VN` (prohibited), `VR` (bike reservation required), and `VB` (limited-space carriage) symbols omitted by Transport API connection objects. These are interpreted for exact segments, including timed train exits. Passenger/group reservation symbols do not count as bike reservations. Reviewed domestic SBB IR and SOB mainline rules provide narrowly applicable defaults with separate source links; explicit bans and reservation conflicts take precedence. Ordinary reviewed ZVV-operator/tpg bus and tram policies now verify conditional permission; replacements and unmatched rules remain unknown. Cards label actual permission and name unknown legs. Unknown ticket/reservation details never downgrade allowed access. General guidance is expanded and nonempty.
 
-**OJP activation pending:** The Site still has no `OJP_API_KEY`. GitHub Actions access is verified, but its stored secret cannot be read back. The public feed now improves carriage details independently of OJP activation; no secret extraction is introduced.
+**OJP active since 28 September:** Both Site secrets are configured and authenticated hosted requests succeed. The public feed remains a fallback. GitHub Actions uses separately stored credentials; no secret extraction was introduced. See the activation record above.
 
 **Scope:** Remaining bicycle places, occupancy, reservation availability and actual bookings remain deferred. Requirements and booking links are explanatory; permission is not a reservation or guaranteed boarding.
 

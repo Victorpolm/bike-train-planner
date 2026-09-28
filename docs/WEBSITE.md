@@ -1,5 +1,7 @@
 # Website access and development
 
+**Current publication:** Private version 26 was deployed on 28 September 2026 at 07:45:31 UTC with environment revision 3. Both OJP secrets are active, and live journey and fare requests succeed. [Verified requests, runtime fix and limitations](OJP_ACTIVATION_2026-09-28.md).
+
 ## Open the private website
 
 [**Open private website**](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site)
@@ -45,9 +47,9 @@ The app uses real road-following cycling and estimated durations. One bicycle-ac
 
 ## Runtime secret
 
-The optional production OJP source needs a secret named `OJP_API_KEY` in this existing Site's runtime environment. GitHub Actions has a separately stored key that passed live checks, but GitHub cannot return a stored secret value for automatic transfer. Never expose the key through a workflow artifact or the frontend. Configure it in the Site and deploy the saved version to apply the environment revision. The application checks `/api/ojp/status` before selecting its provider and uses the public search.ch connection feed when OJP is unconfigured. Public bicycle symbols do not require that secret.
+`OJP_API_KEY` and `OJP_FARE_API_KEY` are configured as secrets in this Site's runtime environment as of 28 September. GitHub Actions has separately stored test keys; it does not automatically configure the hosted Site. Never expose keys through workflow artifacts or the frontend. After changing Site secrets, redeploy a saved version to apply the new environment revision. The application checks configuration status before selecting each integration; status alone is not an authenticated provider health check. Public search.ch timetable data remains the fallback.
 
-## Last verified publication
+## 25 September publication (historical)
 
 Private **version 20** succeeded on **25 September 2026 at 13:36:57 UTC**, from Site source 8a0a7d7ca02e7f06471aa694c1b2831940646868. All 97 tracked application files match GitHub implementation commit cead54c468ea570eed97ae551797915f3d3fb5e9. The saved version is appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_d99ab12a1be48191ad3e3721cc98f15a; deployment appgdep_6ab678e7f15881919572aaea0f6a7f59 reports succeeded. Access was rechecked and remains owner-only, with no external visitors.
 
@@ -65,8 +67,8 @@ The Site remains owner-only. The existing GitHub source repository is public; pe
 
 See [implementation and remaining gates](SWISS_IMPLEMENTATION.md) and [GPX recording guide](GPX_RECORDING.md).
 
-## OJP Fare activation (27 September 2026)
+## OJP Fare implementation (27 September 2026; activated 28 September)
 
-The fare adapter accepts the separate server-only `OJP_FARE_API_KEY` and can retrieve its itinerary through `/ojpfare` using that key alone. Keep it secret, with no `VITE_` prefix. Local Vite uses `.env.local`; hosted operation requires the existing Site runtime binding and a deployment to apply it. The GitHub Actions secret has passed ten live fare tests but cannot be read back for transfer. `/api/fares/status` reports configuration presence only, not a successful upstream health check. The Site remains unconfigured until its binding is supplied. [Results and limitations](OJP_FARE_RESULTS_2026-09-27.md).
+The fare adapter accepts the separate server-only `OJP_FARE_API_KEY` and can retrieve its itinerary through `/ojpfare` using that key alone. Keep it secret, with no `VITE_` prefix. Local Vite uses `.env.local`; hosted operation requires the Site runtime binding and a deployment to apply it. The GitHub Actions secret passed ten live fare tests. `/api/fares/status` reports configuration presence only. Both hosted integrations were activated and verified on 28 September; see the current publication above. [Earlier results and limitations](OJP_FARE_RESULTS_2026-09-27.md).
 
 Private version 22 successfully published at 16:12:28 UTC on 27 September 2026 from Site commit `9f411232376cf36147282cec929a5cf83da54a52`, environment revision 0. It adds the fare adapter and explicit estimate labels; activation remains pending the Site fare secret.
