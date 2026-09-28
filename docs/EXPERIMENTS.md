@@ -596,3 +596,16 @@ A direct Zürich HB endpoint probe also reproduced a provider-centroid `no track
 **Stationboard regression:** For A–B–C–D, malformed final station metadata, missing coordinates or missing arrival now retain usable B/C exits and one-boarding reachability. The last valid stop bounds the section instead of discarding all earlier stops. The category card now states the existing additional-time allowance dynamically; ranking remains unchanged.
 
 **Release gate:** 195 app tests, TypeScript and frontend/Worker builds pass. Private version 28 published at 08:55:11 UTC, environment revision 3, source `070488a6cfb740b72e120950e1c411088d40bde3`. Browser sign-in was unavailable in the current browser session, so no browser interaction pass is claimed. The four-versus-eight-pair sampling comparison remains pending. [Full evidence and limits](OJP_ROUTE_FARES_2026-09-28.md).
+
+
+## 2026-09-28 — Exact selected-trip fare reuse and assembled journeys
+
+**Regression:** Re-searching the origin/destination for a selected itinerary can return a different set of alternatives, losing a valid priceable trip. Preserve complete OJP source trips during acquisition, retain provenance across graph merges and send only required unique sources to the fare handler. Unchanged trips require no new trip search. Combined journeys copy their exact service legs and validate connecting walks, including a connector from a third independent provider response.
+
+**Automated gate:** 203 tests and TypeScript/frontend/Worker builds pass. Eight new regression cases exercise the full acquisition-to-fare path, separate server instances, exact raw trip/service preservation, subtrip coverage, different namespace prefixes, assembled leg IDs, transfer evidence/time limits, signatures/size/duplicate validation and changed service identity/time rejection. Mocked upstream requests assert zero OJPTripRequests for retained and assembled fares.
+
+**Fresh live planner cases:** Baseline, balanced options, full-fare adult, second class, 29 September from 10:00 Swiss time. Zürich HB 10:31–Bern 11:28 returned CHF 36.20 with `retained`. Zürich HB 10:12–Chur 11:48 (IR35), then Chur Postautostation 11:58–Laax 12:48 (bus 81), returned CHF 45.80 with `assembled` from two retained source trips. Fare rows displayed the numeric passenger amounts. The bus reservation amount remains unknown. The first Laax harness run was interrupted by the execution environment; a fresh run completed its route-to-fare check. Both searches retained results when the 90-second exploration limit was reached, so complete alternative coverage is not claimed.
+
+[Detailed implementation, final publication and live evidence](OJP_EXACT_TRIP_FARES_2026-09-28.md).
+
+**Final-version targeted checks:** Version 30 priced the same IR35 plus the later 12:28–13:18 bus using three source trips at passenger CHF 45.80; a selected bus-only subtrip returned CHF 17.20. Both used `assembled`. The targeted combination explicitly supplied the existing walk source to the saved version-29 graph; the 203-test gate separately validates automatic walking provenance in current acquisition. [Sanitized evidence](experiments/exact-trip-fares-2026-09-28.json).

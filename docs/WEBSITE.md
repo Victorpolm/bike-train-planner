@@ -1,6 +1,6 @@
 # Website access and development
 
-**Current publication:** Private version 28 was deployed on 28 September 2026 at 08:55:11 UTC with environment revision 3. Both OJP secrets are active. The reported Zürich–Bern and Zürich–Laax passenger-price failures were reproduced and corrected through the planner's route-to-fare flow. [Exact checks, station corrections and limitations](OJP_ROUTE_FARES_2026-09-28.md).
+**Current publication:** Private version 30 was deployed on 28 September 2026 at 17:10:19 UTC with environment revision 3. Both OJP secrets are active. Fare requests now reuse the selected trip or assemble its retained service/walking legs, avoiding a second journey search for OJP-backed results. Live Zürich–Bern and Zürich–Laax planner checks returned numeric passenger fares. 203 tests and production builds pass. [Exact-trip pricing, live checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md). Refresh and run a new search to obtain journeys with retained source data.
 
 ## Open the private website
 

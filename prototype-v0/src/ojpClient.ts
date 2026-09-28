@@ -20,7 +20,8 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
     if (from.id === to.id) continue;
     const leg: TransitLeg = { ...input, from: from.name, to: to.name, fromId: from.id, toId: to.id,
       departure: new Date(input.departure), arrival: new Date(input.arrival),
-      fromPoint: from, toPoint: to, geometry: [from, to], ojp: input.reference };
+      fromPoint: from, toPoint: to, geometry: [from, to], ojp: input.reference,
+      fareSources: data.fareSources?.filter(s => input.fareSourceIds?.includes(s.id)) };
     if (!Number.isFinite(leg.departure!.getTime()) || !Number.isFinite(leg.arrival!.getTime())) continue;
     if (input.rule && input.reference) {
       leg.bicycleEvidence = {
@@ -32,6 +33,8 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
     }
     const id = JSON.stringify(["ojp", input.reference?.journeyRef, input.reference?.operatingDay, from.id, to.id, input.departure, input.arrival]);
     const existing = network.edges.get(id)?.leg;
+    if (existing?.fareSources?.length) leg.fareSources = [...new Map(
+      [...existing.fareSources, ...(leg.fareSources ?? [])].map(s => [s.id, s])).values()].slice(-16);
     // An unfiltered later query cannot erase a previous dated filter match or ban.
     if (existing?.bicycleEvidence && leg.bicycleEvidence) {
       const old = existing.bicycleEvidence, fresh = leg.bicycleEvidence;

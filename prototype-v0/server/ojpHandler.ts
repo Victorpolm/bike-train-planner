@@ -1,6 +1,7 @@
-import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpConnections, parseOjpTripInfo,
+import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpTripInfo,
   type OjpQuery, type OjpReference } from "../src/ojp.ts";
 import { providerFailure } from "./providerFailure.ts";
+import { retainedConnections } from "./retainedFare.ts";
 
 export type OjpEnvironment = { OJP_API_KEY?: string };
 const ENDPOINT = "https://api.opentransportdata.swiss/ojp20";
@@ -42,7 +43,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
   // Bounded, short-lived caches contain timetable responses only. The secret
   // stays in runtime env and is never part of a response, cache key or log.
   const cache = new Map<string, { expires: number; data: unknown }>();
-  let queue: Promise<unknown> = Promise.resolve(), lastCall = 0, blockedUntil = 0;
+  let queue: Promise<unknown> = Promise.resolve(), lastCall = 0, blockedUntil = 0, activeKey = "";
   const requestOjp = (payload: string, key: string) => {
     const task = queue.then(async () => {
       if (Date.now() < blockedUntil) throw new Error("OJP temporarily unavailable");
@@ -84,6 +85,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
     if (origin && origin !== new URL(request.url).origin) return json({ error: "Origin not allowed" }, 403);
     if (!request.headers.get("content-type")?.startsWith("application/json")) return json({ error: "Use JSON" }, 415);
     if (!key) return json({ error: "Bicycle information is not connected yet." }, 503);
+    if (activeKey !== key) { cache.clear(); activeKey = key; }
     let body: any;
     try { body = JSON.parse(await boundedText(request, 8192)); }
     catch { return json({ error: "Invalid request" }, 400); }
@@ -98,11 +100,12 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
       const checked = new Date().toISOString();
       let data: unknown;
       if (isConnections) {
-        const unfiltered = parseOjpConnections(await requestOjp(ojpTripRequest(body, false, checked), key), false);
-        let filtered: ReturnType<typeof parseOjpConnections> = [], warnings: string[] = [];
-        try { filtered = parseOjpConnections(await requestOjp(ojpTripRequest(body, true, checked), key), true); }
+        const unfiltered = await retainedConnections(await requestOjp(ojpTripRequest(body, false, checked), key), false, key);
+        let filtered: Awaited<ReturnType<typeof retainedConnections>> = { legs: [], sources: [] }, warnings: string[] = [];
+        try { filtered = await retainedConnections(await requestOjp(ojpTripRequest(body, true, checked), key), true, key); }
         catch { warnings = ["The bicycle-filtered search could not finish. Unverified services remain unknown."]; }
-        data = { legs: mergeOjpConnections(unfiltered, filtered), checked, warnings };
+        data = { legs: mergeOjpConnections(unfiltered.legs, filtered.legs), checked, warnings,
+          fareSources: [...new Map([...unfiltered.sources, ...filtered.sources].map(s => [s.id, s])).values()] };
       } else {
         const rule = parseOjpTripInfo(await requestOjp(ojpTripInfoRequest(body, checked), key), body);
         data = { rule, checked };

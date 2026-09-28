@@ -1,6 +1,6 @@
 # Bike + Train Journey Planner
 
-**Route-price correction (28 September 2026):** Zürich–Bern and Zürich–Laax now return numeric passenger fares through the planner. Fixed cross-provider station identity, short configuration-check timeouts and oversized fare payloads; also corrected malformed stationboard tails and clarified the least-cycling category's time allowance. [Exact route checks and limits](docs/OJP_ROUTE_FARES_2026-09-28.md). Private version 28 is deployed; 195 app tests and production builds pass. Prices remain explicitly labelled OJP test estimates.
+**Exact-trip fare correction (28 September 2026):** The app now preserves OJP trips and prices the selected services directly. It also assembles and validates retained train/bus/walking legs when the planner combines different provider responses. Live Zürich–Bern and Zürich–Laax searches returned passenger CHF 36.20 and CHF 45.80 for the documented departures; the Laax result exercised the assembled-trip path. [Implementation, verification and remaining limits](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md). Private version 30 is deployed; 203 tests and production builds pass. Prices remain OJP test estimates.
 
 **Earlier fare validation (27 September 2026):** [Ten live random fare checks](docs/OJP_FARE_RESULTS_2026-09-27.md) returned passenger quotes for 10/10 journeys and bicycle quotes for 9/10.
 

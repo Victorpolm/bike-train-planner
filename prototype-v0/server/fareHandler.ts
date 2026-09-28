@@ -1,4 +1,5 @@
-import { fareRequest, fareTripRequest, fareTrips, matchingFareTrip, parseFare } from "./fareProtocol.ts";
+import { fareRequest, fareTripRequest, fareTrips, matchingFareTrip, parseFare, retainedFareTrip, type FareTrip } from "./fareProtocol.ts";
+import { MAX_FARE_REQUEST_BYTES, verifyFareSources } from "./retainedFare.ts";
 import type { FareQuery, OnlineFare } from "../src/onlineFare.ts";
 import { providerFailure } from "./providerFailure.ts";
 
@@ -66,9 +67,15 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
     if (!request.headers.get("content-type")?.startsWith("application/json")) return json({ error: "Use JSON" }, 415);
     if (!key) return json({ error: "Online fare service is not connected." }, 503);
     let query: FareQuery;
-    try { query = JSON.parse(await boundedText(request, 8192)); } catch { return json({ error: "Invalid request" }, 400); }
+    try { query = JSON.parse(await boundedText(request, MAX_FARE_REQUEST_BYTES)); } catch { return json({ error: "Invalid request" }, 400); }
     if (!validFareQuery(query)) return json({ error: "A future, complete Swiss transit itinerary is required." }, 400);
-    const id = JSON.stringify([query.segments, query.passenger, query.bicycle]), cached = cache.get(id);
+    const tripKey = env.OJP_API_KEY?.trim().replace(/^Bearer\s+/i, "").trim();
+    let retained: FareTrip[] | undefined;
+    if (query.sources !== undefined) {
+      try { retained = await verifyFareSources(query.sources, tripKey ?? ""); }
+      catch { return json({ error: "The retained itinerary could not be verified. Please search again." }, 400); }
+    }
+    const id = JSON.stringify([query.segments, query.passenger, query.bicycle, query.sources?.map(s => s.id)]), cached = cache.get(id);
     if (cached && cached.expires > Date.now()) return json(cached.data);
     if (pending.has(id)) return json(await pending.get(id));
     // Bound queue growth when several cards or visitors request prices at once.
@@ -76,10 +83,18 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
     const work = (async (): Promise<OnlineFare> => {
       const data: OnlineFare = { status: "unavailable", passenger: null, bicycle: null, checked: new Date().toISOString(), environment: "test" };
       try {
-        const tripKey = env.OJP_API_KEY?.trim().replace(/^Bearer\s+/i, "").trim();
-        const trips = fareTrips(await post(fareTripRequest(query.segments), tripKey || key,
-          tripKey ? "https://api.opentransportdata.swiss/ojp20" : FARE_ENDPOINT));
-        const trip = matchingFareTrip(trips, query.segments);
+        let trip: FareTrip | undefined;
+        if (retained) {
+          const selected = retainedFareTrip(retained, query.segments);
+          if (!selected) return { ...data, reason: "The retained service legs or connecting transfer could not be verified for this itinerary." };
+          trip = selected.trip; data.itinerarySource = selected.source;
+        } else {
+          // Compatibility for public-timetable/older results without OJP data.
+          // Never fall back here after retained data failed validation.
+          const trips = fareTrips(await post(fareTripRequest(query.segments), tripKey || key,
+            tripKey ? "https://api.opentransportdata.swiss/ojp20" : FARE_ENDPOINT));
+          trip = matchingFareTrip(trips, query.segments); data.itinerarySource = "lookup";
+        }
         if (!trip) return { ...data, reason: "No exact itinerary match; no substitute route was priced." };
         if (query.passenger !== "ga") {
           try { data.passenger = parseFare(await post(fareRequest(trip, query.passenger), key), trip, query.passenger); } catch { /* Preserve a possible bicycle quote. */ }

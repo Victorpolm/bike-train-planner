@@ -10,8 +10,10 @@ export type OjpLeg = {
   service: string; serviceName: string | null; category: string | null; operator: string | null;
   direction: string | null; departurePlatform: string | null; arrivalPlatform: string | null;
   reference?: OjpReference; rule?: CarriageRule;
+  fareSourceIds?: string[];
 };
-export type OjpConnections = { legs: OjpLeg[]; checked: string; warnings: string[] };
+export type OjpConnections = { legs: OjpLeg[]; checked: string; warnings: string[];
+  fareSources?: import("./onlineFare.ts").RetainedFareSource[] };
 export type OjpDetails = { rule: CarriageRule; checked: string };
 
 // XML is confined to this provider boundary. No provider markup reaches innerHTML.
@@ -116,11 +118,13 @@ export function mergeOjpConnections(unfiltered: OjpLeg[], filtered: OjpLeg[]): O
   for (const leg of [...unfiltered, ...filtered]) {
     const key = ojpLegKey(leg), existing = result.get(key);
     if (!existing) { result.set(key, leg); continue; }
-    if (!leg.reference || !existing.reference) continue;
+    const fareSourceIds = [...new Set([...(existing.fareSourceIds ?? []), ...(leg.fareSourceIds ?? [])])];
+    if (!leg.reference || !existing.reference) { result.set(key, { ...existing, fareSourceIds }); continue; }
     // Keep a prohibition even if a second response is filtered or omits the note.
     const attributes = [...existing.reference.attributes, ...leg.reference.attributes];
     const bikeFiltered = existing.reference.bikeFiltered || leg.reference.bikeFiltered;
-    result.set(key, { ...leg, reference: { ...leg.reference, attributes, bikeFiltered }, rule: interpretBicycleAttributes(attributes, bikeFiltered) });
+    result.set(key, { ...leg, fareSourceIds,
+      reference: { ...leg.reference, attributes, bikeFiltered }, rule: interpretBicycleAttributes(attributes, bikeFiltered) });
   }
   return [...result.values()];
 }

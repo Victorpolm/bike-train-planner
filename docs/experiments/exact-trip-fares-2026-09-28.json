@@ -1,0 +1,260 @@
+{
+  "checkedDate": "2026-09-28",
+  "finalSiteVersion": 30,
+  "finalSourceCommit": "aee01405a58e955c51ef28cb172d4e6ef433dabb",
+  "environment": "OJP integration/test",
+  "passengerProfile": "full-fare adult, second class",
+  "automatedTests": 203,
+  "cases": [
+    {
+      "case": "Zürich HB–Bern",
+      "siteVersion": 29,
+      "method": "full application acquisition/solver/recommendation/fare-query/fare-row modules against the hosted endpoints",
+      "services": [
+        "IC1"
+      ],
+      "segments": [
+        {
+          "from": "8503000",
+          "to": "8507000",
+          "departure": "2026-09-29T08:31:00.000Z",
+          "arrival": "2026-09-29T09:28:00.000Z",
+          "fromName": "Zürich HB",
+          "toName": "Bern",
+          "fromPoint": {
+            "lat": 47.377847,
+            "lon": 8.540502
+          },
+          "toPoint": {
+            "lat": 46.948823,
+            "lon": 7.439123
+          },
+          "journeyRef": "ch:1:sjyid:100001:714-001"
+        }
+      ],
+      "retainedSources": 1,
+      "requestBytes": 5162,
+      "quote": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 36.2,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 26.5,
+          "productId": "40245",
+          "product": "Velobillett"
+        },
+        "checked": "2026-09-28T17:01:42.619Z",
+        "environment": "test",
+        "itinerarySource": "retained"
+      },
+      "fareRows": [
+        {
+          "label": "Passenger",
+          "value": "CHF 36.20",
+          "detail": "Full fare · 2nd class · Sparbillett"
+        },
+        {
+          "label": "Bicycle ticket",
+          "value": "CHF 15.00",
+          "detail": "Bike Day Pass · cheapest option not verified"
+        },
+        {
+          "label": "Bicycle reservation",
+          "value": "CHF 0.00",
+          "detail": "Not required"
+        }
+      ],
+      "searchComplete": false,
+      "searchLimitSeconds": 90
+    },
+    {
+      "case": "Zürich HB–Laax GR, posta",
+      "siteVersion": 29,
+      "method": "full application acquisition/solver/recommendation/fare-query/fare-row modules against the hosted endpoints",
+      "services": [
+        "IR35",
+        "B 81"
+      ],
+      "segments": [
+        {
+          "from": "8503000",
+          "to": "ch:1:sloid:9000",
+          "departure": "2026-09-29T08:12:00.000Z",
+          "arrival": "2026-09-29T09:48:00.000Z",
+          "fromName": "Zürich HB",
+          "toName": "Chur",
+          "fromPoint": {
+            "lat": 47.377847,
+            "lon": 8.540502
+          },
+          "toPoint": {
+            "lat": 46.85354,
+            "lon": 9.52866
+          },
+          "journeyRef": "ch:1:sjyid:100001:2363-001"
+        },
+        {
+          "from": "ch:1:sloid:75112",
+          "to": "8509786",
+          "departure": "2026-09-29T09:58:00.000Z",
+          "arrival": "2026-09-29T10:48:00.000Z",
+          "fromName": "Chur, Postautostation",
+          "toName": "Laax GR, posta",
+          "fromPoint": {
+            "lat": 46.85293,
+            "lon": 9.52769
+          },
+          "toPoint": {
+            "lat": 46.806492,
+            "lon": 9.258086
+          },
+          "journeyRef": "ch:1:sjyid:100602:117eff64-9469-40e8-be32-87995dc7f4f5"
+        }
+      ],
+      "retainedSources": 2,
+      "requestBytes": 30392,
+      "quote": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 45.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 29.6,
+          "productId": "40245",
+          "product": "Velobillett"
+        },
+        "checked": "2026-09-28T17:04:37.218Z",
+        "environment": "test",
+        "itinerarySource": "assembled"
+      },
+      "fareRows": [
+        {
+          "label": "Passenger",
+          "value": "CHF 45.80",
+          "detail": "Full fare · 2nd class · Sparbillett"
+        },
+        {
+          "label": "Bicycle ticket",
+          "value": "CHF 29.60",
+          "detail": "Velobillett · OJP test estimate · cheapest option not verified"
+        },
+        {
+          "label": "Bicycle reservation",
+          "value": "Quote needed",
+          "detail": "Requirements or booking price to check"
+        }
+      ],
+      "searchComplete": false,
+      "searchLimitSeconds": 90
+    },
+    {
+      "case": "combined-original-train-later-bus",
+      "segments": [
+        {
+          "from": "8503000",
+          "to": "ch:1:sloid:9000",
+          "departure": "2026-09-29T08:12:00.000Z",
+          "arrival": "2026-09-29T09:48:00.000Z",
+          "fromName": "Zürich HB",
+          "toName": "Chur",
+          "fromPoint": {
+            "lat": 47.377847,
+            "lon": 8.540502
+          },
+          "toPoint": {
+            "lat": 46.85354,
+            "lon": 9.52866
+          },
+          "journeyRef": "ch:1:sjyid:100001:2363-001"
+        },
+        {
+          "from": "ch:1:sloid:75112",
+          "to": "ch:1:sloid:9786",
+          "departure": "2026-09-29T10:28:00.000Z",
+          "arrival": "2026-09-29T11:18:00.000Z",
+          "fromName": "Chur, Postautostation",
+          "toName": "Laax GR, posta",
+          "fromPoint": {
+            "lat": 46.85293,
+            "lon": 9.52769
+          },
+          "toPoint": {
+            "lat": 46.80651,
+            "lon": 9.25811
+          },
+          "journeyRef": "ch:1:sjyid:100602:f5c8e3ba-6dae-4e4f-9237-44e5e19e543d"
+        }
+      ],
+      "sources": 3,
+      "queryBytes": 43063,
+      "quote": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 45.8,
+          "productId": "84004",
+          "product": "Sparbillett"
+        },
+        "bicycle": {
+          "chf": 29.6,
+          "productId": "40245",
+          "product": "Velobillett"
+        },
+        "checked": "2026-09-28T17:11:26.088Z",
+        "environment": "test",
+        "itinerarySource": "assembled"
+      },
+      "siteVersion": 30,
+      "method": "targeted hosted quote using retained source trips; modified selection built with application fareQuery; existing signed trip supplied for the selected walk because the saved version-29 graph predates walking-source retention"
+    },
+    {
+      "case": "original-trip-bus-only",
+      "segments": [
+        {
+          "from": "ch:1:sloid:75112",
+          "to": "8509786",
+          "departure": "2026-09-29T09:58:00.000Z",
+          "arrival": "2026-09-29T10:48:00.000Z",
+          "fromName": "Chur, Postautostation",
+          "toName": "Laax GR, posta",
+          "fromPoint": {
+            "lat": 46.85293,
+            "lon": 9.52769
+          },
+          "toPoint": {
+            "lat": 46.806492,
+            "lon": 9.258086
+          },
+          "journeyRef": "ch:1:sjyid:100602:117eff64-9469-40e8-be32-87995dc7f4f5"
+        }
+      ],
+      "sources": 1,
+      "queryBytes": 18240,
+      "quote": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 17.2,
+          "productId": "125",
+          "product": "Streckenbillett"
+        },
+        "bicycle": null,
+        "checked": "2026-09-28T17:11:29.178Z",
+        "environment": "test",
+        "itinerarySource": "assembled"
+      },
+      "siteVersion": 30,
+      "method": "targeted hosted quote using retained source trips; modified selection built with application fareQuery"
+    }
+  ],
+  "limits": [
+    "No browser interaction pass; the browser session was not signed in.",
+    "The full route searches reached their 90-second exploration limit.",
+    "Laax bicycle reservation requirements/price remain unconfirmed.",
+    "Public-timetable/legacy results without complete sources can still use exact-match lookup.",
+    "No through fare for an intermediate cycling break."
+  ]
+}

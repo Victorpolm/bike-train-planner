@@ -2,7 +2,11 @@
 
 _Last consolidated: 2026-09-28. Source implementation and publication status are distinct._
 
-## 28 September route-price correction
+## 28 September exact selected-trip fares
+
+The planner now retains signed, complete OJP trip data on transit and internal walking edges. Unchanged trips go straight to OJP Fare; selected subtrips and combined services are assembled from their original legs, with exact service/time checks, validated walking connections, recalculated trip fields and full fare-coverage checks. Stateless signatures avoid dependence on a particular Worker instance and expose no API key. Older/public-timetable results retain the explicitly identified lookup path. Live planner checks returned passenger CHF 36.20 for Zürich–Bern and CHF 45.80 for Zürich–Laax; the latter combined an IR35 from one OJP response with a bus from another and returned `itinerarySource: assembled`. 203 tests and builds pass. OJP prices remain test estimates; unknown Laax bicycle reservation costs and the route-search time limit remain explicit. [Exact implementation, live checks and publication](OJP_EXACT_TRIP_FARES_2026-09-28.md).
+
+## 28 September route-price correction (earlier publication)
 
 Private version 28 fixes the reported Zürich–Bern and Zürich–Laax missing passenger fares. Both failures were reproduced through the planner; the provider station centroids disagreed by more than the old matching allowance. Corrected station identity in fares and graph insertion, allowed slower OJP status replies, removed the redundant fare-status gate and kept fare payloads compact/stable. Fresh live searches return passenger CHF 36.20 and CHF 44.60 respectively for the documented 29 September departures. These remain OJP test estimates. Malformed stationboard tails now retain valid exits; least-cycling cards show their time allowance. 195 tests and production builds pass. Search exploration still hit its 90-second limit; browser interaction and the four-versus-eight-pair experiment remain unverified. [Evidence and publication](OJP_ROUTE_FARES_2026-09-28.md).
 
