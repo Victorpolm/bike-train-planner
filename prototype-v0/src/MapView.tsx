@@ -1,5 +1,6 @@
 import { closestBikeParking, parkingAccess, parkingDetails, parkingDistance, PARKING_SOURCE, OSM_COPYRIGHT } from "./bikeParking";
 import { useBikeParking } from "./useBikeParking";
+import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_STYLES } from "./parkingMap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { formatMinutes, type CyclingComparison, type Journey, type Place, type Point } from "./routing";
@@ -71,10 +72,19 @@ export default function MapView({
   const [showParking, setShowParking] = useState(false);
   const { loads: parkingLoads, datasets: parkingDatasets, facilities: parkingFacilities, loading: parkingLoading, retry: retryParking } = useBikeParking(showParking);
   const [parkingMapNote, setParkingMapNote] = useState("");
-  const [closestRequest, setClosestRequest] = useState(0);
-  const closestParking = useMemo(() => showParking && closestRequest
-    ? closestBikeParking(parkingFacilities, origin) : null,
-  [showParking, closestRequest, parkingFacilities, origin?.lat, origin?.lon]);
+  const [onlyAlongJourney, setOnlyAlongJourney] = useState(true);
+  const parkingRoute = useMemo(() => parkingRouteScope({ journey: selectedJourney, cycling, bikeOnlySelected,
+    origin, destination, waypoints: waypoints.map(w => w.place) }), [selectedJourney, cycling, bikeOnlySelected, origin, destination, waypoints]);
+  const alongJourney = !!parkingRoute && onlyAlongJourney;
+  const indexedParking = useMemo(() => parkingIndex(parkingFacilities), [parkingFacilities]);
+  const visibleParking = useMemo(() => alongJourney && parkingRoute ? parkingAlongRoute(indexedParking, parkingRoute) : parkingFacilities,
+    [alongJourney, parkingRoute, indexedParking, parkingFacilities]);
+  // A new journey must not retain an old closest pin or override the route fit.
+  const parkingScopeKey = JSON.stringify([parkingRoute?.key, alongJourney]);
+  const [closestRequest, setClosestRequest] = useState<{ scope: string; serial: number } | null>(null);
+  const closestParking = useMemo(() => showParking && closestRequest?.scope === parkingScopeKey
+    ? closestBikeParking(visibleParking, origin) : null,
+  [showParking, closestRequest, parkingScopeKey, visibleParking, origin?.lat, origin?.lon]);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !showParking) return;
@@ -83,13 +93,14 @@ export default function MapView({
       layer.clearLayers();
       let count = 0, limited = false;
       const bounds = map.getBounds().pad(.1), zoom = map.getZoom();
-      for (const facility of parkingFacilities) {
+      for (const facility of visibleParking) {
         const isClosest = facility.id === closestParking?.facility.id;
         const osmOnly = facility.sources?.every(ref => ref.provider === "osm");
-        if (!isClosest && (zoom < (osmOnly ? 13 : 10) || !bounds.contains([facility.lat, facility.lon]))) continue;
+        if (!isClosest && ((!alongJourney && zoom < (osmOnly ? 13 : 10)) || !bounds.contains([facility.lat, facility.lon]))) continue;
         if (!isClosest && count >= 1500) { limited = true; continue; }
         count++;
-        const content = popup(facility.name, parkingDetails(facility));
+        const style = parkingStyle(facility);
+        const content = popup(facility.name, [style.detail, ...parkingDetails(facility)]);
         if (facility.url) { const a = document.createElement("a"); a.href = facility.url; a.textContent = "Facility information"; a.target = "_blank"; a.rel = "noreferrer"; content.append(a); }
         for (const source of facility.sources ?? []) {
           const p = document.createElement("p"), link = document.createElement("a");
@@ -97,20 +108,20 @@ export default function MapView({
           link.target = "_blank"; link.rel = "noreferrer"; p.append(link); content.append(p);
         }
         if (isClosest) {
-          L.marker([facility.lat, facility.lon], { icon: markerIcon("#6545a4", "P"),
-            title: `Closest listed bicycle parking: ${facility.name}`, alt: `Closest listed bicycle parking: ${facility.name}`, zIndexOffset: 1100 })
+          L.marker([facility.lat, facility.lon], { icon: markerIcon(style.color, "P"),
+            title: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, alt: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, zIndexOffset: 1100 })
             .bindTooltip(textNode(`Closest parking · ${parkingDistance(closestParking!.distanceKm)} straight-line`), { permanent: true, direction: "bottom", offset: [0, 18] })
             .bindPopup(content).addTo(layer);
         } else {
-          L.circleMarker([facility.lat, facility.lon], { radius: 6, color: "#fff", weight: 2, fillColor: "#6545a4", fillOpacity: .95, bubblingMouseEvents: false })
-            .bindTooltip(textNode(facility.name)).bindPopup(content).addTo(layer);
+          L.circleMarker([facility.lat, facility.lon], { radius: 6, color: "#fff", weight: 2, fillColor: style.color, fillOpacity: .95, bubblingMouseEvents: false })
+            .bindTooltip(textNode(`${facility.name} · ${style.label}`)).bindPopup(content).addTo(layer);
         }
       }
-      setParkingMapNote(limited ? "Zoom in to see all parking pins in this area." : zoom < 13 ? "Zoom in to see local OpenStreetMap parking. Find closest parking searches all loaded records at any zoom." : "");
+      setParkingMapNote(limited ? "Zoom in to see all parking pins in this area." : !alongJourney && zoom < 13 ? "Zoom in to see local OpenStreetMap parking. Find closest parking searches all loaded records at any zoom." : "");
     };
     draw(); map.on("moveend zoomend", draw);
     return () => { map.off("moveend zoomend", draw); layer.remove(); };
-  }, [showParking, parkingFacilities, closestParking]);
+  }, [showParking, visibleParking, closestParking, alongJourney]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -325,13 +336,15 @@ export default function MapView({
       <label><input type="checkbox" checked={showStops} onChange={e => setShowStops(e.target.checked)} />Explored stops ({stops.length})</label>
       <button type="button" className="parking-toggle" aria-pressed={showParking} aria-controls="parking-panel"
         title={showParking ? "Hide bicycle parking" : "Show bicycle parking"}
-        onClick={() => { setShowParking(value => !value); setClosestRequest(0); }}>
+        onClick={() => { setShowParking(value => !value); setClosestRequest(null); }}>
         <span className="parking-button-icon" aria-hidden="true"><b>P</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <circle cx="5" cy="17" r="4" /><circle cx="19" cy="17" r="4" /><path d="m5 17 5-9 5 9H5m5-9h7l2 9M8 5h4m4-1h3l1 4" />
         </svg></span>Bike parking
       </button>
-      {showParking && <button type="button" className="parking-closest-button" disabled={!origin || parkingLoading || parkingFacilities.length === 0}
-        onClick={() => setClosestRequest(value => value + 1)}>Find closest parking</button>}
+      {showParking && parkingRoute && <label className="parking-route-toggle"><input type="checkbox" checked={onlyAlongJourney}
+        onChange={e => { setOnlyAlongJourney(e.target.checked); setClosestRequest(null); }} />Along selected journey</label>}
+      {showParking && <button type="button" className="parking-closest-button" disabled={!origin || parkingLoading || visibleParking.length === 0}
+        onClick={() => setClosestRequest(value => ({ scope: parkingScopeKey, serial: (value?.serial ?? 0) + 1 }))}>Find closest parking</button>}
       <button type="button" disabled={!stops.length} onClick={() => {
         setShowStops(true);
         if (allBoundsRef.current?.isValid() && mapRef.current) {
@@ -355,17 +368,25 @@ export default function MapView({
     </div>
   </div>
     {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
+      <ul className="parking-legend" aria-label="Parking colours by mapped equipment">
+        {Object.entries(PARKING_STYLES).map(([key, style]) => <li key={key}><i style={{ backgroundColor: style.color }} aria-hidden="true" />{style.label}</li>)}
+      </ul>
+      <p className="parking-equipment-note">Colours describe mapped equipment. Access restrictions and theft protection need a separate check.</p>
       <div className="parking-result" role="status" aria-live="polite">
+        {alongJourney && <p><b>{visibleParking.length.toLocaleString("en-GB")}</b> loaded parking records within about {PARKING_CORRIDOR_METRES} m of the selected cycling/walking paths, start, finish and boarding/alighting points. Uncheck “Along selected journey” to show all parking.</p>}
+        {alongJourney && parkingRoute?.incomplete && <p>Some sections have no confirmed street path. Parking near their known endpoints is included; the gaps are not searched.</p>}
         {parkingLoading && <p>Loading {parkingLoads.osm.status === "loading" ? "OpenStreetMap bicycle parking" : "bicycle parking"}…</p>}
         {Object.values(parkingLoads).some(load => load.status === "error") && <p>{parkingFacilities.length ? "Some parking data could not be loaded. Closest results use only loaded sources." : "Parking data could not be loaded. See the reason for each source below."} <button type="button" onClick={retryParking}>Retry missing sources</button></p>}
         {Object.values(parkingLoads).some(load => load.error?.code === "session" || load.error?.code === "access" || load.error?.code === "network") && <p><a href="/" target="_blank" rel="noreferrer">Open planner in its own tab</a></p>}
         {!origin && <p>Select a starting point in the From field or choose Start here on the map.</p>}
         {!parkingLoading && parkingDatasets.length > 0 && parkingFacilities.length === 0 && <p>No bicycle parking was found in the loaded sources.</p>}
-        {!parkingLoading && parkingFacilities.length > 0 && origin && !closestParking && <p>Find the closest listed parking to <strong>{origin.label}</strong> (point A), or zoom in to explore the map.</p>}
+        {!parkingLoading && parkingFacilities.length > 0 && alongJourney && visibleParking.length === 0 && <p>No loaded parking was found along this journey. Uncheck “Along selected journey” to explore other parking.</p>}
+        {!parkingLoading && visibleParking.length > 0 && origin && !closestParking && <p>Find the closest listed parking {alongJourney ? "along this journey " : ""}to <strong>{origin.label}</strong> (point A), or zoom in to explore the map.</p>}
         {parkingMapNote && <p>{parkingMapNote}</p>}
         {closestParking && origin && <>
-          <span className="parking-result-label">Closest listed parking to point A</span>
+          <span className="parking-result-label">Closest listed parking {alongJourney ? "along this journey " : ""}to point A</span>
           <strong className="parking-result-name">{closestParking.facility.name}</strong>
+          <p>{parkingStyle(closestParking.facility).detail}</p>
           {closestParking.facility.operator !== "Operator not supplied" && <p>{closestParking.facility.operator}</p>}
           <p><b>{parkingDistance(closestParking.distanceKm)}</b> straight-line from {origin.label}. Road access has not been checked.</p>
           <p>{parkingAccess(closestParking.facility)}. Check entry conditions before travelling.
@@ -381,7 +402,7 @@ export default function MapView({
             {data ? <> · {data.facilities.length.toLocaleString("en-GB")} records · downloaded {new Date(data.fetchedAt).toLocaleDateString("en-GB")}{data.stale && " · refresh failed; showing older data"}</>
               : load.status === "error" ? ` · ${load.error?.message ?? "Loading failed. Retry loading."}` : " · loading"}</p>;
         })}
-        <p>Coverage is incomplete; some source records may overlap. No live availability. Closest means straight-line distance among loaded records. Your journey stays unchanged.</p>
+        <p>Coverage is incomplete; some source records may overlap. No live availability. Closest means straight-line distance from A among loaded records{alongJourney ? " along the selected journey" : ""}. Nearby parking may require a detour; entrances have not been checked. Your journey stays unchanged.</p>
       </div>
     </section>}
   </>;

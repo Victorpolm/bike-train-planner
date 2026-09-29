@@ -449,3 +449,14 @@ Keep bounded exact-match lookup compatibility for results without complete retai
 **Decision:** Use separate versioned source paths, bypass browser HTTP caching while retaining server daily caching, validate edge-cache source/content/time, apply a body-inclusive client deadline and one bounded transient retry, and preserve source-specific errors. Explain sign-in refresh and own-tab access only when a session/access/network error supports that advice. Keep partial-source/straight-line uncertainty, OSM attribution and unchanged routing/fares/GPS.
 
 **Delivery:** Version 33 succeeded at 15:11:50 UTC, environment revision 3; 220 tests and production builds passed. The latest report explicitly distinguishes the authenticated loader verification from a user-browser cookie session. [Evidence and next diagnostic](PARKING_LOADING_2026-09-29.md).
+
+
+## 2026-09-29 — Colour parking equipment and restrict it to the selected journey
+
+**User request:** After positive feedback on the loader fix, distinguish wall loops from preferable equipment and show parking along the selected journey.
+
+**Decision and delivery:** Version 34 uses red for mapped wheel-only forms (including wall loops), green for frame-support stands, blue for other recognised equipment and grey for unknown rack types. Mixed wheel-only tags retain red; cover, capacity and access do not determine the rack category. Labels accompany colours, and security/access conditions remain separate.
+
+Default to an optional approximately 100 m corridor around the selected cycling-only or transit journey's cycling paths, explicitly routed walking paths and known endpoints/boarding/alighting points. Do not follow schematic transit/walking lines or bridge disconnected legs. Missing geometry is disclosed. Closest remains straight-line from A within the eligible set; an unchecked filter restores the full loaded set. No GPS, detour routing, timetable change, security guarantee or new provider is added.
+
+**Evidence:** 230 app tests and production builds pass, including ten new geometry/equipment regressions. Private version 34 succeeded at 15:51:24 UTC from Site source `b74ad2037d5d59ebe5fe621995b3e54856a33953`, environment revision 3. Browser interaction QA remains unavailable. [Implementation, limits and next trial](PARKING_COLOURS_AND_ROUTE_2026-09-29.md).

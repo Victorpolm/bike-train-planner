@@ -6,11 +6,11 @@ _Updated 2026-09-29. The user's latest order supersedes the delivery orders reco
 
 **Decision:** Help people travelling with their own bicycle in Switzerland compare a small set of useful complete journeys: cycling only, fastest transit journey, fewest boardings, and least cycling/walking within the stated time allowance. One journey can satisfy several categories. Missing alternatives need an explanation, not a fabricated result.
 
-**Current implementation:** The route/terrain/carriage features and exact-trip fare integration are summarised in [PROJECT_STATE.md](PROJECT_STATE.md). Official and Swiss OSM parking share the map icon/filter and closest-to-start action. Structured bike-shop referencing and the richer suitability/entrance experience below are not delivered.
+**Current implementation:** The route/terrain/carriage features and exact-trip fare integration are summarised in [PROJECT_STATE.md](PROJECT_STATE.md). Official and Swiss OSM parking share equipment colours, the map icon/filter, a 100 m selected-journey corridor and closest-to-start within the eligible set. Structured bike-shop referencing and the richer suitability/entrance experience below are not delivered.
 
 **Hypothesis:** Combining reliable journey planning with useful parking/repair information will reduce the need to switch between apps. Validate this with actual tasks; map-pin counts alone are not success.
 
-**29 September follow-up brainstorming:** The owner repeatedly needs drinking water, snacks/vending, public toilets, good parking and repair help on long rides. Treat these five categories as the next product's useful-stop scope. Their proposed data model, filters, route association and staged delivery are in [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md). Road-safety classification is a separate later research track. Nothing in this update implements the additions.
+**29 September follow-up brainstorming:** The owner repeatedly needs drinking water, snacks/vending, public toilets, good parking and repair help on long rides. Treat these five categories as the next product's useful-stop scope. Their proposed data model, filters, route association and staged delivery are in [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md). Parking colours and basic route association are now delivered; other amenity categories and road-safety classification remain later work.
 
 ## Agreed ordering and proposed milestones
 
@@ -31,6 +31,8 @@ The ordering below records the user's request. Scope, pilot locations, numerical
 **First trial delivered in version 31:** Following the user's later 29 September request, begin with the Bike parking icon and Find closest parking relative to starting point A. Rank the loaded facilities by straight-line distance, highlight/refocus the result and update when A changes. GPS is deferred. This small approved trial precedes the more ambitious pilot below; it does not claim that the full milestone's completion criteria are met. [Implementation and verification](PARKING_FIRST_TRIAL_2026-09-29.md).
 
 **Coverage extension delivered in version 32:** The owner reported missing ETH racks and approved OSM integration. Swiss OSM points, ways and relations now participate in the map and closest search. Sources, access, mapped rack type, cover, fee and hours are retained; identity-based deduplication preserves unresolved overlaps. Both ETH campuses are regression cases. [Evidence and limits](PARKING_OSM_2026-09-29.md).
+
+**Colours and route filtering delivered in version 34:** The owner requested visibly less-preferred wall loops and parking along the selected journey. Four equipment colours retain unknowns; the default-on filter uses about 100 m around real cycling paths and known walking paths/endpoints/stops, excluding transit lines and other journey alternatives. Closest still ranks from A within that scope. Next: test the band on familiar trips, then improve entrance/access evidence and municipal coverage. [Behaviour, ten new regressions and release](PARKING_COLOURS_AND_ROUTE_2026-09-29.md).
 
 The optional layer retains the official combined bicycle/car feed, filtering BIKE facilities. The 29 September audit confirms 1,608 official bicycle records and **no populated bicycle occupancy feed**; OSM adds 20,728 imported records in the dated check. Do not sum these into a verified distinct-facility total. A mapped location and nominal capacity do not establish a free space.
 

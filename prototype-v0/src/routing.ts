@@ -72,6 +72,8 @@ export type TransitLeg = {
   fromPoint?: Point;
   toPoint?: Point;
   geometry?: Point[];
+  // Timetable geometry defaults to stop-to-stop lines, not a street path.
+  geometryKind?: "path" | "stops";
   cyclingRoute?: CyclingRoute;
 };
 

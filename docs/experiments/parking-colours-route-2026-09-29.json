@@ -1,0 +1,18 @@
+{
+  "checked": "2026-09-29T15:49:36.153Z",
+  "dataset": "Previously downloaded Swiss OSM snapshot, 29 Sep 2026",
+  "records": 20728,
+  "colours": {
+    "wheel": 4351,
+    "frame": 7354,
+    "other": 4237,
+    "unknown": 4786
+  },
+  "scaleCheck": {
+    "kind": "synthetic line; not a route or browser benchmark",
+    "segments": 1000,
+    "matched": 76,
+    "indexMilliseconds": 5.89,
+    "filterMilliseconds": 2.8
+  }
+}

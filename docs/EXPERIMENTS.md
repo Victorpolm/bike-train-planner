@@ -638,3 +638,12 @@ Owner-private version **32** succeeded at **14:28:31 UTC**, Site source `caf5644
 The owner's both-sources-unavailable report was not reproduced through authenticated API access: both endpoints returned fresh records at 15:05:06 UTC. The browser loader previously hid authentication, network, malformed-data and provider errors. Version 33 uses separate versioned paths, avoids browser response caching, validates shared cache records and displays specific errors with a deadline and bounded retry.
 
 **220 tests, 11 suites, zero failures/skips/cancellations** and production builds pass. Seven new tests cover authentication/HTML, wrong-source recovery, incomplete JSON, HTTP Retry-After, body timeout/cancellation and legacy/mis-keyed cache rejection. Private version 33 succeeded at 15:11:50 UTC, Site source `774b1eff9a53e2d46f595181f277f2262bc633b1`, environment revision 3. [Live-loader verification and explicit browser-session limitation](PARKING_LOADING_2026-09-29.md).
+
+
+## 2026-09-29 — Equipment colours and parking on the selected journey
+
+**230 tests, 11 suites, zero failures/skips/cancellations**; TypeScript/frontend/Worker builds and whitespace checks pass. Ten new tests cover real ETH rack types and unknown/restricted/mixed data; point-to-segment and 100 m boundary checks; baseline access/egress and intermediate cycling; selected-result and cycling-only changes; rail/bus and unselected-alternative exclusion; missing/schematic walking paths, connector gaps and invalid points; closest-to-A within the filtered records. Journey timing and fare behaviour are unchanged.
+
+The same downloaded Swiss OSM snapshot yields 4,351 wheel-only, 7,354 frame-support, 4,237 other and 4,786 unknown records, total 20,728. A synthetic 1,000-segment local Node scale check took 5.89 ms to index and 2.80 ms to filter; it is neither a real journey nor browser performance evidence. [Data](experiments/parking-colours-route-2026-09-29.json).
+
+Private version **34** succeeded at **15:51:24 UTC**, Site source `b74ad2037d5d59ebe5fe621995b3e54856a33953`, environment revision 3. Browser visual/interaction QA remains unavailable. The next owner trial is a familiar ETH journey: compare rack colours, select another result, toggle the corridor and verify the closest label still references A. [Full behaviour and limits](PARKING_COLOURS_AND_ROUTE_2026-09-29.md).

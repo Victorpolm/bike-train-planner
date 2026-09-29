@@ -442,6 +442,11 @@ button:disabled { cursor: default; opacity: .65; }
 .parking-panel a { color: #513384; text-decoration: underline; }
 .parking-panel button { min-height: 44px; padding: 7px 12px; border: 1px solid #6545a4; border-radius: 7px; background: #fff; color: #513384; font: inherit; cursor: pointer; }
 .parking-panel :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.map-controls .parking-route-toggle { min-height: 44px; font-size: .875rem; }
+.parking-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 0; font-size: .875rem; }
+.parking-legend li { display: inline-flex; align-items: center; gap: 7px; }
+.parking-legend i { display: inline-block; width: 13px; height: 13px; flex: 0 0 13px; border: 1px solid #ffffff; border-radius: 50%; box-shadow: 0 0 0 1px #c7ccd0; }
+.parking-equipment-note { margin: 8px 0 12px; font-size: .875rem; line-height: 1.45; color: var(--muted); }
 .parking-source { margin: 10px 0 0; font-size: .875rem; line-height: 1.45; color: var(--muted); }
 .map-panel:has(.parking-panel) { height: auto; }
 .map-panel:has(.parking-panel) .map-shell { height: max(360px, 52vh); }

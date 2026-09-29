@@ -1,6 +1,6 @@
 # Website access and development
 
-**Current publication:** Private version 33 was deployed on 29 September 2026 at 15:11:50 UTC with environment revision 3. It strengthens parking loading with separate versioned paths, cache validation, bounded retry and specific source errors. 220 tests and production builds pass. [Loading report and verification limits](PARKING_LOADING_2026-09-29.md). Both official and OSM parking remain available to the map/closest-to-A feature. Refresh and enable Bike parking; if it still fails, retain the exact new error text. Sign-in/network errors offer opening the planner in its own tab. [OSM coverage and ETH checks](PARKING_OSM_2026-09-29.md).
+**Current publication:** Private version 34 was deployed on 29 September 2026 at 15:51:24 UTC with environment revision 3. It adds equipment colours (including red wall loops), a default-on 100 m selected-journey parking filter, and closest-to-A within the selected scope. 230 tests and production builds pass. [Behaviour and verification limits](PARKING_COLOURS_AND_ROUTE_2026-09-29.md). Refresh, enable Bike parking and select a journey; uncheck Along selected journey to restore all parking. Missing walking paths use known endpoints only. The earlier version-33 loading/error correction remains in place. [Loading report](PARKING_LOADING_2026-09-29.md) · [OSM coverage and ETH checks](PARKING_OSM_2026-09-29.md).
 
 OJP configuration and exact-trip fare behavior remain unchanged from version 30. [Earlier pricing checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
