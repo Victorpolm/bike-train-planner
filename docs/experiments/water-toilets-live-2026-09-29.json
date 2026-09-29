@@ -1,0 +1,94 @@
+{
+  "checkedAt": "2026-09-29T18:03:05.441Z",
+  "method": "Exact client loader against deployed endpoint in Node using the authenticated verification header; not browser cookie or interaction testing",
+  "requests": [
+    {
+      "path": "/api/amenities/v1",
+      "status": 200,
+      "type": "application/json",
+      "cache": "private, no-store",
+      "schema": "1"
+    }
+  ],
+  "elapsedMs": 32550,
+  "records": 38552,
+  "water": 30686,
+  "toilets": 8216,
+  "dualService": 350,
+  "fetchedAt": "2026-09-29T18:03:03.964Z",
+  "stale": false,
+  "results": [
+    {
+      "start": {
+        "name": "ETH Zentrum",
+        "lat": 47.3763,
+        "lon": 8.5476
+      },
+      "category": "water",
+      "id": "osm:node/13286744284",
+      "distanceMetres": 40,
+      "access": "unknown",
+      "potable": "yes"
+    },
+    {
+      "start": {
+        "name": "ETH Zentrum",
+        "lat": 47.3763,
+        "lon": 8.5476
+      },
+      "category": "toilets",
+      "id": "osm:node/13160608201",
+      "distanceMetres": 32,
+      "access": "yes",
+      "potable": "unknown"
+    },
+    {
+      "start": {
+        "name": "Bern station",
+        "lat": 46.9494,
+        "lon": 7.4394
+      },
+      "category": "water",
+      "id": "osm:relation/3852263",
+      "distanceMetres": 159,
+      "access": "unknown",
+      "potable": "yes"
+    },
+    {
+      "start": {
+        "name": "Bern station",
+        "lat": 46.9494,
+        "lon": 7.4394
+      },
+      "category": "toilets",
+      "id": "osm:way/379582630",
+      "distanceMetres": 38,
+      "access": "unknown",
+      "potable": "unknown"
+    },
+    {
+      "start": {
+        "name": "Biel/Bienne station",
+        "lat": 47.1327,
+        "lon": 7.2429
+      },
+      "category": "water",
+      "id": "osm:node/13247977530",
+      "distanceMetres": 309,
+      "access": "unknown",
+      "potable": "yes"
+    },
+    {
+      "start": {
+        "name": "Biel/Bienne station",
+        "lat": 47.1327,
+        "lon": 7.2429
+      },
+      "category": "toilets",
+      "id": "osm:node/13894076967",
+      "distanceMetres": 47,
+      "access": "yes",
+      "potable": "unknown"
+    }
+  ]
+}

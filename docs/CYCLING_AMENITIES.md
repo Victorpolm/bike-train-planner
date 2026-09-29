@@ -1,12 +1,12 @@
 # Useful stops along a cycling journey
 
-_Brainstorm recorded 29 September 2026. Status: user needs and proposed next steps, not implemented features. This expands the parking/shop roadmap; it does not authorise a new deployment or change the bicycle-accompanies-traveller mode._
+_Brainstorm recorded 29 September 2026. Updated after user-authorised delivery: parking, water and toilets now have map filters, route proximity and closest-to-A actions. The richer service, detour, opening-at-arrival and stop-insertion proposals below remain future work. [Version-36 implementation and limits](WATER_AND_TOILETS_2026-09-29.md). The bicycle still accompanies the traveller._
 
 ## The need
 
 **User evidence:** On long rides the project owner repeatedly looks for drinking fountains, snacks and vending machines, public toilets, good bicycle parking, pumps and repairs. They want these facilities on or close to the proposed path, with selectable map categories and less irrelevant map clutter. VELOVE and Züri rollt in Zürich are examples to investigate. This is a concrete first-person need, not yet evidence that every cyclist has the same priorities.
 
-**Product proposal:** Add a small **Useful stops** control to the selected journey and map. Answer “What can I use ahead of me, what does the detour cost, and will it be accessible when I arrive?” Keep the original journey visible. The complete feature includes all five requested categories; water, food and toilets are planned work, not incidental extras deferred behind a visual redesign.
+**Product proposal:** Add a small **Useful stops** control to the selected journey and map. Answer “What can I use ahead of me, what does the detour cost, and will it be accessible when I arrive?” Keep the original journey visible. The complete feature includes all five requested categories; water and toilets now have an initial OSM layer; food, repair services and richer access/detour handling remain planned work.
 
 ## Categories and useful details
 

@@ -652,3 +652,12 @@ Private version **34** succeeded at **15:51:24 UTC**, Site source `b74ad2037d5d5
 ## 2026-09-29 — Parking marker readability refinement
 
 Following owner feedback, version 35 combines other/unknown equipment into grey and uses square P parking badges versus hollow-circle explored stops. Closest parking retains its equipment colour with a larger outlined P. **230 tests, 11 suites, zero failures/skips/cancellations**, TypeScript/frontend/Worker builds and whitespace checks pass. No additional unit tests were added for these display-only changes. Published at **17:03:36 UTC**, Site source `2a8cc24a9582d090f89489f88c1e6e8e62d754e3`, environment revision 3. Browser interaction/visual QA remains unavailable. [Details and next visual check](PARKING_COLOURS_AND_ROUTE_2026-09-29.md#version-35-marker-refinement).
+
+
+## 2026-09-29 — Water/toilet map filters, source semantics and hosted loader
+
+**245 tests, 11 suites, zero failures/skips/cancellations** plus TypeScript/frontend/Worker builds and whitespace checks pass. Fifteen new regressions cover real Swiss OSM fixtures, ambiguous/negative potability, inactive and invalid data, shared services, access/fees/seasonality, corridor/closest selection, caching/stale bounds, source/schema validation, sign-in/HTTP failures, retry/cancellation and body timeout. Parking classification cases include green bollards and handlebar holders.
+
+Private version **36** succeeded at **18:02:13 UTC**, Site source `a0ac4ff86a2427387060adc0c1dbebe156015884`, environment revision 3. At 18:03:05 UTC the exact client loader accepted the deployed endpoint's fresh 38,552 records: 30,686 water and 8,216 toilet records, with 350 shared places. The uncached request took 32.55 seconds; no retry. Closest water/toilet distances from documented public starts: ETH Zentrum 40/32 m, Bern 159/38 m, Biel/Bienne 309/47 m. All are straight-line/area-centre distances, not entrances or current availability. [Live evidence](experiments/water-toilets-live-2026-09-29.json) · [Source audit](experiments/water-toilets-source-2026-09-29.json).
+
+Browser visual/interaction QA remains unavailable; the authenticated Node check does not test the owner's browser session. Next owner task: enable Water and Toilets on a familiar journey, switch results, inspect water/access details and try each closest button. [Implementation and limits](WATER_AND_TOILETS_2026-09-29.md).

@@ -6,11 +6,11 @@ _Updated 2026-09-29. The user's latest order supersedes the delivery orders reco
 
 **Decision:** Help people travelling with their own bicycle in Switzerland compare a small set of useful complete journeys: cycling only, fastest transit journey, fewest boardings, and least cycling/walking within the stated time allowance. One journey can satisfy several categories. Missing alternatives need an explanation, not a fabricated result.
 
-**Current implementation:** The route/terrain/carriage features and exact-trip fare integration are summarised in [PROJECT_STATE.md](PROJECT_STATE.md). Official and Swiss OSM parking share equipment colours, the map icon/filter, a 100 m selected-journey corridor and closest-to-start within the eligible set. Structured bike-shop referencing and the richer suitability/entrance experience below are not delivered.
+**Current implementation:** The route/terrain/carriage features and exact-trip fare integration are summarised in [PROJECT_STATE.md](PROJECT_STATE.md). Official and Swiss OSM parking share equipment colours, the map icon/filter, a 100 m selected-journey corridor and closest-to-start within the eligible set. Water and toilets now share those map/closest/corridor features, with potability/access uncertainty preserved; [version-36 evidence](WATER_AND_TOILETS_2026-09-29.md). Structured bike-shop referencing and the richer suitability/entrance experience below are not delivered.
 
 **Hypothesis:** Combining reliable journey planning with useful parking/repair information will reduce the need to switch between apps. Validate this with actual tasks; map-pin counts alone are not success.
 
-**29 September follow-up brainstorming:** The owner repeatedly needs drinking water, snacks/vending, public toilets, good parking and repair help on long rides. Treat these five categories as the next product's useful-stop scope. Their proposed data model, filters, route association and staged delivery are in [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md). Parking colours and basic route association are now delivered; other amenity categories and road-safety classification remain later work.
+**29 September follow-up brainstorming:** The owner repeatedly needs drinking water, snacks/vending, public toilets, good parking and repair help on long rides. Treat these five categories as the next product's useful-stop scope. Their proposed data model, filters, route association and staged delivery are in [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md). Parking, water and toilets now have map filters and basic route association. Repair/food categories, checked detours and road-safety classification remain later work.
 
 ## Agreed ordering and proposed milestones
 

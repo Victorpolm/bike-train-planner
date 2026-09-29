@@ -14,11 +14,11 @@ export type ClosestBikeParking = { facility: BikeParking; distanceKm: number };
 
 // Accept a coordinate, independent of how it was selected (start point now,
 // a separately authorised GPS fix later). Rank the whole loaded dataset.
-export function closestBikeParking(facilities: readonly BikeParking[], from: Point | null): ClosestBikeParking | null {
+export function closestBikeParking<T extends Point & { id: string }>(facilities: readonly T[], from: Point | null): { facility: T; distanceKm: number } | null {
   const valid = (p: Point) => Number.isFinite(p.lat) && Number.isFinite(p.lon)
     && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
   if (!from || !valid(from)) return null;
-  let closest: ClosestBikeParking | null = null;
+  let closest: { facility: T; distanceKm: number } | null = null;
   for (const facility of facilities) {
     if (!valid(facility)) continue;
     const distanceKm = haversineKm(from, facility);

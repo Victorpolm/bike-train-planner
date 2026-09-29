@@ -5,7 +5,7 @@ import { haversineKm, type CyclingComparison, type Journey, type Point } from ".
 
 export const PARKING_STYLES = {
   wheel: { color: "#b64432", label: "Wheel-only · wall loops / racks", detail: "Wheel-only equipment mapped: less preferred than frame-support stands." },
-  frame: { color: "#19715c", label: "Frame support · stands", detail: "Frame-support stands mapped: preferable to wheel-only support." },
+  frame: { color: "#19715c", label: "Preferred · stands, bollards, handlebar holders", detail: "Preferred equipment mapped: stands, bollards or handlebar holders." },
   other: { color: "#626973", label: "Other mapped type", detail: "Other parking type mapped; check the equipment details." },
   unknown: { color: "#626973", label: "Rack type unknown", detail: "Rack support is unknown; cover or capacity does not establish the rack type." },
 } as const;
@@ -15,9 +15,10 @@ export function parkingStyle(facility: Pick<BikeParking, "parkingType">) {
   const types = (facility.parkingType ?? "").toLowerCase().split(";").map(t => t.trim()).filter(Boolean);
   // Mixed facilities containing wheel-only racks retain the warning colour.
   if (types.some(t => ["wall_loops", "rack", "ground_slots"].includes(t))) return PARKING_STYLES.wheel;
-  if (types.length && types.every(t => ["stands", "wide_stands", "safe_loops"].includes(t))) return PARKING_STYLES.frame;
-  const other = ["bollard", "anchors", "lockers", "shed", "building", "handlebar_holder", "two-tier", "floor", "informal", "tree", "streetpod", "crossbar"];
-  if (types.length && types.every(t => [...other, "stands", "wide_stands", "safe_loops"].includes(t))) return PARKING_STYLES.other;
+  const preferred = ["stands", "wide_stands", "safe_loops", "bollard", "handlebar_holder"];
+  if (types.length && types.every(t => preferred.includes(t))) return PARKING_STYLES.frame;
+  const other = ["anchors", "lockers", "shed", "building", "two-tier", "floor", "informal", "tree", "streetpod", "crossbar"];
+  if (types.length && types.every(t => [...other, ...preferred].includes(t))) return PARKING_STYLES.other;
   return PARKING_STYLES.unknown;
 }
 
@@ -83,8 +84,8 @@ export function parkingRouteScope(input: {
 // A small geographic grid avoids scanning the national dataset for every path
 // segment. Selection is independent of viewport, zoom and the marker display cap.
 const CELL_DEGREES = .01, METRES_PER_DEGREE = Math.PI * 6371000 / 180;
-export function parkingIndex(facilities: readonly BikeParking[]) {
-  const cells = new Map<string, BikeParking[]>();
+export function parkingIndex<T extends Point>(facilities: readonly T[]) {
+  const cells = new Map<string, T[]>();
   for (const facility of facilities) {
     if (!valid(facility)) continue;
     const key = `${Math.floor(facility.lat / CELL_DEGREES)},${Math.floor(facility.lon / CELL_DEGREES)}`;
@@ -93,9 +94,9 @@ export function parkingIndex(facilities: readonly BikeParking[]) {
   return { facilities, cells };
 }
 
-export function parkingAlongRoute(index: ReturnType<typeof parkingIndex>, scope: ParkingRouteScope, radiusM = PARKING_CORRIDOR_METRES): BikeParking[] {
+export function parkingAlongRoute<T extends Point>(index: { facilities: readonly T[]; cells: Map<string, T[]> }, scope: ParkingRouteScope, radiusM = PARKING_CORRIDOR_METRES): T[] {
   if (!Number.isFinite(radiusM) || radiusM < 0) return [];
-  const matched = new Set<BikeParking>(), latPad = radiusM / METRES_PER_DEGREE;
+  const matched = new Set<T>(), latPad = radiusM / METRES_PER_DEGREE;
   for (const [a, b] of scope.segments) {
     if (!valid(a) || !valid(b)) continue;
     const lonScale = Math.cos((a.lat + b.lat) / 2 * Math.PI / 180);
@@ -103,7 +104,7 @@ export function parkingAlongRoute(index: ReturnType<typeof parkingIndex>, scope:
     const minY = Math.floor((Math.min(a.lat, b.lat) - latPad) / CELL_DEGREES), maxY = Math.floor((Math.max(a.lat, b.lat) + latPad) / CELL_DEGREES);
     const minX = Math.floor((Math.min(a.lon, b.lon) - lonPad) / CELL_DEGREES), maxX = Math.floor((Math.max(a.lon, b.lon) + lonPad) / CELL_DEGREES);
     const dx = (b.lon - a.lon) * lonScale * METRES_PER_DEGREE, dy = (b.lat - a.lat) * METRES_PER_DEGREE;
-    const check = (facility: BikeParking) => {
+    const check = (facility: T) => {
       if (matched.has(facility) || !valid(facility)) return;
       const x = (facility.lon - a.lon) * lonScale * METRES_PER_DEGREE, y = (facility.lat - a.lat) * METRES_PER_DEGREE;
       const t = dx || dy ? Math.max(0, Math.min(1, (x * dx + y * dy) / (dx * dx + dy * dy))) : 0;

@@ -2,6 +2,8 @@
 
 _Initial delivery 29 September 2026, private version 34; marker refinement in version 35._
 
+**Version-36 follow-up:** Bollards and handlebar holders now join green preferred equipment. [Water and toilets](WATER_AND_TOILETS_2026-09-29.md) add their own toggles, symbols and closest actions with the shared corridor.
+
 **Version-35 refinement, following the owner’s readability feedback:** Other mapped equipment and unknown rack types now share grey; the legend has three entries. Parking uses square P badges, explored stops small hollow circles, and the closest parking a larger outlined P. Popup text still distinguishes other mapped types from missing information. The version-34 account below preserves the initial release; route filtering is unchanged.
 
 

@@ -1,0 +1,93 @@
+{
+  "checked": "2026-09-29T17:53:42.507Z",
+  "rawElements": 38575,
+  "records": 38552,
+  "water": 30686,
+  "toilets": 8216,
+  "dualService": 350,
+  "waterStates": {
+    "yes": 23016,
+    "no": 1562,
+    "unknown": 6108
+  },
+  "restrictedToilets": 945,
+  "normalizedBytes": 9447590,
+  "parseMs": 4151.34,
+  "samples": [
+    {
+      "name": "ETH Zentrum",
+      "point": {
+        "lat": 47.3763,
+        "lon": 8.5476
+      },
+      "category": "water",
+      "id": "osm:node/13286744284",
+      "metres": 40,
+      "access": "unknown",
+      "potable": "yes"
+    },
+    {
+      "name": "ETH Zentrum",
+      "point": {
+        "lat": 47.3763,
+        "lon": 8.5476
+      },
+      "category": "toilets",
+      "id": "osm:node/13160608201",
+      "metres": 32,
+      "access": "yes",
+      "potable": "unknown"
+    },
+    {
+      "name": "Bern station",
+      "point": {
+        "lat": 46.9494,
+        "lon": 7.4394
+      },
+      "category": "water",
+      "id": "osm:relation/3852263",
+      "metres": 159,
+      "access": "unknown",
+      "potable": "yes"
+    },
+    {
+      "name": "Bern station",
+      "point": {
+        "lat": 46.9494,
+        "lon": 7.4394
+      },
+      "category": "toilets",
+      "id": "osm:way/379582630",
+      "metres": 38,
+      "access": "unknown",
+      "potable": "unknown"
+    },
+    {
+      "name": "Biel/Bienne station",
+      "point": {
+        "lat": 47.1327,
+        "lon": 7.2429
+      },
+      "category": "water",
+      "id": "osm:node/13247977530",
+      "metres": 309,
+      "access": "unknown",
+      "potable": "yes"
+    },
+    {
+      "name": "Biel/Bienne station",
+      "point": {
+        "lat": 47.1327,
+        "lon": 7.2429
+      },
+      "category": "toilets",
+      "id": "osm:node/13894076967",
+      "metres": 47,
+      "access": "yes",
+      "potable": "unknown"
+    }
+  ],
+  "sourceUrl": "https://overpass.osm.ch/api/interpreter",
+  "rawSha256": "22a43e983bd6ecb2a671885ef9ecd26549379fa026863b854295b1d9595b972c",
+  "licence": "© OpenStreetMap contributors · ODbL — https://www.openstreetmap.org/copyright"
+}

@@ -42,8 +42,8 @@ it("colours real ETH stands and wall loops differently without promoting covered
 
 it("keeps mixed wheel support, other equipment and unknown tags distinct", () => {
   for (const type of ["wall_loops", "rack", "ground_slots", " stands ; wall_loops "]) assert.equal(parkingStyle({ parkingType: type }), PARKING_STYLES.wheel);
-  for (const type of ["stands", "wide_stands", "safe_loops", "stands;safe_loops"]) assert.equal(parkingStyle({ parkingType: type }), PARKING_STYLES.frame);
-  for (const type of ["lockers", "building", "handlebar_holder"]) assert.equal(parkingStyle({ parkingType: type }), PARKING_STYLES.other);
+  for (const type of ["stands", "wide_stands", "safe_loops", "stands;safe_loops", "bollard", "handlebar_holder", "bollard;handlebar_holder"]) assert.equal(parkingStyle({ parkingType: type }), PARKING_STYLES.frame);
+  for (const type of ["lockers", "building"]) assert.equal(parkingStyle({ parkingType: type }), PARKING_STYLES.other);
   for (const type of [undefined, "", "yes", "unknown", "stands;unrecognised"]) assert.equal(parkingStyle({ parkingType: type }), PARKING_STYLES.unknown);
 });
 

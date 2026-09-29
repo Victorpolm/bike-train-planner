@@ -465,3 +465,12 @@ Default to an optional approximately 100 m corridor around the selected cycling-
 ## 2026-09-29 — Distinguish parking symbols and combine neutral equipment colours
 
 The owner requested the same colour for other mapped equipment and unknown rack types, and reported confusion between parking and explored stops. Version 35 uses shared grey for these two equipment categories, square P parking markers, small hollow-circle explored stops and a larger outlined P for the closest result. Popups retain the distinction between other and missing equipment data; route filtering and source handling are unchanged. Existing 230 tests and builds pass. [Release and verification limits](PARKING_COLOURS_AND_ROUTE_2026-09-29.md#version-35-marker-refinement).
+
+
+## 2026-09-29 — Add water/toilet layers and expand preferred parking types
+
+**User decision:** Bollards and handlebar holders should be green; implement the parking-style exploration flow for fountains and toilets. These two categories now precede remaining shop/repair referencing in delivery, while the broader interface pass remains later.
+
+**Implementation:** Extend the green parking preference group without claiming universal frame support. Add independent water-drop/WC map toggles, source/detail popups, the shared 100 m selected-journey corridor and closest-from-A actions. Exclude unconfirmed/non-drinking water and explicit restrictions from closest water; exclude explicit restrictions/keys/known closures from closest toilets while preserving unknown access and unevaluated hours. Keep actual route geometry/known endpoints, stable OSM identities, shared-service marker offsets and explicit area-centre/coverage limits. No GPS, route insertion or live quality/opening claim.
+
+**Data and release:** One fixed Swiss OSM query serves both categories through a separate bounded, cached endpoint; no user coordinates are sent upstream. Version 36 succeeded at 18:02:13 UTC, environment revision 3. 245 tests and builds pass; the live endpoint returned 38,552 fresh records in 32.55 seconds. Browser interaction QA remains unavailable. [Full behaviour, source rules and next check](WATER_AND_TOILETS_2026-09-29.md).

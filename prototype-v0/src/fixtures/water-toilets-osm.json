@@ -1,0 +1,199 @@
+{
+  "_source": "https://overpass.osm.ch/api/interpreter",
+  "_checked": "2026-09-29",
+  "_licence": "© OpenStreetMap contributors · ODbL — https://www.openstreetmap.org/copyright",
+  "elements": [
+    {
+      "type": "node",
+      "id": 25504400,
+      "lat": 46.212966,
+      "lon": 5.9518591,
+      "tags": {
+        "amenity": "fountain"
+      }
+    },
+    {
+      "type": "node",
+      "id": 60018172,
+      "lat": 46.2073807,
+      "lon": 6.1558891,
+      "tags": {
+        "addr:street": "Jetée du Jet-d'eau",
+        "amenity": "fountain",
+        "bottle": "no",
+        "dog": "no",
+        "drinking_water": "no",
+        "fountain": "jet_water",
+        "height": "140",
+        "lit": "yes",
+        "name": "Jet d'eau",
+        "name:es": "El Chorro",
+        "name:fr": "Jet d'eau",
+        "name:ru": "Фонтан Же д'О",
+        "name:zh": "大喷泉",
+        "opening_hours:url": "https://ww2.sig-ge.ch/a-propos-de-sig/nous-connaitre/sites_expositions/jet_deau#base-block-4671",
+        "start_date": "1951",
+        "swimming_pool": "no",
+        "tourism": "attraction",
+        "wheelchair": "yes",
+        "wikidata": "Q684661",
+        "wikipedia": "fr:Jet d'eau de Genève"
+      }
+    },
+    {
+      "type": "node",
+      "id": 103130524,
+      "lat": 47.3659702,
+      "lon": 8.5404365,
+      "tags": {
+        "access": "yes",
+        "amenity": "toilets",
+        "fee": "yes",
+        "female": "yes",
+        "male": "yes",
+        "name": "Bürklisteg",
+        "opening_hours": "24/7",
+        "operator": "ZüriWC",
+        "toilets:disposal": "flush",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 197486835,
+      "lat": 47.6609646,
+      "lon": 9.3557467,
+      "tags": {
+        "access": "customers",
+        "amenity": "toilets",
+        "changing_table": "yes",
+        "changing_table:fee": "no",
+        "check_date:wheelchair": "2021-06-25",
+        "description": "Während der Öffnungszeiten des Schwimmbads von außen frei zugänglich.",
+        "drinking_water": "yes",
+        "fee": "no",
+        "female": "yes",
+        "indoor": "yes",
+        "male": "yes",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 294980115,
+      "lat": 47.3664219,
+      "lon": 8.5331196,
+      "tags": {
+        "amenity": "drinking_water",
+        "covered": "no",
+        "dog": "yes",
+        "drinking_water:description": "Quellwasser",
+        "fountain": "drinking",
+        "note": "Läuft Stand 5.7.26 nicht.",
+        "operator": "WVZ",
+        "operator:wikidata": "Q27229237",
+        "ref": "104",
+        "seasonal": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13160608201,
+      "lat": 47.3765823,
+      "lon": 8.5476848,
+      "tags": {
+        "access": "yes",
+        "addr:housenumber": "101",
+        "addr:street": "Rämistrasse",
+        "amenity": "toilets",
+        "fee": "no",
+        "gender_segregated": "yes",
+        "handwashing:soap": "yes",
+        "opening_hours": "Mo-Fr 06:00-22:00",
+        "supervised": "no",
+        "toilets:disposal": "flush",
+        "toilets:handwashing": "yes",
+        "toilets:paper_supplied": "yes",
+        "toilets:position": "seated;urinal",
+        "wheelchair": "limited"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13247977530,
+      "lat": 47.1352824,
+      "lon": 7.2413761,
+      "tags": {
+        "amenity": "drinking_water"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13286744284,
+      "lat": 47.3764926,
+      "lon": 8.5480445,
+      "tags": {
+        "amenity": "fountain",
+        "drinking_water": "yes",
+        "fountain": "drinking",
+        "lit": "no",
+        "name": "Drei-Grazien-Brunnen"
+      }
+    },
+    {
+      "type": "node",
+      "id": 13894076967,
+      "lat": 47.1327238,
+      "lon": 7.2435239,
+      "tags": {
+        "access": "yes",
+        "amenity": "toilets",
+        "check_date": "2026-05-29"
+      }
+    },
+    {
+      "type": "way",
+      "id": 379582630,
+      "center": {
+        "lat": 46.9493154,
+        "lon": 7.4398861
+      },
+      "tags": {
+        "amenity": "toilets",
+        "changing_table": "yes",
+        "contact:phone": "+41 61 3274646",
+        "fee": "yes",
+        "indoor": "yes",
+        "level": "-1",
+        "name": "Hygienecenter",
+        "opening_hours": "Mo-Th 06:00-24:00, Fr-Sa 06:00-02:30, Su 06:00-24:00",
+        "website": "https://www.sbb.ch/en/meta/display/shop-detail.html/geo-mcclean-hygienecenter-wcdusche-cb4a",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "relation",
+      "id": 3852263,
+      "center": {
+        "lat": 46.9479685,
+        "lon": 7.4393044
+      },
+      "tags": {
+        "amenity": "fountain",
+        "area": "yes",
+        "drinking_water": "yes",
+        "ele": "542",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Burgerspitalbrunnen_03.jpg/800px-Burgerspitalbrunnen_03.jpg",
+        "layer": "2",
+        "location:description:de": "Im Innenhof des Berner GenerationenHaus Bahnhofplatz 2 in 3011 Bern.",
+        "name": "Burgerspitalbrunnen",
+        "operator": "Burgergemeinde Bern",
+        "owner": "Burgergemeinde Bern",
+        "source": "Survey und Orthofotos Stadt Bern",
+        "type": "multipolygon",
+        "wikidata": "Q55990936",
+        "wikimedia_commons": "Category:Burgerspitalbrunnen (Bern)"
+      }
+    }
+  ]
+}

@@ -1,5 +1,8 @@
 import { closestBikeParking, parkingAccess, parkingDetails, parkingDistance, PARKING_SOURCE, OSM_COPYRIGHT } from "./bikeParking";
 import { useBikeParking } from "./useBikeParking";
+import { useAmenities } from "./useAmenities";
+import AmenityLayer, { WaterGlyph } from "./AmenityLayer";
+import type { AmenityCategory } from "./osmAmenities";
 import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_LEGEND } from "./parkingMap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
@@ -78,6 +81,10 @@ export default function MapView({
   handlers.current = { editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus };
   const [showStops, setShowStops] = useState(true);
   const [showParking, setShowParking] = useState(false);
+  const [showWater, setShowWater] = useState(false);
+  const [showToilets, setShowToilets] = useState(false);
+  const [activeAmenity, setActiveAmenity] = useState<AmenityCategory | null>(null);
+  const amenities = useAmenities(showWater || showToilets);
   const { loads: parkingLoads, datasets: parkingDatasets, facilities: parkingFacilities, loading: parkingLoading, retry: retryParking } = useBikeParking(showParking);
   const [parkingMapNote, setParkingMapNote] = useState("");
   const [onlyAlongJourney, setOnlyAlongJourney] = useState(true);
@@ -350,10 +357,14 @@ export default function MapView({
           <circle cx="5" cy="17" r="4" /><circle cx="19" cy="17" r="4" /><path d="m5 17 5-9 5 9H5m5-9h7l2 9M8 5h4m4-1h3l1 4" />
         </svg></span>Bike parking
       </button>
-      {showParking && parkingRoute && <label className="parking-route-toggle"><input type="checkbox" checked={onlyAlongJourney}
+      <button type="button" className="amenity-toggle" aria-pressed={showWater} aria-controls="water-panel" onClick={() => setShowWater(value => !value)}>
+        <WaterGlyph />Water</button>
+      <button type="button" className="amenity-toggle" aria-pressed={showToilets} aria-controls="toilets-panel" onClick={() => setShowToilets(value => !value)}>
+        <b aria-hidden="true">WC</b>Toilets</button>
+      {(showParking || showWater || showToilets) && parkingRoute && <label className="parking-route-toggle"><input type="checkbox" checked={onlyAlongJourney}
         onChange={e => { setOnlyAlongJourney(e.target.checked); setClosestRequest(null); }} />Along selected journey</label>}
       {showParking && <button type="button" className="parking-closest-button" disabled={!origin || parkingLoading || visibleParking.length === 0}
-        onClick={() => setClosestRequest(value => ({ scope: parkingScopeKey, serial: (value?.serial ?? 0) + 1 }))}>Find closest parking</button>}
+        onClick={() => { setActiveAmenity(null); setClosestRequest(value => ({ scope: parkingScopeKey, serial: (value?.serial ?? 0) + 1 })); }}>Find closest parking</button>}
       <button type="button" disabled={!stops.length} onClick={() => {
         setShowStops(true);
         if (allBoundsRef.current?.isValid() && mapRef.current) {
@@ -374,6 +385,8 @@ export default function MapView({
       <span><i className="legend-descent" />Steep descent</span>
       <span><i className="legend-stop" />Explored stop</span>
       {showParking && <span><b className="legend-parking" aria-hidden="true">P</b>Bike parking</span>}
+      {showWater && <span><span className="legend-water"><WaterGlyph /></span>Water</span>}
+      {showToilets && <span><b className="legend-parking" aria-hidden="true">WC</b>Toilets</span>}
       <span><b className="legend-pin">1</b>Board / alight</span>
     </div>
   </div>
@@ -415,5 +428,14 @@ export default function MapView({
         <p>Coverage is incomplete; some source records may overlap. No live availability. Closest means straight-line distance from A among loaded records{alongJourney ? " along the selected journey" : ""}. Nearby parking may require a detour; entrances have not been checked. Your journey stays unchanged.</p>
       </div>
     </section>}
+    {(["water", "toilets"] as const).map(category => (category === "water" ? showWater : showToilets) && <AmenityLayer key={category}
+      category={category} map={mapRef.current} origin={origin} data={amenities.data} loading={amenities.loading} error={amenities.error} retry={amenities.retry}
+      scope={parkingRoute} alongJourney={alongJourney} active={activeAmenity === category} otherLayerEnabled={showWater && showToilets}
+      onActivate={() => { setClosestRequest(null); setActiveAmenity(category); }}
+      onLocate={facility => {
+        if (!mapRef.current || !origin) return;
+        const bounds = L.latLngBounds([[origin.lat, origin.lon], [facility.lat, facility.lon]]);
+        visibleBoundsRef.current = bounds; fitMap(mapRef.current, bounds);
+      }} />)}
   </>;
 }
