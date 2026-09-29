@@ -474,3 +474,12 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 **Implementation:** Extend the green parking preference group without claiming universal frame support. Add independent water-drop/WC map toggles, source/detail popups, the shared 100 m selected-journey corridor and closest-from-A actions. Exclude unconfirmed/non-drinking water and explicit restrictions from closest water; exclude explicit restrictions/keys/known closures from closest toilets while preserving unknown access and unevaluated hours. Keep actual route geometry/known endpoints, stable OSM identities, shared-service marker offsets and explicit area-centre/coverage limits. No GPS, route insertion or live quality/opening claim.
 
 **Data and release:** One fixed Swiss OSM query serves both categories through a separate bounded, cached endpoint; no user coordinates are sent upstream. Version 36 succeeded at 18:02:13 UTC, environment revision 3. 245 tests and builds pass; the live endpoint returned 38,552 fresh records in 32.55 seconds. Browser interaction QA remains unavailable. [Full behaviour, source rules and next check](WATER_AND_TOILETS_2026-09-29.md).
+
+
+## 2026-09-29 — Implement repairs, food and adjustable proximity
+
+**User authorisation:** Implement the repair/food proposal after reviewing usefulness and map clutter.
+
+**Decision:** Add independent filters, explicit service types, closest-from-A, marker grouping and 100/500/1,000 m shared route proximity. Keep the toolbar above the map. Split quick food from optional dining after a live combined payload exceeded the 16 MiB bound. Use independent fixed-query caches without sending user coordinates to OSM. A shop is not automatically a workshop; DIY/repair overlap is not proof of a professional service; broken pumps cannot win pump-only searches. Commercial customer access is allowed; private/conditional access stays excluded. No evaluated hours, entrance/pushing route, stop insertion or fare/routing change.
+
+**Release:** Version 37 succeeded at 21:42:17 UTC, environment revision 3, Site source `c3ca72b2c91fcbfbfd1903904a14d9e22ffbf3b6`. 258 tests and production builds pass. [Repair/food implementation and checks](REPAIRS_AND_FOOD_2026-09-29.md).

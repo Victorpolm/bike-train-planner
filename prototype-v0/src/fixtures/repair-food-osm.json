@@ -1,0 +1,225 @@
+{
+  "_source": "https://overpass.osm.ch/api/interpreter",
+  "_licence": "https://www.openstreetmap.org/copyright",
+  "_capturedAt": "2026-09-29",
+  "_description": "Small sample of public OSM records from the fixed Swiss repair, quick-food and dining queries. No household locations or user journeys. Some records deliberately test exclusion.",
+  "elements": [
+    {
+      "type": "node",
+      "id": 248003886,
+      "lat": 47.1919151,
+      "lon": 7.703891,
+      "tags": {
+        "addr:city": "Herzogenbuchsee",
+        "addr:housenumber": "44",
+        "addr:postcode": "3360",
+        "addr:street": "Wangenstrasse",
+        "email": "info@velorapp.ch",
+        "name": "Velo Rapp",
+        "opening_hours": "Tu,We,Fr 09:00-12:00,14:00-18:30; Th 14:00-18:30; Sa 09:00-12:00,13:00-16:00; week 12-42 Th 09:00-12:00,14:00-18:30",
+        "phone": "+41 62 961 14 88",
+        "service:bicycle:pump": "yes",
+        "shop": "bicycle",
+        "website": "https://velorapp.ch/",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 248973260,
+      "lat": 47.1972465,
+      "lon": 9.3097465,
+      "tags": {
+        "addr:city": "Unterwasser",
+        "addr:country": "CH",
+        "addr:housename": "Velo-Metzg GmbH",
+        "addr:housenumber": "23",
+        "addr:postcode": "9657",
+        "addr:street": "Dorfstrasse",
+        "check_date": "2026-06-15",
+        "name": "Velo-Metzg",
+        "operator": "Roger Fuchs und Denise Steiner",
+        "phone": "+41 71 999 94 90",
+        "service:bicycle:rental": "yes",
+        "service:bicycle:repair": "yes",
+        "service:bicycle:retail": "yes",
+        "shop": "bicycle",
+        "website": "https://www.velometzg.ch/"
+      }
+    },
+    {
+      "type": "node",
+      "id": 6328798483,
+      "lat": 47.4074417,
+      "lon": 8.5050034,
+      "tags": {
+        "access": "yes",
+        "alt_name": "Velove Hönggerberg; Velo ETH",
+        "amenity": "bicycle_repair_station",
+        "branch": "Hönggerberg",
+        "check_date": "2026-05-30",
+        "club": "yes",
+        "contact:instagram": "https://www.instagram.com/velove_eth",
+        "description": "The bike repair shop is open to all, has some spare parts as well. Check Instagram page for updates regarding opening hours/closing days. Donation-based, pay what you want.",
+        "indoor": "yes",
+        "level": "0",
+        "name": "Velove Velowerkstatt",
+        "opening_hours": "Apr 01-Oct 31 Tu,Th 18:00-21:00; Nov 01-Mar 31 Tu,Th 18:00-20:00",
+        "operator": "Velove",
+        "payment:cash": "yes",
+        "payment:twint": "yes",
+        "service:bicycle:bike_tools": "yes",
+        "service:bicycle:chain_tool": "yes",
+        "service:bicycle:cleaning": "yes",
+        "service:bicycle:diy": "yes",
+        "service:bicycle:parts": "yes",
+        "service:bicycle:pump": "yes",
+        "service:bicycle:repair": "yes",
+        "service:bicycle:repair_stand": "yes",
+        "service:bicycle:screwdriver": "yes",
+        "service:bicycle:service": "yes",
+        "service:bicycle:spare_parts": "yes",
+        "service:bicycle:stand": "yes",
+        "service:bicycle:tire_lever": "yes",
+        "service:bicycle:tools": "yes",
+        "service:bicycle:wheel": "yes",
+        "service:bicycle:wrench": "yes",
+        "website": "https://velovezh.ch/workshop-honggerberg/"
+      }
+    },
+    {
+      "type": "node",
+      "id": 1493778334,
+      "lat": 47.3979248,
+      "lon": 8.5968388,
+      "tags": {
+        "access": "yes",
+        "amenity": "bicycle_repair_station",
+        "covered": "yes",
+        "fee": "no",
+        "manometer": "no",
+        "manual": "yes",
+        "opening_hours": "24/7",
+        "service:bicycle:chain_tool": "no",
+        "service:bicycle:pump": "yes",
+        "service:bicycle:pump:operational_status": "operational",
+        "service:bicycle:stand": "no",
+        "service:bicycle:tools": "no",
+        "valves": "schrader;sclaverand"
+      }
+    },
+    {
+      "type": "node",
+      "id": 5195665085,
+      "lat": 46.2336647,
+      "lon": 6.0526275,
+      "tags": {
+        "access": "private",
+        "amenity": "bicycle_repair_station",
+        "check_date:service:bicycle:pump": "2024-01-18",
+        "email": "mobility.service@cern.ch",
+        "manometer": "yes",
+        "manual": "yes",
+        "opening_hours": "24/7",
+        "operator": "CERN",
+        "service:bicycle:chain_tool": "no",
+        "service:bicycle:pump": "yes",
+        "service:bicycle:pump:operational_status": "broken",
+        "service:bicycle:stand": "no",
+        "service:bicycle:tools": "yes",
+        "valves": "schrader"
+      }
+    },
+    {
+      "type": "node",
+      "id": 391501945,
+      "lat": 47.5519291,
+      "lon": 7.5801121,
+      "tags": {
+        "amenity": "vending_machine",
+        "check_date": "2025-12-27",
+        "indoor": "no",
+        "name": "Veloplus",
+        "operator": "Veloplus",
+        "payment:coins": "yes",
+        "payment:notes": "no",
+        "vending": "bicycle_tube"
+      }
+    },
+    {
+      "type": "node",
+      "id": 107459322,
+      "lat": 47.3295481,
+      "lon": 8.5466401,
+      "tags": {
+        "amenity": "compressed_air",
+        "name": "Tauchlädeli;Luftverbund",
+        "shop": "scuba_diving"
+      }
+    },
+    {
+      "type": "node",
+      "id": 29181903,
+      "lat": 47.6567876,
+      "lon": 9.4932408,
+      "tags": {
+        "addr:city": "Friedrichshafen",
+        "addr:country": "DE",
+        "addr:housenumber": "60",
+        "addr:postcode": "88046",
+        "addr:street": "Albrecht-Dürer-Straße",
+        "name": "Weber's Backstube",
+        "opening_hours": "Mo-Fr 06:30-18:00, Sa 06:30-12:30, Su 08:00-11:00",
+        "shop": "bakery"
+      }
+    },
+    {
+      "type": "node",
+      "id": 304036168,
+      "lat": 47.0585614,
+      "lon": 8.3392508,
+      "tags": {
+        "name": "Hofladen Luzern, Fam. Käch",
+        "shop": "farm"
+      }
+    },
+    {
+      "type": "node",
+      "id": 367007592,
+      "lat": 46.5044563,
+      "lon": 7.2909154,
+      "tags": {
+        "amenity": "vending_machine",
+        "vending": "food;drinks"
+      }
+    },
+    {
+      "type": "node",
+      "id": 8204263,
+      "lat": 46.57737,
+      "lon": 8.387538,
+      "tags": {
+        "amenity": "cafe",
+        "name": "Snack-Buvette Belvédère",
+        "outdoor_seating": "yes",
+        "toilets:wheelchair": "yes",
+        "website": "http://www.gletscher.ch/snack-buvette-belvedere/",
+        "wheelchair": "yes"
+      }
+    },
+    {
+      "type": "node",
+      "id": 18476816,
+      "lat": 47.0445969,
+      "lon": 7.5054728,
+      "tags": {
+        "addr:housenumber": "39",
+        "addr:postcode": "3303",
+        "addr:street": "Bernstrasse",
+        "amenity": "restaurant",
+        "name": "Gourmet Party Service",
+        "wheelchair": "yes"
+      }
+    }
+  ]
+}

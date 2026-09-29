@@ -1,12 +1,12 @@
 # Useful stops along a cycling journey
 
-_Brainstorm recorded 29 September 2026. Updated after user-authorised delivery: parking, water and toilets now have map filters, route proximity and closest-to-A actions. The richer service, detour, opening-at-arrival and stop-insertion proposals below remain future work. [Version-36 implementation and limits](WATER_AND_TOILETS_2026-09-29.md). The bicycle still accompanies the traveller._
+_Brainstorm recorded 29 September 2026. All five categories now have map filters, adjustable 100 m / 500 m / 1 km proximity and closest-to-A actions. Repairs/Food add service types and marker grouping; dining is optional. [Version-37 implementation and limits](REPAIRS_AND_FOOD_2026-09-29.md). Evaluated opening, checked entrances/detours and stop insertion with visit duration remain future work. The bicycle still accompanies the traveller._
 
 ## The need
 
 **User evidence:** On long rides the project owner repeatedly looks for drinking fountains, snacks and vending machines, public toilets, good bicycle parking, pumps and repairs. They want these facilities on or close to the proposed path, with selectable map categories and less irrelevant map clutter. VELOVE and Züri rollt in Zürich are examples to investigate. This is a concrete first-person need, not yet evidence that every cyclist has the same priorities.
 
-**Product proposal:** Add a small **Useful stops** control to the selected journey and map. Answer “What can I use ahead of me, what does the detour cost, and will it be accessible when I arrive?” Keep the original journey visible. The complete feature includes all five requested categories; water and toilets now have an initial OSM layer; food, repair services and richer access/detour handling remain planned work.
+**Product proposal:** Add a small **Useful stops** control to the selected journey and map. Answer “What can I use ahead of me, what does the detour cost, and will it be accessible when I arrive?” Keep the original journey visible. The complete feature includes all five requested categories. Initial OSM referencing is delivered for all five; richer access/detour/visit handling remains planned work.
 
 ## Categories and useful details
 
@@ -53,7 +53,7 @@ The existing [29 September audit](experiments/bike-parking-source-audit-2026-09-
 
 ### OSM extraction starting points
 
-These are documented selection rules to validate against Swiss records, not an exhaustive production query. Query nodes, ways and relevant relations; a way's centre is for discovery, not proof of its entrance.
+These are source starting points. The dated implementation reports define the production queries and limits; wider municipal/operator integration remains proposed. Query nodes, ways and relevant relations; a way's centre is for discovery, not proof of its entrance.
 
 | Need | Starting tags | Normalisation notes |
 |---|---|---|
@@ -89,7 +89,7 @@ Later, show **gaps in mapped services** along the ride, for example the distance
 
 ## Proposed delivery and validation
 
-Keep parking first and the broad interface redesign after useful features. Expand the second milestone to include the long-ride essentials:
+The initial five-category layer is delivered. Keep remaining parking/access validation and richer visit handling ahead of the broad interface redesign. The table retains the broader completion gates, which adding map pins alone does not satisfy:
 
 | Step | Deliverable | Evidence before moving on |
 |---|---|---|

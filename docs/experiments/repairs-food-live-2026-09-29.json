@@ -1,0 +1,240 @@
+{
+  "checkedAt": "2026-09-29T21:44:21.011Z",
+  "method": "Exact client loader against deployed endpoints in Node with the authenticated verification header; not browser-cookie or interaction testing",
+  "results": [
+    {
+      "dataset": "repairs",
+      "requests": [
+        {
+          "path": "/api/services/v1/repairs",
+          "status": 200,
+          "type": "application/json",
+          "cache": "private, no-store"
+        }
+      ],
+      "elapsedMs": 24014,
+      "records": 2425,
+      "fetchedAt": "2026-09-29T21:44:44.775Z",
+      "stale": false,
+      "kinds": {
+        "pump": 780,
+        "shop": 1654,
+        "mechanic": 635,
+        "parts": 201,
+        "diy": 71,
+        "station": 475
+      },
+      "results": [
+        {
+          "start": {
+            "label": "ETH Zentrum",
+            "lat": 47.3763,
+            "lon": 8.5476
+          },
+          "category": "repairs",
+          "id": "osm:node/3687402000",
+          "name": "Bicycle service",
+          "distanceMetres": 112,
+          "access": "yes"
+        },
+        {
+          "start": {
+            "label": "Bern station",
+            "lat": 46.9494,
+            "lon": 7.4394
+          },
+          "category": "repairs",
+          "id": "osm:node/1830715872",
+          "name": "AureusDrive Bern",
+          "distanceMetres": 288,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Biel station",
+            "lat": 47.1327,
+            "lon": 7.2429
+          },
+          "category": "repairs",
+          "id": "osm:node/9492733845",
+          "name": "Bicycle Gallery",
+          "distanceMetres": 217,
+          "access": "unknown"
+        }
+      ]
+    },
+    {
+      "dataset": "food",
+      "requests": [
+        {
+          "path": "/api/services/v1/food",
+          "status": 200,
+          "type": "application/json",
+          "cache": "private, no-store"
+        }
+      ],
+      "elapsedMs": 18436,
+      "records": 16275,
+      "fetchedAt": "2026-09-29T21:45:02.122Z",
+      "stale": false,
+      "kinds": {
+        "groceries": 11161,
+        "bakery": 3320,
+        "cafe": 321,
+        "restaurant": 65,
+        "vending": 1807
+      },
+      "results": [
+        {
+          "start": {
+            "label": "ETH Zentrum",
+            "lat": 47.3763,
+            "lon": 8.5476
+          },
+          "category": "food",
+          "id": "osm:node/13986332296",
+          "name": "Food stop",
+          "distanceMetres": 282,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Bern station",
+            "lat": 46.9494,
+            "lon": 7.4394
+          },
+          "category": "food",
+          "id": "osm:node/6338800038",
+          "name": "Selecta",
+          "distanceMetres": 39,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Biel station",
+            "lat": 47.1327,
+            "lon": 7.2429
+          },
+          "category": "food",
+          "id": "osm:node/11793355464",
+          "name": "Selecta",
+          "distanceMetres": 16,
+          "access": "unknown"
+        }
+      ]
+    },
+    {
+      "dataset": "food-dining",
+      "requests": [
+        {
+          "path": "/api/services/v1/food-dining",
+          "status": 200,
+          "type": "application/json",
+          "cache": "private, no-store"
+        }
+      ],
+      "elapsedMs": 18290,
+      "records": 32196,
+      "fetchedAt": "2026-09-29T21:45:19.387Z",
+      "stale": false,
+      "kinds": {
+        "cafe": 5049,
+        "restaurant": 27147,
+        "bakery": 337,
+        "groceries": 49
+      },
+      "results": [
+        {
+          "start": {
+            "label": "ETH Zentrum",
+            "lat": 47.3763,
+            "lon": 8.5476
+          },
+          "category": "food",
+          "id": "osm:node/7047102766",
+          "name": "Dozentenfoyer",
+          "distanceMetres": 8,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Bern station",
+            "lat": 46.9494,
+            "lon": 7.4394
+          },
+          "category": "food",
+          "id": "osm:way/379582635",
+          "name": "Migros Take Away",
+          "distanceMetres": 41,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Biel station",
+            "lat": 47.1327,
+            "lon": 7.2429
+          },
+          "category": "food",
+          "id": "osm:node/4380485991",
+          "name": "Brezelkönig",
+          "distanceMetres": 31,
+          "access": "unknown"
+        }
+      ]
+    },
+    {
+      "dataset": "water-toilets",
+      "requests": [
+        {
+          "path": "/api/amenities/v1",
+          "status": 200,
+          "type": "application/json",
+          "cache": "private, no-store"
+        }
+      ],
+      "elapsedMs": 24437,
+      "records": 38554,
+      "fetchedAt": "2026-09-29T21:45:44.699Z",
+      "stale": false,
+      "kinds": {},
+      "results": [
+        {
+          "start": {
+            "label": "ETH Zentrum",
+            "lat": 47.3763,
+            "lon": 8.5476
+          },
+          "category": "water",
+          "id": "osm:node/13286744284",
+          "name": "Drei-Grazien-Brunnen",
+          "distanceMetres": 40,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Bern station",
+            "lat": 46.9494,
+            "lon": 7.4394
+          },
+          "category": "water",
+          "id": "osm:relation/3852263",
+          "name": "Burgerspitalbrunnen",
+          "distanceMetres": 159,
+          "access": "unknown"
+        },
+        {
+          "start": {
+            "label": "Biel station",
+            "lat": 47.1327,
+            "lon": 7.2429
+          },
+          "category": "water",
+          "id": "osm:node/13247977530",
+          "name": "Water point",
+          "distanceMetres": 309,
+          "access": "unknown"
+        }
+      ]
+    }
+  ]
+}

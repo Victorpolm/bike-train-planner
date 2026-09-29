@@ -1,0 +1,102 @@
+{
+  "checkedAt": "2026-09-29T21:38:40.455Z",
+  "method": "Production handler with captured live OSM bodies, under a 96 MiB Node old-space cap; not a Cloudflare memory guarantee",
+  "results": [
+    {
+      "dataset": "repairs",
+      "records": 2425,
+      "kinds": {
+        "pump": 780,
+        "shop": 1654,
+        "mechanic": 635,
+        "parts": 201,
+        "diy": 71,
+        "station": 475
+      },
+      "checks": [
+        {
+          "from": "ETH Zentrum",
+          "id": "osm:node/3687402000",
+          "name": "Bicycle service",
+          "distanceM": 112
+        },
+        {
+          "from": "Bern station",
+          "id": "osm:node/1830715872",
+          "name": "AureusDrive Bern",
+          "distanceM": 288
+        },
+        {
+          "from": "Biel station",
+          "id": "osm:node/9492733845",
+          "name": "Bicycle Gallery",
+          "distanceM": 217
+        }
+      ],
+      "heapUsedMiB": 30
+    },
+    {
+      "dataset": "food",
+      "records": 16275,
+      "kinds": {
+        "groceries": 11161,
+        "bakery": 3320,
+        "cafe": 321,
+        "restaurant": 65,
+        "vending": 1807
+      },
+      "checks": [
+        {
+          "from": "ETH Zentrum",
+          "id": "osm:node/13986332296",
+          "name": "Food stop",
+          "distanceM": 282
+        },
+        {
+          "from": "Bern station",
+          "id": "osm:node/6338800038",
+          "name": "Selecta",
+          "distanceM": 39
+        },
+        {
+          "from": "Biel station",
+          "id": "osm:node/11793355464",
+          "name": "Selecta",
+          "distanceM": 16
+        }
+      ],
+      "heapUsedMiB": 57
+    },
+    {
+      "dataset": "food-dining",
+      "records": 32196,
+      "kinds": {
+        "cafe": 5049,
+        "restaurant": 27147,
+        "bakery": 337,
+        "groceries": 49
+      },
+      "checks": [
+        {
+          "from": "ETH Zentrum",
+          "id": "osm:node/7047102766",
+          "name": "Dozentenfoyer",
+          "distanceM": 8
+        },
+        {
+          "from": "Bern station",
+          "id": "osm:way/379582635",
+          "name": "Migros Take Away",
+          "distanceM": 41
+        },
+        {
+          "from": "Biel station",
+          "id": "osm:node/4380485991",
+          "name": "Brezelkönig",
+          "distanceM": 31
+        }
+      ],
+      "heapUsedMiB": 71
+    }
+  ]
+}

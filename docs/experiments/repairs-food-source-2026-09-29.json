@@ -1,0 +1,60 @@
+{
+  "source": "https://overpass.osm.ch/api/interpreter",
+  "licence": "https://www.openstreetmap.org/copyright",
+  "results": [
+    {
+      "dataset": "repairs",
+      "fetchedAt": "2026-09-29T21:25:37.556Z",
+      "status": 200,
+      "elapsedMs": 25865,
+      "rawBytes": 1090444,
+      "normalizedBytes": 979631,
+      "rawSha256": "2229eff3201de1cdae40f19de05107271883aa10a09c6e3d46a4c5bafc8d98cd",
+      "rawCount": 2617,
+      "normalizedCount": 2425,
+      "kinds": {
+        "pump": 780,
+        "shop": 1654,
+        "mechanic": 635,
+        "parts": 201,
+        "diy": 71,
+        "station": 475
+      }
+    },
+    {
+      "dataset": "food",
+      "fetchedAt": "2026-09-29T21:31:13.025Z",
+      "status": 200,
+      "elapsedMs": 25081,
+      "rawBytes": 6889480,
+      "normalizedBytes": 5924299,
+      "rawSha256": "4a4d05c72c771fdfdd9442d31f24d7d02d6838a69f108e1c5cb3442e34c535fe",
+      "rawCount": 16295,
+      "normalizedCount": 16275,
+      "kinds": {
+        "groceries": 11161,
+        "bakery": 3320,
+        "cafe": 321,
+        "restaurant": 65,
+        "vending": 1807
+      }
+    },
+    {
+      "dataset": "food-dining",
+      "fetchedAt": "2026-09-29T21:31:35.218Z",
+      "status": 200,
+      "elapsedMs": 22525,
+      "rawBytes": 12639177,
+      "normalizedBytes": 11595806,
+      "rawSha256": "fa9d7c9df8f0bd6c2081aefff8e0e27e190a8fa9e040544e9f654ebad78d8298",
+      "rawCount": 32220,
+      "normalizedCount": 32196,
+      "kinds": {
+        "cafe": 5049,
+        "restaurant": 27147,
+        "bakery": 337,
+        "groceries": 49
+      }
+    }
+  ]
+}

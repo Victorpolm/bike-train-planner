@@ -661,3 +661,13 @@ Following owner feedback, version 35 combines other/unknown equipment into grey 
 Private version **36** succeeded at **18:02:13 UTC**, Site source `a0ac4ff86a2427387060adc0c1dbebe156015884`, environment revision 3. At 18:03:05 UTC the exact client loader accepted the deployed endpoint's fresh 38,552 records: 30,686 water and 8,216 toilet records, with 350 shared places. The uncached request took 32.55 seconds; no retry. Closest water/toilet distances from documented public starts: ETH Zentrum 40/32 m, Bern 159/38 m, Biel/Bienne 309/47 m. All are straight-line/area-centre distances, not entrances or current availability. [Live evidence](experiments/water-toilets-live-2026-09-29.json) · [Source audit](experiments/water-toilets-source-2026-09-29.json).
 
 Browser visual/interaction QA remains unavailable; the authenticated Node check does not test the owner's browser session. Next owner task: enable Water and Toilets on a familiar journey, switch results, inspect water/access details and try each closest button. [Implementation and limits](WATER_AND_TOILETS_2026-09-29.md).
+
+
+## 2026-09-29 — Repair/food data, subtype eligibility and adjustable distance
+
+**258 tests, 11 suites; zero failures/skips/cancellations**, plus TypeScript/frontend/Worker builds. Thirteen new tests cover real Swiss records, strict service/vending rules, access and subtype-specific availability, all three corridor widths, clustering/ranking independence, food identity merge, safe contacts, fixed queries, cache isolation, bounded stale data and client validation.
+
+The source audit found 2,425 repair records, 16,275 quick-food records and 32,196 dining records; the food sets overlap. Production handlers accepted the captured bodies under a 96 MiB Node old-space cap, which is not a Cloudflare memory guarantee. Browser interaction/visual QA remains unavailable. [Repair/food implementation and checks](REPAIRS_AND_FOOD_2026-09-29.md).
+
+
+The post-publication exact-client checks returned HTTP 200 for repairs, quick food, optional dining and water/toilets. All were fresh, with no retries; the three new first-load durations were 24.01 / 18.44 / 18.29 seconds. [Hosted evidence](experiments/repairs-food-live-2026-09-29.json). This is authenticated endpoint validation, not browser UI testing.

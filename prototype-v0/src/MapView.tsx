@@ -1,7 +1,8 @@
 import { closestBikeParking, parkingAccess, parkingDetails, parkingDistance, PARKING_SOURCE, OSM_COPYRIGHT } from "./bikeParking";
 import { useBikeParking } from "./useBikeParking";
 import { useAmenities } from "./useAmenities";
-import AmenityLayer, { WaterGlyph } from "./AmenityLayer";
+import AmenityLayer, { AmenityGlyph, WaterGlyph } from "./AmenityLayer";
+import { mergeFoodData, SERVICE_FILTERS, type ServiceKind } from "./osmServices";
 import type { AmenityCategory } from "./osmAmenities";
 import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_LEGEND } from "./parkingMap";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -58,8 +59,8 @@ function parkingIcon(color: string, closest = false) {
     iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2] });
 }
 function fitMap(map: L.Map, bounds: L.LatLngBounds) {
-  // Reserve room for controls, the legend and displaced stop labels on mobile.
-  const controls = map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect().height ?? 68;
+  // Reserve room for the legend and displaced stop labels on mobile.
+  const controls = map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect().height ?? 0;
   map.fitBounds(bounds, { paddingTopLeft: [48, controls + 34], paddingBottomRight: [56, 84], maxZoom: 14, animate: false });
 }
 
@@ -83,8 +84,36 @@ export default function MapView({
   const [showParking, setShowParking] = useState(false);
   const [showWater, setShowWater] = useState(false);
   const [showToilets, setShowToilets] = useState(false);
+  const [showRepairs, setShowRepairs] = useState(false);
+  const [showFood, setShowFood] = useState(false);
+  const [repairKinds, setRepairKinds] = useState<ServiceKind[]>(() => SERVICE_FILTERS.repairs.filter(item => item.default).map(item => item.kind));
+  const [foodKinds, setFoodKinds] = useState<ServiceKind[]>(() => SERVICE_FILTERS.food.filter(item => item.default).map(item => item.kind));
+  const repairs = useAmenities(showRepairs, "repairs");
+  const quickFood = useAmenities(showFood, "food");
+  const showDining = foodKinds.some(kind => kind === "cafe" || kind === "restaurant");
+  const dining = useAmenities(showFood && showDining, "food-dining");
+  const foodData = useMemo(() => mergeFoodData(quickFood.data, showDining ? dining.data : undefined), [quickFood.data, dining.data, showDining]);
+  const food = { data: foodData, loading: quickFood.loading || showDining && dining.loading,
+    error: quickFood.error ?? (showDining ? dining.error : undefined),
+    retry: () => { if (quickFood.error) quickFood.retry(); if (showDining && dining.error) dining.retry(); } };
+  const [routeRadius, setRouteRadius] = useState(PARKING_CORRIDOR_METRES);
   const [activeAmenity, setActiveAmenity] = useState<AmenityCategory | null>(null);
   const amenities = useAmenities(showWater || showToilets);
+  const sharedCategories = useMemo(() => {
+    const result = new Map<string, AmenityCategory[]>();
+    for (const [enabled, data] of [[showWater || showToilets, amenities.data], [showRepairs, repairs.data], [showFood, food.data]] as const) {
+      if (!enabled || !data) continue;
+      for (const facility of data.facilities) {
+        const categories = result.get(facility.id) ?? [];
+        for (const category of facility.categories) {
+          if (category === "water" && !showWater || category === "toilets" && !showToilets) continue;
+          if (!categories.includes(category)) categories.push(category);
+        }
+        result.set(facility.id, categories);
+      }
+    }
+    return result;
+  }, [showWater, showToilets, showRepairs, showFood, amenities.data, repairs.data, food.data]);
   const { loads: parkingLoads, datasets: parkingDatasets, facilities: parkingFacilities, loading: parkingLoading, retry: retryParking } = useBikeParking(showParking);
   const [parkingMapNote, setParkingMapNote] = useState("");
   const [onlyAlongJourney, setOnlyAlongJourney] = useState(true);
@@ -92,10 +121,10 @@ export default function MapView({
     origin, destination, waypoints: waypoints.map(w => w.place) }), [selectedJourney, cycling, bikeOnlySelected, origin, destination, waypoints]);
   const alongJourney = !!parkingRoute && onlyAlongJourney;
   const indexedParking = useMemo(() => parkingIndex(parkingFacilities), [parkingFacilities]);
-  const visibleParking = useMemo(() => alongJourney && parkingRoute ? parkingAlongRoute(indexedParking, parkingRoute) : parkingFacilities,
-    [alongJourney, parkingRoute, indexedParking, parkingFacilities]);
+  const visibleParking = useMemo(() => alongJourney && parkingRoute ? parkingAlongRoute(indexedParking, parkingRoute, routeRadius) : parkingFacilities,
+    [alongJourney, parkingRoute, indexedParking, parkingFacilities, routeRadius]);
   // A new journey must not retain an old closest pin or override the route fit.
-  const parkingScopeKey = JSON.stringify([parkingRoute?.key, alongJourney]);
+  const parkingScopeKey = JSON.stringify([parkingRoute?.key, alongJourney, routeRadius]);
   const [closestRequest, setClosestRequest] = useState<{ scope: string; serial: number } | null>(null);
   const closestParking = useMemo(() => showParking && closestRequest?.scope === parkingScopeKey
     ? closestBikeParking(visibleParking, origin) : null,
@@ -243,7 +272,7 @@ export default function MapView({
     const pinLayer = L.layerGroup().addTo(layer);
     const drawPins = () => {
       pinLayer.clearLayers();
-      const controlsBottom = (map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect().height ?? 68) + 32;
+      const controlsBottom = (map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect().height ?? 0) + 32;
       const placed = [origin, ...waypoints.map(w => w.place), destination].filter((p): p is Place => p !== null)
         .map(p => map.latLngToLayerPoint([p.lat, p.lon]));
       for (const stop of selectedStops) {
@@ -343,13 +372,13 @@ export default function MapView({
     map.panInside([point.lat, point.lon], { paddingTopLeft: [55, 145], paddingBottomRight: [55, 90], animate: false });
   }, [cycleFocus]);
 
-  return <><div className="map-shell">
-    <div ref={containerRef} className="map" aria-label={bikeOnlySelected ? "Cycling-only estimate map" : "Selected journey and explored stops map"} />
-    <div className="map-controls">
+  return <>
+    <div className="map-controls map-tools">
       <button type="button" disabled={editingDisabled} onClick={() => {
         if (mapRef.current) pickerRef.current?.(mapRef.current.getCenter());
       }}>Choose map centre</button>
       <label><input type="checkbox" checked={showStops} onChange={e => setShowStops(e.target.checked)} />Explored stops ({stops.length})</label>
+      <div className="map-facility-controls" role="group" aria-label="Useful stops">
       <button type="button" className="parking-toggle" aria-pressed={showParking} aria-controls="parking-panel"
         title={showParking ? "Hide bicycle parking" : "Show bicycle parking"}
         onClick={() => { setShowParking(value => !value); setClosestRequest(null); }}>
@@ -361,8 +390,17 @@ export default function MapView({
         <WaterGlyph />Water</button>
       <button type="button" className="amenity-toggle" aria-pressed={showToilets} aria-controls="toilets-panel" onClick={() => setShowToilets(value => !value)}>
         <b aria-hidden="true">WC</b>Toilets</button>
-      {(showParking || showWater || showToilets) && parkingRoute && <label className="parking-route-toggle"><input type="checkbox" checked={onlyAlongJourney}
+      <button type="button" className="amenity-toggle repairs-toggle" aria-pressed={showRepairs} aria-controls="repairs-panel" onClick={() => setShowRepairs(value => !value)}>
+        <AmenityGlyph category="repairs" />Repairs</button>
+      <button type="button" className="amenity-toggle food-toggle" aria-pressed={showFood} aria-controls="food-panel" onClick={() => setShowFood(value => !value)}>
+        <AmenityGlyph category="food" />Food</button>
+      </div>
+      {(showParking || showWater || showToilets || showRepairs || showFood) && parkingRoute && <label className="parking-route-toggle"><input type="checkbox" checked={onlyAlongJourney}
         onChange={e => { setOnlyAlongJourney(e.target.checked); setClosestRequest(null); }} />Along selected journey</label>}
+      {(showParking || showWater || showToilets || showRepairs || showFood) && alongJourney && <label className="route-distance-control">Route distance
+        <select aria-label="Distance from selected journey" value={routeRadius} onChange={e => setRouteRadius(Number(e.target.value))}>
+          <option value={100}>100 m</option><option value={500}>500 m</option><option value={1000}>1 km</option>
+        </select></label>}
       {showParking && <button type="button" className="parking-closest-button" disabled={!origin || parkingLoading || visibleParking.length === 0}
         onClick={() => { setActiveAmenity(null); setClosestRequest(value => ({ scope: parkingScopeKey, serial: (value?.serial ?? 0) + 1 })); }}>Find closest parking</button>}
       <button type="button" disabled={!stops.length} onClick={() => {
@@ -374,6 +412,8 @@ export default function MapView({
       }}>Fit all stops</button>
       <div className="map-instruction">{editingDisabled ? "Stop the search to edit locations." : "Tap the map to choose locations. Drag A, B or a stop to move it."}</div>
     </div>
+    <div className="map-shell">
+    <div ref={containerRef} className="map" aria-label={bikeOnlySelected ? "Cycling-only estimate map" : "Selected journey and explored stops map"} />
     <div className="map-legend">
       <span><i className="legend-bike-only" />Cycling only</span>
       <span><i className="legend-bike" />Cycling leg</span>
@@ -387,6 +427,8 @@ export default function MapView({
       {showParking && <span><b className="legend-parking" aria-hidden="true">P</b>Bike parking</span>}
       {showWater && <span><span className="legend-water"><WaterGlyph /></span>Water</span>}
       {showToilets && <span><b className="legend-parking" aria-hidden="true">WC</b>Toilets</span>}
+      {showRepairs && <span><span className="legend-service legend-repairs"><AmenityGlyph category="repairs" /></span>Repairs</span>}
+      {showFood && <span><span className="legend-service legend-food"><AmenityGlyph category="food" /></span>Food</span>}
       <span><b className="legend-pin">1</b>Board / alight</span>
     </div>
   </div>
@@ -396,7 +438,7 @@ export default function MapView({
       </ul>
       <p className="parking-equipment-note">Colours describe mapped equipment. Access restrictions and theft protection need a separate check.</p>
       <div className="parking-result" role="status" aria-live="polite">
-        {alongJourney && <p><b>{visibleParking.length.toLocaleString("en-GB")}</b> loaded parking records within about {PARKING_CORRIDOR_METRES} m of the selected cycling/walking paths, start, finish and boarding/alighting points. Uncheck “Along selected journey” to show all parking.</p>}
+        {alongJourney && <p><b>{visibleParking.length.toLocaleString("en-GB")}</b> loaded parking records within about {routeRadius} m of the selected cycling/walking paths, start, finish and boarding/alighting points. Uncheck “Along selected journey” to show all parking.</p>}
         {alongJourney && parkingRoute?.incomplete && <p>Some sections have no confirmed street path. Parking near their known endpoints is included; the gaps are not searched.</p>}
         {parkingLoading && <p>Loading {parkingLoads.osm.status === "loading" ? "OpenStreetMap bicycle parking" : "bicycle parking"}…</p>}
         {Object.values(parkingLoads).some(load => load.status === "error") && <p>{parkingFacilities.length ? "Some parking data could not be loaded. Closest results use only loaded sources." : "Parking data could not be loaded. See the reason for each source below."} <button type="button" onClick={retryParking}>Retry missing sources</button></p>}
@@ -428,14 +470,20 @@ export default function MapView({
         <p>Coverage is incomplete; some source records may overlap. No live availability. Closest means straight-line distance from A among loaded records{alongJourney ? " along the selected journey" : ""}. Nearby parking may require a detour; entrances have not been checked. Your journey stays unchanged.</p>
       </div>
     </section>}
-    {(["water", "toilets"] as const).map(category => (category === "water" ? showWater : showToilets) && <AmenityLayer key={category}
-      category={category} map={mapRef.current} origin={origin} data={amenities.data} loading={amenities.loading} error={amenities.error} retry={amenities.retry}
-      scope={parkingRoute} alongJourney={alongJourney} active={activeAmenity === category} otherLayerEnabled={showWater && showToilets}
-      onActivate={() => { setClosestRequest(null); setActiveAmenity(category); }}
-      onLocate={facility => {
-        if (!mapRef.current || !origin) return;
-        const bounds = L.latLngBounds([[origin.lat, origin.lon], [facility.lat, facility.lon]]);
-        visibleBoundsRef.current = bounds; fitMap(mapRef.current, bounds);
-      }} />)}
+    {(["water", "toilets", "repairs", "food"] as const).map(category => {
+      const enabled = { water: showWater, toilets: showToilets, repairs: showRepairs, food: showFood }[category];
+      const source = category === "repairs" ? repairs : category === "food" ? food : amenities;
+      return enabled && <AmenityLayer key={category}
+        category={category} map={mapRef.current} origin={origin} data={source.data} loading={source.loading} error={source.error} retry={source.retry}
+        scope={parkingRoute} alongJourney={alongJourney} radius={routeRadius} sharedCategories={sharedCategories} active={activeAmenity === category}
+        kinds={category === "repairs" ? repairKinds : category === "food" ? foodKinds : undefined}
+        onKinds={category === "repairs" ? setRepairKinds : category === "food" ? setFoodKinds : undefined}
+        onActivate={() => { setClosestRequest(null); setActiveAmenity(category); }}
+        onLocate={facility => {
+          if (!mapRef.current || !origin) return;
+          const bounds = L.latLngBounds([[origin.lat, origin.lon], [facility.lat, facility.lon]]);
+          visibleBoundsRef.current = bounds; fitMap(mapRef.current, bounds);
+        }} />;
+    })}
   </>;
 }

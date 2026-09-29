@@ -1,4 +1,5 @@
 import { OSM_AMENITY_API, OSM_AMENITY_QUERY, parseOsmAmenities, validAmenityData, type AmenityData } from "../src/osmAmenities.ts";
+import { OSM_SERVICE_QUERIES, type ServiceDataset } from "../src/osmServices.ts";
 
 const TTL = 24 * 60 * 60_000, STALE_TTL = 7 * TTL, MAX_BYTES = 16 * 1024 * 1024;
 async function boundedJson(response: Response): Promise<unknown> {
@@ -16,31 +17,32 @@ async function boundedJson(response: Response): Promise<unknown> {
   } finally { reader.releaseLock(); }
 }
 
-export function createAmenityHandler(options: { now?: () => number; cache?: Cache } = {}) {
+export function createAmenityHandler(options: { now?: () => number; cache?: Cache; dataset?: ServiceDataset } = {}) {
   let cached: AmenityData | undefined, pending: Promise<void> | undefined, retryAfter = 0;
   const now = options.now ?? Date.now;
+  const dataset = options.dataset, path = dataset ? `/api/services/v1/${dataset}` : "/api/amenities/v1";
   return async function(request: Request, fetcher: typeof fetch = fetch): Promise<Response> {
     if (request.method !== "GET") return new Response("Method not allowed", { status: 405 });
     const url = new URL(request.url);
-    if (url.pathname !== "/api/amenities/v1") return new Response("Not found", { status: 404 });
+    if (url.pathname !== path) return new Response("Not found", { status: 404 });
     const edge = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
-    const cacheKey = new Request(new URL("/api/amenities-cache/v1/osm", url.origin));
+    const cacheKey = new Request(new URL(dataset ? `/api/services-cache/v1/${dataset}` : "/api/amenities-cache/v1/osm", url.origin));
     const age = () => cached ? now() - Date.parse(cached.fetchedAt) : Infinity;
     const load = async () => {
       if (!cached && edge) {
         try {
           const hit = await edge.match(cacheKey);
           if (hit) { const data: unknown = await hit.json();
-            if (validAmenityData(data) && data.facilities.length && Date.parse(data.fetchedAt) <= now()) cached = data; }
+            if (validAmenityData(data, dataset) && data.facilities.length && Date.parse(data.fetchedAt) <= now()) cached = data; }
         } catch { /* A cache failure does not block the upstream request. */ }
       }
       if (age() <= TTL) return;
       if (retryAfter > now()) throw new Error("Amenity retry cooling down");
       try {
-        const response = await fetcher(OSM_AMENITY_API, { method: "POST", body: new URLSearchParams({ data: OSM_AMENITY_QUERY }),
+        const response = await fetcher(OSM_AMENITY_API, { method: "POST", body: new URLSearchParams({ data: dataset ? OSM_SERVICE_QUERIES[dataset] : OSM_AMENITY_QUERY }),
           headers: { "User-Agent": "BikeTrainPlanner/1.0 (+https://github.com/Victorpolm/bike-train-planner)" }, signal: AbortSignal.timeout(40_000) });
-        const data = parseOsmAmenities(await boundedJson(response), new Date(now()).toISOString());
-        if (!data.facilities.length || !validAmenityData(data)) throw new Error("Amenity dataset empty or invalid");
+        const data = parseOsmAmenities(await boundedJson(response), new Date(now()).toISOString(), dataset);
+        if (!data.facilities.length || !validAmenityData(data, dataset)) throw new Error("Amenity dataset empty or invalid");
         cached = data; retryAfter = 0;
         if (edge) try { await edge.put(cacheKey, Response.json(data, { headers: { "Cache-Control": `public, max-age=${STALE_TTL / 1000}` } })); } catch { /* Memory cache remains usable. */ }
       } catch (error) { retryAfter = now() + 60_000; throw error; }
@@ -52,9 +54,15 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
       }
       return Response.json({ ...cached, stale: age() > TTL }, { headers: { "Cache-Control": "private, no-store", "X-Amenity-Schema": "1", "X-Content-Type-Options": "nosniff" } });
     } catch {
-      return Response.json({ error: "OpenStreetMap water and toilet data could not be loaded." },
+      return Response.json({ error: `OpenStreetMap ${dataset ?? "water and toilet"} data could not be loaded.` },
         { status: 503, headers: { "Retry-After": "60", "Cache-Control": "private, no-store" } });
     }
   };
 }
 export const handleAmenities = createAmenityHandler();
+const serviceHandlers = { repairs: createAmenityHandler({ dataset: "repairs" }), food: createAmenityHandler({ dataset: "food" }), "food-dining": createAmenityHandler({ dataset: "food-dining" }) };
+export function handleServices(request: Request, fetcher: typeof fetch = fetch) {
+  const path = new URL(request.url).pathname;
+  const category = path === "/api/services/v1/repairs" ? "repairs" : path === "/api/services/v1/food" ? "food" : path === "/api/services/v1/food-dining" ? "food-dining" : null;
+  return category ? serviceHandlers[category](request, fetcher) : Promise.resolve(new Response("Not found", { status: 404 }));
+}
