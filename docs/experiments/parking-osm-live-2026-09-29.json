@@ -1,0 +1,107 @@
+{
+  "checkedAt": "2026-09-29T14:30:38.197Z",
+  "method": "Deployed source endpoints plus published closest/merge code; no browser interaction",
+  "sources": [
+    {
+      "provider": "official",
+      "records": 1608,
+      "fetchedAt": "2026-09-29T14:30:27.022Z",
+      "stale": false
+    },
+    {
+      "provider": "osm",
+      "records": 20728,
+      "fetchedAt": "2026-09-29T14:30:37.341Z",
+      "stale": false
+    }
+  ],
+  "mergedRecords": 22336,
+  "ethStandPresent": true,
+  "results": [
+    {
+      "start": {
+        "name": "ETH Zentrum test point",
+        "lat": 47.3763,
+        "lon": 8.5476
+      },
+      "facilityId": "osm:node/11811170403",
+      "source": [
+        {
+          "provider": "osm",
+          "id": "node/11811170403",
+          "url": "https://www.openstreetmap.org/node/11811170403"
+        }
+      ],
+      "distanceMetres": 42,
+      "publicAccess": true
+    },
+    {
+      "start": {
+        "name": "ETH Hönggerberg test point",
+        "lat": 47.4077,
+        "lon": 8.5077
+      },
+      "facilityId": "osm:node/7936524432",
+      "source": [
+        {
+          "provider": "osm",
+          "id": "node/7936524432",
+          "url": "https://www.openstreetmap.org/node/7936524432"
+        }
+      ],
+      "distanceMetres": 38,
+      "publicAccess": true
+    },
+    {
+      "start": {
+        "name": "Zürich HB",
+        "lat": 47.378177,
+        "lon": 8.540192
+      },
+      "facilityId": "68dd516f-2f22-4094-9d93-d299ccb76e03",
+      "source": [
+        {
+          "provider": "official",
+          "id": "68dd516f-2f22-4094-9d93-d299ccb76e03",
+          "url": "https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/"
+        }
+      ],
+      "distanceMetres": 51,
+      "publicAccess": true
+    },
+    {
+      "start": {
+        "name": "Bern station",
+        "lat": 46.948825,
+        "lon": 7.439122
+      },
+      "facilityId": "osm:node/9221548268",
+      "source": [
+        {
+          "provider": "osm",
+          "id": "node/9221548268",
+          "url": "https://www.openstreetmap.org/node/9221548268"
+        }
+      ],
+      "distanceMetres": 87,
+      "publicAccess": true
+    },
+    {
+      "start": {
+        "name": "Biel/Bienne station",
+        "lat": 47.13297,
+        "lon": 7.24224
+      },
+      "facilityId": "8926da0c-8a40-47f2-ad12-eb8e40dca91b",
+      "source": [
+        {
+          "provider": "official",
+          "id": "8926da0c-8a40-47f2-ad12-eb8e40dca91b",
+          "url": "https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/"
+        }
+      ],
+      "distanceMetres": 51,
+      "publicAccess": true
+    }
+  ]
+}

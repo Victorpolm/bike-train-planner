@@ -12,14 +12,17 @@ _Consolidated 2026-09-29. Current integrations are separated from source options
 | Timetables and bicycle evidence | Active server-side OJP 2.0, paired bicycle-filtered/unfiltered searches, dated TripInfo; public search.ch and Transport API fallbacks; scoped reviewed operator rules | Exact service/segment evidence and operator policy are different; unknown permission, disruptions and capacity remain separate |
 | Passenger/bicycle prices | OJP Fare test endpoint using a separate server key, with retained/assembled exact itineraries; scoped published fallbacks | Test estimates, complete-coverage checks and unknown products; no purchase/booking guarantee; [fare release](OJP_EXACT_TRIP_FARES_2026-09-28.md) |
 | Bicycle parking | [Official bicycle/car feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/), filtering BIKE records for the map toggle and closest-to-start trial | Straight-line distance to facility points; station/partner coverage including border areas; no bicycle occupancy; richer hours/prices/entrances not yet normalised |
+| Local bicycle parking | [Swiss OSM Overpass](https://overpass.osm.ch/), `amenity=bicycle_parking` nodes/ways/relations; shared map and closest-to-start search | Point/area centres, incomplete coverage, mapped access/fee/hours rather than verified entry or availability; [implementation](PARKING_OSM_2026-09-29.md) |
 | National timetable/street data | Swiss GTFS and Geofabrik OSM were downloaded and audited; experimental local timetable service | Not the published routing backend; performance/calendars/headways/pathways/disruptions and hosting remain gates |
-| Parking enrichment | Zürich and Biel/Bienne municipal data, OSM and operator sources reviewed as candidates below | Proposed, not merged into the app |
+| Further parking enrichment | Zürich and Biel/Bienne municipal data and operator sources reviewed as candidates below | Proposed; OSM is already integrated |
 | Bike shops/repairs/pumps | OSM/service/operator information proposed for the next milestone | No dedicated integrated directory yet; named-place search does not verify services/hours |
 | Water, toilets, food/vending | OSM plus municipal water/WC data and operator evidence | Next-step proposal; category filters, hours/condition handling and route detours are not implemented |
 
 Neither access to national sources nor successful sampled queries establishes a complete verified map of all Swiss public transport or every cycle path. Transit geometry remains schematic; cycling geometry is routed. The published app does not silently activate the local national timetable pilot.
 
 ## Parking audit and proposed enrichment
+
+Version 32 adds a fixed regional OSM parking query, daily caching, per-source failure handling and object-level attribution. The dated query returned 20,729 objects; 20,728 remained after excluding one disused object. Counts may overlap official facilities. Merge only stable identities/explicit object links, retain unresolved overlap and never sum duplicate capacities. ETH Zentrum/Hönggerberg checks, cache bounds and ODbL attribution are recorded in [PARKING_OSM_2026-09-29.md](PARKING_OSM_2026-09-29.md).
 
 A fresh official download on 29 September contained **1,608 bicycle and 1,269 car facility records**. Zero BIKE records had populated current/forecast occupancy; 435 CAR records had current estimated occupancy. Bicycle operating-time structures occurred in 570 records, pricing models in 143 and descriptive traits in 303. These are presence counts, not validated usable schedules/tariffs. [Machine-readable audit, source URL, hash and counting method](experiments/bike-parking-source-audit-2026-09-29.json).
 

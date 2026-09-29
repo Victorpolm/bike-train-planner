@@ -431,3 +431,13 @@ Keep bounded exact-match lookup compatibility for results without complete retai
 **Implementation:** A labelled icon toggle reveals the official parking layer and Find closest parking. Rank all loaded facilities by Haversine distance from A; clearly label straight-line distance and incomplete coverage. Highlight the selected facility and fit it with A, update when A changes, retain access uncertainty and handle missing start/loading/empty/error states. Leave routing, fares, GPS permission and source ingestion unchanged. [Implementation, checks and publication](PARKING_FIRST_TRIAL_2026-09-29.md).
 
 **Publication:** Owner-private version 31 succeeded at 12:50:32 UTC with environment revision 3. 206 tests and production builds pass. The three live-source calculations are recorded in the linked report; browser interaction QA remains unperformed. The broader parking and amenities proposals remain later work.
+
+## 2026-09-29 — Include OpenStreetMap parking after the ETH coverage gap
+
+**User authorization:** Add OSM parking to the existing filter and closest-to-start search after the owner reported missing ETH Zürich racks. Keep GPS later.
+
+**Decision:** Load a cached Swiss regional OSM parking query alongside the official feed, including points, ways and relations. Rank the full loaded dataset relative to A, independently of map visibility. Preserve source IDs/links, access restrictions, mapped rack/cover/capacity/fee/hours information and unknowns. Deduplicate stable identities/explicit OSM links; do not merge nearby racks by distance alone or sum capacities. Unresolved overlap remains visible as a limitation of record counts. Area-centre distance is not a verified entrance route.
+
+**Reliability:** Source requests/caches are independent. Daily memory/edge caching, shared in-flight requests, finite response/time limits, OSM failure cooldown and bounded stale fallback avoid repeating national queries unnecessarily. Missing sources are disclosed before a partial closest result; OSM attribution is visible. No new key, paid service, schedule or GPS permission is introduced.
+
+**Verified delivery:** Private version 32 succeeded at 14:28:31 UTC, environment revision 3. 213 tests and production builds pass. Deployed endpoints returned 20,728 OSM and 1,608 official records; the ETH Zentrum/Hönggerberg checks selected OSM parking 42/38 metres away. Browser interaction testing remains unavailable. [Implementation and evidence](PARKING_OSM_2026-09-29.md).

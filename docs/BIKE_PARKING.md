@@ -1,8 +1,8 @@
 # Bike parking: proposed next milestone
 
-_29 September 2026. Status: broader design proposal with a small initial trial delivered. Version 31 adds the map icon/filter and closest listed parking from starting point A; suitability, entrance routing and source enrichment below remain proposals._
+_29 September 2026. Status: closest-to-start trial and OSM coverage delivered. Version 32 extends version 31's map icon/filter with Swiss OSM parking; municipal enrichment, suitability and entrance routing below remain proposals._
 
-**Latest user scope:** Try the icon and Find closest parking first, using A rather than GPS. Distance is explicitly straight-line, selection follows changes to A and the journey stays unchanged. [Trial, tests and publication](PARKING_FIRST_TRIAL_2026-09-29.md).
+**Latest user scope:** Add OSM parking after the owner found ETH Zürich racks missing. The icon and Find closest parking use both sources, with A rather than GPS. Distance is explicitly straight-line, selection follows changes to A and the journey stays unchanged. [OSM implementation, tests and publication](PARKING_OSM_2026-09-29.md).
 
 ## Product question
 
@@ -14,9 +14,9 @@ The later 29 September brainstorm adds parking along the actual cycling path and
 
 ## What we already have
 
-[`bikeParking.ts`](../prototype-v0/src/bikeParking.ts) normalises the official combined feed and filters BIKE facilities. [`parkingHandler.ts`](../prototype-v0/server/parkingHandler.ts) serves `/api/parking`, caches a successful response for up to a day per server instance and can return stale data on refresh failure. The browser loads it when its optional layer is enabled; [`MapView.tsx`](../prototype-v0/src/MapView.tsx) displays in-view pins at zoom 10 and above.
+[`bikeParking.ts`](../prototype-v0/src/bikeParking.ts) normalises official BIKE facilities and merges source identities; [`osmParking.ts`](../prototype-v0/src/osmParking.ts) imports Swiss OSM points, ways and relations. [`parkingHandler.ts`](../prototype-v0/server/parkingHandler.ts) serves separate `source=official|osm` responses with daily memory/edge caching and bounded stale fallback. The browser loads both independently when parking is enabled; [`MapView.tsx`](../prototype-v0/src/MapView.tsx) displays official pins from zoom 10 and OSM-only pins from zoom 13, with a 1,500-pin display cap and zoom notice.
 
-Cards currently expose name/operator, broad type, cover indication, nominal capacity, a public-access flag, descriptive traits and a link. The closest-to-start result adds a highlighted P marker, distance and origin summary, with loading/retry/missing-start states. It searches all loaded facilities rather than only visible pins; the selected result remains visible even when zoomed out. The app does not yet structure prices/opening hours, join local/OSM records, find entrances, rank suitability or alter the route for parking. It does not report live free places.
+Popups expose name/operator, source links, broad type, mapped OSM rack form, cover, nominal capacity, access restrictions, fee indication and raw opening hours when supplied. The highlighted closest result searches all loaded records rather than only visible pins and remains visible when zoomed out. Stable IDs and explicit object links are deduplicated; nearby records without identity evidence remain separate. The app does not yet import municipal inventories, evaluate opening-at-arrival or tariffs, find entrances, rank suitability, alter the route or report live free places.
 
 ## Fresh audit: what the source can and cannot supply
 
@@ -43,7 +43,7 @@ The source has station-related `uic`/`didokId` properties; the current normalise
 | [Official bicycle/car feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/) | Keep the existing station/partner backbone and provider IDs | It is not an inventory of every street rack; audit attributes before using them in decisions |
 | [Zürich municipal parking data](https://data.stadt-zuerich.ch/dataset/geo_zweiradparkierung) | Fill local destination gaps; inspect vehicle type, capacity and fee indication | Filter motorcycle-only records; the published CC0 dataset explicitly excludes occupancy and can miss temporary removals |
 | [Biel/Bienne municipal parking](https://opendata.swiss/fr/dataset/veloparkierung) | Compare local street-rack coverage and equipment with the national feed and OSM | Distinguish facility count from space capacity; validate the current export, dates, overlap and reuse terms before integration |
-| [OpenStreetMap bicycle parking](https://wiki.openstreetmap.org/wiki/Tag:amenity=bicycle_parking) | Additional racks, parking forms and mapped access/fee/maxstay/cover details | Missing tags remain unknown; public/customer/member/private access need different treatment |
+| [OpenStreetMap bicycle parking](https://wiki.openstreetmap.org/wiki/Tag:amenity=bicycle_parking) | Implemented: additional Swiss points/areas, parking form, access, fee, cover, capacity and raw hours | Missing tags remain unknown; access restrictions are labelled. Maxstay/suitability and reviewed identity matching remain later work |
 | Facility/operator pages and [SBB guidance](https://www.sbb.ch/content/internet/sbb/en/support/produkte-services/services/weitere-sbb-services/veloparking-am-bahnhof.html) | Review practical entry, retrieval, tariff and subscription requirements | Link and record a dated review; do not assume an undocumented API or bulk-reuse permission |
 | [Forum Velostationen](https://www.velostation.ch/de/velostationen/) | Discover operator sources and validate pilot stations | A directory listing is not automatically a licensed bulk dataset or live availability service |
 

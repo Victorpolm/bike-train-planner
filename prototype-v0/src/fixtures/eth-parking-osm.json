@@ -1,0 +1,89 @@
+{
+  "_source": "https://overpass.osm.ch/api/interpreter",
+  "_checked": "2026-09-29",
+  "_licence": "© OpenStreetMap contributors, ODbL — https://www.openstreetmap.org/copyright",
+  "elements": [
+    {
+      "type": "node",
+      "id": 321526421,
+      "lat": 47.3773314,
+      "lon": 8.5477393,
+      "tags": {
+        "access": "yes",
+        "amenity": "bicycle_parking",
+        "bicycle_parking": "stands",
+        "capacity": "48",
+        "covered": "yes",
+        "fee": "no",
+        "lit": "yes",
+        "operator": "ETH Zürich"
+      }
+    },
+    {
+      "type": "node",
+      "id": 7936524432,
+      "lat": 47.4073906,
+      "lon": 8.5074922,
+      "tags": {
+        "access": "yes",
+        "amenity": "bicycle_parking",
+        "bicycle_parking": "wall_loops",
+        "capacity": "108",
+        "covered": "yes",
+        "fee": "no"
+      }
+    },
+    {
+      "type": "node",
+      "id": 11811170403,
+      "lat": 47.3760368,
+      "lon": 8.5471919,
+      "tags": {
+        "access": "yes",
+        "amenity": "bicycle_parking",
+        "bicycle_parking": "handlebar_holder",
+        "capacity": "32",
+        "covered": "yes",
+        "fee": "no",
+        "layer": "-1"
+      }
+    },
+    {
+      "type": "way",
+      "id": 263781904,
+      "center": {
+        "lat": 47.375493,
+        "lon": 8.5476029
+      },
+      "tags": {
+        "access": "private",
+        "amenity": "bicycle_parking",
+        "area": "yes",
+        "fee": "no",
+        "note": "Bike parking only for Publibike",
+        "operator": "Publibike",
+        "parking": "surface"
+      }
+    },
+    {
+      "type": "way",
+      "id": 914770857,
+      "center": {
+        "lat": 47.3770075,
+        "lon": 8.5492676
+      },
+      "tags": {
+        "access": "yes",
+        "addr:housenumber": "2a",
+        "addr:street": "Schmelzbergstrasse",
+        "amenity": "bicycle_parking",
+        "bicycle_parking": "handlebar_holder",
+        "building": "roof",
+        "building:levels": "1",
+        "capacity": "28",
+        "covered": "yes",
+        "fee": "no"
+      }
+    }
+  ]
+}

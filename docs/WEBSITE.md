@@ -1,6 +1,6 @@
 # Website access and development
 
-**Current publication:** Private version 31 was deployed on 29 September 2026 at 12:50:32 UTC with environment revision 3. It adds the Bike parking map icon/filter and Find closest parking from starting point A, with explicitly labelled straight-line distance. 206 tests and production builds pass; live parking-source checks covered Zürich, Bern and Biel/Bienne. [Trial and verification](PARKING_FIRST_TRIAL_2026-09-29.md). Refresh the website, select a From location, enable Bike parking and choose Find closest parking; no journey search or GPS permission is needed.
+**Current publication:** Private version 32 was deployed on 29 September 2026 at 14:28:31 UTC with environment revision 3. OpenStreetMap parking now joins the official feed in the map and Find closest parking from A, including ETH Zürich racks. 213 tests and production builds pass. [Coverage, ETH checks and limitations](PARKING_OSM_2026-09-29.md). Refresh, select a From location, enable Bike parking, wait for source loading and choose Find closest parking; zoom in to browse local racks. No journey search or GPS permission is needed.
 
 OJP configuration and exact-trip fare behavior remain unchanged from version 30. [Earlier pricing checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 

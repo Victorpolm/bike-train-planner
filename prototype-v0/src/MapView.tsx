@@ -1,4 +1,5 @@
-import { closestBikeParking, parkingDistance, PARKING_SOURCE, type ParkingData } from "./bikeParking";
+import { closestBikeParking, parkingAccess, parkingDetails, parkingDistance, PARKING_SOURCE, OSM_COPYRIGHT } from "./bikeParking";
+import { useBikeParking } from "./useBikeParking";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { formatMinutes, type CyclingComparison, type Journey, type Place, type Point } from "./routing";
@@ -68,41 +69,33 @@ export default function MapView({
   handlers.current = { editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus };
   const [showStops, setShowStops] = useState(true);
   const [showParking, setShowParking] = useState(false);
-  const [parking, setParking] = useState<ParkingData | null>(null);
-  const [parkingStatus, setParkingStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [parkingAttempt, setParkingAttempt] = useState(0);
+  const { loads: parkingLoads, datasets: parkingDatasets, facilities: parkingFacilities, loading: parkingLoading, retry: retryParking } = useBikeParking(showParking);
+  const [parkingMapNote, setParkingMapNote] = useState("");
   const [closestRequest, setClosestRequest] = useState(0);
-  const closestParking = useMemo(() => showParking && closestRequest && parking
-    ? closestBikeParking(parking.facilities, origin) : null,
-  [showParking, closestRequest, parking, origin?.lat, origin?.lon]);
-  useEffect(() => {
-    if (!showParking || parking) return;
-    const controller = new AbortController();
-    setParkingStatus("loading");
-    void fetch("/api/parking", { signal: controller.signal }).then(async response => {
-      if (!response.ok) throw new Error("Parking unavailable");
-      return await response.json() as ParkingData;
-    }).then(data => { if (!controller.signal.aborted) { setParking(data); setParkingStatus("idle"); } }, () => {
-      if (!controller.signal.aborted) setParkingStatus("error");
-    });
-    return () => controller.abort();
-  }, [showParking, parking, parkingAttempt]);
+  const closestParking = useMemo(() => showParking && closestRequest
+    ? closestBikeParking(parkingFacilities, origin) : null,
+  [showParking, closestRequest, parkingFacilities, origin?.lat, origin?.lon]);
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !showParking || !parking) return;
+    if (!map || !showParking) return;
     const layer = L.layerGroup().addTo(map);
     const draw = () => {
       layer.clearLayers();
-      for (const facility of parking.facilities) {
+      let count = 0, limited = false;
+      const bounds = map.getBounds().pad(.1), zoom = map.getZoom();
+      for (const facility of parkingFacilities) {
         const isClosest = facility.id === closestParking?.facility.id;
-        if (!isClosest && (map.getZoom() < 10 || !map.getBounds().pad(.1).contains([facility.lat, facility.lon]))) continue;
-        const content = popup(facility.name, [facility.operator,
-          facility.type === "BIKE_STATION" ? "Bicycle station" : "Bicycle parking",
-          facility.covered === true ? "Covered" : "Cover information not supplied",
-          facility.capacity === null ? "Capacity not supplied" : `${facility.capacity} bicycle places in total (not availability)`,
-          facility.publicAccess === false ? "Restricted access" : facility.publicAccess === true ? "Public access; check any access conditions" : "Access conditions not supplied",
-          ...facility.traits]);
+        const osmOnly = facility.sources?.every(ref => ref.provider === "osm");
+        if (!isClosest && (zoom < (osmOnly ? 13 : 10) || !bounds.contains([facility.lat, facility.lon]))) continue;
+        if (!isClosest && count >= 1500) { limited = true; continue; }
+        count++;
+        const content = popup(facility.name, parkingDetails(facility));
         if (facility.url) { const a = document.createElement("a"); a.href = facility.url; a.textContent = "Facility information"; a.target = "_blank"; a.rel = "noreferrer"; content.append(a); }
+        for (const source of facility.sources ?? []) {
+          const p = document.createElement("p"), link = document.createElement("a");
+          link.href = source.url; link.textContent = source.provider === "osm" ? "Source: © OpenStreetMap contributors" : "Source: opentransportdata.swiss";
+          link.target = "_blank"; link.rel = "noreferrer"; p.append(link); content.append(p);
+        }
         if (isClosest) {
           L.marker([facility.lat, facility.lon], { icon: markerIcon("#6545a4", "P"),
             title: `Closest listed bicycle parking: ${facility.name}`, alt: `Closest listed bicycle parking: ${facility.name}`, zIndexOffset: 1100 })
@@ -113,10 +106,11 @@ export default function MapView({
             .bindTooltip(textNode(facility.name)).bindPopup(content).addTo(layer);
         }
       }
+      setParkingMapNote(limited ? "Zoom in to see all parking pins in this area." : zoom < 13 ? "Zoom in to see local OpenStreetMap parking. Find closest parking searches all loaded records at any zoom." : "");
     };
     draw(); map.on("moveend zoomend", draw);
     return () => { map.off("moveend zoomend", draw); layer.remove(); };
-  }, [showParking, parking, closestParking]);
+  }, [showParking, parkingFacilities, closestParking]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -336,7 +330,7 @@ export default function MapView({
           <circle cx="5" cy="17" r="4" /><circle cx="19" cy="17" r="4" /><path d="m5 17 5-9 5 9H5m5-9h7l2 9M8 5h4m4-1h3l1 4" />
         </svg></span>Bike parking
       </button>
-      {showParking && <button type="button" className="parking-closest-button" disabled={!origin || !parking || parking.facilities.length === 0}
+      {showParking && <button type="button" className="parking-closest-button" disabled={!origin || parkingLoading || parkingFacilities.length === 0}
         onClick={() => setClosestRequest(value => value + 1)}>Find closest parking</button>}
       <button type="button" disabled={!stops.length} onClick={() => {
         setShowStops(true);
@@ -362,21 +356,32 @@ export default function MapView({
   </div>
     {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
       <div className="parking-result" role="status" aria-live="polite">
-        {parkingStatus === "loading" && <p>Loading bicycle parking…</p>}
-        {parkingStatus === "error" && <p>Parking could not be loaded. <button type="button" onClick={() => setParkingAttempt(value => value + 1)}>Retry</button></p>}
+        {parkingLoading && <p>Loading {parkingLoads.osm.status === "loading" ? "OpenStreetMap bicycle parking" : "bicycle parking"}…</p>}
+        {Object.values(parkingLoads).some(load => load.status === "error") && <p>Some parking sources could not be loaded. Closest results use only the sources shown below. <button type="button" onClick={retryParking}>Retry missing sources</button></p>}
         {!origin && <p>Select a starting point in the From field or choose Start here on the map.</p>}
-        {parking && parking.facilities.length === 0 && <p>No bicycle parking was found in the current dataset.</p>}
-        {parking && parking.facilities.length > 0 && origin && !closestParking && <p>Find the closest listed parking to <strong>{origin.label}</strong> (point A), or zoom in to explore the map.</p>}
+        {!parkingLoading && parkingDatasets.length > 0 && parkingFacilities.length === 0 && <p>No bicycle parking was found in the loaded sources.</p>}
+        {!parkingLoading && parkingFacilities.length > 0 && origin && !closestParking && <p>Find the closest listed parking to <strong>{origin.label}</strong> (point A), or zoom in to explore the map.</p>}
+        {parkingMapNote && <p>{parkingMapNote}</p>}
         {closestParking && origin && <>
           <span className="parking-result-label">Closest listed parking to point A</span>
           <strong className="parking-result-name">{closestParking.facility.name}</strong>
+          {closestParking.facility.operator !== "Operator not supplied" && <p>{closestParking.facility.operator}</p>}
           <p><b>{parkingDistance(closestParking.distanceKm)}</b> straight-line from {origin.label}. Road access has not been checked.</p>
-          <p>{closestParking.facility.publicAccess === false ? "Restricted access — check the facility's conditions." : "Check entry conditions before travelling."}
+          <p>{parkingAccess(closestParking.facility)}. Check entry conditions before travelling.
             {closestParking.facility.url && <> <a href={closestParking.facility.url} target="_blank" rel="noreferrer">Facility details</a></>}</p>
+          <p>Source: {closestParking.facility.sources?.map(ref => ref.provider === "osm" ? "OpenStreetMap" : "opentransportdata.swiss").join(" + ")}.
+            {closestParking.facility.sources?.some(ref => ref.provider === "osm" && !ref.id.startsWith("node/")) && " Area/line centre; entrance not verified."}</p>
         </>}
       </div>
-      {parking && <p className="parking-source">{parking.facilities.length.toLocaleString("en-GB")} official and partner facilities · <a href={PARKING_SOURCE} target="_blank" rel="noreferrer">Source</a> · downloaded {new Date(parking.fetchedAt).toLocaleDateString("en-GB")}.
-        {parking.stale && " Refresh failed; showing the last downloaded data."} Coverage is incomplete; no live availability. Your journey stays unchanged.</p>}
+      <div className="parking-source">
+        {(["official", "osm"] as const).map(provider => {
+          const load = parkingLoads[provider], data = load.data;
+          return <p key={provider}><a href={provider === "osm" ? OSM_COPYRIGHT : PARKING_SOURCE} target="_blank" rel="noreferrer">{provider === "osm" ? "© OpenStreetMap contributors · ODbL" : "opentransportdata.swiss"}</a>
+            {data ? <> · {data.facilities.length.toLocaleString("en-GB")} records · downloaded {new Date(data.fetchedAt).toLocaleDateString("en-GB")}{data.stale && " · refresh failed; showing older data"}</>
+              : load.status === "error" ? " · unavailable (retry after a minute)" : " · loading"}.</p>;
+        })}
+        <p>Coverage is incomplete; some source records may overlap. No live availability. Closest means straight-line distance among loaded records. Your journey stays unchanged.</p>
+      </div>
     </section>}
   </>;
 }

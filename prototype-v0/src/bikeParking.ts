@@ -2,9 +2,14 @@ import { haversineKm, type Point } from "./routing.ts";
 
 export const PARKING_SOURCE = "https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/";
 export const PARKING_DOWNLOAD = "https://data.opentransportdata.swiss/en/dataset/bike-and-car-parking/permalink";
+export const OSM_COPYRIGHT = "https://www.openstreetmap.org/copyright";
+export type ParkingProvider = "official" | "osm";
+export type ParkingReference = { provider: ParkingProvider; id: string; url: string };
 export type BikeParking = Point & { id: string; name: string; operator: string; type: string;
-  covered: boolean | null; capacity: number | null; publicAccess: boolean | null; traits: string[]; url?: string };
-export type ParkingData = { facilities: BikeParking[]; fetchedAt: string; source: string; coverage: string; stale?: boolean };
+  covered: boolean | null; capacity: number | null; publicAccess: boolean | null; traits: string[]; url?: string;
+  access?: string; fee?: boolean | null; openingHours?: string; parkingType?: string; sources?: ParkingReference[] };
+export type ParkingData = { facilities: BikeParking[]; fetchedAt: string; source: string; coverage: string; stale?: boolean;
+  provider?: ParkingProvider; updatedAt?: string };
 export type ClosestBikeParking = { facility: BikeParking; distanceKm: number };
 
 // Accept a coordinate, independent of how it was selected (start point now,
@@ -56,8 +61,72 @@ export function parseBikeParking(value: unknown, fetchedAt = new Date().toISOStr
       operator: typeof p.operator === "string" ? p.operator : "Operator not supplied", type,
       covered: type.includes("COVERED") ? true : null,
       capacity: Number.isInteger(capacity) && capacity! >= 0 ? capacity! : null,
-      publicAccess: typeof p.publicAccess === "boolean" ? p.publicAccess : null, traits, url });
+      publicAccess: typeof p.publicAccess === "boolean" ? p.publicAccess : null, traits, url,
+      sources: [{ provider: "official", id: feature.id, url: PARKING_SOURCE }] });
   }
-  return { facilities: [...facilities.values()], fetchedAt, source: PARKING_SOURCE,
+  return { facilities: [...facilities.values()], fetchedAt, source: PARKING_SOURCE, provider: "official",
     coverage: "Official station and partner facilities in Switzerland and nearby border areas; not an inventory of every bicycle rack." };
+}
+
+export function parkingAccess(facility: BikeParking): string {
+  if (facility.publicAccess === false && ["yes", "public", "permissive"].includes(facility.access ?? "")) return "Sources disagree on access; restrictions may apply";
+  const labels: Record<string, string> = { yes: "Public access; check any access conditions", public: "Public access; check any access conditions",
+    permissive: "Access permitted by the owner; conditions may change", private: "Private access", no: "Access not permitted",
+    customers: "Customers only", members: "Members only", permit: "Permit required", destination: "Access for visitors to this destination" };
+  if (facility.access) return labels[facility.access] ?? `Access: ${facility.access}; check conditions`;
+  return facility.publicAccess === false ? "Restricted access" : facility.publicAccess === true
+    ? "Public access; check any access conditions" : "Access conditions not supplied";
+}
+
+export function parkingDetails(facility: BikeParking): string[] {
+  return [facility.operator, facility.type === "BIKE_STATION" ? "Bicycle station" : "Bicycle parking",
+    ...(facility.parkingType ? [`Parking type: ${facility.parkingType.replaceAll("_", " ")}`] : []),
+    facility.covered === true ? "Covered" : facility.covered === false ? "Not covered" : "Cover information not supplied",
+    facility.capacity === null ? "Capacity not supplied" : `${facility.capacity} bicycle places in total (not availability)`,
+    parkingAccess(facility),
+    facility.fee === true ? "Fee applies; check tariff" : facility.fee === false ? "Mapped as free of charge" : "Fee information not supplied",
+    ...(facility.openingHours ? [`Mapped opening hours: ${facility.openingHours} (not checked for arrival)`] : []), ...facility.traits];
+}
+
+function osmIdentity(url?: string): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (!["www.openstreetmap.org", "openstreetmap.org", "osm.org", "www.osm.org"].includes(parsed.hostname)) return null;
+    return parsed.pathname.match(/^\/(node|way|relation)\/([1-9][0-9]*)\/?$/)?.slice(1).join("/") ?? null;
+  } catch { return null; }
+}
+
+// Source IDs (or an explicit OSM object link) establish identity. Proximity alone
+// must not collapse opposite-side racks, separate stands or station enclosures.
+export function mergeBikeParking(datasets: readonly ParkingData[]): BikeParking[] {
+  const facilities: BikeParking[] = [], identities = new Map<string, number>();
+  for (const dataset of datasets) for (const facility of dataset.facilities) {
+    const keys = (facility.sources ?? [{ provider: dataset.provider ?? "official", id: facility.id }])
+      .map(ref => `${ref.provider}:${ref.id}`);
+    const linked = osmIdentity(facility.url);
+    if (linked) keys.push(`osm:${linked}`);
+    const index = keys.map(key => identities.get(key)).find(value => value !== undefined);
+    if (index === undefined) {
+      keys.forEach(key => identities.set(key, facilities.length)); facilities.push(facility); continue;
+    }
+    const previous = facilities[index];
+    // Repeated objects from the same provider are the same record, not capacity to add.
+    if (previous.sources?.some(ref => facility.sources?.some(next => ref.provider === next.provider && ref.id === next.id))) continue;
+    const refs = [...(previous.sources ?? []), ...(facility.sources ?? [])];
+    const osm = facility.sources?.some(ref => ref.provider === "osm") ? facility : previous;
+    const conflicts: string[] = [];
+    const value = <T,>(a: T | null | undefined, b: T | null | undefined, label: string): T | null => {
+      if (a != null && b != null && a !== b) { conflicts.push(`${label} differs between sources; check facility details.`); return null; }
+      return a ?? b ?? null;
+    };
+    const capacity = value(previous.capacity, facility.capacity, "Capacity"), covered = value(previous.covered, facility.covered, "Cover");
+    const access = value(previous.publicAccess, facility.publicAccess, "Access");
+    facilities[index] = { ...previous, capacity, covered,
+      publicAccess: previous.publicAccess === false || facility.publicAccess === false ? false : access,
+      access: osm.access, fee: value(previous.fee, facility.fee, "Fee"), openingHours: osm.openingHours,
+      parkingType: osm.parkingType, sources: refs, traits: [...new Set([...previous.traits, ...facility.traits, ...conflicts])] };
+    keys.forEach(key => identities.set(key, index));
+  }
+  return facilities;
 }

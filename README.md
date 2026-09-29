@@ -6,9 +6,9 @@ A Switzerland-first planner for travelling with your bicycle, combining road-rou
 
 The app supports Baseline/Extended planning, ordered stops, named places, configurable cycling pace, terrain/profile information and three public-transport bicycle-access scopes. Passenger, bicycle-ticket and reservation costs are separate. OJP fare requests now reuse the exact retained trip or assemble its selected service/walking legs.
 
-A **Bike parking** icon on the map toggles the official parking layer. **Find closest parking** highlights the closest listed facility to the selected starting point A, with a clearly labelled straight-line distance. No journey search is required; GPS, road-access routing, municipal/OSM enrichment and the broader amenity proposal remain later work. [First-trial scope and checks](docs/PARKING_FIRST_TRIAL_2026-09-29.md). National timetable/OSM work remains a local pilot; route searches are bounded and can miss alternatives.
+A **Bike parking** icon toggles official **and OpenStreetMap** parking. **Find closest parking** searches all loaded records relative to starting point A, including local racks around ETH Zürich, with clearly labelled straight-line distance. Sources, mapped equipment and access restrictions are visible. No journey search is required; GPS, entrance routing, municipal imports and broader amenities remain later work. [OSM coverage and checks](docs/PARKING_OSM_2026-09-29.md). The national timetable/street-routing engine remains a local pilot; route searches are bounded and can miss alternatives.
 
-**Last verified release:** owner-private **version 31**, published 29 September 2026; 206 application tests and frontend/Worker production builds passed. Live parking-source checks covered Zürich, Bern and Biel/Bienne. Earlier [exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records Zürich–Bern/Laax and modified-trip checks; OJP prices remain test estimates.
+**Last verified release:** owner-private **version 32**, published 29 September 2026; 213 application tests and frontend/Worker production builds passed. OSM source checks include both ETH campuses. Earlier [exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records Zürich–Bern/Laax and modified-trip checks; OJP prices remain test estimates.
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 
@@ -20,7 +20,7 @@ A **Bike parking** icon on the map toggles the official parking layer. **Find cl
 
 [Roadmap and completion criteria](docs/APP_ROADMAP.md) · [Concrete bike-parking proposal](docs/BIKE_PARKING.md) · [Useful stops: brainstorming and data plan](docs/CYCLING_AMENITIES.md)
 
-The 29 September follow-up records the owner's long-ride needs, municipal/OSM enrichment, parking equipment/protection attributes and actual route detours. These are proposed additions. [Road-safety research](docs/CYCLING_SAFETY_RESEARCH.md) follows later: investigate infrastructure and junction manoeuvres without treating every signal or turn as inherently dangerous.
+The 29 September follow-up records the owner's long-ride needs. OSM parking is now integrated; municipal enrichment, broader equipment/protection choices, other amenities and actual route detours remain proposed additions. [Road-safety research](docs/CYCLING_SAFETY_RESEARCH.md) follows later: investigate infrastructure and junction manoeuvres without treating every signal or turn as inherently dangerous.
 
 The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle occupancy observations or forecasts. The parking milestone therefore concerns suitability and access; capacity is not a free-space count. [Dated audit](docs/experiments/bike-parking-source-audit-2026-09-29.json).
 
