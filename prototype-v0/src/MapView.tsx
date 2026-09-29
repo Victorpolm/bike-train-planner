@@ -1,5 +1,5 @@
-import { PARKING_SOURCE, type ParkingData } from "./bikeParking";
-import { useEffect, useRef, useState } from "react";
+import { closestBikeParking, parkingDistance, PARKING_SOURCE, type ParkingData } from "./bikeParking";
+import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { formatMinutes, type CyclingComparison, type Journey, type Place, type Point } from "./routing";
 import { journeyStops, type ExploredStop } from "./mapData";
@@ -69,28 +69,33 @@ export default function MapView({
   const [showStops, setShowStops] = useState(true);
   const [showParking, setShowParking] = useState(false);
   const [parking, setParking] = useState<ParkingData | null>(null);
-  const [parkingStatus, setParkingStatus] = useState("");
+  const [parkingStatus, setParkingStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [parkingAttempt, setParkingAttempt] = useState(0);
+  const [closestRequest, setClosestRequest] = useState(0);
+  const closestParking = useMemo(() => showParking && closestRequest && parking
+    ? closestBikeParking(parking.facilities, origin) : null,
+  [showParking, closestRequest, parking, origin?.lat, origin?.lon]);
   useEffect(() => {
     if (!showParking || parking) return;
     const controller = new AbortController();
-    setParkingStatus("Loading bicycle parking…");
+    setParkingStatus("loading");
     void fetch("/api/parking", { signal: controller.signal }).then(async response => {
       if (!response.ok) throw new Error("Parking unavailable");
       return await response.json() as ParkingData;
-    }).then(data => { if (!controller.signal.aborted) { setParking(data); setParkingStatus(""); } }, () => {
-      if (!controller.signal.aborted) setParkingStatus("Parking could not be loaded. Switch this layer off and on to retry.");
+    }).then(data => { if (!controller.signal.aborted) { setParking(data); setParkingStatus("idle"); } }, () => {
+      if (!controller.signal.aborted) setParkingStatus("error");
     });
     return () => controller.abort();
-  }, [showParking, parking]);
+  }, [showParking, parking, parkingAttempt]);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !showParking || !parking) return;
     const layer = L.layerGroup().addTo(map);
     const draw = () => {
       layer.clearLayers();
-      if (map.getZoom() < 10) return;
       for (const facility of parking.facilities) {
-        if (!map.getBounds().pad(.1).contains([facility.lat, facility.lon])) continue;
+        const isClosest = facility.id === closestParking?.facility.id;
+        if (!isClosest && (map.getZoom() < 10 || !map.getBounds().pad(.1).contains([facility.lat, facility.lon]))) continue;
         const content = popup(facility.name, [facility.operator,
           facility.type === "BIKE_STATION" ? "Bicycle station" : "Bicycle parking",
           facility.covered === true ? "Covered" : "Cover information not supplied",
@@ -98,13 +103,20 @@ export default function MapView({
           facility.publicAccess === false ? "Restricted access" : facility.publicAccess === true ? "Public access; check any access conditions" : "Access conditions not supplied",
           ...facility.traits]);
         if (facility.url) { const a = document.createElement("a"); a.href = facility.url; a.textContent = "Facility information"; a.target = "_blank"; a.rel = "noreferrer"; content.append(a); }
-        L.circleMarker([facility.lat, facility.lon], { radius: 6, color: "#fff", weight: 2, fillColor: "#6545a4", fillOpacity: .95 })
-          .bindTooltip(textNode(facility.name)).bindPopup(content).addTo(layer);
+        if (isClosest) {
+          L.marker([facility.lat, facility.lon], { icon: markerIcon("#6545a4", "P"),
+            title: `Closest listed bicycle parking: ${facility.name}`, alt: `Closest listed bicycle parking: ${facility.name}`, zIndexOffset: 1100 })
+            .bindTooltip(textNode(`Closest parking · ${parkingDistance(closestParking!.distanceKm)} straight-line`), { permanent: true, direction: "bottom", offset: [0, 18] })
+            .bindPopup(content).addTo(layer);
+        } else {
+          L.circleMarker([facility.lat, facility.lon], { radius: 6, color: "#fff", weight: 2, fillColor: "#6545a4", fillOpacity: .95, bubblingMouseEvents: false })
+            .bindTooltip(textNode(facility.name)).bindPopup(content).addTo(layer);
+        }
       }
     };
     draw(); map.on("moveend zoomend", draw);
     return () => { map.off("moveend zoomend", draw); layer.remove(); };
-  }, [showParking, parking]);
+  }, [showParking, parking, closestParking]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -291,6 +303,14 @@ export default function MapView({
   }, [origin, destination, waypoints, editingDisabled, stops, selectedJourney, cycling, bikeOnlySelected, showStops]);
 
   useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !closestParking || !origin) return;
+    const bounds = L.latLngBounds([[origin.lat, origin.lon], [closestParking.facility.lat, closestParking.facility.lon]]);
+    visibleBoundsRef.current = bounds;
+    fitMap(map, bounds);
+  }, [closestParking, origin?.lat, origin?.lon]);
+
+  useEffect(() => {
     const map = mapRef.current, layer = focusLayerRef.current;
     if (!map || !layer) return;
     layer.clearLayers();
@@ -302,14 +322,22 @@ export default function MapView({
     map.panInside([point.lat, point.lon], { paddingTopLeft: [55, 145], paddingBottomRight: [55, 90], animate: false });
   }, [cycleFocus]);
 
-  return <div className="map-shell">
+  return <><div className="map-shell">
     <div ref={containerRef} className="map" aria-label={bikeOnlySelected ? "Cycling-only estimate map" : "Selected journey and explored stops map"} />
     <div className="map-controls">
       <button type="button" disabled={editingDisabled} onClick={() => {
         if (mapRef.current) pickerRef.current?.(mapRef.current.getCenter());
       }}>Choose map centre</button>
       <label><input type="checkbox" checked={showStops} onChange={e => setShowStops(e.target.checked)} />Explored stops ({stops.length})</label>
-      <label><input type="checkbox" checked={showParking} onChange={e => setShowParking(e.target.checked)} />Bicycle parking</label>
+      <button type="button" className="parking-toggle" aria-pressed={showParking} aria-controls="parking-panel"
+        title={showParking ? "Hide bicycle parking" : "Show bicycle parking"}
+        onClick={() => { setShowParking(value => !value); setClosestRequest(0); }}>
+        <span className="parking-button-icon" aria-hidden="true"><b>P</b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <circle cx="5" cy="17" r="4" /><circle cx="19" cy="17" r="4" /><path d="m5 17 5-9 5 9H5m5-9h7l2 9M8 5h4m4-1h3l1 4" />
+        </svg></span>Bike parking
+      </button>
+      {showParking && <button type="button" className="parking-closest-button" disabled={!origin || !parking || parking.facilities.length === 0}
+        onClick={() => setClosestRequest(value => value + 1)}>Find closest parking</button>}
       <button type="button" disabled={!stops.length} onClick={() => {
         setShowStops(true);
         if (allBoundsRef.current?.isValid() && mapRef.current) {
@@ -317,9 +345,6 @@ export default function MapView({
           fitMap(mapRef.current, allBoundsRef.current);
         }
       }}>Fit all stops</button>
-      {showParking && <div className="parking-information" role="status">{parkingStatus || (parking ? `${parking.facilities.length} official and partner facilities. Zoom in to see parking.` : "")}
-        {parking && <> <a href={PARKING_SOURCE} target="_blank" rel="noreferrer">Source</a> · downloaded {new Date(parking.fetchedAt).toLocaleDateString("en-GB")}.{parking.stale && " Refresh failed; the last downloaded data is shown."} Coverage is incomplete; no live availability. Parking does not change your route.</>}
-      </div>}
       <div className="map-instruction">{editingDisabled ? "Stop the search to edit locations." : "Tap the map to choose locations. Drag A, B or a stop to move it."}</div>
     </div>
     <div className="map-legend">
@@ -334,5 +359,24 @@ export default function MapView({
       <span><i className="legend-stop" />Explored stop</span>
       <span><b className="legend-pin">1</b>Board / alight</span>
     </div>
-  </div>;
+  </div>
+    {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
+      <div className="parking-result" role="status" aria-live="polite">
+        {parkingStatus === "loading" && <p>Loading bicycle parking…</p>}
+        {parkingStatus === "error" && <p>Parking could not be loaded. <button type="button" onClick={() => setParkingAttempt(value => value + 1)}>Retry</button></p>}
+        {!origin && <p>Select a starting point in the From field or choose Start here on the map.</p>}
+        {parking && parking.facilities.length === 0 && <p>No bicycle parking was found in the current dataset.</p>}
+        {parking && parking.facilities.length > 0 && origin && !closestParking && <p>Find the closest listed parking to <strong>{origin.label}</strong> (point A), or zoom in to explore the map.</p>}
+        {closestParking && origin && <>
+          <span className="parking-result-label">Closest listed parking to point A</span>
+          <strong className="parking-result-name">{closestParking.facility.name}</strong>
+          <p><b>{parkingDistance(closestParking.distanceKm)}</b> straight-line from {origin.label}. Road access has not been checked.</p>
+          <p>{closestParking.facility.publicAccess === false ? "Restricted access — check the facility's conditions." : "Check entry conditions before travelling."}
+            {closestParking.facility.url && <> <a href={closestParking.facility.url} target="_blank" rel="noreferrer">Facility details</a></>}</p>
+        </>}
+      </div>
+      {parking && <p className="parking-source">{parking.facilities.length.toLocaleString("en-GB")} official and partner facilities · <a href={PARKING_SOURCE} target="_blank" rel="noreferrer">Source</a> · downloaded {new Date(parking.fetchedAt).toLocaleDateString("en-GB")}.
+        {parking.stale && " Refresh failed; showing the last downloaded data."} Coverage is incomplete; no live availability. Your journey stays unchanged.</p>}
+    </section>}
+  </>;
 }

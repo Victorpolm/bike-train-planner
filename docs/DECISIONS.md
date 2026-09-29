@@ -423,3 +423,9 @@ Keep bounded exact-match lookup compatibility for results without complete retai
 **Later research, not established rules:** Analyse junction manoeuvres and mapped infrastructure before changing stress/routing weights. Signals may separate conflicts; ordinary bends are not all equivalent to across-traffic turns. Pedestrian access needs verification, and crash counts without exposure are not per-cyclist risk. Preserve existing lower-traffic-stress uncertainty.
 
 **Scope of this work:** Documentation and source review only. No new feature, source import, app test/build, deployment, subscription, operator outreach or upstream map edit is claimed. Current release evidence remains dated 28 September. The uploaded 5 September project summary is historical, not the current implementation state.
+
+## 2026-09-29 — Implement the small closest-to-start parking trial
+
+**User decision:** Start with a map icon/filter and closest bicycle parking relative to the supplied starting point; GPS access comes later. This explicitly narrows the immediate parking implementation to a small trial rather than the full earlier destination/entrance/municipal-enrichment proposal.
+
+**Implementation:** A labelled icon toggle reveals the official parking layer and Find closest parking. Rank all loaded facilities by Haversine distance from A; clearly label straight-line distance and incomplete coverage. Highlight the selected facility and fit it with A, update when A changes, retain access uncertainty and handle missing start/loading/empty/error states. Leave routing, fares, GPS permission and source ingestion unchanged. [Implementation, checks and publication](PARKING_FIRST_TRIAL_2026-09-29.md).

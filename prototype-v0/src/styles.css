@@ -427,7 +427,24 @@ button:disabled { cursor: default; opacity: .65; }
 .fare-details dl { display: grid; gap: .6rem; }
 .fare-details dt { font-weight: 700; }
 .fare-details dd { margin: .2rem 0 0; }
-.parking-information { width: 100%; max-width: 34rem; font-size: .875rem; line-height: 1.4; }
+.map-controls .parking-toggle, .map-controls .parking-closest-button { min-height: 44px; font-size: .875rem; }
+.parking-toggle { display: inline-flex; align-items: center; gap: 7px; }
+.parking-button-icon { display: inline-flex; align-items: center; gap: 2px; color: #6545a4; }
+.parking-button-icon b { font-size: 1rem; }
+.parking-button-icon svg { width: 25px; height: 25px; }
+.map-controls .parking-toggle[aria-pressed="true"] { background: #6545a4; color: white; border-color: #6545a4; }
+.parking-toggle[aria-pressed="true"] .parking-button-icon { color: white; }
+.parking-panel { margin-top: 12px; padding: 14px 16px; border: 1px solid #d7cce6; border-radius: 12px; background: #fff; overflow-wrap: anywhere; }
+.parking-result { font-size: 1rem; line-height: 1.5; }
+.parking-result p { margin: 4px 0; }
+.parking-result-label { display: block; font-size: .875rem; color: #6545a4; }
+.parking-result-name { display: block; margin: 3px 0; }
+.parking-panel a { color: #513384; text-decoration: underline; }
+.parking-panel button { min-height: 44px; padding: 7px 12px; border: 1px solid #6545a4; border-radius: 7px; background: #fff; color: #513384; font: inherit; cursor: pointer; }
+.parking-panel :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.parking-source { margin: 10px 0 0; font-size: .875rem; line-height: 1.45; color: var(--muted); }
+.map-panel:has(.parking-panel) { height: auto; }
+.map-panel:has(.parking-panel) .map-shell { height: max(360px, 52vh); }
 /* Terrain warnings remain readable in itinerary cards and the cycling panel. */
 .terrain-summary { margin-block: .75rem; }
 .terrain-summary .cycle-stats { grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); }

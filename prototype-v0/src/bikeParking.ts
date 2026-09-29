@@ -1,10 +1,32 @@
-import type { Point } from "./routing.ts";
+import { haversineKm, type Point } from "./routing.ts";
 
 export const PARKING_SOURCE = "https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/";
 export const PARKING_DOWNLOAD = "https://data.opentransportdata.swiss/en/dataset/bike-and-car-parking/permalink";
 export type BikeParking = Point & { id: string; name: string; operator: string; type: string;
   covered: boolean | null; capacity: number | null; publicAccess: boolean | null; traits: string[]; url?: string };
 export type ParkingData = { facilities: BikeParking[]; fetchedAt: string; source: string; coverage: string; stale?: boolean };
+export type ClosestBikeParking = { facility: BikeParking; distanceKm: number };
+
+// Accept a coordinate, independent of how it was selected (start point now,
+// a separately authorised GPS fix later). Rank the whole loaded dataset.
+export function closestBikeParking(facilities: readonly BikeParking[], from: Point | null): ClosestBikeParking | null {
+  const valid = (p: Point) => Number.isFinite(p.lat) && Number.isFinite(p.lon)
+    && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
+  if (!from || !valid(from)) return null;
+  let closest: ClosestBikeParking | null = null;
+  for (const facility of facilities) {
+    if (!valid(facility)) continue;
+    const distanceKm = haversineKm(from, facility);
+    if (!Number.isFinite(distanceKm)) continue;
+    if (!closest || distanceKm < closest.distanceKm
+      || distanceKm === closest.distanceKm && facility.id < closest.facility.id) closest = { facility, distanceKm };
+  }
+  return closest;
+}
+
+export function parkingDistance(distanceKm: number): string {
+  return distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km`;
+}
 type Geometry = { type?: string; coordinates?: number[]; geometries?: Geometry[] };
 type Feature = { id?: string; geometry?: Geometry; properties?: Record<string, unknown> };
 function point(g?: Geometry): Point | null {
