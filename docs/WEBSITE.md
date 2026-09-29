@@ -1,6 +1,8 @@
 # Website access and development
 
-**Current publication:** Private version 30 was deployed on 28 September 2026 at 17:10:19 UTC with environment revision 3. Both OJP secrets are active. Fare requests now reuse the selected trip or assemble its retained service/walking legs, avoiding a second journey search for OJP-backed results. Live Zürich–Bern and Zürich–Laax planner checks returned numeric passenger fares. 203 tests and production builds pass. [Exact-trip pricing, live checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md). Refresh and run a new search to obtain journeys with retained source data.
+**Current publication:** Private version 31 was deployed on 29 September 2026 at 12:50:32 UTC with environment revision 3. It adds the Bike parking map icon/filter and Find closest parking from starting point A, with explicitly labelled straight-line distance. 206 tests and production builds pass; live parking-source checks covered Zürich, Bern and Biel/Bienne. [Trial and verification](PARKING_FIRST_TRIAL_2026-09-29.md). Refresh the website, select a From location, enable Bike parking and choose Find closest parking; no journey search or GPS permission is needed.
+
+OJP configuration and exact-trip fare behavior remain unchanged from version 30. [Earlier pricing checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
 ## Open the private website
 

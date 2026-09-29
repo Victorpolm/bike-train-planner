@@ -6,7 +6,7 @@ _Updated 2026-09-29. The user's latest order supersedes the delivery orders reco
 
 **Decision:** Help people travelling with their own bicycle in Switzerland compare a small set of useful complete journeys: cycling only, fastest transit journey, fewest boardings, and least cycling/walking within the stated time allowance. One journey can satisfy several categories. Missing alternatives need an explanation, not a fabricated result.
 
-**Current implementation:** The route/terrain/carriage features and exact-trip fare integration are summarised in [PROJECT_STATE.md](PROJECT_STATE.md). A basic official parking map layer is already delivered. Structured bike-shop referencing and the richer parking experience below are not.
+**Current implementation:** The route/terrain/carriage features and exact-trip fare integration are summarised in [PROJECT_STATE.md](PROJECT_STATE.md). The official parking layer now has a map icon/filter and closest-to-start action. Structured bike-shop referencing and the richer suitability/entrance experience below are not delivered.
 
 **Hypothesis:** Combining reliable journey planning with useful parking/repair information will reduce the need to switch between apps. Validate this with actual tasks; map-pin counts alone are not success.
 
@@ -28,9 +28,11 @@ The ordering below records the user's request. Scope, pilot locations, numerical
 
 ## 1. Bike parking
 
+**First trial delivered in version 31:** Following the user's later 29 September request, begin with the Bike parking icon and Find closest parking relative to starting point A. Rank the loaded facilities by straight-line distance, highlight/refocus the result and update when A changes. GPS is deferred. This small approved trial precedes the more ambitious pilot below; it does not claim that the full milestone's completion criteria are met. [Implementation and verification](PARKING_FIRST_TRIAL_2026-09-29.md).
+
 The existing optional layer uses the official combined bicycle/car feed, filters BIKE facilities and displays static information. The 29 September audit confirms 1,608 bicycle facilities and **no populated bicycle occupancy feed**. A mapped location and nominal capacity do not establish a free space.
 
-**Proposed first scope:** Find appropriate parking where the user is going or near a station they select. Retain the bicycle on all current transit legs. Show parking as an optional contextual action after the first route result, also accessible from a selected map point. Keep the core search form short.
+**Proposed scope after the small trial:** Find appropriate parking where the user is going or near a station they select. Retain the bicycle on all current transit legs. Keep parking optional and the core search form short. The delivered closest-to-start action already works without running a route search.
 
 Deliver in three bounded pieces:
 

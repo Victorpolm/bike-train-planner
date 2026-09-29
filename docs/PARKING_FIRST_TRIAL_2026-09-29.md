@@ -36,4 +36,9 @@ Browser interaction/visual QA was unavailable: the managed-preview browser-contr
 
 ## Publication
 
-Implementation and verification are complete; publication confirmation will be recorded here after the existing owner-private Site reports success.
+- Existing owner-private Site **version 31**, succeeded **2026-09-29 12:50:32 UTC**, environment revision **3**; access rechecked with no external visitors.
+- GitHub implementation: `12e5a17034f6382032e8e3e82b8688775ef35e35`.
+- Published Site source: `8161807bb274bfcbe4951d66156c87e56999299a`; all 133 tracked application files matched the GitHub implementation. An existing missing CLI fare-probe script was synchronized as source only; production build inputs and dependencies were unchanged after verification.
+- Deployment: `appgdep_6abbb404727c8191a433b8a02735230d`.
+
+Refresh the [planner](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site), select the From location, enable **Bike parking**, then choose **Find closest parking**. GPS remains later; no new hosting, data subscription or recurring job was introduced.

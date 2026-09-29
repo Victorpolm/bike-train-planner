@@ -6,7 +6,9 @@ _Last consolidated: 2026-09-29. This is the current summary; dated reports and G
 
 **Decision:** Build a Switzerland-first bicycle + public-transport journey planner. In the current mode the traveller keeps the bicycle throughout transit, including intermediate cycling and walking/pushing transfers. Parking is currently an information layer, not a mode that leaves the bicycle behind.
 
-**User's requested priority order, 29 September:** (1) bike parking, (2) bike shops/repair referencing, (3) the broader user-interface improvement. The proposed feature scope and completion criteria are in [APP_ROADMAP.md](APP_ROADMAP.md) and [BIKE_PARKING.md](BIKE_PARKING.md). This documentation update records a plan; the proposed additions are not implemented yet.
+**User's requested priority order, 29 September:** (1) bike parking, (2) bike shops/repair referencing, (3) the broader user-interface improvement. The broader proposed scope remains in [APP_ROADMAP.md](APP_ROADMAP.md) and [BIKE_PARKING.md](BIKE_PARKING.md).
+
+**Latest request and delivery:** The user narrowed the first trial to a map parking icon/filter and closest parking relative to the entered starting point; GPS comes later. Version 31 delivers that trial using explicitly labelled straight-line distance, updates when A changes, and preserves the journey. [Scope, checks and release](PARKING_FIRST_TRIAL_2026-09-29.md).
 
 **Follow-up brainstorming, 29 September:** The user identifies water fountains, snacks/vending, public toilets, parking quality and repair help as important long-ride needs. Add filtered map/list information on or near the selected cycling path. [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md) records the proposed expansion of the service milestone, OSM/municipal/operator source handling and validation. [Road-safety questions](CYCLING_SAFETY_RESEARCH.md) are a later investigation, not accepted risk rules.
 
@@ -19,15 +21,15 @@ _Last consolidated: 2026-09-29. This is the current summary; dated reports and G
 | Cycling | BRouter geometry and terrain/profile summaries; Fastest/Simplest/Lower traffic stress preferences; riding/pushing/carrying distinctions and bounded official terrain checks | Partial data coverage; riding times are estimates; no claim of objective safety or fully verified station entrances |
 | Bicycle carriage | All-mode selector: verified only, include unknown, include prohibited for comparison; dated OJP filtering/TripInfo and scoped operator rules | Permission, ticket requirements, reservations and remaining spaces are distinct; live spaces/booking are not integrated |
 | Prices | Server-side OJP Fare reuses retained trips or assembles exact selected service/walking legs; full/Half Fare/GA and annual-bike-pass handling; separate passenger, bicycle and reservation rows | OJP integration/test estimates; some provider results remain unavailable; no unsupported through fare across a cycling break |
-| Bike parking | Optional official map layer, facility type, nominal capacity, cover information, public-access flag, descriptive traits and operator link | No structured hours/tariffs, nearby shortlist, routed entrance access, cross-source deduplication or bicycle occupancy feed |
+| Bike parking | Map icon/filter and closest listed facility to starting point A; highlighted marker, straight-line distance, refocus/update, source/retry states and existing facility details | Distance is not a checked access route; coverage is incomplete. GPS, structured hours/tariffs, shortlist, municipal/OSM enrichment and occupancy remain absent |
 | Bike shops | Venue search can find named places | A dedicated shop/repair/pump directory and route-related recommendations are not implemented |
 | National data | Swiss GTFS/OSM downloaded and evaluated; experimental local timetable index/service | The published app still uses live providers; no complete national routing engine or OTP/RAPTOR/ULTRA migration is deployed |
 
 ## Last verified publication and tests
 
-**Fact:** The last verified website release is owner-private **version 30**, published 28 September 2026 at 17:10:19 UTC, Site source `aee01405a58e955c51ef28cb172d4e6ef433dabb`, environment revision 3. Both OJP server secrets are active. GitHub source is public; website audience and GitHub visibility are separate. A GitHub push does not automatically publish the website.
+**Fact:** The last verified website release is owner-private **version 31**, published 29 September 2026 at 12:50:32 UTC, Site source `8161807bb274bfcbe4951d66156c87e56999299a`, environment revision 3. The existing OJP configuration is unchanged. GitHub source is public; website audience and GitHub visibility are separate. A GitHub push does not automatically publish the website.
 
-**Last code-release gate:** 203 application tests plus TypeScript/frontend/Worker builds passed on 28 September. This documentation-only update does not claim a fresh application test run or deployment. Browser interaction QA was not completed in the previous release's unauthenticated browser session.
+**Last code-release gate:** 206 application tests plus TypeScript/frontend/Worker builds passed on 29 September. All 133 tracked application files matched GitHub implementation `12e5a17034f6382032e8e3e82b8688775ef35e35` before publication. A fresh hosted parking API response exercised the new calculation for Zürich, Bern and Biel/Bienne. Browser interaction/visual QA was unavailable; the managed browser-control skill was absent. [Verification details](PARKING_FIRST_TRIAL_2026-09-29.md).
 
 Live checks on 28 September returned passenger CHF 36.20 for Zürich HB–Bern and CHF 45.80 for Zürich HB–Laax on the documented 29 September departures. The Laax route combined services from different OJP responses. Later-bus and bus-only subtrip checks also passed. These are dated test observations, not standing tariffs. [Exact cases and limits](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
@@ -39,7 +41,7 @@ The 29 September public-feed audit found **1,608 BIKE facility records** and 1,2
 
 ## Next work and release discipline
 
-1. **Parking:** audit a small pilot, normalise/deduplicate facilities and entrances, then deliver nearby search/cards and explicit route actions. Include basic mobile/keyboard usability in this feature.
+1. **Parking:** try the delivered icon/closest-to-start flow with actual starts. Continue the proposed municipal/OSM and entrance pilot after this small trial; GPS is a later explicit permission-based action. Do not treat the current straight-line result as a completed suitability/entrance-routing milestone.
 2. **Bike services and useful stops:** reuse the place/source/card layer for shops, assisted DIY/professional repairs and pumps, then water, public toilets and snacks/vending in bounded releases. Include category filters, selected-ride position, checked detours and opening-at-visit evidence; visit duration must precede promised post-stop train connections.
 3. **Broader interface:** simplify search, preferences, result comparison and the map/detail flow using the two completed features and short user-task tests.
 

@@ -1,6 +1,8 @@
 # Bike parking: proposed next milestone
 
-_29 September 2026. Status: design proposal informed by current code and a fresh public-data audit. The basic official map layer exists; the improvements below are not implemented._
+_29 September 2026. Status: broader design proposal with a small initial trial delivered. Version 31 adds the map icon/filter and closest listed parking from starting point A; suitability, entrance routing and source enrichment below remain proposals._
+
+**Latest user scope:** Try the icon and Find closest parking first, using A rather than GPS. Distance is explicitly straight-line, selection follows changes to A and the journey stays unchanged. [Trial, tests and publication](PARKING_FIRST_TRIAL_2026-09-29.md).
 
 ## Product question
 
@@ -14,7 +16,7 @@ The later 29 September brainstorm adds parking along the actual cycling path and
 
 [`bikeParking.ts`](../prototype-v0/src/bikeParking.ts) normalises the official combined feed and filters BIKE facilities. [`parkingHandler.ts`](../prototype-v0/server/parkingHandler.ts) serves `/api/parking`, caches a successful response for up to a day per server instance and can return stale data on refresh failure. The browser loads it when its optional layer is enabled; [`MapView.tsx`](../prototype-v0/src/MapView.tsx) displays in-view pins at zoom 10 and above.
 
-Cards currently expose name/operator, broad type, cover indication, nominal capacity, a public-access flag, descriptive traits and a link. The app does not yet structure prices/opening hours, join local/OSM records, find entrances, recommend facilities or alter the route for parking. It does not report live free places.
+Cards currently expose name/operator, broad type, cover indication, nominal capacity, a public-access flag, descriptive traits and a link. The closest-to-start result adds a highlighted P marker, distance and origin summary, with loading/retry/missing-start states. It searches all loaded facilities rather than only visible pins; the selected result remains visible even when zoomed out. The app does not yet structure prices/opening hours, join local/OSM records, find entrances, rank suitability or alter the route for parking. It does not report live free places.
 
 ## Fresh audit: what the source can and cannot supply
 

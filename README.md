@@ -6,15 +6,15 @@ A Switzerland-first planner for travelling with your bicycle, combining road-rou
 
 The app supports Baseline/Extended planning, ordered stops, named places, configurable cycling pace, terrain/profile information and three public-transport bicycle-access scopes. Passenger, bicycle-ticket and reservation costs are separate. OJP fare requests now reuse the exact retained trip or assemble its selected service/walking legs.
 
-A basic official **bicycle-parking map layer already exists**. A richer parking recommendation flow and a dedicated bike-shop/repair directory are the next work, not delivered features. National timetable/OSM work remains a local pilot; the published app still queries live providers. Searches are bounded and can miss alternatives.
+A **Bike parking** icon on the map toggles the official parking layer. **Find closest parking** highlights the closest listed facility to the selected starting point A, with a clearly labelled straight-line distance. No journey search is required; GPS, road-access routing, municipal/OSM enrichment and the broader amenity proposal remain later work. [First-trial scope and checks](docs/PARKING_FIRST_TRIAL_2026-09-29.md). National timetable/OSM work remains a local pilot; route searches are bounded and can miss alternatives.
 
-**Last verified release:** owner-private **version 30**, published 28 September 2026; 203 application tests and frontend/Worker production builds passed. [Exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records successful Zürich–Bern/Laax and modified-trip checks. OJP prices remain test estimates. Today's update changes documentation only.
+**Last verified release:** owner-private **version 31**, published 29 September 2026; 206 application tests and frontend/Worker production builds passed. Live parking-source checks covered Zürich, Bern and Biel/Bienne. Earlier [exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records Zürich–Bern/Laax and modified-trip checks; OJP prices remain test estimates.
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 
 ## Next priorities
 
-1. **Bike parking:** suitable options near a destination or selected station, with useful access, hours, fee and source information. Build on the existing map layer.
+1. **Bike parking:** validate the delivered closest-to-start trial, then improve coverage and access/condition information. Destination/station recommendations and an explicit GPS option remain later additions.
 2. **Bike services and useful stops:** distinguish shops, assisted DIY/professional repairs and pumps; add drinking water, public toilets and snacks/vending, with category filters and useful options along the selected cycling route.
 3. **User interface:** simplify search, comparison and map/details after the first two features, while including each feature's essential usability from the start.
 
