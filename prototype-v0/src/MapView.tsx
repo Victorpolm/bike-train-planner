@@ -357,7 +357,8 @@ export default function MapView({
     {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
       <div className="parking-result" role="status" aria-live="polite">
         {parkingLoading && <p>Loading {parkingLoads.osm.status === "loading" ? "OpenStreetMap bicycle parking" : "bicycle parking"}…</p>}
-        {Object.values(parkingLoads).some(load => load.status === "error") && <p>Some parking sources could not be loaded. Closest results use only the sources shown below. <button type="button" onClick={retryParking}>Retry missing sources</button></p>}
+        {Object.values(parkingLoads).some(load => load.status === "error") && <p>{parkingFacilities.length ? "Some parking data could not be loaded. Closest results use only loaded sources." : "Parking data could not be loaded. See the reason for each source below."} <button type="button" onClick={retryParking}>Retry missing sources</button></p>}
+        {Object.values(parkingLoads).some(load => load.error?.code === "session" || load.error?.code === "access" || load.error?.code === "network") && <p><a href="/" target="_blank" rel="noreferrer">Open planner in its own tab</a></p>}
         {!origin && <p>Select a starting point in the From field or choose Start here on the map.</p>}
         {!parkingLoading && parkingDatasets.length > 0 && parkingFacilities.length === 0 && <p>No bicycle parking was found in the loaded sources.</p>}
         {!parkingLoading && parkingFacilities.length > 0 && origin && !closestParking && <p>Find the closest listed parking to <strong>{origin.label}</strong> (point A), or zoom in to explore the map.</p>}
@@ -378,7 +379,7 @@ export default function MapView({
           const load = parkingLoads[provider], data = load.data;
           return <p key={provider}><a href={provider === "osm" ? OSM_COPYRIGHT : PARKING_SOURCE} target="_blank" rel="noreferrer">{provider === "osm" ? "© OpenStreetMap contributors · ODbL" : "opentransportdata.swiss"}</a>
             {data ? <> · {data.facilities.length.toLocaleString("en-GB")} records · downloaded {new Date(data.fetchedAt).toLocaleDateString("en-GB")}{data.stale && " · refresh failed; showing older data"}</>
-              : load.status === "error" ? " · unavailable (retry after a minute)" : " · loading"}.</p>;
+              : load.status === "error" ? ` · ${load.error?.message ?? "Loading failed. Retry loading."}` : " · loading"}</p>;
         })}
         <p>Coverage is incomplete; some source records may overlap. No live availability. Closest means straight-line distance among loaded records. Your journey stays unchanged.</p>
       </div>

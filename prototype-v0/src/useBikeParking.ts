@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { mergeBikeParking, type ParkingData, type ParkingProvider } from "./bikeParking.ts";
+import { loadParkingSource, parkingLoadError, type ParkingLoadError } from "./parkingClient.ts";
 
-export type ParkingLoad = { data?: ParkingData; status: "idle" | "loading" | "ready" | "error" };
+export type ParkingLoad = { data?: ParkingData; status: "idle" | "loading" | "ready" | "error"; error?: ParkingLoadError };
 const providers: ParkingProvider[] = ["official", "osm"];
 export function useBikeParking(enabled: boolean) {
   const [loads, setLoads] = useState<Record<ParkingProvider, ParkingLoad>>({ official: { status: "idle" }, osm: { status: "idle" } });
@@ -11,14 +12,11 @@ export function useBikeParking(enabled: boolean) {
     const controller = new AbortController();
     for (const provider of providers) {
       if (loads[provider].status === "ready") continue;
-      setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "loading" } }));
-      void fetch(`/api/parking?source=${provider}`, { signal: controller.signal }).then(async response => {
-        if (!response.ok) throw new Error("Parking unavailable");
-        const data = await response.json() as ParkingData;
-        if (!Array.isArray(data.facilities) || data.provider !== provider) throw new Error("Invalid parking response");
+      setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "loading", error: undefined } }));
+      void loadParkingSource(provider, controller.signal).then(data => {
         if (!controller.signal.aborted) setLoads(current => ({ ...current, [provider]: { data, status: "ready" } }));
-      }).catch(() => {
-        if (!controller.signal.aborted) setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "error" } }));
+      }).catch(error => {
+        if (!controller.signal.aborted) setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "error", error: parkingLoadError(error) } }));
       });
     }
     return () => controller.abort();

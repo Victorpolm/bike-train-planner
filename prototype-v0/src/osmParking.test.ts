@@ -103,5 +103,16 @@ it("reuses the shared edge cache across cold handlers with separate source keys"
   await createParkingHandler({ cache })(osmRequest(), async () => Response.json(fixture));
   const response = await createParkingHandler({ cache })(osmRequest(), async () => { throw new Error("Must use edge cache"); });
   assert.equal(response.status, 200); assert.equal((await response.json()).provider, "osm");
-  assert.equal(entries.size, 1); assert.match([...entries.keys()][0], /source=osm&schema=2/);
+  assert.equal(entries.size, 1); assert.match([...entries.keys()][0], /\/api\/parking-cache\/v3\/osm$/);
+});
+
+it("rejects legacy or wrong-source edge cache data and serves the versioned source endpoint", async () => {
+  for (const bad of [{ ...official(), provider: undefined }, official(), { ...parseOsmParking(fixture), fetchedAt: "invalid" }]) {
+    let calls = 0;
+    const cache = { match: async () => Response.json(bad), put: async () => {} } as unknown as Cache;
+    const response = await createParkingHandler({ cache })(new Request("https://planner.example/api/parking/v3/osm"), async () => { calls++; return Response.json(fixture); });
+    assert.equal(calls, 1); assert.equal((await response.json()).provider, "osm");
+    assert.equal(response.headers.get("Cache-Control"), "private, no-store");
+    assert.equal(response.headers.get("X-Parking-Source"), "osm");
+  }
 });

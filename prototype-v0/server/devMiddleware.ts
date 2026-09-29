@@ -9,7 +9,8 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
   return { name: "server-only-ojp", configureServer(server) {
     server.middlewares.use(async (incoming, outgoing, next) => {
       const path = new URL(incoming.url ?? "/", "http://localhost").pathname;
-      if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && path !== "/api/parking" && incoming.url !== "/api/terrain") return next();
+      const parking = path === "/api/parking" || path.startsWith("/api/parking/v3/");
+      if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && !parking && incoming.url !== "/api/terrain") return next();
       try {
         const chunks: Buffer[] = []; let size = 0;
         for await (const chunk of incoming) {
@@ -24,7 +25,7 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
           body: ["GET", "HEAD"].includes(incoming.method ?? "GET") ? undefined : Buffer.concat(chunks),
         });
         const response = incoming.url === "/api/terrain" ? await handleSwisstopo(request)
-          : path === "/api/parking" ? await handleParking(request)
+          : parking ? await handleParking(request)
           : path.startsWith("/api/fares/") ? await handleFare(request, { OJP_API_KEY: key, OJP_FARE_API_KEY: fareKey })
           : path.startsWith("/api/timetable/") ? await handleTimetable(request, timetable) : await handleOjp(request, { OJP_API_KEY: key });
         outgoing.writeHead(response.status, Object.fromEntries(response.headers));

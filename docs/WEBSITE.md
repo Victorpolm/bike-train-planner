@@ -1,6 +1,6 @@
 # Website access and development
 
-**Current publication:** Private version 32 was deployed on 29 September 2026 at 14:28:31 UTC with environment revision 3. OpenStreetMap parking now joins the official feed in the map and Find closest parking from A, including ETH Zürich racks. 213 tests and production builds pass. [Coverage, ETH checks and limitations](PARKING_OSM_2026-09-29.md). Refresh, select a From location, enable Bike parking, wait for source loading and choose Find closest parking; zoom in to browse local racks. No journey search or GPS permission is needed.
+**Current publication:** Private version 33 was deployed on 29 September 2026 at 15:11:50 UTC with environment revision 3. It strengthens parking loading with separate versioned paths, cache validation, bounded retry and specific source errors. 220 tests and production builds pass. [Loading report and verification limits](PARKING_LOADING_2026-09-29.md). Both official and OSM parking remain available to the map/closest-to-A feature. Refresh and enable Bike parking; if it still fails, retain the exact new error text. Sign-in/network errors offer opening the planner in its own tab. [OSM coverage and ETH checks](PARKING_OSM_2026-09-29.md).
 
 OJP configuration and exact-trip fare behavior remain unchanged from version 30. [Earlier pricing checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 

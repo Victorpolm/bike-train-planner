@@ -1,0 +1,56 @@
+{
+  "checkedAt": "2026-09-29T15:14:11.804Z",
+  "method": "Deployed versioned endpoints through the exact browser loader in Node; authenticated verification header, not a browser cookie session",
+  "requests": [
+    {
+      "path": "/api/parking/v3/official",
+      "status": 200,
+      "type": "application/json",
+      "cache": "private, no-store",
+      "source": "official",
+      "schema": "3"
+    },
+    {
+      "path": "/api/parking/v3/osm",
+      "status": 200,
+      "type": "application/json",
+      "cache": "private, no-store",
+      "source": "osm",
+      "schema": "3"
+    }
+  ],
+  "sources": [
+    {
+      "provider": "official",
+      "records": 1608,
+      "fetchedAt": "2026-09-29T15:13:58.847Z",
+      "stale": false
+    },
+    {
+      "provider": "osm",
+      "records": 20728,
+      "fetchedAt": "2026-09-29T15:14:10.873Z",
+      "stale": false
+    }
+  ],
+  "results": [
+    {
+      "start": {
+        "name": "ETH Zentrum",
+        "lat": 47.3763,
+        "lon": 8.5476
+      },
+      "id": "osm:node/11811170403",
+      "distanceMetres": 42
+    },
+    {
+      "start": {
+        "name": "ETH Hönggerberg",
+        "lat": 47.4077,
+        "lon": 8.5077
+      },
+      "id": "osm:node/7936524432",
+      "distanceMetres": 38
+    }
+  ]
+}

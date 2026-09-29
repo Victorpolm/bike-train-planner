@@ -10,6 +10,8 @@ _Last consolidated: 2026-09-29. This is the current summary; dated reports and G
 
 **Latest request and delivery:** After the version-31 closest-to-start trial, the user reported missing ETH Zürich racks and approved OSM coverage. Version 32 combines the official feed with Swiss OSM parking for the map and closest calculation, preserving access restrictions and source links. A remains the reference; GPS comes later. [Implementation, checks and release](PARKING_OSM_2026-09-29.md).
 
+**Latest reliability report:** Both sources appeared unavailable in the owner's browser. Version 33 adds separate versioned requests, browser-cache bypass, edge-cache validation and specific authentication/network/data errors with bounded retry. Direct live checks succeeded for both providers; the original browser-session failure remains unconfirmed. [Diagnosis and checks](PARKING_LOADING_2026-09-29.md).
+
 **Follow-up brainstorming, 29 September:** The user identifies water fountains, snacks/vending, public toilets, parking quality and repair help as important long-ride needs. Add filtered map/list information on or near the selected cycling path. [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md) records the proposed expansion of the service milestone, OSM/municipal/operator source handling and validation. [Road-safety questions](CYCLING_SAFETY_RESEARCH.md) are a later investigation, not accepted risk rules.
 
 ## What works now
@@ -27,9 +29,9 @@ _Last consolidated: 2026-09-29. This is the current summary; dated reports and G
 
 ## Last verified publication and tests
 
-**Fact:** The last verified website release is owner-private **version 32**, published 29 September 2026 at 14:28:31 UTC, Site source `caf56444e9fb7af9e1e8f9a2ca074624f4357cbe`, environment revision 3. The existing OJP configuration is unchanged. GitHub source is public; website audience and GitHub visibility are separate. A GitHub push does not automatically publish the website.
+**Fact:** The last verified website release is owner-private **version 33**, published 29 September 2026 at 15:11:50 UTC, Site source `774b1eff9a53e2d46f595181f277f2262bc633b1`, environment revision 3. The existing OJP configuration is unchanged. GitHub source is public; website audience and GitHub visibility are separate. A GitHub push does not automatically publish the website.
 
-**Last code-release gate:** 213 application tests plus TypeScript/frontend/Worker builds passed on 29 September. The Swiss OSM query returned 20,729 objects; 20,728 were imported after excluding one disused object. Actual ETH campus records participate in closest-to-start tests. Browser interaction/visual QA was unavailable; the managed browser-control skill was absent. [Verification details](PARKING_OSM_2026-09-29.md).
+**Last code-release gate:** 220 application tests plus TypeScript/frontend/Worker builds passed on 29 September. The additional loader tests cover authentication, invalid/legacy cached data, transient failures and cancellation. OSM/ETH regressions remain passing. Browser interaction/visual QA was unavailable; the managed browser-control skill was absent. [Latest verification](PARKING_LOADING_2026-09-29.md) · [OSM coverage checks](PARKING_OSM_2026-09-29.md).
 
 Live checks on 28 September returned passenger CHF 36.20 for Zürich HB–Bern and CHF 45.80 for Zürich HB–Laax on the documented 29 September departures. The Laax route combined services from different OJP responses. Later-bus and bus-only subtrip checks also passed. These are dated test observations, not standing tariffs. [Exact cases and limits](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 

@@ -24,19 +24,25 @@ export function createParkingHandler(options: { now?: () => number; cache?: Cach
   const now = options.now ?? Date.now;
   return async function(request: Request, fetcher: typeof fetch = fetch): Promise<Response> {
     if (request.method !== "GET") return new Response("Method not allowed", { status: 405 });
-    const url = new URL(request.url), source = url.searchParams.get("source") ?? "official";
+    const url = new URL(request.url), source = url.pathname.startsWith("/api/parking/v3/")
+      ? url.pathname.slice("/api/parking/v3/".length) : url.searchParams.get("source") ?? "official";
     if (source !== "official" && source !== "osm") return Response.json({ error: "Unknown parking source" }, { status: 400 });
     const provider: ParkingProvider = source;
     const edge = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
     // Cache only public parking data, under a versioned, source-specific key.
-    const cacheUrl = new URL("/api/parking", url.origin); cacheUrl.search = `source=${provider}&schema=2`;
+    const cacheUrl = new URL(`/api/parking-cache/v3/${provider}`, url.origin);
     const cacheKey = new Request(cacheUrl);
     const age = () => cached[provider] ? now() - Date.parse(cached[provider]!.fetchedAt) : Infinity;
     const load = async () => {
       if (!cached[provider] && edge) {
         try {
           const hit = await edge.match(cacheKey);
-          if (hit) cached[provider] = await hit.json() as ParkingData;
+          if (hit) {
+            const data = await hit.json() as ParkingData;
+            // Old, corrupt or mis-keyed cache entries must never masquerade as this source.
+            if (data?.provider === provider && Array.isArray(data.facilities) && data.facilities.length
+              && Number.isFinite(Date.parse(data.fetchedAt)) && Date.parse(data.fetchedAt) <= now()) cached[provider] = data;
+          }
         } catch { /* A cache outage must not prevent a source request. */ }
       }
       if (age() <= TTL) return;
@@ -65,7 +71,7 @@ export function createParkingHandler(options: { now?: () => number; cache?: Cach
         try { await pending[provider]; } catch { if (age() > STALE_TTL) throw new Error("Parking unavailable"); }
       }
       return Response.json({ ...cached[provider], stale: age() > TTL },
-        { headers: { "Cache-Control": "private, max-age=3600", "X-Content-Type-Options": "nosniff" } });
+        { headers: { "Cache-Control": "private, no-store", "X-Parking-Source": provider, "X-Parking-Schema": "3", "X-Content-Type-Options": "nosniff" } });
     } catch {
       return Response.json({ error: `${provider === "osm" ? "OpenStreetMap" : "Official"} parking could not be loaded. Your journey search is unaffected.` },
         { status: 503, headers: provider === "osm" ? { "Retry-After": "60" } : undefined });

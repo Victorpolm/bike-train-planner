@@ -441,3 +441,11 @@ Keep bounded exact-match lookup compatibility for results without complete retai
 **Reliability:** Source requests/caches are independent. Daily memory/edge caching, shared in-flight requests, finite response/time limits, OSM failure cooldown and bounded stale fallback avoid repeating national queries unnecessarily. Missing sources are disclosed before a partial closest result; OSM attribution is visible. No new key, paid service, schedule or GPS permission is introduced.
 
 **Verified delivery:** Private version 32 succeeded at 14:28:31 UTC, environment revision 3. 213 tests and production builds pass. Deployed endpoints returned 20,728 OSM and 1,608 official records; the ETH Zentrum/Hönggerberg checks selected OSM parking 42/38 metres away. Browser interaction testing remains unavailable. [Implementation and evidence](PARKING_OSM_2026-09-29.md).
+
+## 2026-09-29 — Diagnose parking load errors without declaring both providers down
+
+**Report/evidence:** The owner saw both sources unavailable. Direct authenticated deployed checks succeeded, and available logs did not reproduce the browser failure. The original loader hid every HTTP/session/network/JSON/provider mismatch behind one generic message, while the server trusted cached data without checking its source/schema shape. The exact original browser cause remains unconfirmed.
+
+**Decision:** Use separate versioned source paths, bypass browser HTTP caching while retaining server daily caching, validate edge-cache source/content/time, apply a body-inclusive client deadline and one bounded transient retry, and preserve source-specific errors. Explain sign-in refresh and own-tab access only when a session/access/network error supports that advice. Keep partial-source/straight-line uncertainty, OSM attribution and unchanged routing/fares/GPS.
+
+**Delivery:** Version 33 succeeded at 15:11:50 UTC, environment revision 3; 220 tests and production builds passed. The latest report explicitly distinguishes the authenticated loader verification from a user-browser cookie session. [Evidence and next diagnostic](PARKING_LOADING_2026-09-29.md).

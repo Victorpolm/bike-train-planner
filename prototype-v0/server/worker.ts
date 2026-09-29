@@ -8,7 +8,7 @@ import { handleFare, type FareEnvironment } from "./fareHandler.ts";
 export default {
   async fetch(request: Request, env: OjpEnvironment & TimetableEnvironment & FareEnvironment): Promise<Response> {
     const path = new URL(request.url).pathname;
-    if (path === "/api/parking") return handleParking(request);
+    if (path === "/api/parking" || path.startsWith("/api/parking/v3/")) return handleParking(request);
     if (path === "/api/terrain") return handleSwisstopo(request);
     if (path.startsWith("/api/timetable/")) return handleTimetable(request, env);
     if (path.startsWith("/api/ojp/")) return handleOjp(request, env);

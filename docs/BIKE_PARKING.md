@@ -4,6 +4,8 @@ _29 September 2026. Status: closest-to-start trial and OSM coverage delivered. V
 
 **Latest user scope:** Add OSM parking after the owner found ETH Zürich racks missing. The icon and Find closest parking use both sources, with A rather than GPS. Distance is explicitly straight-line, selection follows changes to A and the journey stays unchanged. [OSM implementation, tests and publication](PARKING_OSM_2026-09-29.md).
 
+**Version 33 reliability correction:** Following a report that both sources failed, the browser uses `/api/parking/v3/official` and `/api/parking/v3/osm`, avoids old browser-cache responses, and displays specific authentication/connection/HTTP/data failures. Server cache entries are validated before reuse. Daily upstream caching remains. The original browser cause is unconfirmed; direct live provider checks pass. [Evidence](PARKING_LOADING_2026-09-29.md).
+
 ## Product question
 
 Help the traveller answer: **Where can I leave this bicycle, reach my destination, and retrieve it when needed?** A useful answer needs access, suitability and conditions as well as a point on a map.
