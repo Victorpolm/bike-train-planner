@@ -460,3 +460,8 @@ Keep bounded exact-match lookup compatibility for results without complete retai
 Default to an optional approximately 100 m corridor around the selected cycling-only or transit journey's cycling paths, explicitly routed walking paths and known endpoints/boarding/alighting points. Do not follow schematic transit/walking lines or bridge disconnected legs. Missing geometry is disclosed. Closest remains straight-line from A within the eligible set; an unchecked filter restores the full loaded set. No GPS, detour routing, timetable change, security guarantee or new provider is added.
 
 **Evidence:** 230 app tests and production builds pass, including ten new geometry/equipment regressions. Private version 34 succeeded at 15:51:24 UTC from Site source `b74ad2037d5d59ebe5fe621995b3e54856a33953`, environment revision 3. Browser interaction QA remains unavailable. [Implementation, limits and next trial](PARKING_COLOURS_AND_ROUTE_2026-09-29.md).
+
+
+## 2026-09-29 — Distinguish parking symbols and combine neutral equipment colours
+
+The owner requested the same colour for other mapped equipment and unknown rack types, and reported confusion between parking and explored stops. Version 35 uses shared grey for these two equipment categories, square P parking markers, small hollow-circle explored stops and a larger outlined P for the closest result. Popups retain the distinction between other and missing equipment data; route filtering and source handling are unchanged. Existing 230 tests and builds pass. [Release and verification limits](PARKING_COLOURS_AND_ROUTE_2026-09-29.md#version-35-marker-refinement).

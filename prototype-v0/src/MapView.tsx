@@ -1,6 +1,6 @@
 import { closestBikeParking, parkingAccess, parkingDetails, parkingDistance, PARKING_SOURCE, OSM_COPYRIGHT } from "./bikeParking";
 import { useBikeParking } from "./useBikeParking";
-import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_STYLES } from "./parkingMap";
+import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_LEGEND } from "./parkingMap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { formatMinutes, type CyclingComparison, type Journey, type Place, type Point } from "./routing";
@@ -45,6 +45,14 @@ function markerIcon(color: string, label: string, offset = L.point(0, 0)) {
     html: '<span style="--marker-color:' + color + '">' + label + "</span>",
     iconSize: [34, 34], iconAnchor: [17 - offset.x, 17 - offset.y], popupAnchor: [offset.x, offset.y - 17],
   });
+}
+function parkingIcon(color: string, closest = false) {
+  const badge = document.createElement("span");
+  badge.className = "parking-badge"; badge.style.backgroundColor = color; badge.textContent = "P";
+  badge.setAttribute("aria-hidden", "true");
+  const size = closest ? 36 : 28;
+  return L.divIcon({ className: `parking-marker${closest ? " parking-marker-closest" : ""}`, html: badge,
+    iconSize: [size, size], iconAnchor: [size / 2, size / 2], popupAnchor: [0, -size / 2] });
 }
 function fitMap(map: L.Map, bounds: L.LatLngBounds) {
   // Reserve room for controls, the legend and displaced stop labels on mobile.
@@ -108,12 +116,13 @@ export default function MapView({
           link.target = "_blank"; link.rel = "noreferrer"; p.append(link); content.append(p);
         }
         if (isClosest) {
-          L.marker([facility.lat, facility.lon], { icon: markerIcon(style.color, "P"),
+          L.marker([facility.lat, facility.lon], { icon: parkingIcon(style.color, true),
             title: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, alt: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, zIndexOffset: 1100 })
             .bindTooltip(textNode(`Closest parking · ${parkingDistance(closestParking!.distanceKm)} straight-line`), { permanent: true, direction: "bottom", offset: [0, 18] })
             .bindPopup(content).addTo(layer);
         } else {
-          L.circleMarker([facility.lat, facility.lon], { radius: 6, color: "#fff", weight: 2, fillColor: style.color, fillOpacity: .95, bubblingMouseEvents: false })
+          L.marker([facility.lat, facility.lon], { icon: parkingIcon(style.color), zIndexOffset: 250,
+            title: `Bicycle parking: ${facility.name} · ${style.label}`, alt: `Bicycle parking: ${facility.name} · ${style.label}`, bubblingMouseEvents: false })
             .bindTooltip(textNode(`${facility.name} · ${style.label}`)).bindPopup(content).addTo(layer);
         }
       }
@@ -364,12 +373,13 @@ export default function MapView({
       <span><i className="legend-climb" />Steep climb</span>
       <span><i className="legend-descent" />Steep descent</span>
       <span><i className="legend-stop" />Explored stop</span>
+      {showParking && <span><b className="legend-parking" aria-hidden="true">P</b>Bike parking</span>}
       <span><b className="legend-pin">1</b>Board / alight</span>
     </div>
   </div>
     {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
       <ul className="parking-legend" aria-label="Parking colours by mapped equipment">
-        {Object.entries(PARKING_STYLES).map(([key, style]) => <li key={key}><i style={{ backgroundColor: style.color }} aria-hidden="true" />{style.label}</li>)}
+        {PARKING_LEGEND.map(style => <li key={style.label}><b className="parking-badge" style={{ backgroundColor: style.color }} aria-hidden="true">P</b>{style.label}</li>)}
       </ul>
       <p className="parking-equipment-note">Colours describe mapped equipment. Access restrictions and theft protection need a separate check.</p>
       <div className="parking-result" role="status" aria-live="polite">

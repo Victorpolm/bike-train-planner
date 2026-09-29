@@ -647,3 +647,8 @@ The owner's both-sources-unavailable report was not reproduced through authentic
 The same downloaded Swiss OSM snapshot yields 4,351 wheel-only, 7,354 frame-support, 4,237 other and 4,786 unknown records, total 20,728. A synthetic 1,000-segment local Node scale check took 5.89 ms to index and 2.80 ms to filter; it is neither a real journey nor browser performance evidence. [Data](experiments/parking-colours-route-2026-09-29.json).
 
 Private version **34** succeeded at **15:51:24 UTC**, Site source `b74ad2037d5d59ebe5fe621995b3e54856a33953`, environment revision 3. Browser visual/interaction QA remains unavailable. The next owner trial is a familiar ETH journey: compare rack colours, select another result, toggle the corridor and verify the closest label still references A. [Full behaviour and limits](PARKING_COLOURS_AND_ROUTE_2026-09-29.md).
+
+
+## 2026-09-29 — Parking marker readability refinement
+
+Following owner feedback, version 35 combines other/unknown equipment into grey and uses square P parking badges versus hollow-circle explored stops. Closest parking retains its equipment colour with a larger outlined P. **230 tests, 11 suites, zero failures/skips/cancellations**, TypeScript/frontend/Worker builds and whitespace checks pass. No additional unit tests were added for these display-only changes. Published at **17:03:36 UTC**, Site source `2a8cc24a9582d090f89489f88c1e6e8e62d754e3`, environment revision 3. Browser interaction/visual QA remains unavailable. [Details and next visual check](PARKING_COLOURS_AND_ROUTE_2026-09-29.md#version-35-marker-refinement).

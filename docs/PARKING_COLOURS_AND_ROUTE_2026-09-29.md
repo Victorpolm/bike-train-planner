@@ -1,6 +1,9 @@
 # Parking colours and selected-journey filter
 
-_Delivered 29 September 2026, private version 34._
+_Initial delivery 29 September 2026, private version 34; marker refinement in version 35._
+
+**Version-35 refinement, following the owner’s readability feedback:** Other mapped equipment and unknown rack types now share grey; the legend has three entries. Parking uses square P badges, explored stops small hollow circles, and the closest parking a larger outlined P. Popup text still distinguishes other mapped types from missing information. The version-34 account below preserves the initial release; route filtering is unchanged.
+
 
 ## User request and delivered behaviour
 
@@ -46,3 +49,11 @@ Browser visual/interaction QA was unavailable because the required managed brows
 Private **version 34** succeeded at **2026-09-29 15:51:24 UTC**, environment revision **3**, Site source `b74ad2037d5d59ebe5fe621995b3e54856a33953`, deployment `appgdep_6abbde69b5c481919b40ca869d880882`. Owner role and zero external visitors were rechecked. The matching GitHub application contains 141 tracked files, including the two new parking-map modules. No new service, key, schedule, sharing change or paid hosting was introduced.
 
 [Open the planner](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site).
+
+## Version 35 marker refinement
+
+Published **2026-09-29 17:03:36 UTC**, Site source `2a8cc24a9582d090f89489f88c1e6e8e62d754e3`, deployment `appgdep_6abbef56120481918960ef7f0851925e`, environment revision 3. Owner-private access remains unchanged.
+
+The owner requested one colour for other/unknown equipment and reported that parking dots resembled explored stops. Both equipment groups now use grey, with a single combined legend entry while retaining their different detail text. Regular parking uses a 22 px square P badge in a 28 px keyboard-focusable marker; the closest result uses a 30 px badge with an additional outline. Explored stops use 12 px hollow circles, and the map legend shows the different symbols.
+
+All **230 existing tests** and frontend/Worker builds pass; no new tests were added for this presentation-only change. All 141 tracked application files match the published source. Browser visual/interaction verification remains unavailable because the managed browser-control skill is absent. Next check: enable both parking and explored stops on a familiar map area and compare the distinct symbols.

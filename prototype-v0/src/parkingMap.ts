@@ -6,9 +6,11 @@ import { haversineKm, type CyclingComparison, type Journey, type Point } from ".
 export const PARKING_STYLES = {
   wheel: { color: "#b64432", label: "Wheel-only · wall loops / racks", detail: "Wheel-only equipment mapped: less preferred than frame-support stands." },
   frame: { color: "#19715c", label: "Frame support · stands", detail: "Frame-support stands mapped: preferable to wheel-only support." },
-  other: { color: "#376f9e", label: "Other mapped type", detail: "Other parking type mapped; check the equipment details." },
-  unknown: { color: "#747982", label: "Rack type unknown", detail: "Rack support is unknown; cover or capacity does not establish the rack type." },
+  other: { color: "#626973", label: "Other mapped type", detail: "Other parking type mapped; check the equipment details." },
+  unknown: { color: "#626973", label: "Rack type unknown", detail: "Rack support is unknown; cover or capacity does not establish the rack type." },
 } as const;
+export const PARKING_LEGEND = [PARKING_STYLES.wheel, PARKING_STYLES.frame,
+  { color: PARKING_STYLES.unknown.color, label: "Other / unknown rack type" }] as const;
 export function parkingStyle(facility: Pick<BikeParking, "parkingType">) {
   const types = (facility.parkingType ?? "").toLowerCase().split(";").map(t => t.trim()).filter(Boolean);
   // Mixed facilities containing wheel-only racks retain the warning colour.

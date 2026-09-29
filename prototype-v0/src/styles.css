@@ -160,10 +160,11 @@ h1 { margin: 0; max-width: 560px; font-family: Georgia, "Times New Roman", serif
 .legend-bike-only { border-top: 3px dashed #76558e; }
 .legend-walk { border-top: 3px dashed #647269; }
 .map-legend { flex-wrap: wrap; max-width: calc(100% - 80px); gap: 7px 12px; }
-.map-legend .legend-stop { width: 9px; height: 9px; background: #71839a; border-radius: 50%; }
+.map-legend .legend-stop { width: 10px; height: 10px; background: white; border: 2px solid #71839a; border-radius: 50%; }
+.legend-parking { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 4px; background: #626973; color: white; font-size: 12px; }
 .legend-pin { display: grid; place-items: center; width: 16px; height: 16px; background: var(--blue); border-radius: 50%; color: white; }
 .candidate-marker { display: grid; place-items: center; }
-.candidate-dot { width: 12px; height: 12px; border: 2px solid white; border-radius: 50%; background: #71839a; box-shadow: 0 1px 4px #35485c66; }
+.candidate-dot { width: 12px; height: 12px; border: 2px solid #71839a; border-radius: 50%; background: white; box-shadow: 0 1px 4px #35485c66; }
 .map-controls { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 500; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; pointer-events: none; }
 .map-controls label, .map-controls button { pointer-events: auto; background: white; border: 1px solid var(--line); border-radius: 7px; min-height: 36px; padding: 7px 10px; color: var(--ink); font-size: 12px; }
 .map-controls label { display: flex; align-items: center; gap: 6px; }
@@ -445,7 +446,10 @@ button:disabled { cursor: default; opacity: .65; }
 .map-controls .parking-route-toggle { min-height: 44px; font-size: .875rem; }
 .parking-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; list-style: none; padding: 0; margin: 0; font-size: .875rem; }
 .parking-legend li { display: inline-flex; align-items: center; gap: 7px; }
-.parking-legend i { display: inline-block; width: 13px; height: 13px; flex: 0 0 13px; border: 1px solid #ffffff; border-radius: 50%; box-shadow: 0 0 0 1px #c7ccd0; }
+.parking-marker { display: grid; place-items: center; background: none; border: 0; }
+.parking-badge { display: inline-grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; border: 2px solid white; border-radius: 4px; color: white; font-size: 14px; font-weight: 800; font-style: normal; line-height: 1; box-shadow: 0 1px 4px #26362f66; }
+.parking-marker-closest .parking-badge { width: 30px; height: 30px; border-width: 3px; border-radius: 5px; font-size: 18px; box-shadow: 0 0 0 2px #26362f, 0 2px 6px #26362f66; }
+.parking-marker:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 5px; }
 .parking-equipment-note { margin: 8px 0 12px; font-size: .875rem; line-height: 1.45; color: var(--muted); }
 .parking-source { margin: 10px 0 0; font-size: .875rem; line-height: 1.45; color: var(--muted); }
 .map-panel:has(.parking-panel) { height: auto; }
