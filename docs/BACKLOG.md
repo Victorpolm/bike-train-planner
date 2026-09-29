@@ -1,6 +1,6 @@
 # Backlog
 
-**Current next step (21 September):** Build a server-side OJP adapter, validate per-service/segment bicycle evidence and recompute routed cycling access before selecting reachable departures. The configured Actions secret and all 16 live benchmark requests succeeded; OJP's positive bicycle notes remain incomplete across whole journeys. See [the live findings](OJP_BENCHMARK_2026-09-21.md) and [evaluation plan](BICYCLE_PERMISSION_AND_OJP.md). The static website has not migrated to OJP.
+**Current priorities (29 September 2026):** improve bike parking, add bike-shop/repair referencing, then improve the broader interface. The OJP adapter and exact-trip test-fare integration are implemented and active. See [APP_ROADMAP.md](APP_ROADMAP.md), [BIKE_PARKING.md](BIKE_PARKING.md) and [PROJECT_STATE.md](PROJECT_STATE.md) for current scope and completion criteria.
 
 These ideas may be useful later, but they should not distract from validating the core bike + public-transport journey planner.
 
@@ -10,7 +10,8 @@ These ideas may be useful later, but they should not distract from validating th
 - GPX export
 - weather-aware planning
 - crowdsourced infrastructure corrections
-- secure bicycle-parking availability
+- bicycle-specific live parking availability (a separate later feed; none in the audited BIKE records)
+- an explicit leave-the-bicycle-at-a-station mode with access, costs and retrieval
 - train composition and bicycle-coach location
 - cargo-bike routing
 - family/trailer routing

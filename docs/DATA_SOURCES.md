@@ -1,222 +1,66 @@
 # Data sources and data risks
 
-**24 September current update:** Keyless connections now come directly from [search.ch](https://search.ch/timetable/api/help), preserving dated bicycle symbols. Transport API remains for nearby stops and departure boards. [Permission contract](BICYCLE_PERMISSION_AND_OJP.md) documents code meanings, scoped operator defaults and the distinction from remaining-space availability. This supersedes older statements below that no carriage attributes are interpreted.
+_Consolidated 2026-09-29. Current integrations are separated from source options and historical experiments._
 
-## Principle
+## Current source registry
 
-Data quality is likely a larger project risk than frontend architecture.
-
-Before relying heavily on a source, record:
-
-- what it provides
-- geographic coverage
-- licence and attribution
-- update frequency
-- reliability
-- missingness
-- access method
-- dependency risk
-
-## Initial source registry
-
-| Information | Initial source | Main uncertainty |
+| Information | Source and current use | Remaining limits |
 |---|---|---|
-| Roads, cycle paths, road classes | OpenStreetMap | Completeness varies locally |
-| Bicycle access, surfaces, barriers | OpenStreetMap | Many attributes may be missing/inconsistent |
-| Speed limits / road context | OpenStreetMap | Coverage quality varies |
-| Parking, shops, pumps, repairs | OpenStreetMap | Freshness and completeness |
-| Official leisure routes | SwitzerlandMobility / related data | Licence and reuse rights |
-| Elevation | Swiss federal geodata | Processing, attribution, integration |
-| Stops and timetables | Swiss open public-transport data / GTFS | Bicycle carriage info may be incomplete |
-| Realtime delays/cancellations | GTFS Realtime / Swiss feeds | Not needed for earliest prototype |
-| Bicycle carriage rules | SBB and other operators | May be human-readable rather than structured |
-| Station accessibility | OSM / operator/open data | Completeness for bike-specific transfers |
+| Cycling geometry and road attributes | [BRouter](https://brouter.de/) using OSM-derived data; routed access/egress and cycling alternatives | Bounded requests; partial attributes; downloaded time is not a street-survey date; no endpoint availability guarantee |
+| Terrain and official path information | On-demand Swiss GeoAdmin/swisstopo checks described in [terrain implementation](SWISSTOPO_AND_FARES_2026-09-27.md) | Partial/ambiguous feature matching remains explicit; not a complete imported swissTLM3D network |
+| Places and addresses | GeoAdmin, Swiss Transport API, local known places and Photon/OSM venue search | Place relevance/entrance identity may need confirmation; see [PLACE_SEARCH.md](PLACE_SEARCH.md) |
+| Timetables and bicycle evidence | Active server-side OJP 2.0, paired bicycle-filtered/unfiltered searches, dated TripInfo; public search.ch and Transport API fallbacks; scoped reviewed operator rules | Exact service/segment evidence and operator policy are different; unknown permission, disruptions and capacity remain separate |
+| Passenger/bicycle prices | OJP Fare test endpoint using a separate server key, with retained/assembled exact itineraries; scoped published fallbacks | Test estimates, complete-coverage checks and unknown products; no purchase/booking guarantee; [fare release](OJP_EXACT_TRIP_FARES_2026-09-28.md) |
+| Bicycle parking | [Official bicycle/car feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/), filtering BIKE records for the optional map layer | Station/partner coverage including border areas; no bicycle occupancy in the checked feed; richer hours/prices/entrances not yet normalised |
+| National timetable/street data | Swiss GTFS and Geofabrik OSM were downloaded and audited; experimental local timetable service | Not the published routing backend; performance/calendars/headways/pathways/disruptions and hosting remain gates |
+| Parking enrichment | Zürich municipal data, OSM and operator sources reviewed as candidates below | Proposed, not merged into the app |
+| Bike shops/repairs/pumps | OSM/service/operator information proposed for the next milestone | No dedicated integrated directory yet; named-place search does not verify services/hours |
 
-## OpenStreetMap
+Neither access to national sources nor successful sampled queries establishes a complete verified map of all Swiss public transport or every cycle path. Transit geometry remains schematic; cycling geometry is routed. The published app does not silently activate the local national timetable pilot.
 
-Likely uses:
+## Parking audit and proposed enrichment
 
-- street graph
-- cycleways
-- bicycle access
-- surface
-- barriers
-- speed limits
-- road types
-- bicycle parking
-- repair stations and shops
-- pumps
-- drinking water
-- rentals
-- charging points
+A fresh official download on 29 September contained **1,608 bicycle and 1,269 car facility records**. Zero BIKE records had populated current/forecast occupancy; 435 CAR records had current estimated occupancy. Bicycle operating-time structures occurred in 570 records, pricing models in 143 and descriptive traits in 303. These are presence counts, not validated usable schedules/tariffs. [Machine-readable audit, source URL, hash and counting method](experiments/bike-parking-source-audit-2026-09-29.json).
 
-### Main risk
+The official cookbook advertises estimated occupancy and forecasts in the combined dataset. That does not establish bicycle coverage: the inspected categories must govern the product claim. Feed counts include border facilities and can change. Retain provider IDs and `uic`/`didokId` for reviewed station association; a point/area is not an entrance. Do not infer walk-in access or a free tariff from a general public-access flag or unexplained zero price.
 
-OSM tagging is heterogeneous. Do not assume an attribute exists simply because the schema supports it.
+| Candidate source | Contribution | Source conditions and product implication |
+|---|---|---|
+| [Zürich Zweiradparkierung](https://data.stadt-zuerich.ch/dataset/geo_zweiradparkierung) | Municipal racks/locations, vehicle categories and fee/capacity fields | Catalogue publishes CC0; filter motorcycle-only records. It reports no occupancy and warns about temporary removals/access gaps. Survey, publication and download dates are distinct |
+| [OSM bicycle parking](https://wiki.openstreetmap.org/wiki/Tag:amenity=bicycle_parking) | Broader mapped facilities, parking form and access/cover/fee/maxstay tags | Field presence and freshness vary. Keep public/customer/member/private restrictions distinct; account for nodes/ways describing the same facility |
+| [SBB parking guidance](https://www.sbb.ch/content/internet/sbb/en/support/produkte-services/services/weitere-sbb-services/veloparking-am-bahnhof.html) and individual operators | Practical entry/retrieval, badge/registration and tariff evidence | Facility-specific review; a pass/access right is not a guaranteed space. Do not assume a bulk API or scraping/reuse permission |
+| [Forum Velostationen](https://www.velostation.ch/de/velostationen/) | Discovery and links for facility review | Treat as a directory until a suitable data-access/reuse arrangement is established |
 
-### Required audit
+[BIKE_PARKING.md](BIKE_PARKING.md) specifies deduplication, field-level provenance, uncertainty, bounded retrieval, entrance checks and proposed pilot acceptance cases. No nationwide inventory or live-space service is claimed.
 
-For each golden journey, inspect:
+## Bike-shop and repair sources
 
-- missing cycleways
-- wrong/missing bicycle restrictions
-- missing surface information
-- barriers and stairs
-- speed-limit coverage
-- station entrances/access
-- useful POIs
+Use [OSM shop=bicycle](https://wiki.openstreetmap.org/wiki/Tag:shop=bicycle) with explicit service evidence for staffed repairs, and [amenity=bicycle_repair_station](https://wiki.openstreetmap.org/wiki/Tag:amenity=bicycle_repair_station) for self-service equipment. A shop tag alone must not promise a repair service. Pumps and their bicycle/valve suitability require their own evidence; a generic compressed-air object is insufficient.
 
-Record product-breaking failures separately from minor incompleteness.
+Retain name, location, source ID, operator/business link, contact, known hours and service tags. Unknown hours, appointment needs and equipment condition stay unknown. Deduplicate services co-located with a parking facility without inventing a separate business. Treat opening-at-arrival as different from immediate mechanic availability. Reuse the parking place/evidence/card infrastructure and add explicit route actions; no bookings or outreach to shops are part of this documentation update.
 
-## Swiss public-transport data
+## Source and licensing record
 
-Likely uses:
+For every used or proposed source retain: URL/provider, fields, geography, access method, last successful fetch, provider update/version if known, independent review date, licence/attribution, update cadence, limits and known gaps. The [OSM copyright/licence page](https://www.openstreetmap.org/copyright) documents ODbL attribution and reuse terms. Check the applicable official/local dataset conditions before combining or redistributing records; a public webpage is not proof of a bulk-data licence.
 
-- stops
-- routes
-- trips
-- schedules
-- service calendars
-- transfers
+Preserve conflicting values and their evidence rather than silently choosing one global provider. Separate missing, false, stale and contradictory values. An operator is generally the practical source for its access/tariffs; municipalities can establish their own facilities and OSM adds geometry/tags. No source is assumed complete merely because it is official.
 
-National GTFS is a realistic foundation for timetable routing.
+Use bounded, cached requests with independent failure handling. Parking/repair requests must not exhaust timetable/road requests or delay initial journey results. A future live-data field needs its own observation timestamp, category/facility match and expiry; a daily static cache does not make occupancy live.
 
-### Realtime
+## Routing, carriage and fare evidence rules
 
-Useful later for:
+- Retain directed cycling geometry and source attributes; do not turn an unroutable segment into a navigable straight line. Unknown surfaces/elevation remain unknown; speed bands are not exact posted signs or measured traffic.
+- Applicable dated prohibitions take precedence over broad operator defaults. Keep permission, bicycle ticket, reservation requirement, reservation availability and remaining capacity separate.
+- OJP fare requests preserve whole-trip coverage and the selected services; invalid retained evidence must not trigger a substitute route quote. Keep Full Fare/Half Fare/GA passenger handling separate from bicycle products and reservation prices.
+- Fetched-at dates are not guarantee dates. Public source data and published app coverage differ. Do not advertise objective route safety, complete infrastructure coverage or a bookable fare from partial/test data.
 
-- delays
-- cancellations
-- disruption-aware routing
+## Dated implementation and audit references
 
-**Decision:** Realtime is not required to validate the earliest prototype.
+- [Cycling geometry, profile and data limits](CYCLING_ROUTES.md)
+- [Swiss national GTFS/OSM audit — 25 September](SWISS_DATA_AUDIT_2026-09-25.json) and [local/production separation](SWISS_IMPLEMENTATION.md)
+- [Bicycle permission and OJP contract](BICYCLE_PERMISSION_AND_OJP.md) and [bus operator evidence](BUS_BICYCLES.md)
+- [Swisstopo and fare corrections — 27 September](SWISSTOPO_AND_FARES_2026-09-27.md)
+- [Exact-trip fares — 28 September](OJP_EXACT_TRIP_FARES_2026-09-28.md)
+- [Parking feed audit — 29 September](experiments/bike-parking-source-audit-2026-09-29.json)
 
-## Bicycle carriage rules
-
-**Implemented pilot (2026-09-20):** The app preserves timetable category/operator and applies a separate curated bus-rule registry. [BUS_BICYCLES.md](BUS_BICYCLES.md) lists exact coverage, official PostBus/ZVV/tpg sources and review dates. Unknown rules stay unknown; known bans are excluded from bicycle-aware scopes and labelled in the all-transit reference, while conditional rules require a departure check. Reservation requirement, reservation availability, ticket requirement and live capacity are separate fields. This supersedes the earlier flat proposed representation below for the implemented bus pilot; the remaining broader sources are still prospective.
-
-This is a distinct subsystem, not just a timetable field.
-
-Rules may depend on:
-
-- operator
-- service/train category
-- line
-- vehicle
-- departure
-- season
-- time of day
-- bicycle type
-- available capacity
-- reservation requirements
-- replacement buses
-- international services
-
-Potential representation for each transit leg:
-
-- `allowed`
-- `allowed_with_conditions`
-- `reservation_required`
-- `reservation_recommended`
-- `not_allowed`
-- `unknown`
-
-Maintain provenance and confidence for every rule.
-
-### Likely implementation stages
-
-1. Manually encode rules for a small pilot set of operators/services.
-2. Combine structured timetable fields with maintained rules.
-3. Automate extraction only where source structure and reliability justify it.
-
-Do not infer certainty from missing data.
-
-## Tickets vs reservations
-
-Keep these concepts separate:
-
-- passenger ticket
-- bicycle ticket
-- bicycle reservation
-- bicycle-space reservation
-- carriage permission
-
-The early product may explain them without selling them.
-
-## Elevation
-
-Possible use:
-
-- slope per street segment
-- total climbing
-- comfort/difficulty scoring
-- e-bike-specific profiles
-
-**Decision:** Elevation is useful but lower priority than basic multimodal routing and bicycle-rule feasibility.
-
-## Station infrastructure
-
-Potentially useful attributes:
-
-- stairs
-- lifts
-- ramps
-- platform access
-- station entrances
-- underpasses
-- bicycle restrictions
-
-**Open question:** Is coverage complete enough to model bicycle transfer difficulty reliably?
-
-## Data licensing checklist
-
-Before production use of any dataset, verify:
-
-- commercial reuse
-- redistribution
-- derivative database requirements
-- attribution
-- caching/API restrictions
-- update conditions
-
-Do not assume that publicly viewable data is freely redistributable.
-
-## Recommended audit artifact
-
-Eventually maintain a structured table or machine-readable registry with:
-
-`source | fields | geography | licence | freshness | reliability | known gaps | access | notes`
-
-The initial audit should focus on Zurich plus one nearby corridor rather than all of Switzerland.
-
-
-## Prototype adapter update — 2026-09-05
-
-The implemented experiment uses GeoAdmin address geocoding, with Transport API place/stop lookup as fallback. The public [Transport API](https://transport.opendata.ch/docs.html) supplies nearby stops, scheduled connection sections and departure-board pass lists. Requests no longer restrict transportations to trains: buses, trams and other returned public transport are considered in both models.
-
-Only known timed sections enter the graph. Recorded pass-list exits require a valid arrival time; untimed passage points are excluded. Delay/prognosis data, carriage permissions, capacity and reservations are not interpreted. Cycling and map geometry remain schematic. See `MATHEMATICAL_MODEL.md` for sampling, rate limits and the difference between an observed schedule graph and comprehensive network coverage.
-
-A small recorded 2026-09-05 Zürich–Laax schedule fixture is included for regression testing, with its source URL. It is an observation of scheduled data, not a promise that those services will run on another date.
-
-## Routed cycling adapter — 2026-09-20
-
-**Implemented:** Public [BRouter](https://brouter.de/) GeoJSON routing with the touring profile, moderate effort, steps/ferries disabled and a 25 km/h model cap. Returned OSM-derived tags and SRTM geometry support distance, time, elevation, surface and infrastructure. Requests are directional; provider errors do not fall back to geometry. Attribution and bounded in-memory caching are documented in [CYCLING_ROUTES.md](CYCLING_ROUTES.md).
-
-BRouter's lookup table groups raw posted speed limits; the app shows approximate bands, never exact signs or measured traffic speed. Road-message matching preserves unknown intervals. Missing elevation is not filled, and surface is not inferred from road class. Data freshness is not known per segment; fetched-at time is not an OSM survey date. The community endpoint has no availability guarantee for this prototype; managed/self-hosted routing remains an engine decision before wider use.
-
-A real 20 September 2026 Renens–EPFL response is retained with source URL and attribution in `prototype-v0/src/fixtures/renens-epfl-cycling-2026-09-20.json`. This supersedes the earlier schematic-cycling adapter description; historical timetable fixtures preserve their original assumptions.
-
-## Current coverage and TripInfo — 2026-09-21
-
-[TripInfo and Swiss network coverage](TRIPINFO_AND_NETWORK_COVERAGE.md) distinguishes source availability from imported data. Swiss national GTFS includes land and boat/ferry modes, but this app holds a sampled timetable graph. BRouter returns requested OSM-derived routes; no complete local cycling network or inventory of every path is verified. The map is not a national network map.
-
-TripInfo inspection is implemented as separate evaluation tooling, not a production permission feed. Live confirmation and reviewed service/segment mapping remain pending. Remaining bicycle spaces, occupancy and reservation availability are explicitly deferred. BRouter/SRTM profiles are already implemented; the earlier elevation-priority text concerns higher-resolution terrain and future calibration.
-
-
-## 25 September 2026 implementation
-
-The Swiss national GTFS and Geofabrik OSM extracts were actually downloaded and processed. The timetable now has a local dated SQLite index and an experimental read-only service; production routing still uses the live providers. OSM counts describe mapped objects, not all physical bike paths. Aggregate manifests/hashes are in [SWISS_DATA_AUDIT_2026-09-25.json](SWISS_DATA_AUDIT_2026-09-25.json).
-
-The [official bicycle/car parking feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/) supplies the optional bicycle-parking layer without an API key. The checked dataset has 1,608 BIKE facilities. Nearby-border and incomplete coverage are explicit. Capacity is not occupancy; feed default-zero prices are not reliable free-parking evidence. OSM has additional racks but requires deduplication and access/quality review before combining them.
-
-OJP Fare is a test integration environment requiring its own API product. Production full/Half Fare passenger quotes are not enabled; GA is handled as a coverage question. Published supported bicycle day-pass/reservation prices are shown separately. See [implementation, sources and limits](SWISS_IMPLEMENTATION.md).
+Earlier descriptions of schematic cycling, inactive OJP keys or unimported national files are historical; consult these dated reports and Git history for their original context. [PROJECT_STATE.md](PROJECT_STATE.md) and [APP_ROADMAP.md](APP_ROADMAP.md) define the current implementation and priorities.

@@ -609,3 +609,14 @@ A direct Zürich HB endpoint probe also reproduced a provider-centroid `no track
 [Detailed implementation, final publication and live evidence](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
 **Final-version targeted checks:** Version 30 priced the same IR35 plus the later 12:28–13:18 bus using three source trips at passenger CHF 45.80; a selected bus-only subtrip returned CHF 17.20. Both used `assembled`. The targeted combination explicitly supplied the existing walk source to the saved version-29 graph; the 203-test gate separately validates automatic walking provenance in current acquisition. [Sanitized evidence](experiments/exact-trip-fares-2026-09-28.json).
+
+
+## 2026-09-29 — Parking-source audit and documentation refresh
+
+**Question:** What can the current official parking source support for the next product milestone? Inspected the existing parser, server cache, map display and parking regressions. Performed one unauthenticated fetch of the official bicycle/car permalink at 08:46:49 UTC. The response contained 2,877 facilities: 1,608 BIKE and 1,269 CAR, without filtering out nearby-border coverage. No bicycle record had populated current or forecast occupancy; 435 car records had current estimated occupancy and 443 had forecasts. Bicycle operating-time structures occurred in 570 records, pricing models in 143 and traits in 303; presence is not validation. All bicycle records reported publicAccess=true, including a sampled badge-access station. Sampled zero tariff and midnight-to-midnight values require interpretation; no free/24-hour claim follows from them alone.
+
+**Source review:** Verified the official combined-feed documentation, Zürich's municipal parking catalogue, OSM parking/shop/repair tagging and SBB access/subscription guidance. Municipal data supplies complementary destination coverage but explicitly lacks occupancy and can miss temporary closures. An available subscription does not guarantee a parking place. Directory pages are reference sources, not assumed bulk APIs.
+
+**Outcome:** Documented a suitability/access-focused parking proposal and the requested order parking → shops/repairs → broader UI. Retained the separate-mode boundary for leaving a bicycle at a station and the outstanding routing reliability work. [Small audit artifact with method/source/hash](experiments/bike-parking-source-audit-2026-09-29.json) · [Parking proposal](BIKE_PARKING.md).
+
+**Verification scope:** Documentation-only change. Check changed Markdown links, JSON consistency, current/historical status and the Git diff. No new application test/build result, feature implementation, data import into production or website deployment is claimed; the previous 203-test release gate remains dated 28 September.

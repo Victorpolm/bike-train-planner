@@ -1,40 +1,34 @@
 # Bike + Train Journey Planner
 
-**Exact-trip fare correction (28 September 2026):** The app now preserves OJP trips and prices the selected services directly. It also assembles and validates retained train/bus/walking legs when the planner combines different provider responses. Live Zürich–Bern and Zürich–Laax searches returned passenger CHF 36.20 and CHF 45.80 for the documented departures; the Laax result exercised the assembled-trip path. [Implementation, verification and remaining limits](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md). Private version 30 is deployed; 203 tests and production builds pass. Prices remain OJP test estimates.
+A Switzerland-first planner for travelling with your bicycle, combining road-routed cycling and public transport. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
 
-**Earlier fare validation (27 September 2026):** [Ten live random fare checks](docs/OJP_FARE_RESULTS_2026-09-27.md) returned passenger quotes for 10/10 journeys and bicycle quotes for 9/10.
+## Current state — 29 September 2026
 
-**Implementation update (27 September 2026):** [Swisstopo terrain checks, cycling preferences and fare corrections](docs/SWISSTOPO_AND_FARES_2026-09-27.md) now implement the approved follow-up to the user review. The app distinguishes riding, pushing and carrying, rejects unsuitable climbing passages, and compares Fastest / Simplest / Lower traffic stress candidates. Cards separate passenger, bicycle and reservation prices. Reviewed Zürich-area rail corridors have numeric standard fares; wider fare coverage remains incomplete. No swisstopo data upload is required.
+The app supports Baseline/Extended planning, ordered stops, named places, configurable cycling pace, terrain/profile information and three public-transport bicycle-access scopes. Passenger, bicycle-ticket and reservation costs are separate. OJP fare requests now reuse the exact retained trip or assemble its selected service/walking legs.
 
-**Latest source update (25 September 2026):** Date-aware train bicycle rules, ticket/reservation prices, full fare/Half Fare/GA preferences, official bicycle parking and a 60-second search deadline. A national GTFS service and Swiss OSM audit are implemented as local pilots; they are not a production replacement for live routing. [Implementation and remaining gates](docs/SWISS_IMPLEMENTATION.md) · [GPX recording guide](docs/GPX_RECORDING.md) · [tests and dated results](docs/EXPERIMENTS.md).
+A basic official **bicycle-parking map layer already exists**. A richer parking recommendation flow and a dedicated bike-shop/repair directory are the next work, not delivered features. National timetable/OSM work remains a local pilot; the published app still queries live providers. Searches are bounded and can miss alternatives.
 
-Journey cards now show the supported bicycle price directly below the boarding count, with passenger fares and unconfirmed charges kept explicit. [Named-place search](docs/PLACE_SEARCH.md) adds Swiss venues and landmarks: “fortyseven baden” selects the bath at Grosse Bäder 1, with its actual coordinates.
+**Last verified release:** owner-private **version 30**, published 28 September 2026; 203 application tests and frontend/Worker production builds passed. [Exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records successful Zürich–Bern/Laax and modified-trip checks. OJP prices remain test estimates. Today's update changes documentation only.
 
-Public search.ch bicycle conditions work without an API key. The OJP integration is now active through the Site's separate server secrets; GitHub Actions keeps its own test credentials. Remaining bicycle spaces and booking transactions remain outside scope.
+[Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 
-Research and prototype for a bicycle + public-transport journey planner, initially focused on Switzerland.
+## Next priorities
+
+1. **Bike parking:** suitable options near a destination or selected station, with useful access, hours, fee and source information. Build on the existing map layer.
+2. **Bike shops and repairs:** distinguish shops, staffed repair services, self-service stands and pumps; provide useful contact information and explicit route actions.
+3. **User interface:** simplify search, comparison and map/details after the first two features, while including each feature's essential usability from the start.
+
+[Roadmap and completion criteria](docs/APP_ROADMAP.md) · [Concrete bike-parking proposal](docs/BIKE_PARKING.md)
+
+The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle occupancy observations or forecasts. The parking milestone therefore concerns suitability and access; capacity is not a free-space count. [Dated audit](docs/experiments/bike-parking-source-audit-2026-09-29.json).
 
 ## Open the private website
 
-[**Open private website**](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site)
+[**Open the journey planner**](https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site)
 
-Sign in with the ChatGPT account that owns the Site. Access is restricted to that account; the link does not make the website public. You can always return here and click this link to use the planner without installing anything.
+Sign in with the ChatGPT account that owns the Site. The website remains owner-private; this GitHub repository is public. GitHub source updates and website publication are separate. Personal GPX data and secrets are not committed. New hosting spend requires the owner's approval.
 
-Website access and source visibility are separate: this GitHub repository is public. Personal GPX recordings, secrets and downloaded bulk datasets are not committed here. No new paid hosting is authorised; any hosting spend requires the owner's approval first.
-
-For local Git setup and publication, see [Website access and development](docs/WEBSITE.md). GitHub changes do not automatically update the website. **Private version 21 was published and owner-only access verified on 27 September 2026 at 09:48 UTC**, with swisstopo checks, walking/carrying sections, cycling preferences and separate fare components. [Live regression results and remaining gaps](docs/EXPERIMENTS.md) include the still-unresolved Baden–Witikon mixed-search timeout. Train prerequisites, fare preferences, official parking and bounded searches remain available. The national timetable pilot remains local; no new paid hosting was added.
-
-**Current cycling:** [Routed cycling and profiles](docs/CYCLING_ROUTES.md) explains the road geometry, train-readiness calculations and data limits.
-
-**Bicycles on public transport:** [Permission and prerequisites](docs/BICYCLE_PERMISSION_AND_OJP.md) documents the current all-mode choice. [Bus carriage rules](docs/BUS_BICYCLES.md) records sourced operator conditions, prohibited/unverified services, practical boarding information and remaining departure-rule gaps; live bicycle-space availability is explicitly deferred.
-
-**Next work:** [App roadmap](docs/APP_ROADMAP.md) records routing-engine evaluation, bicycle carriage, repair/parking, commuting/bikepacking/expert modes and the later community vision, with delivery order and completion criteria.
-
-## Core question
-
-> Given an origin, destination, departure time, bicycle and user preferences, what are the most useful practical journeys combining cycling and public transport?
-
-The product is deliberately focused on travelling **with a bicycle through the whole multimodal journey**. It is not intended to become a generic map containing everything useful to cyclists.
+The bicycle currently stays with the traveller on transit. A future **park the bicycle, then continue by public transport** option would be a separate routing mode with explicit retrieval and cost handling. It is a proposal, not current behaviour.
 
 ## Repository as project memory
 
@@ -57,6 +51,8 @@ This repository is the authoritative source for both code and accumulated projec
 13. [`CHATGPT_PROJECT_SETTING.md`](CHATGPT_PROJECT_SETTING.md) — stable instruction block to paste into a dedicated ChatGPT Project.
 14. [`docs/CHATGPT_PROJECT_SETUP.md`](docs/CHATGPT_PROJECT_SETUP.md) — exact setup and working routine for that Project.
 15. [`AGENTS.md`](AGENTS.md) — repository rules for coding agents.
+
+For the next product milestone, also read [`docs/APP_ROADMAP.md`](docs/APP_ROADMAP.md) and [`docs/BIKE_PARKING.md`](docs/BIKE_PARKING.md).
 
 ## Runnable prototype
 

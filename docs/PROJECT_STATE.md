@@ -1,110 +1,60 @@
 # Project state
 
-_Last consolidated: 2026-09-28. Source implementation and publication status are distinct._
+_Last consolidated: 2026-09-29. This is the current summary; dated reports and Git history preserve earlier states._
 
-## 28 September exact selected-trip fares
+## Objective and current scope
 
-The planner now retains signed, complete OJP trip data on transit and internal walking edges. Unchanged trips go straight to OJP Fare; selected subtrips and combined services are assembled from their original legs, with exact service/time checks, validated walking connections, recalculated trip fields and full fare-coverage checks. Stateless signatures avoid dependence on a particular Worker instance and expose no API key. Older/public-timetable results retain the explicitly identified lookup path. Live planner checks returned passenger CHF 36.20 for Zürich–Bern and CHF 45.80 for Zürich–Laax; the latter combined an IR35 from one OJP response with a bus from another and returned `itinerarySource: assembled`. 203 tests and builds pass. OJP prices remain test estimates; unknown Laax bicycle reservation costs and the route-search time limit remain explicit. [Exact implementation, live checks and publication](OJP_EXACT_TRIP_FARES_2026-09-28.md).
+**Decision:** Build a Switzerland-first bicycle + public-transport journey planner. In the current mode the traveller keeps the bicycle throughout transit, including intermediate cycling and walking/pushing transfers. Parking is currently an information layer, not a mode that leaves the bicycle behind.
 
-## 28 September route-price correction (earlier publication)
+**User's requested priority order, 29 September:** (1) bike parking, (2) bike shops/repair referencing, (3) the broader user-interface improvement. The proposed feature scope and completion criteria are in [APP_ROADMAP.md](APP_ROADMAP.md) and [BIKE_PARKING.md](BIKE_PARKING.md). This documentation update records a plan; the proposed additions are not implemented yet.
 
-Private version 28 fixes the reported Zürich–Bern and Zürich–Laax missing passenger fares. Both failures were reproduced through the planner; the provider station centroids disagreed by more than the old matching allowance. Corrected station identity in fares and graph insertion, allowed slower OJP status replies, removed the redundant fare-status gate and kept fare payloads compact/stable. Fresh live searches return passenger CHF 36.20 and CHF 44.60 respectively for the documented 29 September departures. These remain OJP test estimates. Malformed stationboard tails now retain valid exits; least-cycling cards show their time allowance. 195 tests and production builds pass. Search exploration still hit its 90-second limit; browser interaction and the four-versus-eight-pair experiment remain unverified. [Evidence and publication](OJP_ROUTE_FARES_2026-09-28.md).
+## What works now
 
-## 28 September hosted OJP activation (earlier publication)
+| Area | Implemented | Practical limit |
+|---|---|---|
+| Journey planning | Bounded multi-label Baseline/Extended search; road-routed access/egress; at most one intermediate cycle in Extended; ordered visits; category winners with identical results combined | Sampled acquisition can miss useful journeys; a timeout is not proof that no route exists |
+| Inputs and comparison | Swiss places/addresses/venues, map-selected/draggable endpoints, up to four ordered stops, Swiss departure date/time, rider/electric profiles, cycling-only comparison | Stopover duration, arrive-by and more specialised modes are not delivered |
+| Cycling | BRouter geometry and terrain/profile summaries; Fastest/Simplest/Lower traffic stress preferences; riding/pushing/carrying distinctions and bounded official terrain checks | Partial data coverage; riding times are estimates; no claim of objective safety or fully verified station entrances |
+| Bicycle carriage | All-mode selector: verified only, include unknown, include prohibited for comparison; dated OJP filtering/TripInfo and scoped operator rules | Permission, ticket requirements, reservations and remaining spaces are distinct; live spaces/booking are not integrated |
+| Prices | Server-side OJP Fare reuses retained trips or assembles exact selected service/walking legs; full/Half Fare/GA and annual-bike-pass handling; separate passenger, bicycle and reservation rows | OJP integration/test estimates; some provider results remain unavailable; no unsupported through fare across a cycling break |
+| Bike parking | Optional official map layer, facility type, nominal capacity, cover information, public-access flag, descriptive traits and operator link | No structured hours/tariffs, nearby shortlist, routed entrance access, cross-source deduplication or bicycle occupancy feed |
+| Bike shops | Venue search can find named places | A dedicated shop/repair/pump directory and route-related recommendations are not implemented |
+| National data | Swiss GTFS/OSM downloaded and evaluated; experimental local timetable index/service | The published app still uses live providers; no complete national routing engine or OTP/RAPTOR/ULTRA migration is deployed |
 
-Both Site secrets are configured and private version 26 uses environment revision 3. A hosted request failure caused by `redirect: "error"` was fixed with manual redirect rejection. Live OJP journey retrieval and full/Half Fare passenger plus bicycle quotes succeed; prices remain OJP test estimates. The client-generated Zürich-Bern fare request also succeeded. 188 app tests and production builds pass. [Deployment, exact checks and review conclusions](OJP_ACTIVATION_2026-09-28.md). The review's stationboard defect, category qualification and sampling comparison remain follow-up work, unchanged by this activation patch.
+## Last verified publication and tests
 
-## 27 September fare integration diagnosis (historical)
+**Fact:** The last verified website release is owner-private **version 30**, published 28 September 2026 at 17:10:19 UTC, Site source `aee01405a58e955c51ef28cb172d4e6ef433dabb`, environment revision 3. Both OJP server secrets are active. GitHub source is public; website audience and GitHub visibility are separate. A GitHub push does not automatically publish the website.
 
-[OJP Fare implementation and ten live checks](OJP_FARE_RESULTS_2026-09-27.md): the new GitHub Actions fare key works. Full/Half Fare quotes succeeded for 10/10 sampled Swiss journeys and bicycle quotes for 9/10; one NOVA bicycle error remains explicit. Server fare requests and asynchronous journey-card estimates are implemented and 185 tests pass. Quotes are marked beta/test estimates. Site runtime activation still requires its own OJP_FARE_API_KEY binding; GitHub secrets are not transferred or exposed. Owner-private Site version 22 was published at 16:12:28 UTC with environment revision 0. See the report for actual sampled locations.
+**Last code-release gate:** 203 application tests plus TypeScript/frontend/Worker builds passed on 28 September. This documentation-only update does not claim a fresh application test run or deployment. Browser interaction QA was not completed in the previous release's unauthenticated browser session.
 
-## 27 September implementation
+Live checks on 28 September returned passenger CHF 36.20 for Zürich HB–Bern and CHF 45.80 for Zürich HB–Laax on the documented 29 September departures. The Laax route combined services from different OJP responses. Later-bus and bus-only subtrip checks also passed. These are dated test observations, not standing tariffs. [Exact cases and limits](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
-[Terrain, fares and permission changes](SWISSTOPO_AND_FARES_2026-09-27.md) implements the approved follow-up to [the earlier review](USER_REVIEW_2026-09-27.md). Swisstopo road/hiking features are checked on demand with explicit matching/coverage limits. Riding, pushing and carrying affect timings and appear on the map and itinerary; alpine/climbing candidates are excluded. Three cycling objectives compare bounded alternatives. No national swisstopo download or new data hosting is required.
+## Parking: evidence available for the next milestone
 
-Cards now separate passenger, bicycle ticket and reservation amounts. A date-scoped published tariff catalogue covers reviewed Zürich–Baden and Zürich–Birmensdorf rail services, comparing the reduced bike fare with the valid day pass. Other passenger/route fares remain unquoted; no nationwide fare coverage is claimed. Regional S-Bahn uncertainty windows are scoped to Zürich/Ticino, and the specific upper-S10 prohibition is isolated. Live dated S12 evidence confirms that restrictions can differ between peak and off-peak departures.
+The 29 September public-feed audit found **1,608 BIKE facility records** and 1,269 CAR records, including nearby-border facilities. None of the bicycle records had current or forecast occupancy fields populated; 435 car records had current estimated occupancy. Bicycle operating-time structures were present in 570 records and pricing-model structures in 143, without establishing that those values are complete or semantically usable. [Audit](experiments/bike-parking-source-audit-2026-09-29.json).
 
-Verified 177 application tests and production build. Browser preview infrastructure is unavailable. Live cycling checks rejected the reported alpine passage and found a stair-free Baden alternative, with partial official matching. See [experiments](EXPERIMENTS.md) for full search probes. Endpoint discovery now overlaps, station-centroid recovery is bounded to the same station within 250 m, and terrain-enabled searches use a 90-second deadline. Private Site version 21 was published at 09:48 UTC from source `d2e3935c9197ac258338c33b7faab4331748f311`; all 105 application files match and owner-only access was rechecked. The final Muri–ETH search returned transit proposals at 71.1 seconds. Baden–Witikon still returned no mixed journey within 90 seconds; this acquisition/performance gap is unresolved.
+**Proposal:** Make parking useful around the selected destination/station, retain official station coverage, and pilot municipal/OSM enrichment. Show a small shortlist with entrance/access evidence, conditions, known price and retrieval hours; do not invent free spaces or equate covered with secure. Details and acceptance cases are in [BIKE_PARKING.md](BIKE_PARKING.md).
 
-## 25 September card prices and named destinations
+## Next work and release discipline
 
-Collapsed journey cards show bicycle ticket/reservation price options immediately below boardings, using the current fare profile. GA and an annual bike pass affect additional cost; full/Half Fare passenger tickets remain separate quotes. Unsupported or prohibited journeys never receive an invented total.
+1. **Parking:** audit a small pilot, normalise/deduplicate facilities and entrances, then deliver nearby search/cards and explicit route actions. Include basic mobile/keyboard usability in this feature.
+2. **Bike shops and repairs:** reuse the same place/source/card layer for shops, staffed repairs, self-service stands and pumps; distinguish their services and hours.
+3. **Broader interface:** simplify search, preferences, result comparison and the map/detail flow using the two completed features and short user-task tests.
 
-Place input combines existing stations/addresses with Swiss OpenStreetMap venues through Photon, with categories and addresses. Whole-query relevance is ranked before limiting suggestions. Typing “fortyseven baden” resolves the bath rather than automatically accepting Baden town. See [place-search scope and sources](PLACE_SEARCH.md). Verified 163 application tests and production builds, a live FORTYSEVEN lookup, and collapsed-card server rendering; no new browser visual check is claimed.
+Fix route/price/permission regressions when demonstrated; the unresolved Baden–Witikon search and bounded discovery remain tracked work. New amenities must load independently and must not consume the transit search budget. Keep each stage small, documented and independently reviewable; preserve completed test evidence between sessions.
 
-## 25 September implementation update
+## Later decisions and uncertainties
 
-The approved Swiss-first proposal is being implemented. [Current delivery and release gates](SWISS_IMPLEMENTATION.md) supersede older coverage statements below where explicitly noted.
+- An explicit **park the bicycle, then continue by public transport** mode would require passenger-only onward travel, parking-entry/exit conditions, parking cost, return/retrieval handling and access time. It is a separate proposal, not approved as a replacement for today's bicycle-accompanies-traveller mode.
+- Station entrances/pathways, timetable completeness, riding calibration, real user value and the four-versus-eight station-pair experiment remain open.
+- Engine evaluation, production national timetable hosting and richer commuting/bikepacking/expert modes remain later work. New hosting spend still needs the owner's approval.
+- Native apps, ticket/parking sales, reservation/space booking, social/community features and international expansion are deferred.
 
-- Sourced SBB domestic IC/IR/regional, BLS and ordinary domestic RhB rules expand verified permission. Date/line/season/holiday IC reservations, separate ticket requirements and dated exceptions reduce avoidable unknowns. RhB reservation details remain unknown without service evidence; premium trains are not included in its default.
-- Full fare/Half Fare/GA and annual-bike-pass preferences are stored on the device. Published bicycle day-pass/reservation options appear; passenger total quotes remain pending production fare access and validation.
-- The official parking layer contains 1,608 BIKE facilities in the checked download, with capacity separated from availability. It does not change routing or introduce a park-and-ride mode.
-- One 60-second deadline spans each whole search, including ordered stages. Completed results survive timeout. A separate explicit Extended action gets its own deadline and retains user cancellation.
-- Downloaded/indexed national GTFS and downloaded/audited the Swiss OSM extract. The local timetable service shares bicycle rules and independently searches each scope; production activation, performance, frequencies, disruptions and connected station pathways remain gates. The running website still uses the live providers.
-- [GPX instructions](GPX_RECORDING.md) and a local slope-bin analysis tool are ready. No real rider recordings have been supplied or calibrated.
-- Verified 157 application tests, five national timetable tests, five import/GPX tests and 13 existing OJP Python tests. Live Baden and late Zürich–Chur–Laax checks found useful routes; the late search first transit result took 25.3 seconds and the search timed out gracefully at 60 seconds. The preferred initial latency target is not yet met consistently.
+## Durable references
 
-Private Site version 20 was verified on 25 September at 13:36 UTC; all 97 tracked application files match implementation commit cead54c468ea570eed97ae551797915f3d3fb5e9, including card prices and named-place search. Keep the existing Site owner-only. The GitHub repository is public; this corrects earlier descriptions of it as private. No paid hosting, public access expansion or recurring refresh job has been created. Ask before incurring hosting costs. Europe, additional modes and richer profiles follow Swiss validation.
+- [Roadmap](APP_ROADMAP.md) · [Parking proposal](BIKE_PARKING.md) · [Product](PRODUCT.md)
+- [Data sources](DATA_SOURCES.md) · [Decisions](DECISIONS.md) · [Experiments](EXPERIMENTS.md)
+- [Website](WEBSITE.md) · [Exact-trip fare release](OJP_EXACT_TRIP_FARES_2026-09-28.md)
+- [Swiss implementation/local pilots](SWISS_IMPLEMENTATION.md) · [Cycling](CYCLING_ROUTES.md) · [Bicycle permissions](BICYCLE_PERMISSION_AND_OJP.md)
 
-## Objective and scope
-
-**Decision:** Validate useful bicycle + public-transport journeys in a small Swiss pilot area. The bicycle accompanies the traveller throughout. Preserve raw route attributes, represent missing carriage rules as uncertainty, and describe cycling infrastructure without claiming objective safety.
-
-## Current implementation
-
-**Fact:** `prototype-v0/` is the active React/TypeScript/Leaflet application. The original geometric prototype is preserved in Git history and historical fixtures; the current code has progressed beyond simple station enumeration and fastest-arrival ranking.
-
-- **Baseline / Extended:** The same sampled timetable graph and resource limits, allowing zero versus at most one automatic intermediate cycling leg. Ordinary transit/walking changes are allowed in both.
-- **One all-mode access selector:** Verified access only; also allow unverified access; also include prohibited transit. The selected scope controls feasibility before label pruning in Baseline, Extended and ordered visits. Only its category winners appear. Prohibitions remain explicit when included. The legacy independent solves remain available internally for regression comparisons.
-- **Results:** Routed cycling-only comparison, then fastest with transit, fewest boardings and least cycling or walking; optional least active time at one endpoint. Raw cycling and walking remain separate. Each transit comparison has its own 60-minute alternative window.
-- **Cycling:** Directed BRouter road routes and configurable City/Relaxed/Regular/Sportive/Electric profiles determine train readiness and budgets. Regular now defaults to 25 km/h on flat ground. Editable flat speed (8–35 km/h) calibrates power; per-slope timing and electric climbing assistance replace a blanket percentage. A live slope-speed table explains the estimate. Cache entries distinguish pace and assistance. Temporary outages can use validated OSRM bicycle routes, with unavailable elevation/road details kept unknown. No geometric fallback. Profiles show elevation, surfaces, infrastructure and approximate speed bands with explicit unknowns. Endpoint gaps up to 250 m remain visible and add estimated walking time.
-- **Journey input:** Address suggestions, map selection and dragging, up to four ordered visits, route reversal, Swiss departure time and a 24-hour whole-journey window. Visits share cycling/boarding/time budgets; stopover duration is zero.
-- **Usability:** Progressive proposals survive cancellation; journey cards explain all legs, waiting, boarding locations and available platforms. The map shows observed stops and routes. Cycling presets include Above 150 minutes within the 24-hour horizon.
-- **Data acquisition:** Local and rail candidate coverage, bounded outward exploration and an 18-request timetable cap. Two extra bounded rail-exit queries use the original ready time to uncover earlier trains omitted by onward-wait optimization. Their cycling finishes are checked promptly. Other unchecked exits are refined by arrival/boarding objectives. Routes are reused by directed station identity across small coordinate differences. Provider budgets exclude time waiting on the other provider; temporary failures have bounded recovery and rate-limit cooldowns. Ordered-stage queries preserve independently reachable permission-scope times. Sampled acquisition can still miss services and is not globally optimal.
-
-The all-transit choice does not imply complete national routing. A national dated index now exists locally; the deployed search still samples live services. See [the mathematical model](MATHEMATICAL_MODEL.md), [permission contract](BICYCLE_PERMISSION_AND_OJP.md) and [current data audit](SWISS_DATA_AUDIT_2026-09-25.json).
-
-## Bicycle permission and OJP
-
-**Implemented:** A server-only OJP adapter pairs unfiltered and bicycle-filtered searches. Exact dated filter matches establish permission according to OJP; applicable prohibitions override them. Reviewed service conditions identify bike reservation requirements, explicit no-reservation cases and limited carriage. Unknown notes remain unknown. General operator ticket guidance is separate from service permission.
-
-Every transit leg now displays permission, a bike ticket/pass requirement and a separate bike-space reservation requirement, including unknowns. Opening an OJP-backed journey retrieves TripInfo matched to its dated service and boarded interval. New evidence recomputes the selected route scope. Original provider notes and official operator links remain visible.
-
-**Live verification:** The earlier 16-call TripRequest benchmark passed. On 24 September, another nine calls succeeded using the existing GitHub Actions secret: paired TripRequests and one TripInfo each for train, bus and boat. [Live findings and activation](OJP_PERMISSION_2026-09-24.md).
-
-**Public carriage data active:** The keyless search.ch connection feed exposes dated `VN` (prohibited), `VR` (bike reservation required), and `VB` (limited-space carriage) symbols omitted by Transport API connection objects. These are interpreted for exact segments, including timed train exits. Passenger/group reservation symbols do not count as bike reservations. Reviewed domestic SBB IR and SOB mainline rules provide narrowly applicable defaults with separate source links; explicit bans and reservation conflicts take precedence. Ordinary reviewed ZVV-operator/tpg bus and tram policies now verify conditional permission; replacements and unmatched rules remain unknown. Cards label actual permission and name unknown legs. Unknown ticket/reservation details never downgrade allowed access. General guidance is expanded and nonempty.
-
-**OJP active since 28 September:** Both Site secrets are configured and authenticated hosted requests succeed. The public feed remains a fallback. GitHub Actions uses separately stored credentials; no secret extraction was introduced. See the activation record above.
-
-**Scope:** Remaining bicycle places, occupancy, reservation availability and actual bookings remain deferred. Requirements and booking links are explanatory; permission is not a reservation or guaranteed boarding.
-
-## Network coverage
-
-**Fact:** We do not have a complete, verified local graph/map of all Swiss terrestrial and boat public transport, or an audited inventory of every cycle path. The app queries selected services and BRouter routes.
-
-The national Swiss GTFS source includes land modes and boat/ferry categories, but is not imported. BRouter uses OSM; availability of a road route does not establish completeness of every path or tag. Transit map lines are schematic. The cycling profile disables ferries, which must appear as explicit transit legs. See [source coverage versus app coverage](TRIPINFO_AND_NETWORK_COVERAGE.md).
-
-## Verification and publication
-
-145 app tests pass; the unchanged Python evaluation suite was last verified at 13 passing tests. Current checks include TypeScript, the Vite frontend and Worker production builds. New regressions additionally cover nonlinear climbing speeds, electric support, train catchability, cycling budgets, cache isolation, backup timing, production propagation and permission independent of prerequisites. Earlier regressions cover selected permissions across train/tram/boat/bus, public bicycle symbols, exact exit evidence, scoped operator rules, Swiss dates, the omitted late train and station-coordinate cache reuse. Baden, recovery and backup-route regressions still pass. Earlier regressions cover exact TripInfo identity/segment matching, train/bus/boat conditions, reservation conflicts, secret handling and rerouting after a new prohibition. Browser visual verification was unavailable because the managed preview service was absent.
-
-Private version 18 succeeded on 24 September at 22:06:03 UTC from Site commit `ac87a6c`, with environment revision 0. It adds five neutral pace presets with Regular at 25 km/h, and retains verified-access labels, reviewed bus/tram permission and configurable rider/electric timing, along with the preceding all-mode, public-data and overnight fixes. OJP runtime activation remains separate. Publication details are in [WEBSITE.md](WEBSITE.md). The existing owner-private Site is reused; GitHub pushes do not automatically publish it.
-
-## Immediate next actions
-
-1. Recheck the overnight Zürich–Laax example in the published app with its exact travel date; service replacements and bicycle restrictions vary by date. The 2 November controlled/live-source replay finds the 23:12 IR35 to Chur, then cycling to Laax. The earlier provider-timing result was about 03:20; new rider profiles change that estimate (see EXPERIMENTS.md).
-2. Optionally configure the Site runtime OJP key to add bicycle-filter/TripInfo evidence alongside the public feed.
-3. Recheck 3–6 fixed real journeys for timing, road access, missed candidates and permission completeness, including a tram example.
-4. Inspect national GTFS mode/operator/calendar coverage and a dated OSM extract before claiming a complete Swiss graph.
-5. Compare the sampled approach with OpenTripPlanner and complete timetable/street data; validate cycling times and station entrances against rides. No RAPTOR/ULTRA or OTP migration is implemented.
-6. Continue user interviews before expanding the product scope.
-
-## Remaining risks and parked work
-
-Carriage-rule coverage, sampled service discovery, cycling estimates, incomplete OSM attributes and station/platform access remain the main technical uncertainties. Demand and the value of an intermediate cycling leg still need validation.
-
-Native apps, ticket sales, real-time disruptions, nationwide product expansion, social/community features, carbon dashboards, machine-learning personalization, turn-by-turn navigation and production-scale infrastructure remain outside the immediate milestone. National data evaluation does not itself change the pilot product scope.
-
-## Updating this file
-
-Keep this summary short and factual. Record changes to earlier decisions as dated entries in `DECISIONS.md`; retain experiment history in `EXPERIMENTS.md`. An uploaded copy is a snapshot, not an automatically synchronized source. Repository code, tests and verified publication records determine the current state.
+An uploaded PROJECT_STATE.md is a snapshot. The attached 5 September copy describes an earlier prototype and must not override this repository state. Keep this summary concise; put detailed observations in dated reports and explain changed decisions in DECISIONS.md.

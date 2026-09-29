@@ -47,6 +47,18 @@ Useful supporting layers can include:
 
 These are supporting features, not the center of the product.
 
+## Next product milestones — 29 September 2026
+
+**User's requested order:** bike parking → bike shops/repair referencing → broader interface improvements. [APP_ROADMAP.md](APP_ROADMAP.md) gives proposed scope, sequencing and completion criteria. The existing parking pins are a foundation, not yet a recommendation/entrance-routing feature; a dedicated bike-shop directory is not implemented.
+
+**Parking proposal:** help the user find a suitable place near their destination or selected station, understand access/fees/hours and retrieve their bicycle. Keep nominal capacity distinct from availability and cover distinct from security. Begin with a small source-checked pilot and contextual list/map actions. [BIKE_PARKING.md](BIKE_PARKING.md) records the proposal and fresh data audit.
+
+**Shop proposal:** distinguish shops, staffed repairs, self-service stands and pumps, with evidenced services, known hours/contact and explicit Add as stop. A stop changes timing; repairs do not have a known zero duration and a broken bicycle may not be rideable.
+
+**Interface recommendation:** include the basic usable/accessible flow in each feature, then simplify the wider search/comparison experience as the third milestone. More amenities should not create more mandatory input fields.
+
+The current bicycle stays with the traveller on transit. A park-and-ride mode that leaves it at a station requires an explicit new choice and bicycle retrieval model; it is a future proposal, not a silent change to today's product. The wider commuting, bikepacking and community vision remains later work, evaluated against actual user demand.
+
 ## Journey planning vs navigation
 
 **Decision:** Prioritize journey planning over native turn-by-turn navigation.

@@ -1,0 +1,89 @@
+{
+  "checkedAt": "2026-09-29T08:46:49.475Z",
+  "source": "https://data.opentransportdata.swiss/en/dataset/bike-and-car-parking/permalink",
+  "bytes": 9587680,
+  "sha256": "c647206ac7287f013cf26a26bd628251c492a1972a84a5246e57d0579a07bee7",
+  "totalRecords": 2877,
+  "groups": {
+    "BIKE": {
+      "records": 1608,
+      "types": {
+        "BIKE_STATION": 139,
+        "BIKE_PARKING": 167,
+        "BIKE_PARKING_COVERED": 951,
+        "BIKE_PARKING_SPACES_COVERED": 263,
+        "BIKE_PARKING_SPACES": 88
+      },
+      "publicAccess": {
+        "true": 1608
+      },
+      "fields": {
+        "operationTime": 570,
+        "pricingModel": 143,
+        "capacities": 1608,
+        "bikeFacilityTraits": 303,
+        "currentEstimatedOccupancy": 0,
+        "currentEstimatedOccupancyLevel": 0,
+        "predictedForecastedOccupancy": 0,
+        "stopPlaceUic": 0,
+        "stopPlaceSloid": 0
+      }
+    },
+    "CAR": {
+      "records": 1269,
+      "types": {
+        "PARK_AND_RAIL": 981,
+        "PARKING": 288
+      },
+      "publicAccess": {
+        "true": 1269
+      },
+      "fields": {
+        "operationTime": 1269,
+        "pricingModel": 1269,
+        "capacities": 1269,
+        "bikeFacilityTraits": 0,
+        "currentEstimatedOccupancy": 435,
+        "currentEstimatedOccupancyLevel": 435,
+        "predictedForecastedOccupancy": 443,
+        "stopPlaceUic": 0,
+        "stopPlaceSloid": 0
+      }
+    }
+  },
+  "propertyKeys": [
+    "additionalInformationForCustomers",
+    "address",
+    "bikeFacilityTraits",
+    "bookingSystem",
+    "callToAction",
+    "capacities",
+    "currentEstimatedOccupancy",
+    "currentEstimatedOccupancyLevel",
+    "didokId",
+    "displayName",
+    "eChargingStationOperator",
+    "operationTime",
+    "operator",
+    "parkingFacilityCategory",
+    "parkingFacilityType",
+    "poiLevel",
+    "predictedForecastedOccupancy",
+    "pricingModel",
+    "publicAccess",
+    "salesChannels",
+    "temporaryInformationForCustomers",
+    "uic"
+  ],
+  "method": "One unauthenticated fetch of the official permalink; count all records by parkingFacilityCategory and populated fields, with no Swiss-border filter. A populated structure is not a validated usable value.",
+  "fieldPresenceRule": "Non-null/non-empty string, array or object; false and zero count as populated.",
+  "interpretation": [
+    "BIKE counts are facilities, not available spaces.",
+    "No BIKE current or forecast occupancy field was populated in this snapshot.",
+    "CAR occupancy must not be mapped to BIKE records.",
+    "All BIKE publicAccess flags were true; this does not imply free, badge-free or unrestricted entry.",
+    "Operating-time and price-model presence requires semantic and operator validation.",
+    "The source uses uic/didokId rather than stopPlaceUic/stopPlaceSloid in this snapshot.",
+    "Fetched time is not a physical inspection or provider-update timestamp."
+  ]
+}

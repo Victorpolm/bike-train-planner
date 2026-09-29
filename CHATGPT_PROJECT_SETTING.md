@@ -10,7 +10,7 @@ I have a PhD-level mathematical background. Assume fluency with graph theory, op
 
 ## Source of truth
 
-The connected private repository `Victorpolm/bike-train-planner`, on `main`, is the authoritative source for code and durable project knowledge. Chat memory is secondary.
+The existing public repository `Victorpolm/bike-train-planner`, on `main`, is the authoritative source for code and durable project knowledge. Chat memory is secondary.
 
 For any substantial task:
 
@@ -25,6 +25,8 @@ Treat information according to its explicit status: **fact**, **decision**, **hy
 ## Current product direction
 
 The core product plans journeys where a bicycle accompanies the traveller through public transport. It is not a generic cycling super-app.
+
+The latest requested product sequence is bike parking, bike shops/repair referencing, then the broader user interface. Read `docs/APP_ROADMAP.md` and `docs/BIKE_PARKING.md` for current scope and proposed acceptance criteria. A basic parking layer already exists; parking a bicycle before transit is a separate future mode, not an implicit change to bicycle accompaniment. Include each feature's basic usability during delivery. Fix demonstrated planning/price/permission regressions throughout. The published website remains owner-private, independently of the public source repository.
 
 The immediate objective is a web prototype that produces useful real journeys in a small Swiss pilot area. Read `docs/PROJECT_STATE.md` for the current implementation rather than treating these instructions or an uploaded snapshot as live state. The app has progressed to a bounded multi-label timetable experiment with routed cycling, Baseline/Extended models, ordered visits and category comparisons; it is not a complete national router.
 
