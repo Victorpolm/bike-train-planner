@@ -15,10 +15,12 @@ A basic official **bicycle-parking map layer already exists**. A richer parking 
 ## Next priorities
 
 1. **Bike parking:** suitable options near a destination or selected station, with useful access, hours, fee and source information. Build on the existing map layer.
-2. **Bike shops and repairs:** distinguish shops, staffed repair services, self-service stands and pumps; provide useful contact information and explicit route actions.
+2. **Bike services and useful stops:** distinguish shops, assisted DIY/professional repairs and pumps; add drinking water, public toilets and snacks/vending, with category filters and useful options along the selected cycling route.
 3. **User interface:** simplify search, comparison and map/details after the first two features, while including each feature's essential usability from the start.
 
-[Roadmap and completion criteria](docs/APP_ROADMAP.md) · [Concrete bike-parking proposal](docs/BIKE_PARKING.md)
+[Roadmap and completion criteria](docs/APP_ROADMAP.md) · [Concrete bike-parking proposal](docs/BIKE_PARKING.md) · [Useful stops: brainstorming and data plan](docs/CYCLING_AMENITIES.md)
+
+The 29 September follow-up records the owner's long-ride needs, municipal/OSM enrichment, parking equipment/protection attributes and actual route detours. These are proposed additions. [Road-safety research](docs/CYCLING_SAFETY_RESEARCH.md) follows later: investigate infrastructure and junction manoeuvres without treating every signal or turn as inherently dangerous.
 
 The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle occupancy observations or forecasts. The parking milestone therefore concerns suitability and access; capacity is not a free-space count. [Dated audit](docs/experiments/bike-parking-source-audit-2026-09-29.json).
 

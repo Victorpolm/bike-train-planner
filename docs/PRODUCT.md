@@ -21,6 +21,7 @@ A user may currently need to combine several tools to understand:
 - how to cycle from the arrival station
 - elevation and surface conditions
 - bicycle parking, pumps or repairs
+- drinking water, snacks and public toilets reachable along a longer ride
 
 **Hypothesis:** Integrating these decisions into one planner can materially reduce friction.
 
@@ -42,6 +43,8 @@ Useful supporting layers can include:
 - repair shops/stations
 - pumps
 - drinking water
+- public toilets
+- snacks, food shops and vending machines
 - rentals
 - e-bike charging
 
@@ -54,6 +57,8 @@ These are supporting features, not the center of the product.
 **Parking proposal:** help the user find a suitable place near their destination or selected station, understand access/fees/hours and retrieve their bicycle. Keep nominal capacity distinct from availability and cover distinct from security. Begin with a small source-checked pilot and contextual list/map actions. [BIKE_PARKING.md](BIKE_PARKING.md) records the proposal and fresh data audit.
 
 **Shop proposal:** distinguish shops, staffed repairs, self-service stands and pumps, with evidenced services, known hours/contact and explicit Add as stop. A stop changes timing; repairs do not have a known zero duration and a broken bicycle may not be rideable.
+
+**Follow-up user need:** Long rides regularly require water fountains, snacks/vending, public toilets, suitable parking and repair help. Expand the service milestone into [useful stops along the selected cycling route](CYCLING_AMENITIES.md), with category filters, checked access/detours and opening-at-visit information. Include assisted DIY workshops as distinct from professional repair. Distinguish frame-locking support, shelter, access control and CCTV instead of treating surveillance alone as best parking. Later [road-safety research](CYCLING_SAFETY_RESEARCH.md) investigates infrastructure and junctions without presenting heuristics as proven risk.
 
 **Interface recommendation:** include the basic usable/accessible flow in each feature, then simplify the wider search/comparison experience as the third milestone. More amenities should not create more mandatory input fields.
 

@@ -2,6 +2,8 @@
 
 **Current priorities (29 September 2026):** improve bike parking, add bike-shop/repair referencing, then improve the broader interface. The OJP adapter and exact-trip test-fare integration are implemented and active. See [APP_ROADMAP.md](APP_ROADMAP.md), [BIKE_PARKING.md](BIKE_PARKING.md) and [PROJECT_STATE.md](PROJECT_STATE.md) for current scope and completion criteria.
 
+The follow-up brainstorm expands the service milestone to **water, snacks/vending and public toilets**, with parking/repair filters and facilities along the selected cycling path. These are active planned categories, not parked ideas. [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md) records proposed sequencing and data treatment; no feature delivery is claimed.
+
 These ideas may be useful later, but they should not distract from validating the core bike + public-transport journey planner.
 
 ## Later product features
@@ -20,6 +22,9 @@ These ideas may be useful later, but they should not distract from validating th
 - integrated ticket purchase
 - personalized comfort profiles
 - saved journeys / commute alerts
+- rest benches/picnic spots, rain shelter, verified charging and overnight cycling services after the essential amenity categories
+- saved selected-stop information for poor reception, with an appropriate offline data/tile arrangement
+- [road-safety research](CYCLING_SAFETY_RESEARCH.md): manoeuvres/crossings, separated infrastructure, speed/access evidence and cautiously interpreted accident data
 
 ## Later infrastructure ideas
 
@@ -37,7 +42,7 @@ These ideas may be useful later, but they should not distract from validating th
 - social network/community layer
 - gamification
 - carbon scoreboard
-- broad “everything for cyclists” map
+- broad unfiltered “everything for cyclists” map (distinct from the selected-ride essentials now planned)
 - Europe-wide launch before Swiss validation
 
 ## Rule

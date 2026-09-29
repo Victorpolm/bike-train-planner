@@ -8,6 +8,8 @@ Help the traveller answer: **Where can I leave this bicycle, reach my destinatio
 
 Begin with destination parking and user-selected stations/map points. Keep the current bicycle-accompanies-traveller mode. A commuter mode that deliberately leaves a bicycle at the departure station is a separate product/routing decision; see the final section.
 
+The later 29 September brainstorm adds parking along the actual cycling path and selectable amenity categories. Share facility identity, entrance/detour checks and map/list controls with [water, food, toilets and repairs](CYCLING_AMENITIES.md).
+
 ## What we already have
 
 [`bikeParking.ts`](../prototype-v0/src/bikeParking.ts) normalises the official combined feed and filters BIKE facilities. [`parkingHandler.ts`](../prototype-v0/server/parkingHandler.ts) serves `/api/parking`, caches a successful response for up to a day per server instance and can return stale data on refresh failure. The browser loads it when its optional layer is enabled; [`MapView.tsx`](../prototype-v0/src/MapView.tsx) displays in-view pins at zoom 10 and above.
@@ -38,6 +40,7 @@ The source has station-related `uic`/`didokId` properties; the current normalise
 |---|---|---|
 | [Official bicycle/car feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/) | Keep the existing station/partner backbone and provider IDs | It is not an inventory of every street rack; audit attributes before using them in decisions |
 | [Zürich municipal parking data](https://data.stadt-zuerich.ch/dataset/geo_zweiradparkierung) | Fill local destination gaps; inspect vehicle type, capacity and fee indication | Filter motorcycle-only records; the published CC0 dataset explicitly excludes occupancy and can miss temporary removals |
+| [Biel/Bienne municipal parking](https://opendata.swiss/fr/dataset/veloparkierung) | Compare local street-rack coverage and equipment with the national feed and OSM | Distinguish facility count from space capacity; validate the current export, dates, overlap and reuse terms before integration |
 | [OpenStreetMap bicycle parking](https://wiki.openstreetmap.org/wiki/Tag:amenity=bicycle_parking) | Additional racks, parking forms and mapped access/fee/maxstay/cover details | Missing tags remain unknown; public/customer/member/private access need different treatment |
 | Facility/operator pages and [SBB guidance](https://www.sbb.ch/content/internet/sbb/en/support/produkte-services/services/weitere-sbb-services/veloparking-am-bahnhof.html) | Review practical entry, retrieval, tariff and subscription requirements | Link and record a dated review; do not assume an undocumented API or bulk-reuse permission |
 | [Forum Velostationen](https://www.velostation.ch/de/velostationen/) | Discover operator sources and validate pilot stations | A directory listing is not automatically a licensed bulk dataset or live availability service |
@@ -62,6 +65,17 @@ Use a synchronised accessible list and map, clustering where necessary, clear se
 
 ## Suitability and ranking
 
+**User preference to preserve:** distinguish wheel-only supports from supports suitable for locking the frame, and show additional monitoring/protection. Use independent attributes rather than a single “bad / better / best” security ladder:
+
+| Attribute | Proposed display and treatment |
+|---|---|
+| Equipment | Wheel-only support; frame-locking stand; locker/enclosure; other/unknown. [OSM parking types](https://wiki.openstreetmap.org/wiki/Key:bicycle_parking) distinguish `wall_loops` from `stands`; other types need their own interpretation |
+| Shelter and fit | Covered/indoor, rack accessibility, lifting requirement and evidenced cargo/e-bike suitability |
+| Entry | Open access, controlled access, registration/badge requirements and collection hours |
+| Monitoring | Staff supervision and CCTV reported separately, with source/date; a nearby camera does not establish coverage of this facility |
+
+**Recommendation:** offer “Prefer frame-locking support” and, when documented, controlled entry/locker preferences. A ring-shaped stand is not inherently poor: classify whether the frame can be secured, not its silhouette. CCTV alone must not outrank usable locking support or become a theft-protection guarantee. Unknown features remain unknown. Theft risk is distinct from the later [road-safety research](CYCLING_SAFETY_RESEARCH.md).
+
 **Proposal:** Apply confirmed restrictions first, then compare the remaining choices by routed access time and the user's explicit preferences. Retrieve a bounded geographic candidate set, route only shortlisted entrances and broaden the search on request. Do not let unknown information improve a score.
 
 - Check access at arrival **and retrieval**, maximum stay and any membership/payment requirement. A facility open when the bicycle is left may be closed when it is collected.
@@ -84,11 +98,14 @@ A future occupancy integration would need a bicycle-specific facility match, mea
 
 **Pilot proposal:** approximately 20 facilities in Zürich, Winterthur, Bern and Chur: ordinary/covered racks, controlled-entry stations, separate entrances, a non-station destination and sparse/contradictory data. First inspect maps and operator sources; record entrance geometry as unverified until corroborated. Physical access cannot be established by a desk review alone.
 
+Following the user's municipal-data example, add or substitute Biel/Bienne cases within that pilot rather than requiring a large new nationwide audit. Include wheel-only support, frame-locking stands, unknown equipment and CCTV with no confirmed access control.
+
 | Case | Required result |
 |---|---|
 | Same facility in official/local/OSM data | One facility with all relevant source references; no double-counted capacity |
 | Nearby free rack and paid velostation / opposite station entrances | Preserve distinct options and the correct entrance relationship |
 | Covered parking with no entry-security evidence | Covered only; no secure/guarded promise |
+| Camera evidence plus wheel-only or unknown equipment | Show the separate facts; no automatic top security rating |
 | Public flag plus badge/subscription requirement | Both facts displayed; do not imply immediate walk-in access |
 | Capacity supplied, occupancy absent | Total spaces and availability unknown |
 | Car occupancy beside a bike facility | No bicycle free-space estimate |

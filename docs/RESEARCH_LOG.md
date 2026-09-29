@@ -181,3 +181,15 @@ When adding findings:
 **Decision:** Independently compare confirmed, uncertainty-permitted and unrestricted transit. Defer remaining bicycle spaces and reservation availability. **Open question:** Does TripInfo add bicycle evidence beyond the same TripRequest service, with sufficient segment scope?
 
 **Coverage correction:** Availability of national Swiss GTFS (including boats) and worldwide OSM-derived BRouter routing does not mean the prototype contains a complete national graph or every cycle path. [Primary sources, evidence status and next experiment](TRIPINFO_AND_NETWORK_COVERAGE.md).
+
+## 2026-09-29 — Amenities along the ride and later road-safety research
+
+**Question:** Can the planner help with the owner's recurring long-ride needs for water, snacks, toilets, parking and repair help while keeping the route usable and the map uncluttered?
+
+**Source review:** The [Biel/Bienne parking catalogue](https://opendata.swiss/fr/dataset/veloparkierung) provides a municipal enrichment candidate and distinguishes facility locations from capacity. Zürich publishes fountain, public-WC and pump inventories; OSM documents matching amenity/service tags. Operator pages distinguish VELOVE's assisted DIY model from Züri rollt's professional repair services. [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md) records exact links, observed source limits and proposed processing. This was a catalogue/documentation review, not a new national import, current field inspection or full coverage audit.
+
+**Implementation observation:** Current `MapView.tsx` uses raster OSM tiles; overlay filters cannot erase baked-in symbols. The app's existing stop insertion also lacks visit duration. These are concrete requirements for a calmer map and dependable amenity stops before onward trains.
+
+**Proposed next checks:** Compare municipal/official/OSM identity and equipment in the parking pilot; review a bounded mixed-amenity sample including seasonal closures, private/customer access and unknown hours; validate detours across physical barriers and route loops. Measure attribute correctness and task success, not just pin count. Preserve source dates and a checkpoint after each category.
+
+**Later safety question:** Combine directed infrastructure/junction features with cautiously interpreted official crash evidence, as scoped in [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md). User ideas about traffic lights, lower speeds and turns remain hypotheses; neither a blanket turn penalty nor a raw crash heatmap establishes a safe route.

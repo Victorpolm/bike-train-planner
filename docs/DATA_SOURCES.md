@@ -13,8 +13,9 @@ _Consolidated 2026-09-29. Current integrations are separated from source options
 | Passenger/bicycle prices | OJP Fare test endpoint using a separate server key, with retained/assembled exact itineraries; scoped published fallbacks | Test estimates, complete-coverage checks and unknown products; no purchase/booking guarantee; [fare release](OJP_EXACT_TRIP_FARES_2026-09-28.md) |
 | Bicycle parking | [Official bicycle/car feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/), filtering BIKE records for the optional map layer | Station/partner coverage including border areas; no bicycle occupancy in the checked feed; richer hours/prices/entrances not yet normalised |
 | National timetable/street data | Swiss GTFS and Geofabrik OSM were downloaded and audited; experimental local timetable service | Not the published routing backend; performance/calendars/headways/pathways/disruptions and hosting remain gates |
-| Parking enrichment | Zürich municipal data, OSM and operator sources reviewed as candidates below | Proposed, not merged into the app |
+| Parking enrichment | Zürich and Biel/Bienne municipal data, OSM and operator sources reviewed as candidates below | Proposed, not merged into the app |
 | Bike shops/repairs/pumps | OSM/service/operator information proposed for the next milestone | No dedicated integrated directory yet; named-place search does not verify services/hours |
+| Water, toilets, food/vending | OSM plus municipal water/WC data and operator evidence | Next-step proposal; category filters, hours/condition handling and route detours are not implemented |
 
 Neither access to national sources nor successful sampled queries establishes a complete verified map of all Swiss public transport or every cycle path. Transit geometry remains schematic; cycling geometry is routed. The published app does not silently activate the local national timetable pilot.
 
@@ -27,6 +28,7 @@ The official cookbook advertises estimated occupancy and forecasts in the combin
 | Candidate source | Contribution | Source conditions and product implication |
 |---|---|---|
 | [Zürich Zweiradparkierung](https://data.stadt-zuerich.ch/dataset/geo_zweiradparkierung) | Municipal racks/locations, vehicle categories and fee/capacity fields | Catalogue publishes CC0; filter motorcycle-only records. It reports no occupancy and warns about temporary removals/access gaps. Survey, publication and download dates are distinct |
+| [Biel/Bienne parking](https://opendata.swiss/fr/dataset/veloparkierung) | Municipal street-rack inventory and downloadable spatial records | Check current export/terms; compare locations with locations and capacity with capacity. Do not add overlapping national/municipal totals |
 | [OSM bicycle parking](https://wiki.openstreetmap.org/wiki/Tag:amenity=bicycle_parking) | Broader mapped facilities, parking form and access/cover/fee/maxstay tags | Field presence and freshness vary. Keep public/customer/member/private restrictions distinct; account for nodes/ways describing the same facility |
 | [SBB parking guidance](https://www.sbb.ch/content/internet/sbb/en/support/produkte-services/services/weitere-sbb-services/veloparking-am-bahnhof.html) and individual operators | Practical entry/retrieval, badge/registration and tariff evidence | Facility-specific review; a pass/access right is not a guaranteed space. Do not assume a bulk API or scraping/reuse permission |
 | [Forum Velostationen](https://www.velostation.ch/de/velostationen/) | Discovery and links for facility review | Treat as a directory until a suitable data-access/reuse arrangement is established |
@@ -40,6 +42,12 @@ Use [OSM shop=bicycle](https://wiki.openstreetmap.org/wiki/Tag:shop=bicycle) wit
 Retain name, location, source ID, operator/business link, contact, known hours and service tags. Unknown hours, appointment needs and equipment condition stay unknown. Deduplicate services co-located with a parking facility without inventing a separate business. Treat opening-at-arrival as different from immediate mechanic availability. Reuse the parking place/evidence/card infrastructure and add explicit route actions; no bookings or outreach to shops are part of this documentation update.
 
 ## Source and licensing record
+
+The [useful-stop data plan](CYCLING_AMENITIES.md) adds exact source links and an OSM tag-selection table for water, toilets, food/vending, parking, repair stands/pumps and shops. Zürich publishes CC0 [fountain](https://data.stadt-zuerich.ch/dataset/geo_brunnen), [WC](https://data.stadt-zuerich.ch/dataset/geo_zueri_wc) and [pump](https://data.stadt-zuerich.ch/dataset/geo_velopumpstationen) datasets. Inspect their component layers, access/closure semantics and dates before import. Operator examples VELOVE and Züri rollt require per-location service/access interpretation.
+
+Small exploratory Overpass queries and a maintained regional extract/index are different delivery options; public Overpass is not proposed as an unrestricted production backend. Preserve full OSM tags needed for filtering and inspect extract coverage before selecting a reduced format. The current raster basemap and a structured amenity database are separate data products.
+
+For the later safety study, [FEDRO injury-crash data](https://opendata.swiss/en/dataset/strassenverkehrsunfalle-mit-personenschaden) and infrastructure/junction records are candidates, not current integrations. [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md) specifies exposure, temporal and map-matching limitations.
 
 For every used or proposed source retain: URL/provider, fields, geography, access method, last successful fetch, provider update/version if known, independent review date, licence/attribution, update cadence, limits and known gaps. The [OSM copyright/licence page](https://www.openstreetmap.org/copyright) documents ODbL attribution and reuse terms. Check the applicable official/local dataset conditions before combining or redistributing records; a public webpage is not proof of a bulk-data licence.
 

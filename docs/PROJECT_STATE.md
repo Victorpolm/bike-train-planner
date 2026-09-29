@@ -8,6 +8,8 @@ _Last consolidated: 2026-09-29. This is the current summary; dated reports and G
 
 **User's requested priority order, 29 September:** (1) bike parking, (2) bike shops/repair referencing, (3) the broader user-interface improvement. The proposed feature scope and completion criteria are in [APP_ROADMAP.md](APP_ROADMAP.md) and [BIKE_PARKING.md](BIKE_PARKING.md). This documentation update records a plan; the proposed additions are not implemented yet.
 
+**Follow-up brainstorming, 29 September:** The user identifies water fountains, snacks/vending, public toilets, parking quality and repair help as important long-ride needs. Add filtered map/list information on or near the selected cycling path. [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md) records the proposed expansion of the service milestone, OSM/municipal/operator source handling and validation. [Road-safety questions](CYCLING_SAFETY_RESEARCH.md) are a later investigation, not accepted risk rules.
+
 ## What works now
 
 | Area | Implemented | Practical limit |
@@ -38,7 +40,7 @@ The 29 September public-feed audit found **1,608 BIKE facility records** and 1,2
 ## Next work and release discipline
 
 1. **Parking:** audit a small pilot, normalise/deduplicate facilities and entrances, then deliver nearby search/cards and explicit route actions. Include basic mobile/keyboard usability in this feature.
-2. **Bike shops and repairs:** reuse the same place/source/card layer for shops, staffed repairs, self-service stands and pumps; distinguish their services and hours.
+2. **Bike services and useful stops:** reuse the place/source/card layer for shops, assisted DIY/professional repairs and pumps, then water, public toilets and snacks/vending in bounded releases. Include category filters, selected-ride position, checked detours and opening-at-visit evidence; visit duration must precede promised post-stop train connections.
 3. **Broader interface:** simplify search, preferences, result comparison and the map/detail flow using the two completed features and short user-task tests.
 
 Fix route/price/permission regressions when demonstrated; the unresolved Baden鈥揥itikon search and bounded discovery remain tracked work. New amenities must load independently and must not consume the transit search budget. Keep each stage small, documented and independently reviewable; preserve completed test evidence between sessions.
@@ -47,12 +49,14 @@ Fix route/price/permission regressions when demonstrated; the unresolved Baden鈥
 
 - An explicit **park the bicycle, then continue by public transport** mode would require passenger-only onward travel, parking-entry/exit conditions, parking cost, return/retrieval handling and access time. It is a separate proposal, not approved as a replacement for today's bicycle-accompanies-traveller mode.
 - Station entrances/pathways, timetable completeness, riding calibration, real user value and the four-versus-eight station-pair experiment remain open.
+- Later road-safety work should examine junction manoeuvres, separation from motor traffic and speed/access evidence; a low speed limit, a traffic signal or the absence of recorded crashes cannot establish a universal safety rating.
 - Engine evaluation, production national timetable hosting and richer commuting/bikepacking/expert modes remain later work. New hosting spend still needs the owner's approval.
 - Native apps, ticket/parking sales, reservation/space booking, social/community features and international expansion are deferred.
 
 ## Durable references
 
 - [Roadmap](APP_ROADMAP.md) 路 [Parking proposal](BIKE_PARKING.md) 路 [Product](PRODUCT.md)
+- [Useful stops and data treatment](CYCLING_AMENITIES.md) 路 [Later safety research](CYCLING_SAFETY_RESEARCH.md)
 - [Data sources](DATA_SOURCES.md) 路 [Decisions](DECISIONS.md) 路 [Experiments](EXPERIMENTS.md)
 - [Website](WEBSITE.md) 路 [Exact-trip fare release](OJP_EXACT_TRIP_FARES_2026-09-28.md)
 - [Swiss implementation/local pilots](SWISS_IMPLEMENTATION.md) 路 [Cycling](CYCLING_ROUTES.md) 路 [Bicycle permissions](BICYCLE_PERMISSION_AND_OJP.md)
