@@ -1,6 +1,6 @@
 # App roadmap: bicycle + public transport
 
-_Updated 2026-09-29. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
+_Updated 2026-09-30. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
 
 ## Product direction
 
@@ -75,6 +75,26 @@ Extend the same model to **water, public toilets and snacks/vending** before tre
 Provide five independent filters and Along this ride / In this map area choices. Derive route proximity from actual cycling legs, then check shortlisted entrance detours; a pin beside a train line or across a river is not automatically an accessible stop. Display extra travel separately from visit duration. Evaluate drinking-water evidence, seasonal shutdowns, public/customer access and hours over the expected visit. Do not infer ready-to-eat food or stock from every vending/retail object.
 
 Current OSM raster basemap symbols cannot be individually hidden by our overlay filters. Evaluate a quieter basemap or controllable style as a bounded interface improvement. Keep attribution, roads, access restrictions and route context. The [detailed plan](CYCLING_AMENITIES.md) covers sources, caching, duplicates, missing data and acceptance cases.
+
+## 30 September proposal: keep facility coverage manageable
+
+**User report, 2026-09-30:** The missing Selecta machines in ETH Hauptgebäude (HG) are on **floor F, next to the Starbucks coffee machines**. The owner previously reported at least two machines. This is a user-reported building/floor/landmark location, not an independently surveyed machine coordinate. Exact positions, entrance, access conditions and hours remain unknown. A fresh bounded all-vending query around HG on 30 September returned ticket and newspaper machines, but no food/drink machines; this establishes a gap in the source response, not proof that no such machines exist.
+
+**User scope preference:** Limit detailed indoor station localisation initially to about the ten biggest stations; avoid maintaining a separate integration for every municipality. The owner is asking for ideas at this stage. The recommendations below are proposed work, not delivered features or approval for a broad integration.
+
+**Recommended approach:**
+
+1. **Keep Swiss OSM as the national base.** Preserve and display available floor labels, building/location descriptions and access details across all places, including small stations. The current amenity parser retains `indoor` but drops `level` and `level:ref`; fixing this loss is a bounded first step. Unknown floor stays unknown. Limited station curation does not imply that other stations have only one level.
+2. **Add a small, reviewed corrections/additions file.** Use one shared format for water, toilets, food and repairs. It can hold reports such as HG without building a municipal connector or a community platform. Record a stable local ID, category, building, displayed floor label, landmark description, source, report/review dates, access uncertainty and location precision. Do not invent separate exact pins for two machines known only to share a floor/landmark. Later resolve records against OSM identities to avoid permanent duplicates.
+3. **Curate up to ten priority stations, beginning with Zürich HB.** Select using station use and difficulty finding facilities, with the final list still open. Add floor/zone, a short direction and an official station-plan link; keep full indoor turn-by-turn routing deferred. ETH HG is a separate building test case. Evidence from the first station/building determines whether further curation is worthwhile.
+4. **Add extra official sources selectively.** Start with at most one optional source pilot after the first two steps. Assess how many missing usable facilities or useful fields it adds, freshness, reuse terms and continuing maintenance. Prefer national/cantonal/operator coverage when a suitable feed exists. Use a shared importer and source-specific field mapping where feasible; common CSV/GeoJSON formats do not guarantee common meanings. Municipal checks are optional enrichment, not a national rollout prerequisite.
+5. **Use reports to target the next gap.** Begin with a lightweight “missing place / wrong floor / closed” reporting route and review entries before promotion. Consider contributing suitable verified observations back to OSM so national refreshes benefit. Build richer reporting/moderation only if report volume justifies it.
+
+**Merge and display rules:** Preserve source-specific evidence; newer or official data is not automatically correct for every field. Compare identity, category, building and floor as well as distance. Do not merge distinct facilities on different floors. Distinguish a building/address point from an entrance or an exact machine/toilet position. Keep closure/access conflicts explicit, and do not turn straight-line distance into a walking-time claim.
+
+**First bounded implementation to propose:** preserve/display location fields, add the reviewed-additions format and the HG user report at its supported precision, and add a Zürich HB floor/zone/plan example. No city-by-city audit, ten-station data-completeness promise, or full indoor navigation is needed for this first result. Existing application release remains version 37.
+
+**Source discovery checked 30 September:** [opendata.swiss API documentation](https://handbook.opendata.swiss/de/content/nutzen/api-nutzen.html) describes a central metadata catalogue with publisher download/access links; it does not host or standardise all underlying facility datasets. [SBB station-plan catalogue](https://opendata.swiss/de/dataset/haltestelle-karte-trafimage1) provides station-plan references. [Zürich HB plan](https://company.sbb.ch/content/dam/infrastruktur/trafimage/bahnhofplaene/plan-zuerich-hb-a4.pdf) includes floor/zone/grid information. These support discovery and plan links; they do not establish a complete nationwide indoor-facility API.
 
 ## 3. Broader interface work
 
