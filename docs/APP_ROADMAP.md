@@ -78,6 +78,8 @@ Current OSM raster basemap symbols cannot be individually hidden by our overlay 
 
 ## 30 September proposal: keep facility coverage manageable
 
+**Later 30 September priority refinement:** The owner prioritises precision over more records, especially dependable water where alternatives are scarce. Within useful-stop work, start with a small rural-water pilot, then improve floors/entrances in large buildings. Measure whether people can find and use the facility, not marker counts. [Research, successful SBB indoor API checks, rural source gaps and bounded next steps](FACILITY_PRECISION_2026-09-30.md). The rural pilot, wider search and route-gap information are proposals; version 38 does not yet implement them.
+
 **User report, 2026-09-30:** The missing Selecta machines in ETH Hauptgebäude (HG) are on **floor F, next to the Starbucks coffee machines**. The owner previously reported at least two machines. This is a user-reported building/floor/landmark location, not an independently surveyed machine coordinate. Exact positions, entrance, access conditions and hours remain unknown. A fresh bounded all-vending query around HG on 30 September returned ticket and newspaper machines, but no food/drink machines; this establishes a gap in the source response, not proof that no such machines exist.
 
 **User scope preference:** Limit detailed indoor station localisation initially to about the ten biggest stations; avoid maintaining a separate integration for every municipality. This started as brainstorming. The owner then approved the bounded first implementation on 30 September; the remaining source expansion and larger station pilot below are proposals.

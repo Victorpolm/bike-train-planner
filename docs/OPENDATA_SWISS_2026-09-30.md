@@ -46,6 +46,8 @@ The script issues one read-only request, limits pages to 25 datasets, has a 20-s
 
 ## A successful national-source example
 
+**Later investigation:** a separate SBB Trafimage/INSA API successfully returned individual service coordinates, named floors and location text for Zürich HB. It is richer than the plan-link feed below. Technical access is public for the tested exports; applicable reuse terms and floor ambiguities still need resolution. [Detailed indoor and rural precision research](FACILITY_PRECISION_2026-09-30.md). The original 63-record feed findings remain valid for that specific dataset.
+
 The catalogue's SBB **Haltestelle: Übersicht Bahnhofpläne Trafimage** entry links to a publisher GeoJSON export:
 
 `https://sbb.opendatasoft.com/api/v2/catalog/datasets/haltestelle-karte-trafimage/exports/geojson`

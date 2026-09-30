@@ -493,3 +493,11 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 **API research:** The documented CKAN endpoints returned HTTP 403 in this environment; no API key was requested or transmitted. The official portal announces a future CKAN replacement, so discovery remains an isolated read-only script. One SBB publisher GeoJSON feed successfully returned 63 station-plan references, not indoor facility inventories. [Research and commands](OPENDATA_SWISS_2026-09-30.md).
 
 **Release:** Owner-private version 38 succeeded at 08:18:00 UTC, environment revision 3; 265 tests and builds pass. [Implementation and limits](FACILITY_LOCATIONS_2026-09-30.md).
+
+## 2026-09-30 — Prioritise facility precision and scarce rural water
+
+**User decision:** Prefer information that helps a cyclist reliably find and use a facility over increasing coverage counts. Scarce-area water is the first useful-stop refinement; large-building localisation follows. Investigate online sources while keeping maintenance manageable.
+
+**Research facts:** rural destination pages supply explicit drinking-water descriptions and coordinates; a fresh bounded Crestasee OSM query returned zero candidates. SBB's public INSA exports returned Zürich HB service/floor/access data without credentials, beyond the earlier plan-link feed. swissTLM3D fountain/spring classes are incomplete and do not establish potability. Public API access does not settle SBB reuse rights, which remain an explicit open question. [Sources, live checks and limitations](FACILITY_PRECISION_2026-09-30.md).
+
+**Proposed next work, not implemented:** a 15–20-point rural-water pilot; evidence/access/seasonality details, checked detours and route-gap information; then bounded station floor/entrance enrichment. Keep source, modification, fetch and field-observation dates separate; never infer flowing water or public access from a map pin. No application change, automated import, account creation, provider message or new hosting spend was made for this research.

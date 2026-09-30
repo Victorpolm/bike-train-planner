@@ -1,0 +1,89 @@
+{
+  "reviewed_on": "2026-09-30",
+  "status": "research_only_not_integrated",
+  "tests": [
+    {
+      "url": "https://api.insa.geops.ch/export/geo/stations/8503000/services",
+      "http_status": 200,
+      "credentials_sent": false,
+      "saved_at_utc": "2026-09-30T10:15:56.396674+00:00",
+      "response_bytes": 915073,
+      "record_count": 219,
+      "response_sha256": "754becc14707a117876349343e54b821c91fef61b5da65f0acc8ab111350322e"
+    },
+    {
+      "url": "https://api.insa.geops.ch/export/geo/floors?didok=8503000",
+      "http_status": 200,
+      "credentials_sent": false,
+      "saved_at_utc": "2026-09-30T10:15:55.203430+00:00",
+      "response_bytes": 1032,
+      "record_count": 5,
+      "response_sha256": "fe630bdb92abf856fc3e95fd8ea54df32e56e11f63fbea94fe72c535cb076dab"
+    },
+    {
+      "url": "https://api.insa.geops.ch/export/geo/accesses?didok=8503000",
+      "http_status": 200,
+      "credentials_sent": false,
+      "saved_at_utc": "2026-09-30T10:15:55.904746+00:00",
+      "response_bytes": 176345,
+      "record_count": 737,
+      "response_sha256": "36f1131eb16c4afa7c732b1aab30349fe768cc34f094edeabe509eaa11a12fa9"
+    },
+    {
+      "url": "https://overpass.osm.ch/api/interpreter",
+      "http_status": 200,
+      "query": "[out:json][timeout:20];(nwr(around:600,46.833426,9.319507)[\"amenity\"~\"^(drinking_water|fountain|water_point)$\"];nwr(around:600,46.833426,9.319507)[\"drinking_water\"];nwr(around:600,46.833426,9.319507)[\"man_made\"~\"^(water_tap|water_well)$\"];nwr(around:600,46.833426,9.319507)[\"natural\"=\"spring\"];);out center tags;",
+      "saved_at_utc": "2026-09-30T10:17:00.277703+00:00",
+      "response_bytes": 272,
+      "record_count": 0,
+      "response_sha256": "17dafb075fb2f1cc1b9490cde7274ae7e4daf091a1d294297669b684edd82831",
+      "remark": null,
+      "interpretation": "No returned candidate within the query radius and tags; not proof about physical availability or all OSM data."
+    }
+  ],
+  "limits": [
+    "Public HTTP access does not establish reuse rights.",
+    "No on-site inspection or current water-flow measurement.",
+    "Counts are returned records, not verified distinct facilities."
+  ],
+  "rural_comparisons": [
+    {
+      "source_url": "https://www.graubuenden.ch/de/ausflugsziele/wasserbrunnen-sagogn-planezzas",
+      "poi_lat": 46.798032,
+      "poi_lon": 9.272311,
+      "osm_snapshot_candidate": "node/2462013850",
+      "separation_m_rounded": 1.3,
+      "identity_status": "candidate_only_not_automatically_merged",
+      "flow_now": "unknown",
+      "onsite_observation_date": null
+    },
+    {
+      "source_url": "https://www.graubuenden.ch/de/ausflugsziele/wasserbrunnen-crestasee",
+      "poi_lat": 46.833426,
+      "poi_lon": 9.319507,
+      "snapshot_candidates_within_500m": 0,
+      "live_query_candidates_within_600m": 0,
+      "flow_now": "unknown",
+      "onsite_observation_date": null
+    }
+  ],
+  "sbb_notes": {
+    "identifier": "Use observed 8503000 for Zurich HB; 3000 returned empty records at these endpoints.",
+    "fields": [
+      "floor.level",
+      "floor.name",
+      "location_details_en",
+      "geo",
+      "openinghours",
+      "modified",
+      "url_identifier"
+    ],
+    "public_documentation": "https://api.insa.geops.ch/docs/",
+    "terms_requiring_scope_clarification": "https://doc.trafimage.ch/Bestimmung_Datenabgabe_v1_2024_DE.pdf",
+    "examples": [
+      "Toilet location text: Passage Sihlquai",
+      "Hygienecenter location text: Mezzanine level; general floor label: first basement"
+    ],
+    "routing_limit": "Access point features alone do not establish a connected indoor routing graph."
+  }
+}
