@@ -498,3 +498,31 @@ button:disabled { cursor: default; opacity: .65; }
 .fare-card-row small { grid-column: 1 / -1; }
 .map-legend .legend-push { border-top: 3px dashed #c46b16; background: none; }
 .map-legend .legend-carry { border-top: 3px dotted #9d321f; background: none; }
+.readable-map-popup .leaflet-popup-content { font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.readable-map-popup summary { cursor: pointer; padding: 10px 0; }
+.readable-map-popup details + details { border-top: 1px solid var(--line); }
+.readable-map-popup .leaflet-popup-close-button { width: 32px; height: 32px; font-size: 23px; }
+.facility-detour-button, .detour-panel button { display: block; min-height: 44px; margin-top: 10px; padding: 8px 12px;
+  border: 1px solid #76558e; border-radius: 7px; background: white; color: #573d6c; font: inherit; cursor: pointer; }
+.facility-detour-button:disabled { cursor: default; opacity: .65; }
+.detour-panel { margin-top: 14px; padding: 16px; border: 1px solid #c9b9d6; border-radius: 12px; background: #faf7fc;
+  color: var(--ink); line-height: 1.5; overflow-wrap: anywhere; scroll-margin-block: 24px; }
+.detour-panel p { margin: 10px 0; }
+.detour-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.detour-heading h3 { margin: 2px 0 8px; font-size: 1.2rem; }
+.detour-heading button { margin-top: 0; flex-shrink: 0; }
+.detour-eyebrow { color: #573d6c; font-size: .875rem; }
+.detour-fields { display: flex; flex-wrap: wrap; gap: 12px; }
+.detour-fields label { display: flex; flex: 1 1 180px; flex-direction: column; gap: 5px; font-size: .875rem; min-width: 0; }
+.detour-fields select, .detour-fields input { width: 100%; min-height: 44px; padding: 8px; border: 1px solid #a391b3;
+  border-radius: 6px; background: white; color: var(--ink); font: inherit; }
+.detour-fields input { max-width: 150px; }
+.detour-metrics { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 16px 0; }
+.detour-metrics dt { font-size: .8rem; color: var(--muted); }
+.detour-metrics dd { margin: 2px 0 0; font-size: 1.25rem; font-weight: 700; }
+.detour-connection { padding: 2px 12px; border-left: 4px solid #76558e; background: white; }
+.detour-kept { border-color: #195e4d; }
+.detour-missed, .detour-unknown { border-color: #a75421; }
+.detour-source { color: var(--muted); font-size: .875rem; }
+.detour-panel :focus-visible, .readable-map-popup :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.map-legend .legend-detour { border-top: 4px dashed #76558e; background: none; }

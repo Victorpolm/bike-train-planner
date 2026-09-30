@@ -8,13 +8,18 @@ import { withReviewedAmenities } from "./reviewedAmenities";
 import { mergeFacilitySources } from "./facilitySources";
 import { useFacilitySources } from "./useFacilitySources";
 import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_LEGEND } from "./parkingMap";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { formatMinutes, type CyclingComparison, type Journey, type Place, type Point } from "./routing";
 import { journeyStops, type ExploredStop } from "./mapData";
 import { pointAlong, type CyclingRoute } from "./cycling";
 import { sectionGeometry } from "./swisstopo";
 import { travelModeLabel } from "./cyclingTerrain";
+import { bindReadablePopup } from "./readablePopup";
+import { detourStages, type DetourFacility, type DetourRoutes } from "./cyclingDetour";
+import DetourPanel from "./DetourPanel";
+import type { CyclingPace } from "./cyclingPace";
+import type { RoutePreference } from "./cyclingPreferences";
 
 type MapViewProps = {
   origin: Place | null;
@@ -28,6 +33,9 @@ type MapViewProps = {
   selectedJourney: Journey | null;
   cycling: CyclingComparison | null;
   bikeOnlySelected: boolean;
+  start: Date | null;
+  cyclingPace?: CyclingPace;
+  routePreference?: RoutePreference;
   cycleFocus: { route: CyclingRoute; distanceM: number } | null;
   onCycleFocus: (routeId: string, distanceM: number) => void;
 };
@@ -69,7 +77,7 @@ function fitMap(map: L.Map, bounds: L.LatLngBounds) {
 
 export default function MapView({
   origin, destination, waypoints, editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint,
-  stops, selectedJourney, cycling, bikeOnlySelected, cycleFocus, onCycleFocus,
+  stops, selectedJourney, cycling, bikeOnlySelected, cycleFocus, onCycleFocus, start, cyclingPace, routePreference,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -80,6 +88,32 @@ export default function MapView({
   const redrawPinsRef = useRef<(() => void) | null>(null);
   const fittedRef = useRef("");
   const skipFitRef = useRef(false);
+  const stages = useMemo(() => detourStages(selectedJourney, bikeOnlySelected ? cycling : null, origin, destination, start),
+    [selectedJourney, bikeOnlySelected, cycling, origin, destination, start]);
+  const detourScope = JSON.stringify([selectedJourney?.id, bikeOnlySelected, start, origin, destination,
+    waypoints, cyclingPace, routePreference, stages.map(stage => stage.id)]);
+  const [detour, setDetour] = useState<{ scope: string; facility: DetourFacility } | null>(null);
+  const [detourRoutes, setDetourRoutes] = useState<DetourRoutes | null>(null);
+  const currentDetour = detour?.scope === detourScope && !editingDisabled ? detour.facility : null;
+  const previewDetour = useCallback((facility: DetourFacility) => {
+    if (editingDisabled || !stages.length || facility.unavailable) return;
+    mapRef.current?.closePopup(); setDetourRoutes(null); setDetour({ scope: detourScope, facility });
+  }, [detourScope, editingDisabled, stages.length]);
+  useEffect(() => { setDetourRoutes(null); mapRef.current?.closePopup(); }, [detourScope, editingDisabled]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !detourRoutes || !currentDetour) return;
+    const layer = L.layerGroup().addTo(map);
+    for (const route of detourRoutes) {
+      if (!route.points.length) continue;
+      const path = [route.from, ...route.points, route.to].map(p => [p.lat, p.lon] as [number, number]);
+      L.polyline(path, { color: COLORS.bikeOnly, weight: 6, dashArray: "8 8", opacity: .95, bubblingMouseEvents: false })
+        .bindTooltip(textNode("Cycling detour preview")).addTo(layer);
+    }
+    L.circleMarker([currentDetour.lat, currentDetour.lon], { color: COLORS.bikeOnly, fillColor: "white", fillOpacity: 1,
+      weight: 4, radius: 9, interactive: false }).addTo(layer);
+    return () => { layer.remove(); };
+  }, [detourRoutes, currentDetour]);
   const pickerRef = useRef<((point: L.LatLng) => void) | null>(null);
   const handlers = useRef({ editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus });
   handlers.current = { editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus };
@@ -156,6 +190,15 @@ export default function MapView({
         count++;
         const style = parkingStyle(facility);
         const content = popup(facility.name, [style.detail, ...parkingDetails(facility)]);
+        if (stages.length && !editingDisabled) {
+          const button = document.createElement("button"); button.type = "button"; button.className = "facility-detour-button";
+          button.textContent = "Preview cycling detour";
+          button.disabled = facility.publicAccess === false || !!facility.access && !["yes", "public", "permissive", "unknown"].includes(facility.access);
+          button.onclick = () => previewDetour({ id: facility.id, name: facility.name, lat: facility.lat, lon: facility.lon, category: "parking",
+            note: "This preview visits the parking location and continues with your bicycle. Access and the entrance have not been verified." });
+          content.append(button);
+          if (button.disabled) { const p = document.createElement("p"); p.textContent = "This parking has mapped access restrictions."; content.append(p); }
+        }
         if (facility.url) { const a = document.createElement("a"); a.href = facility.url; a.textContent = "Facility information"; a.target = "_blank"; a.rel = "noreferrer"; content.append(a); }
         for (const source of facility.sources ?? []) {
           const p = document.createElement("p"), link = document.createElement("a");
@@ -163,21 +206,23 @@ export default function MapView({
           link.target = "_blank"; link.rel = "noreferrer"; p.append(link); content.append(p);
         }
         if (isClosest) {
-          L.marker([facility.lat, facility.lon], { icon: parkingIcon(style.color, true),
-            title: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, alt: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, zIndexOffset: 1100 })
+          const marker = L.marker([facility.lat, facility.lon], { icon: parkingIcon(style.color, true),
+            title: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, alt: `Closest listed bicycle parking: ${facility.name} · ${style.label}`, zIndexOffset: 1100, bubblingMouseEvents: false })
             .bindTooltip(textNode(`Closest parking · ${parkingDistance(closestParking!.distanceKm)} straight-line`), { permanent: true, direction: "bottom", offset: [0, 18] })
-            .bindPopup(content).addTo(layer);
+            .addTo(layer);
+          bindReadablePopup(marker, map, content, L.popup);
         } else {
-          L.marker([facility.lat, facility.lon], { icon: parkingIcon(style.color), zIndexOffset: 250,
+          const marker = L.marker([facility.lat, facility.lon], { icon: parkingIcon(style.color), zIndexOffset: 250,
             title: `Bicycle parking: ${facility.name} · ${style.label}`, alt: `Bicycle parking: ${facility.name} · ${style.label}`, bubblingMouseEvents: false })
-            .bindTooltip(textNode(`${facility.name} · ${style.label}`)).bindPopup(content).addTo(layer);
+            .bindTooltip(textNode(`${facility.name} · ${style.label}`)).addTo(layer);
+          bindReadablePopup(marker, map, content, L.popup);
         }
       }
       setParkingMapNote(limited ? "Zoom in to see all parking pins in this area." : !alongJourney && zoom < 13 ? "Zoom in to see local OpenStreetMap parking. Find closest parking searches all loaded records at any zoom." : "");
     };
     draw(); map.on("moveend zoomend", draw);
     return () => { map.off("moveend zoomend", draw); layer.remove(); };
-  }, [showParking, visibleParking, closestParking, alongJourney]);
+  }, [showParking, visibleParking, closestParking, alongJourney, previewDetour, stages.length, editingDisabled]);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -228,8 +273,9 @@ export default function MapView({
       const title = id === "origin" ? "Start" : id === "destination" ? "Finish" : `Intermediate stop ${label.slice(1)}`;
       const marker = L.marker(point, { icon: markerIcon(color, label), title: `${title}: ${place.label}`,
         alt: `${title}: ${place.label}`, zIndexOffset: 1000, draggable: !editingDisabled, autoPan: true });
-      marker.bindTooltip(textNode(`${title} · ${place.label}`)).bindPopup(popup(title,
-        [place.label, editingDisabled ? "Stop the search to move this location." : "Drag this marker to move the location."])).addTo(layer);
+      marker.bindTooltip(textNode(`${title} · ${place.label}`)).addTo(layer);
+      bindReadablePopup(marker, map, popup(title,
+        [place.label, editingDisabled ? "Stop the search to move this location." : "Drag this marker to move the location."]), L.popup);
       marker.on("dragend", () => {
         const position = marker.getLatLng().wrap();
         skipFitRef.current = true;
@@ -309,9 +355,10 @@ export default function MapView({
         const events = stop.events.map(e => e.action + " " + e.service + " · boarding " + e.boarding
           + (e.time ? " · " + clock.format(e.time) : " · time unavailable")
           + (e.platform ? " · platform " + e.platform : "") + (e.bicycle ? " · " + e.bicycle : ""));
-        L.marker([stop.lat, stop.lon], {
-          icon: markerIcon(COLORS.transit, String(stop.number), offset), title, alt: title, zIndexOffset: 800,
-        }).bindTooltip(textNode(title)).bindPopup(popup(title, events)).addTo(pinLayer);
+        const marker = L.marker([stop.lat, stop.lon], {
+          icon: markerIcon(COLORS.transit, String(stop.number), offset), title, alt: title, zIndexOffset: 800, bubblingMouseEvents: false,
+        }).bindTooltip(textNode(title)).addTo(pinLayer);
+        bindReadablePopup(marker, map, popup(title, events), L.popup);
       }
     };
 
@@ -320,10 +367,11 @@ export default function MapView({
     for (const stop of stops) {
       allBounds.extend([stop.lat, stop.lon]);
       if (!showStops || selectedIds.has(stop.id)) continue;
-      L.marker([stop.lat, stop.lon], {
+      const marker = L.marker([stop.lat, stop.lon], {
         icon: L.divIcon({ className: "candidate-marker", html: '<span class="candidate-dot"></span>', iconSize: [28, 28], iconAnchor: [14, 14] }),
-        title: "Explored stop: " + stop.name, zIndexOffset: -100,
-      }).bindTooltip(textNode(stop.name)).bindPopup(popup(stop.name, [...stop.notes, "Candidate only; no bicycle-carriage permission verified."])).addTo(layer);
+        title: "Explored stop: " + stop.name, zIndexOffset: -100, bubblingMouseEvents: false,
+      }).bindTooltip(textNode(stop.name)).addTo(layer);
+      bindReadablePopup(marker, map, popup(stop.name, [...stop.notes, "Candidate only; no bicycle-carriage permission verified."]), L.popup);
     }
 
     if (selectedJourney && origin && destination) {
@@ -428,6 +476,7 @@ export default function MapView({
     <div className="map-legend">
       <span><i className="legend-bike-only" />Cycling only</span>
       <span><i className="legend-bike" />Cycling leg</span>
+      {detourRoutes && currentDetour && <span><i className="legend-detour" />Detour preview</span>}
       <span><i className="legend-train" />Transit</span>
       <span><i className="legend-walk" />Walking</span>
       <span><i className="legend-push" />Push bicycle</span>
@@ -443,6 +492,15 @@ export default function MapView({
       <span><b className="legend-pin">1</b>Board / alight</span>
     </div>
   </div>
+    {currentDetour && stages.length > 0 && <DetourPanel key={`${detourScope}:${currentDetour.id}:${currentDetour.category}`}
+      facility={currentDetour} stages={stages} pace={cyclingPace} preference={routePreference} onRoutes={setDetourRoutes}
+      onClose={() => { setDetour(null); setDetourRoutes(null); }} onShow={() => {
+        const map = mapRef.current;
+        if (!map || !detourRoutes) return;
+        const points = detourRoutes.flatMap(route => [route.from, ...route.points, route.to]);
+        const bounds = L.latLngBounds(points.map(p => [p.lat, p.lon]));
+        visibleBoundsRef.current = bounds; fitMap(map, bounds);
+      }} />}
     {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
       <ul className="parking-legend" aria-label="Parking colours by mapped equipment">
         {PARKING_LEGEND.map(style => <li key={style.label}><b className="parking-badge" style={{ backgroundColor: style.color }} aria-hidden="true">P</b>{style.label}</li>)}
@@ -489,6 +547,7 @@ export default function MapView({
         records={category === "repairs" ? repairFacilities : category === "food" ? foodFacilities : amenityFacilities}
         sourceLoads={category === "repairs" ? [] : extraSources.loads.filter(l => category === "water" || l.provider === "sbb")}
         retrySource={extraSources.retry} includeTopographicWater={includeTopographicWater} onTopographicWater={setIncludeTopographicWater}
+        onDetour={stages.length && !editingDisabled ? previewDetour : undefined}
         scope={parkingRoute} alongJourney={alongJourney} radius={routeRadius} sharedCategories={sharedCategories} active={activeAmenity === category}
         kinds={category === "repairs" ? repairKinds : category === "food" ? foodKinds : undefined}
         onKinds={category === "repairs" ? setRepairKinds : category === "food" ? setFoodKinds : undefined}

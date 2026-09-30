@@ -102,7 +102,7 @@ Road-message intervals are matched to the returned geometry in traversal order. 
 
 ## Interaction
 
-The 29 September [useful-stop proposal](CYCLING_AMENITIES.md) would attach amenities to the selected cycling legs and check entrance detours and visit durations. It is not implemented here. A separate [later safety study](CYCLING_SAFETY_RESEARCH.md) considers junction manoeuvres and richer infrastructure evidence; it does not change the current lower-traffic-stress heuristic or convert grouped speed values into exact limits.
+The [useful-stop work](CYCLING_AMENITIES.md) now includes version-41 cycling-section detour previews: route section start → mapped facility → section end using the same pace/preferences, preserve selected transit and required waypoint boundaries, and check the next connection with chosen visit duration and the boarding buffer. No main timetable/fare search is repeated. Applying/saving the preview, verifying entrances and revalidating original search limits remain future work. [Implementation and regressions](FACILITY_DETOURS_2026-09-30.md). A separate [later safety study](CYCLING_SAFETY_RESEARCH.md) considers junction manoeuvres and richer infrastructure evidence; it does not change the current lower-traffic-stress heuristic or convert grouped speed values into exact limits.
 
 Select cycling only or a mixed journey, then inspect **Your cycling route**. Choose the leg when there is more than one. Hover the elevation chart or the cycling line; the corresponding map marker/profile position updates. A labelled slider supports touch and keyboard use. Clicking a steep-section entry selects its location. Orange marks climbs and blue marks descents. Start/finish/intermediate markers remain draggable when a search is not running.
 

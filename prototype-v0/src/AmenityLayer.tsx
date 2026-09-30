@@ -9,6 +9,8 @@ import { SERVICE_FILTERS, serviceLinks, serviceMatches, serviceSummary, type Ser
 import type { Place } from "./routing.ts";
 import { amenityLocationLinks, amenitySourceLinks, locationSummary } from "./amenityLocation.ts";
 import { FACILITY_SOURCES, type FacilityLoad, type FacilityProvider } from "./facilitySources.ts";
+import { bindReadablePopup } from "./readablePopup";
+import { amenityDetourTarget, type DetourFacility } from "./cyclingDetour";
 
 const GLYPH_PATHS = {
   water: 'M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13Z',
@@ -30,8 +32,15 @@ function icon(category: AmenityCategory, color: string, closest: boolean, offset
     iconSize: [size, size], iconAnchor: [size / 2 - offset, size / 2], popupAnchor: [offset, -size / 2] });
 }
 function textNode(text: string) { const node = document.createElement("span"); node.textContent = text; return node; }
-function popup(facility: Amenity, category: AmenityCategory) {
+function popup(facility: Amenity, category: AmenityCategory, onDetour?: (facility: DetourFacility) => void) {
   const node = document.createElement("div"), title = document.createElement("strong"); title.textContent = facility.name; node.append(title);
+  if (onDetour) {
+    const target = amenityDetourTarget(facility, category);
+    const button = document.createElement("button"); button.type = "button"; button.className = "facility-detour-button";
+    button.textContent = "Preview cycling detour"; button.disabled = !!target.unavailable;
+    button.onclick = () => onDetour(target); node.append(button);
+    if (target.unavailable) { const reason = document.createElement("p"); reason.textContent = target.unavailable; node.append(reason); }
+  }
   for (const line of amenityDetails(facility, category)) { const p = document.createElement("p"); p.textContent = line; node.append(p); }
   if (category === "repairs" || category === "food") for (const contact of serviceLinks(facility.tags)) {
     const p = document.createElement("p"), a = document.createElement("a"); a.href = contact.href; a.textContent = contact.label;
@@ -49,9 +58,10 @@ type Props = { category: AmenityCategory; map: L.Map | null; origin: Place | nul
   active: boolean; onActivate: () => void; radius: number; sharedCategories: Map<string, AmenityCategory[]>;
   sourceLoads: FacilityLoad[]; retrySource: (provider: FacilityProvider) => void;
   includeTopographicWater: boolean; onTopographicWater: (enabled: boolean) => void;
+  onDetour?: (facility: DetourFacility) => void;
   kinds?: ServiceKind[]; onKinds?: (kinds: ServiceKind[]) => void; onLocate: (facility: Amenity) => void };
 export default function AmenityLayer({ category, map, origin, data, records, loading, error, retry, scope, alongJourney,
-  active, onActivate, radius, sharedCategories, kinds, onKinds, onLocate, sourceLoads, retrySource, includeTopographicWater, onTopographicWater }: Props) {
+  active, onActivate, radius, sharedCategories, kinds, onKinds, onLocate, sourceLoads, retrySource, includeTopographicWater, onTopographicWater, onDetour }: Props) {
   const service = category === "repairs" || category === "food" ? category : null;
   const label = { water: "Water fountains", toilets: "Toilets", repairs: "Repairs and bike shops", food: "Food and drinks" }[category];
   const closestLabel = { water: "drinking water", toilets: "toilet", repairs: "matching bicycle service", food: "matching food stop" }[category];
@@ -81,11 +91,12 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
         const style = amenityStyle(facility, category, kinds), shared = sharedCategories.get(facility.id) ?? [category];
         const offset = shared.length > 1 ? (shared.indexOf(category) - (shared.length - 1) / 2) * 30 : 0;
         const title = [ `${label}: ${facility.name}`, locationSummary(facility), service ? serviceSummary(facility, service) : style.label ].filter(Boolean).join(" · ");
-        L.marker([facility.lat, facility.lon], { icon: icon(category, style.color, isClosest, offset), title, alt: title,
+        const marker = L.marker([facility.lat, facility.lon], { icon: icon(category, style.color, isClosest, offset), title, alt: title,
           zIndexOffset: isClosest ? 1100 : 300, bubblingMouseEvents: false })
           .bindTooltip(textNode(isClosest ? `Closest ${closestLabel} · ${parkingDistance(closest!.distanceKm)} from A` : title),
             isClosest ? { permanent: true, direction: "bottom", offset: [offset, 18] } : {})
-          .bindPopup(popup(facility, category)).addTo(layer);
+          .addTo(layer);
+        bindReadablePopup(marker, map, popup(facility, category, onDetour), L.popup);
       };
       for (const group of groups.slice(0, 1000)) {
         if (group.facilities.length === 1) { drawPoint(group.facilities[0], false); continue; }
@@ -100,10 +111,10 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
           for (const facility of group.facilities.slice(0, 50)) {
             const details = document.createElement("details"), summary = document.createElement("summary");
             summary.textContent = [facility.name, locationSummary(facility), amenityStyle(facility, category, kinds).label].filter(Boolean).join(" · ");
-            details.append(summary, popup(facility, category)); content.append(details);
+            details.append(summary, popup(facility, category, onDetour)); content.append(details);
           }
           if (group.facilities.length > 50) content.append(textNode("Zoom in to separate more records."));
-          marker.bindPopup(content, { maxHeight: 350, maxWidth: 360 });
+          bindReadablePopup(marker, map, content, L.popup);
         }
       }
       if (closest) drawPoint(closest.facility, true);
@@ -111,7 +122,7 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
     };
     draw(); map.on("moveend zoomend", draw);
     return () => { map.off("moveend zoomend", draw); layer.remove(); };
-  }, [map, visible, category, closest, alongJourney, sharedCategories, label, service, closestLabel, kinds]);
+  }, [map, visible, category, closest, alongJourney, sharedCategories, label, service, closestLabel, kinds, onDetour]);
 
   const legend = category === "water" ? [AMENITY_STYLES.drink, AMENITY_STYLES.nonDrink, AMENITY_STYLES.restricted, AMENITY_STYLES.waterUnknown]
     : service ? [AMENITY_STYLES[service], AMENITY_STYLES.restricted] : [AMENITY_STYLES.public, AMENITY_STYLES.restricted, AMENITY_STYLES.toiletUnknown];

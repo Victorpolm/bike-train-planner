@@ -692,3 +692,21 @@ No browser interaction or field test is claimed. No new fare/routing benchmark w
 **Hosted follow-up:** The version-39 checks passed 18 rural/station feeds but TLM archive loading timed out at 80 seconds. Version 40 replaces runtime archive extraction with a compact dated 601-point application index, preserves the import/edition dates and keeps all points excluded from closest drinking water. The maintenance importer remains bounded and was checked again successfully. **278 tests in 11 suites and production builds pass.** Owner-private version 40 succeeded at **13:34:20 UTC**, environment revision 3, Site source `73aa9b1dfbd4ee989e17b3d77824279287e53d23`; all **166 current application files** match GitHub implementation `53ef965e0e20a437431912042f8083ee7d823ad4`.
 
 **Final hosted check:** Version 40 returned valid HTTP 200 data for all 19 endpoints, including 601 TLM points in 698 ms; root/new frontend control and rejection guards passed. [Dated hosted evidence](experiments/facility-sources-hosted-v40-2026-09-30.json).
+
+
+## 2026-09-30 — Stable facility popups and fixed-transit detour previews
+
+**Gate:** 290 tests in 11 suites pass; TypeScript/frontend/Worker builds pass. Twelve new deterministic tests use synthetic cycling sections and fixed service times. No live timetable, fare or route-provider request is made by the tests.
+
+| Golden case (Europe/Zurich) | Expected result |
+|---|---|
+| Start 08:00; original bike 10 min; selected train 08:25; new bike links 8 + 7 min; visit 5 min | 08:20 ready, 3 min boarding buffer, 2 min spare; same services and original 09:10 destination arrival |
+| Same section, visit 8 min | 1 min short after buffer; no substitute train and no promised new arrival |
+| Intermediate bike starts 08:30; new cycling 15 min, visit 5, onward walking 5; train 08:55 | 3 min short after buffer; setting visit to 0 leaves 2 min spare |
+| Egress after arrival 09:00; original bike 10 min; new cycling 15 + visit 5 | Destination 09:20 instead of 09:10; original transit untouched |
+| Cycling-only ordered stages 20 + 30 min; replace first with 15 + visit 10 | Preserve required waypoint and second section; arrival shifts from 08:50 to 08:55 |
+| Clicked popup; marker removed/redrawn; pointer leaves; viewport events fire | Independent popup stays open, explicit close control retained, long text height bounded |
+
+Other checks preserve exact transit objects and original journey JSON, select a cycling section by full geometry, keep unknown onward details unknown, reject unavailable/blocked partial paths, abort between or during links, retain endpoint-gap disclosure and reject non-potable/restricted stops. Editing visit duration reuses the two route results.
+
+**Release:** private version 41 succeeded on 30 September 2026 at 17:12:53 UTC, environment revision 3, Site source `c68854db9e257e97b6e9f891f01ab18283d234fd`. Browser interaction/visual checks are not claimed: the managed browser-control skill is unavailable. Live cycling-provider detours were not exercised. [Implementation and manual acceptance check](FACILITY_DETOURS_2026-09-30.md).

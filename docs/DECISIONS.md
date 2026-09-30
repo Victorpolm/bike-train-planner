@@ -518,3 +518,14 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 **Hosted follow-up:** The version-39 checks passed 18 rural/station feeds but TLM archive loading timed out at 80 seconds. Version 40 replaces runtime archive extraction with a compact dated 601-point application index, preserves the import/edition dates and keeps all points excluded from closest drinking water. The maintenance importer remains bounded and was checked again successfully. **278 tests in 11 suites and production builds pass.** Owner-private version 40 succeeded at **13:34:20 UTC**, environment revision 3, Site source `73aa9b1dfbd4ee989e17b3d77824279287e53d23`; all **166 current application files** match GitHub implementation `53ef965e0e20a437431912042f8083ee7d823ad4`.
 
 **Final hosted check:** Version 40 returned valid HTTP 200 data for all 19 endpoints, including 601 TLM points in 698 ms; root/new frontend control and rejection guards passed. [Dated hosted evidence](experiments/facility-sources-hosted-v40-2026-09-30.json).
+
+
+## 2026-09-30 — Persistent map details and fixed-service cycling detours
+
+**User request:** fix facility details disappearing when the map moves or the pointer leaves; propose a detour through a facility without recalculating the whole trip.
+
+**Decision and delivery:** detach clicked popups from transient marker layers. Offer one explicit cycling detour preview using two directed links within an existing cycling section, preserving all other stages and the selected transit. Include rider-chosen visit time, walking before boarding and the three-minute buffer. Report missed or unknown timing instead of choosing a new service. Keep original journey cards/fares available. Use independent cancellation/deadline handling and no timetable/fare queries.
+
+Unknown/non-potable water and mapped restricted/unavailable facilities cannot be suggested as stops. Coordinates do not establish a verified entrance or indoor route. Applying/saving a preview, multiple facilities, verified opening, broken-bike pushing-only routing and original search-budget validation remain later work.
+
+**Verification and release:** 290 tests in 11 suites and production builds pass. Owner-private version 41 succeeded at 17:12:53 UTC, environment revision 3, Site source `c68854db9e257e97b6e9f891f01ab18283d234fd`. Browser interaction QA and live provider detour tests were unavailable/not run. [Evidence and limits](FACILITY_DETOURS_2026-09-30.md).

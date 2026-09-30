@@ -406,6 +406,7 @@ export default function App() {
         waypoints={mapWaypoints} editingDisabled={loading} canAddWaypoint={viaInputs.length < MAX_WAYPOINTS}
         onSelectPoint={(target, point) => target === "via" ? addWaypoint(point) : setMapPoint(target, point)} onMovePoint={setMapPoint}
         selectedJourney={selected} cycling={cyclingReference} bikeOnlySelected={bikeOnlySelected}
+        start={session?.start ?? null} cyclingPace={session?.options.cyclingPace} routePreference={session?.options.cyclingRoutePreference}
         cycleFocus={focusedRoute && cycleFocus ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM } : null}
         onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })} />
       <div className="model-note"><strong>Routed cycling · estimated times</strong><p>Cycling follows mapped roads and paths. Transit lines remain schematic.
