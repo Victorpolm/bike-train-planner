@@ -68,3 +68,7 @@ The harness requires Node 24/Python 3, pins the binary version, bounds import/re
 ## Next acceptance check
 
 On the published app, select a journey, preview a water/food detour and confirm it is framed automatically; move the pointer away, pan the map and change visit time while checking that the details remain readable and the selected transit stays fixed. Check keyboard location selection with Tab, arrow keys and Enter. Then continue the existing rural-water precision and entrance/access priorities. Engine evaluation stays separate.
+
+## Confirmed publication
+
+Owner-private **version 42** succeeded on **30 September 2026 at 21:58:44 UTC**, environment revision **3**. Site source `c5ed6f1a3cdf392c727ad64492a6e43368eae4e6` matches all **182 current application files** in GitHub implementation `a97c872af7b55543221781fde4bca30d2ccaa923`. Historical Site documentation snapshots are excluded. [Automatic CI](https://github.com/Victorpolm/bike-train-planner/actions/runs/36782578264) completed successfully. Functional changes are commit `8033785761aec2f0e88b3c1e3e41466ef5b48407`; React formatting is the separate following commit `a97c872af7b55543221781fde4bca30d2ccaa923`. Access remains owner-only; browser interaction QA is still outstanding.
