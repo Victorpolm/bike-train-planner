@@ -46,6 +46,16 @@ For **Libingen → EPFL**, choose the real departure time and try **More cycling
 
 Proposals appear as soon as the necessary road links and a usable timetable response are available, while alternatives continue loading. A live Renens–EPFL check on 20 September returned a 2.597 km cycling comparison with 8 minutes including connectors and its first transit proposals after 34.2 seconds; upstream latency varies. Extended exploration can take longer. The displayed departure is captured when the search starts or taken from the chosen Swiss date/time; results do not continuously refresh.
 
+## Additional facility sources (30 September 2026)
+
+Water now includes a small eight-location Graubünden Tourism / Flims Laax Falera pilot, using published POI coordinates and explicit drinking-water descriptions. Access, bottle filling, seasonal operation and current flow remain unknown unless separately evidenced. The optional **Show topographic fountains and springs** checkbox loads swissTLM3D February 2026 points in grey: drinkability is unknown, and these records never qualify for **closest drinking water**.
+
+SBB public Trafimage/INSA data adds toilets and food at ten pilot stations: Zürich HB, Bern, Basel SBB, Lausanne, Genève, Luzern, Winterthur, St. Gallen, Olten and Lugano. Popups keep named floors, landmark directions, available hours, provider modification dates and official plan links. These ten stations are a bounded pilot, not a verified ranking of the ten busiest. Overlapping markers allow inspecting separate source/floor records. Proximity does not establish identity or an indoor route.
+
+The three sources use independent fixed allowlisted requests, bounded caches and per-feed failure/retry states; they need no keys. No user route coordinates are sent to them. OSM remains the national base. SBB integration is limited to public factual service exports in the existing owner-private prototype; images, marketing descriptions and restricted API routes are excluded. Broader publication/reuse terms still need clarification before public distribution. [Implementation, source scope and roadmap audit](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/FACILITY_SOURCES_2026-09-30.md).
+
+Run `node --use-env-proxy scripts/audit-facility-sources.mjs` with Node 24 for an optional live provider audit. It makes network requests, emits a compact JSON report and exits nonzero on a failed feed. Normal `npm test` stays offline. The existing reviewed ETH entry is retained; this release adds no ETH-specific work.
+
 ## Run locally
 
 Facility popups now retain mapped floors, building/place names, room/door references and indoor descriptions. Reviewed additions are maintained in `src/reviewedAmenities.ts`: ETH HG's Selecta machines have one approximate building marker labelled floor F, beside the Starbucks coffee machines, with the owner's report and unknown access/product details. Existing Zürich HB Hygienecenter records have floor/zone information and the official station-plan link. Source dates distinguish document review from an on-site check. A small local addition can still be shown when the OSM feed is unavailable; closest then uses only the available records. [Implementation and limits](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/FACILITY_LOCATIONS_2026-09-30.md).

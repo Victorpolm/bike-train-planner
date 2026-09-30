@@ -5,7 +5,7 @@ export type AmenityLocation = {
   precision?: "building"; planUrl?: string; planLabel?: string;
 };
 export type AmenityEvidence = {
-  label: string; url: string; date: string; kind: "user-report" | "document"; note?: string;
+  label: string; url: string; date: string; kind: "user-report" | "document" | "feed"; note?: string;
 };
 export const LOCATION_TAGS = ["level", "level:ref", "addr:floor", "addr:housename", "addr:place", "addr:unit", "addr:door",
   "location", "entrance", "description", "description:en", "description:de", "description:fr", "description:it", "wheelchair:description"];
@@ -34,8 +34,11 @@ export function amenityLocationDetails(f: Amenity): string[] {
   else if (f.area) details.push("Mapped area/line centre; entrance not verified.");
   if (t.indoor === "yes" || l?.floorLabel || floor) details.push("Indoor walking route and entrance have not been checked.");
   for (const source of f.additionalSources ?? []) {
-    details.push(`${source.kind === "user-report" ? "User report" : "Document reviewed"}: ${source.date}. ${source.note ?? "Not checked on site."}`);
+    details.push(`${source.kind === "user-report" ? "User report" : source.kind === "feed" ? "Source retrieved" : "Document reviewed"}: ${source.date}. ${source.note ?? "Not checked on site."}`);
   }
+  if (f.provenance?.updatedAt) details.push(`Provider record updated: ${f.provenance.updatedAt} (not an on-site observation date)`);
+  if (f.provenance?.datasetDate) details.push(`Dataset edition: ${f.provenance.datasetDate}`);
+  if (f.provenance?.note) details.push(f.provenance.note);
   return details;
 }
 export function safePublicLink(value?: string): string | undefined {

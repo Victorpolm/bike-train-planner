@@ -1,6 +1,6 @@
 # Facility precision: rural water first, indoor locations second
 
-_Research and direction recorded 30 September 2026. No application change or publication is included; version 38 remains the last verified release._
+_Historical research recorded 30 September 2026. The subsequent user-authorised implementation, source scope and remaining gaps are in [FACILITY_SOURCES_2026-09-30.md](FACILITY_SOURCES_2026-09-30.md). ETH is excluded from that follow-up scope; earlier proposed gates below preserve the research-stage decision._
 
 ## User decision
 

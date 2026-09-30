@@ -2,11 +2,12 @@ import { closestBikeParking, OSM_COPYRIGHT } from "./bikeParking.ts";
 import type { Point } from "./routing.ts";
 import { SERVICE_TAGS, serviceDatasetMatches, serviceDetails, serviceKindAvailable, facilityServiceKinds, serviceUnavailable, type ServiceCategory, type ServiceDataset, type ServiceKind } from "./osmServices.ts";
 import { LOCATION_TAGS, amenityLocationDetails, type AmenityEvidence, type AmenityLocation } from "./amenityLocation.ts";
+import type { FacilityProvenance } from "./facilitySources.ts";
 
 export type AmenityCategory = "water" | "toilets" | ServiceCategory;
 export type Amenity = Point & { id: string; name: string; url: string; categories: AmenityCategory[];
   potable: "yes" | "no" | "unknown"; area: boolean; tags: Record<string, string>;
-  location?: AmenityLocation; additionalSources?: AmenityEvidence[]; reportedKinds?: ServiceKind[] };
+  location?: AmenityLocation; additionalSources?: AmenityEvidence[]; reportedKinds?: ServiceKind[]; provenance?: FacilityProvenance };
 export type AmenityData = { schema: 1; provider: "osm"; facilities: Amenity[]; fetchedAt: string;
   source: string; updatedAt?: string; stale?: boolean; dataset?: ServiceDataset };
 export const OSM_AMENITY_API = "https://overpass.osm.ch/api/interpreter";
@@ -61,7 +62,7 @@ export function validAmenityData(value: unknown, dataset?: ServiceDataset): valu
       && ["yes", "no", "unknown"].includes(f.potable) && Array.isArray(f.categories) && f.categories.length > 0 && f.categories.length <= 2
       && f.categories.every(c => dataset ? c === category : c === "water" || c === "toilets") && f.tags && typeof f.tags === "object" && !Array.isArray(f.tags)
       && Object.values(f.tags).every(v => typeof v === "string") && (!dataset || serviceDatasetMatches(f.tags, dataset))
-      && !f.location && !f.additionalSources && !f.reportedKinds);
+      && !f.location && !f.additionalSources && !f.reportedKinds && !f.provenance);
 }
 
 const publicAccess = ["yes", "public", "permissive"];
@@ -114,6 +115,7 @@ export function amenityDetails(f: Amenity, category: AmenityCategory): string[] 
     if (tags.drinking_water) details.push(`Water tag: ${tags.drinking_water}`);
     if (tags["drinking_water:legal"] === "no") details.push('Mapped with a “No drinking water” sign / no official approval.');
     details.push(tags.bottle === "yes" ? "Bottle filling mapped" : tags.bottle === "no" ? "Bottle filling not suitable" : "Bottle filling unknown");
+    if (!tags.seasonal && !tags["drinking_water:seasonal"]) details.push("Seasonal availability unknown");
   }
   if (category === "repairs" || category === "food") details.push(...serviceDetails(f, category));
   for (const [key, label] of [["operator", "Operator"], ["charge", "Mapped charge"], ["seasonal", "Seasonal operation"], ["drinking_water:seasonal", "Seasonal water"],

@@ -501,3 +501,14 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 **Research facts:** rural destination pages supply explicit drinking-water descriptions and coordinates; a fresh bounded Crestasee OSM query returned zero candidates. SBB's public INSA exports returned Zürich HB service/floor/access data without credentials, beyond the earlier plan-link feed. swissTLM3D fountain/spring classes are incomplete and do not establish potability. Public API access does not settle SBB reuse rights, which remain an explicit open question. [Sources, live checks and limitations](FACILITY_PRECISION_2026-09-30.md).
 
 **Proposed next work, not implemented:** a 15–20-point rural-water pilot; evidence/access/seasonality details, checked detours and route-gap information; then bounded station floor/entrance enrichment. Keep source, modification, fetch and field-observation dates separate; never infer flowing water or public access from a map pin. No application change, automated import, account creation, provider message or new hosting spend was made for this research.
+
+
+## 2026-09-30 — Implement three precise facility sources, exclude further ETH focus
+
+**User authorisation:** Update GitHub, audit unimplemented roadmap items and implement Graubünden, SBB and swissTLM3D without focusing on ETH.
+
+**Delivered decision:** OSM remains the base; add eight fixed rural fountain pages, ten public SBB station-service exports and an optional grey TLM fountain/spring layer. Preserve floors, landmark text, source/edit/edition dates, negative evidence and independent failure states. Closest water never accepts unknown potability. Exact reviewed identity is required for enrichment; overlapping source/floor records stay inspectable. No new ETH-specific work, indoor router, live-flow inference or stop insertion.
+
+**Reuse boundary:** The SBB portal describes service data as freely usable but links restrictive general terms. Use only public factual service exports with attribution in the existing owner-private prototype. Blanket redistribution/publication rights remain unconfirmed and must be clarified before wider distribution. No restricted endpoint, provider message, paid dependency or invented agreement.
+
+**Verification:** 277 offline tests and production builds; 19/19 live adapter checks pass. [Implementation and audited remaining work](FACILITY_SOURCES_2026-09-30.md). Rural route-gap/access evidence, routed detours, arrival-time opening and visit duration are still unimplemented; the broader UI remains the third main milestone.

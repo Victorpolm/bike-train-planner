@@ -5,6 +5,8 @@ import AmenityLayer, { AmenityGlyph, WaterGlyph } from "./AmenityLayer";
 import { mergeFoodData, SERVICE_FILTERS, type ServiceKind } from "./osmServices";
 import type { AmenityCategory } from "./osmAmenities";
 import { withReviewedAmenities } from "./reviewedAmenities";
+import { mergeFacilitySources } from "./facilitySources";
+import { useFacilitySources } from "./useFacilitySources";
 import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_LEGEND } from "./parkingMap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
@@ -99,10 +101,15 @@ export default function MapView({
     retry: () => { if (quickFood.error) quickFood.retry(); if (showDining && dining.error) dining.retry(); } };
   const [routeRadius, setRouteRadius] = useState(PARKING_CORRIDOR_METRES);
   const [activeAmenity, setActiveAmenity] = useState<AmenityCategory | null>(null);
+  const [includeTopographicWater, setIncludeTopographicWater] = useState(false);
+  const extraSources = useFacilitySources({ graubuenden: showWater, sbb: showWater || showToilets || showFood,
+    swisstlm3d: showWater && includeTopographicWater });
   const amenities = useAmenities(showWater || showToilets);
-  const amenityFacilities = useMemo(() => withReviewedAmenities(amenities.data?.facilities ?? [], ["water", "toilets"]), [amenities.data]);
+  const amenityFacilities = useMemo(() => mergeFacilitySources(withReviewedAmenities(amenities.data?.facilities ?? [], ["water", "toilets"]),
+    extraSources.facilities, ["water", "toilets"]), [amenities.data, extraSources.facilities]);
   const repairFacilities = useMemo(() => withReviewedAmenities(repairs.data?.facilities ?? [], ["repairs"]), [repairs.data]);
-  const foodFacilities = useMemo(() => withReviewedAmenities(food.data?.facilities ?? [], ["food"]), [food.data]);
+  const foodFacilities = useMemo(() => mergeFacilitySources(withReviewedAmenities(food.data?.facilities ?? [], ["food"]),
+    extraSources.facilities, ["food"]), [food.data, extraSources.facilities]);
   const sharedCategories = useMemo(() => {
     const result = new Map<string, AmenityCategory[]>();
     for (const [enabled, facilities] of [[showWater || showToilets, amenityFacilities], [showRepairs, repairFacilities], [showFood, foodFacilities]] as const) {
@@ -480,6 +487,8 @@ export default function MapView({
       return enabled && <AmenityLayer key={category}
         category={category} map={mapRef.current} origin={origin} data={source.data} loading={source.loading} error={source.error} retry={source.retry}
         records={category === "repairs" ? repairFacilities : category === "food" ? foodFacilities : amenityFacilities}
+        sourceLoads={category === "repairs" ? [] : extraSources.loads.filter(l => category === "water" || l.provider === "sbb")}
+        retrySource={extraSources.retry} includeTopographicWater={includeTopographicWater} onTopographicWater={setIncludeTopographicWater}
         scope={parkingRoute} alongJourney={alongJourney} radius={routeRadius} sharedCategories={sharedCategories} active={activeAmenity === category}
         kinds={category === "repairs" ? repairKinds : category === "food" ? foodKinds : undefined}
         onKinds={category === "repairs" ? setRepairKinds : category === "food" ? setFoodKinds : undefined}

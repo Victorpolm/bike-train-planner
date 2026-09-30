@@ -1,5 +1,6 @@
 import { handleParking } from "./parkingHandler.ts";
 import { handleAmenities, handleServices } from "./amenityHandler.ts";
+import { handleFacilities } from "./facilityHandler.ts";
 import { handleSwisstopo } from "./swisstopoHandler.ts";
 import { handleTimetable, type TimetableEnvironment } from "./timetableHandler.ts";
 import type { Plugin } from "vite";
@@ -13,7 +14,8 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
       const parking = path === "/api/parking" || path.startsWith("/api/parking/v3/");
       const amenities = path === "/api/amenities/v1";
       const services = path.startsWith("/api/services/");
-      if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && !parking && !amenities && !services && incoming.url !== "/api/terrain") return next();
+      const facilities = path.startsWith("/api/facilities/");
+      if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && !parking && !amenities && !services && !facilities && incoming.url !== "/api/terrain") return next();
       try {
         const chunks: Buffer[] = []; let size = 0;
         for await (const chunk of incoming) {
@@ -29,6 +31,7 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
         });
         const response = incoming.url === "/api/terrain" ? await handleSwisstopo(request)
           : amenities ? await handleAmenities(request)
+          : facilities ? await handleFacilities(request)
           : services ? await handleServices(request)
           : parking ? await handleParking(request)
           : path.startsWith("/api/fares/") ? await handleFare(request, { OJP_API_KEY: key, OJP_FARE_API_KEY: fareKey })

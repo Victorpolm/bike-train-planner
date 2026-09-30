@@ -679,3 +679,10 @@ The post-publication exact-client checks returned HTTP 200 for repairs, quick fo
 **Source experiment:** Public CKAN searches/status requests returned HTTP 403; the cause is unknown. Directly following the catalogue’s SBB publisher resource succeeded: 63 station-plan features, 56,105 bytes, HTTP 200. The read-only catalogue helper passes offline smoke checks; successful live CKAN metadata retrieval is not claimed. The portal announces CKAN replacement around late 2026 / early 2027.
 
 **Release and limits:** Private version 38 published at 08:18:00 UTC. Browser QA remains unavailable; no live entrance, indoor-route, stock or access-hour verification. [Facility report](FACILITY_LOCATIONS_2026-09-30.md) · [API investigation](OPENDATA_SWISS_2026-09-30.md).
+
+
+## 2026-09-30 — Three independent facility sources
+
+**Result:** 277 application tests in 11 suites pass, with TypeScript/frontend/Worker production builds. Twelve new regressions cover source coordinates, negative evidence, floors/identity, validity, conservative merges, malformed data, bounded TLM extraction, independent failures/stale data and client cancellation/concurrency. A live adapter audit returned **19/19 valid HTTP 200 results**: eight rural water pages, ten SBB station feeds (21 toilet + 234 food records) and 601 unconfirmed TLM water points. Counts do not establish uniqueness, physical availability or complete coverage. [Evidence](experiments/facility-sources-live-2026-09-30.json) · [implementation and missing work](FACILITY_SOURCES_2026-09-30.md).
+
+No browser interaction or field test is claimed. No new fare/routing benchmark was run: journey calculation and OJP integrations were not changed. Live source checks are optional and separate from offline unit tests; no recurring workflow was created.

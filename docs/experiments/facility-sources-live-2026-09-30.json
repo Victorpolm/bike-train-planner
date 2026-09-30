@@ -1,0 +1,665 @@
+{
+  "checkedAt": "2026-09-30T13:11:15.003Z",
+  "scope": "Live adapter/schema checks; not field verification or a completeness claim",
+  "passed": 19,
+  "total": 19,
+  "results": [
+    {
+      "key": "graubuenden/cresta-sagogn",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 315,
+      "fetchedAt": "2026-09-30T13:10:10.546Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:cresta-sagogn",
+          "name": "Wasserbrunnen Cresta Sagogn",
+          "lat": 46.789773,
+          "lon": 9.25151
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/crestasee",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 10858,
+      "fetchedAt": "2026-09-30T13:09:59.669Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:crestasee",
+          "name": "Wasserbrunnen Crestasee",
+          "lat": 46.833426,
+          "lon": 9.319507
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/dorfplatz-trin",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 247,
+      "fetchedAt": "2026-09-30T13:10:11.020Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:dorfplatz-trin",
+          "name": "Wasserbrunnen Dorfplatz Trin",
+          "lat": 46.828225,
+          "lon": 9.361982
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/fidazerhof-fidaz",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 243,
+      "fetchedAt": "2026-09-30T13:10:10.304Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:fidazerhof-fidaz",
+          "name": "Wasserbrunnen Fidazerhof Fidaz",
+          "lat": 46.837738,
+          "lon": 9.303145
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/sagogn-planezzas",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 10643,
+      "fetchedAt": "2026-09-30T13:09:59.661Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:sagogn-planezzas",
+          "name": "Wasserbrunnen Sagogn Planezzas",
+          "lat": 46.798032,
+          "lon": 9.272311
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/via-lavanuz-laax-murschetg",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 245,
+      "fetchedAt": "2026-09-30T13:10:10.775Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:via-lavanuz-laax-murschetg",
+          "name": "Wasserbrunnen Via Lavanuz Laax Murschetg",
+          "lat": 46.830226,
+          "lon": 9.258127
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/via-rezga-trin-mulin",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 242,
+      "fetchedAt": "2026-09-30T13:10:10.861Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:via-rezga-trin-mulin",
+          "name": "Wasserbrunnen Via Rezga Trin Mulin",
+          "lat": 46.832637,
+          "lon": 9.339859
+        }
+      ]
+    },
+    {
+      "key": "graubuenden/via-vilada-sagogn",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 248,
+      "fetchedAt": "2026-09-30T13:10:10.527Z",
+      "records": 1,
+      "categories": {
+        "water": 1,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 1,
+        "no": 0,
+        "unknown": 0
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "graubuenden:via-vilada-sagogn",
+          "name": "Wasserbrunnen Via Vilada Sagogn",
+          "lat": 46.791073,
+          "lon": 9.264463
+        }
+      ]
+    },
+    {
+      "key": "sbb/8500010",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1277,
+      "fetchedAt": "2026-09-30T13:10:21.549Z",
+      "records": 19,
+      "categories": {
+        "water": 0,
+        "toilets": 1,
+        "food": 18,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 19
+      },
+      "withFloor": 19,
+      "withDirections": 19,
+      "samples": [
+        {
+          "id": "sbb:8500010:geo-laederach-chocolatier-suisse-eba3",
+          "name": "Läderach",
+          "lat": 47.546596457,
+          "lon": 7.588590096,
+          "floor": "Footbridge / 1st floor",
+          "directions": "Footbridge"
+        },
+        {
+          "id": "sbb:8500010:geo-vito-pizza-bros-574e",
+          "name": "Vito",
+          "lat": 47.546995118,
+          "lon": 7.589241427,
+          "floor": "Footbridge / 1st floor",
+          "directions": "Footbridge"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8500218",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 855,
+      "fetchedAt": "2026-09-30T13:10:24.834Z",
+      "records": 11,
+      "categories": {
+        "water": 0,
+        "toilets": 3,
+        "food": 8,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 11
+      },
+      "withFloor": 11,
+      "withDirections": 11,
+      "samples": [
+        {
+          "id": "sbb:8500218:geo-wctoiletten-rollstuhlgaengig-b020",
+          "name": "WC / Accessible Toilet",
+          "lat": 47.352298736,
+          "lon": 7.907596647,
+          "floor": "City level",
+          "directions": "City level"
+        },
+        {
+          "id": "sbb:8500218:geo-railbistro-ce0d",
+          "name": "RailBistro",
+          "lat": 47.351708569,
+          "lon": 7.906557415,
+          "floor": "Underpasses",
+          "directions": "Martin-Disteli underpass"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8501008",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1032,
+      "fetchedAt": "2026-09-30T13:10:22.522Z",
+      "records": 26,
+      "categories": {
+        "water": 0,
+        "toilets": 1,
+        "food": 25,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 26
+      },
+      "withFloor": 26,
+      "withDirections": 26,
+      "samples": [
+        {
+          "id": "sbb:8501008:geo-utopia-coffee-5977",
+          "name": "Utopia coffee",
+          "lat": 46.211102739,
+          "lon": 6.142362682,
+          "floor": "Mezzanine level",
+          "directions": "East wing"
+        },
+        {
+          "id": "sbb:8501008:geo-maison-desplanches-12b7",
+          "name": "Maison Desplanches",
+          "lat": 46.210417768,
+          "lon": 6.142036567,
+          "floor": "Track level",
+          "directions": "Track level"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8501120",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 936,
+      "fetchedAt": "2026-09-30T13:10:21.585Z",
+      "records": 10,
+      "categories": {
+        "water": 0,
+        "toilets": 1,
+        "food": 9,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 10
+      },
+      "withFloor": 10,
+      "withDirections": 10,
+      "samples": [
+        {
+          "id": "sbb:8501120:geo-coop-pronto-6864",
+          "name": "Coop Pronto",
+          "lat": 46.517138194,
+          "lon": 6.628250945,
+          "floor": "City level",
+          "directions": "west"
+        },
+        {
+          "id": "sbb:8501120:geo-traintrain-cafevin-db58",
+          "name": "TrainTrain café+vin",
+          "lat": 46.516204897,
+          "lon": 6.630032946,
+          "floor": "Underpass",
+          "directions": "Underpass"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8503000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 10446,
+      "fetchedAt": "2026-09-30T13:10:11.104Z",
+      "records": 78,
+      "categories": {
+        "water": 0,
+        "toilets": 4,
+        "food": 74,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 78
+      },
+      "withFloor": 78,
+      "withDirections": 78,
+      "samples": [
+        {
+          "id": "sbb:8503000:geo-mitandohne-kebab-07e6",
+          "name": "Mit&ohne Kebab",
+          "lat": 47.377750978,
+          "lon": 8.538711646,
+          "floor": "ShopVille 2nd basement",
+          "directions": "Hall Löwenstrasse"
+        },
+        {
+          "id": "sbb:8503000:geo-coop-76b8",
+          "name": "Coop",
+          "lat": 47.377801521,
+          "lon": 8.53851131,
+          "floor": "ShopVille 2nd basement",
+          "directions": "Hall Löwenstrasse"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8505000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1373,
+      "fetchedAt": "2026-09-30T13:10:22.826Z",
+      "records": 25,
+      "categories": {
+        "water": 0,
+        "toilets": 1,
+        "food": 24,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 25
+      },
+      "withFloor": 25,
+      "withDirections": 25,
+      "samples": [
+        {
+          "id": "sbb:8505000:geo-burgermeister-747b",
+          "name": "Burgermeister",
+          "lat": 47.050465555,
+          "lon": 8.310560357,
+          "floor": "Basement",
+          "directions": "Basement level (east)"
+        },
+        {
+          "id": "sbb:8505000:geo-dao-asian-eatery-bad3",
+          "name": "DAO asian eatery",
+          "lat": 47.050192715,
+          "lon": 8.311028842,
+          "floor": "City level",
+          "directions": "City level (east)"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8505300",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1026,
+      "fetchedAt": "2026-09-30T13:10:25.282Z",
+      "records": 7,
+      "categories": {
+        "water": 0,
+        "toilets": 1,
+        "food": 6,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 7
+      },
+      "withFloor": 7,
+      "withDirections": 7,
+      "samples": [
+        {
+          "id": "sbb:8505300:geo-bottega-caffe-cacao-4364",
+          "name": "Bottega Caffé Cacao",
+          "lat": 46.006082937,
+          "lon": 8.94667834,
+          "floor": "Hall –1",
+          "directions": "Sottopasso pedonale Besso"
+        },
+        {
+          "id": "sbb:8505300:geo-poke-express-1872",
+          "name": "Poke Express",
+          "lat": 46.005943096,
+          "lon": 8.946830289,
+          "floor": "Hall –1",
+          "directions": "Sottopasso pedonale Besso"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8506000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1280,
+      "fetchedAt": "2026-09-30T13:10:23.554Z",
+      "records": 17,
+      "categories": {
+        "water": 0,
+        "toilets": 1,
+        "food": 16,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 17
+      },
+      "withFloor": 17,
+      "withDirections": 17,
+      "samples": [
+        {
+          "id": "sbb:8506000:geo-coop-8b97",
+          "name": "Coop",
+          "lat": 47.499554995,
+          "lon": 8.723282528,
+          "floor": "Basement",
+          "directions": "Stadttor, Untergeschoss"
+        },
+        {
+          "id": "sbb:8506000:geo-burgermeister-f9b9",
+          "name": "Burgermeister",
+          "lat": 47.499694268,
+          "lon": 8.723734036,
+          "floor": "Basement",
+          "directions": "Stadttor, Untergeschoss"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8506302",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1083,
+      "fetchedAt": "2026-09-30T13:10:24.199Z",
+      "records": 20,
+      "categories": {
+        "water": 0,
+        "toilets": 6,
+        "food": 14,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 20
+      },
+      "withFloor": 20,
+      "withDirections": 20,
+      "samples": [
+        {
+          "id": "sbb:8506302:geo-pao-pao-modern-tea-3cfe",
+          "name": "Pao Pao (modern tea)",
+          "lat": 47.423764536,
+          "lon": 9.369513202,
+          "floor": "Underpass",
+          "directions": "Underpass (east)"
+        },
+        {
+          "id": "sbb:8506302:geo-dunkin-donuts-8ca6",
+          "name": "Dunkin' Donuts",
+          "lat": 47.423574742,
+          "lon": 9.369791709,
+          "floor": "Underpass",
+          "directions": "Underpass (east)"
+        }
+      ]
+    },
+    {
+      "key": "sbb/8507000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 10318,
+      "fetchedAt": "2026-09-30T13:10:11.267Z",
+      "records": 42,
+      "categories": {
+        "water": 0,
+        "toilets": 2,
+        "food": 40,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 42
+      },
+      "withFloor": 42,
+      "withDirections": 42,
+      "samples": [
+        {
+          "id": "sbb:8507000:geo-lolipop-the-candy-shop-5327",
+          "name": "Lolipop - the Candy Shop",
+          "lat": 46.948282171,
+          "lon": 7.44032535,
+          "floor": "Station level",
+          "directions": "Christoffel underpass"
+        },
+        {
+          "id": "sbb:8507000:geo-mcclean-hygienecenter-wcdusche-cb4a",
+          "name": "WC / Hygiene area",
+          "lat": 46.949250231,
+          "lon": 7.439884774,
+          "floor": "Station level",
+          "directions": "Hall"
+        }
+      ]
+    },
+    {
+      "key": "swisstlm3d",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 49314,
+      "fetchedAt": "2026-09-30T13:10:25.689Z",
+      "records": 601,
+      "categories": {
+        "water": 601,
+        "toilets": 0,
+        "food": 0,
+        "repairs": 0
+      },
+      "potable": {
+        "yes": 0,
+        "no": 0,
+        "unknown": 601
+      },
+      "withFloor": 0,
+      "withDirections": 0,
+      "samples": [
+        {
+          "id": "swisstlm3d:254e654c-b3c1-4287-be3c-34513c82e903",
+          "name": "Mapped spring · drinkability unknown",
+          "lat": 46.94501546020261,
+          "lon": 10.319832909682404
+        },
+        {
+          "id": "swisstlm3d:82224945-106d-4143-a893-b984f86b0fbb",
+          "name": "Funtana Dadora",
+          "lat": 46.921848915357074,
+          "lon": 10.480381634092007
+        }
+      ]
+    }
+  ]
+}

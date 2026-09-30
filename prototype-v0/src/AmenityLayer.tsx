@@ -8,6 +8,7 @@ import { clusterAmenities } from "./amenityClusters.ts";
 import { SERVICE_FILTERS, serviceLinks, serviceMatches, serviceSummary, type ServiceKind } from "./osmServices.ts";
 import type { Place } from "./routing.ts";
 import { amenityLocationLinks, amenitySourceLinks, locationSummary } from "./amenityLocation.ts";
+import { FACILITY_SOURCES, type FacilityLoad, type FacilityProvider } from "./facilitySources.ts";
 
 const GLYPH_PATHS = {
   water: 'M12 2C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-13Z',
@@ -46,9 +47,11 @@ function popup(facility: Amenity, category: AmenityCategory) {
 type Props = { category: AmenityCategory; map: L.Map | null; origin: Place | null; data?: AmenityData; records: readonly Amenity[];
   loading: boolean; error?: AmenityLoadError; retry: () => void; scope: ParkingRouteScope | null; alongJourney: boolean;
   active: boolean; onActivate: () => void; radius: number; sharedCategories: Map<string, AmenityCategory[]>;
+  sourceLoads: FacilityLoad[]; retrySource: (provider: FacilityProvider) => void;
+  includeTopographicWater: boolean; onTopographicWater: (enabled: boolean) => void;
   kinds?: ServiceKind[]; onKinds?: (kinds: ServiceKind[]) => void; onLocate: (facility: Amenity) => void };
 export default function AmenityLayer({ category, map, origin, data, records, loading, error, retry, scope, alongJourney,
-  active, onActivate, radius, sharedCategories, kinds, onKinds, onLocate }: Props) {
+  active, onActivate, radius, sharedCategories, kinds, onKinds, onLocate, sourceLoads, retrySource, includeTopographicWater, onTopographicWater }: Props) {
   const service = category === "repairs" || category === "food" ? category : null;
   const label = { water: "Water fountains", toilets: "Toilets", repairs: "Repairs and bike shops", food: "Food and drinks" }[category];
   const closestLabel = { water: "drinking water", toilets: "toilet", repairs: "matching bicycle service", food: "matching food stop" }[category];
@@ -71,8 +74,8 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
       layer.clearLayers();
       const bounds = map.getBounds().pad(.1), zoom = map.getZoom();
       const candidates = visible.filter(f => f.id !== closest?.facility.id && bounds.contains([f.lat, f.lon]) && (service || alongJourney || zoom >= 13));
-      const groups = service && zoom < 17 ? clusterAmenities(candidates, f => map.project([f.lat, f.lon], zoom))
-        : candidates.map(f => ({ lat: f.lat, lon: f.lon, facilities: [f] }));
+      const zoomGroups = !!service && zoom < 17;
+      const groups = clusterAmenities(candidates, f => map.project([f.lat, f.lon], zoom), zoomGroups ? 52 : 24);
       const limited = groups.length > 1000;
       const drawPoint = (facility: Amenity, isClosest: boolean) => {
         const style = amenityStyle(facility, category, kinds), shared = sharedCategories.get(facility.id) ?? [category];
@@ -86,10 +89,22 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
       };
       for (const group of groups.slice(0, 1000)) {
         if (group.facilities.length === 1) { drawPoint(group.facilities[0], false); continue; }
-        const title = `${group.facilities.length} ${service === "repairs" ? "bicycle services" : "food stops"} · zoom in to explore`;
-        L.marker([group.lat, group.lon], { icon: icon(category, AMENITY_STYLES[service!].color, false, 0, group.facilities.length),
+        const title = `${group.facilities.length} ${label.toLowerCase()} records · ${zoomGroups ? "zoom in to explore" : "inspect locations, floors and sources"}`;
+        const marker = L.marker([group.lat, group.lon], { icon: icon(category, service ? AMENITY_STYLES[service].color : AMENITY_STYLES[category === "water" ? "waterUnknown" : "toiletUnknown"].color, false, 0, group.facilities.length),
           title, alt: title, bubblingMouseEvents: false, zIndexOffset: 300 })
-          .bindTooltip(textNode(title)).on("click", () => map.fitBounds(L.latLngBounds(group.facilities.map(f => [f.lat, f.lon])), { padding: [60, 100], maxZoom: 17 })).addTo(layer);
+          .bindTooltip(textNode(title)).addTo(layer);
+        if (zoomGroups) marker.on("click", () => map.fitBounds(L.latLngBounds(group.facilities.map(f => [f.lat, f.lon])), { padding: [60, 100], maxZoom: 17 }));
+        else {
+          const content = document.createElement("div");
+          content.append(textNode("Nearby source records may describe different floors or the same facility."));
+          for (const facility of group.facilities.slice(0, 50)) {
+            const details = document.createElement("details"), summary = document.createElement("summary");
+            summary.textContent = [facility.name, locationSummary(facility), amenityStyle(facility, category, kinds).label].filter(Boolean).join(" · ");
+            details.append(summary, popup(facility, category)); content.append(details);
+          }
+          if (group.facilities.length > 50) content.append(textNode("Zoom in to separate more records."));
+          marker.bindPopup(content, { maxHeight: 350, maxWidth: 360 });
+        }
       }
       if (closest) drawPoint(closest.facility, true);
       setMapNote(limited ? "Zoom in to see all markers in this area." : service && zoom < 17 ? "Numbered markers group nearby places. Select a group to zoom in." : !alongJourney && zoom < 13 ? "Zoom in to see local points. Closest searches all eligible records at any zoom." : "");
@@ -108,6 +123,8 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
       {SERVICE_FILTERS[service].map(item => <label key={item.kind}><input type="checkbox" checked={kinds.includes(item.kind)}
         onChange={e => onKinds(e.target.checked ? [...kinds, item.kind] : kinds.filter(k => k !== item.kind))} />{item.label}</label>)}
     </fieldset>}
+    {category === "water" && <label className="service-filters"><input type="checkbox" checked={includeTopographicWater}
+      onChange={event => onTopographicWater(event.target.checked)} /> Show topographic fountains and springs (drinkability unknown)</label>}
     <ul className="parking-legend" aria-label={`${label} colours`}>
       {legend.map(style => <li key={style.label}><b className={`amenity-badge amenity-${category}`} style={{ backgroundColor: style.color }} aria-hidden="true">
         <AmenityGlyph category={category} /></b>{style.label}</li>)}
@@ -116,6 +133,8 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
       {loading && <p>Loading OpenStreetMap {service ?? "water and toilet"} data…{visible.length > 0 && " Closest uses the records currently available."}</p>}
       {error && <p>{error.message} <button type="button" onClick={retry}>Retry loading</button></p>}
       {error && visible.length > 0 && <p>Some selected data is missing. Closest searches only the loaded records.</p>}
+      {sourceLoads.some(l => l.status === "idle" || l.status === "loading") && <p>Additional sources are loading. Closest uses the records currently available.</p>}
+      {sourceLoads.some(l => l.status === "error") && <p>Some additional sources could not be loaded. Closest searches only the loaded records; see source details below.</p>}
       {error && ["session", "access", "network"].includes(error.code) && <p><a href="/" target="_blank" rel="noreferrer">Open planner in its own tab</a></p>}
       {(data || visible.length > 0) && <p>{visible.length.toLocaleString("en-GB")} loaded {category === "water" ? "water points" : category === "toilets" ? "toilet records" : "matching places"}{alongJourney ? ` within about ${radius} m of the selected paths and journey endpoints/stops` : " across the available sources"}.</p>}
       {alongJourney && scope?.incomplete && <p>Some sections have no confirmed street path; only their known endpoints are searched.</p>}
@@ -141,7 +160,17 @@ export default function AmenityLayer({ category, map, origin, data, records, loa
         {data ? <> · downloaded {new Date(data.fetchedAt).toLocaleDateString("en-GB")}{data.stale && " · showing older data after a failed refresh"}</> : loading ? " · loading" : " · not loaded"}</p>
       {facilities.some(f => f.id.startsWith("local:")) && <p>Includes reviewed additions. User reports and approximate building locations are labelled in each place’s details; they are not on-site verification.</p>}
       {facilities.some(f => f.additionalSources?.some(s => s.kind === "document")) && <p>Some locations include additional document sources and plan links. Their review dates are shown in the details.</p>}
-      <p>{category === "water" ? "Mapped water information is not a live quality or flow check; follow local signs. " : "Access, fees and opening hours can change. "}Coverage is incomplete. Closest excludes known closures and restricted entry{service ? "; ordinary customer access is included" : ""}; missing access information stays unknown. Distances use points/area centres, not verified entrances. Your journey stays unchanged.</p>
+      {([...new Set(sourceLoads.map(l => l.provider))]).map(provider => {
+        const jobs = sourceLoads.filter(l => l.provider === provider), ready = jobs.filter(l => l.status === "ready"), failed = jobs.filter(l => l.status === "error");
+        const count = ready.reduce((n, l) => n + (l.data?.facilities.filter(f => f.categories.includes(category)).length ?? 0), 0);
+        return <div key={provider}><p><a href={FACILITY_SOURCES[provider].url} target="_blank" rel="noreferrer">{FACILITY_SOURCES[provider].label}</a>
+          {` · ${ready.length}/${jobs.length} feeds loaded · ${count} ${category} records`}{jobs.some(l => l.data?.stale) && " · refresh failed; showing older data"}</p>
+          <p>{FACILITY_SOURCES[provider].scope}</p>
+          {failed.length > 0 && <details><summary>{failed.length} unavailable feeds</summary><ul>{failed.map(l => <li key={l.key}>{l.label}: {l.error}</li>)}</ul>
+            <button type="button" onClick={() => retrySource(provider)}>Retry missing sources</button></details>}
+        </div>;
+      })}
+      <p>{category === "water" ? "Mapped water information is not a live quality or flow check; follow local signs. " : "Access, fees and opening hours can change. "}Coverage is incomplete; records from different sources may overlap. Closest excludes known closures and restricted entry{service ? "; ordinary customer access is included" : ""}; missing access information stays unknown. Distances use points/area centres, not verified entrances. Your journey stays unchanged.</p>
     </div>
   </section>;
 }
