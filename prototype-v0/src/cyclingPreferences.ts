@@ -4,7 +4,7 @@ export type RoutePreference = typeof ROUTE_PREFERENCES[number];
 export const routePreferenceLabels: Record<RoutePreference, string> = {
   fastest: "Fastest", simplest: "Simplest · fewer turns", "lower-stress": "Lower traffic stress",
 };
-export function routeStress(route: CyclingRoute) {
+function routeStress(route: CyclingRoute) {
   let score = 0;
   for (const section of route.sections) {
     const length = section.endM - section.startM;
@@ -20,7 +20,7 @@ export function routeStress(route: CyclingRoute) {
   }
   return score;
 }
-export const allowedDetourMinutes = (fastestMinutes: number) => Math.min(15, Math.max(5, fastestMinutes * .2));
+const allowedDetourMinutes = (fastestMinutes: number) => Math.min(15, Math.max(5, fastestMinutes * .2));
 export function chooseCyclingRoute(candidates: CyclingRoute[], preference: RoutePreference): CyclingRoute | null {
   const usable = candidates.filter(r => !r.blocked && Number.isFinite(r.minutes)).sort((a, b) => a.minutes - b.minutes);
   if (!usable.length) return null;

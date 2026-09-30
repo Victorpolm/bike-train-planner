@@ -8,7 +8,7 @@ export const CYCLING_PRESETS = {
 } as const;
 export type CyclingPreset = keyof typeof CYCLING_PRESETS;
 export const DEFAULT_CYCLING_PACE: CyclingPace = { flatSpeedKmh: CYCLING_PRESETS.regular.flatSpeedKmh, electricAssist: false };
-export const MAX_PROFILE_SPEED_KMH = 45;
+const MAX_PROFILE_SPEED_KMH = 45;
 export const maxCyclingSpeed = (pace?: CyclingPace) => pace ? MAX_PROFILE_SPEED_KMH : 25;
 export function validateCyclingPace(pace: CyclingPace) {
   if (!Number.isFinite(pace.flatSpeedKmh) || pace.flatSpeedKmh < 8 || pace.flatSpeedKmh > 35
@@ -21,8 +21,8 @@ export function validateCyclingPace(pace: CyclingPace) {
 // E-bike support is a planning assumption: extra power on climbs, rising to
 // 250 W at 3% grade and fading linearly between 20 and 25 km/h.
 const GRAVITY = 9.81, ROLLING = .01, DRAG = .225;
-export const cyclingMass = (pace: CyclingPace) => pace.electricAssist ? 105 : 90;
-export function flatCyclingPower(pace: CyclingPace) {
+const cyclingMass = (pace: CyclingPace) => pace.electricAssist ? 105 : 90;
+function flatCyclingPower(pace: CyclingPace) {
   const v = pace.flatSpeedKmh / 3.6;
   return (cyclingMass(pace) * GRAVITY * ROLLING + DRAG * v * v) * v;
 }

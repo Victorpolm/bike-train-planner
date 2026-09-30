@@ -1,3 +1,4 @@
+import { normalizeName as normalized } from "./normalization.ts";
 import { applicableBicycleEvidence, bicyclePermission, type BicycleEvidence } from "./bicyclePermission.ts";
 import { busCarriage } from "./busCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
@@ -11,12 +12,11 @@ export type CarriageRule = {
   notes: string[];
   attributes: BicycleAttribute[];
 };
-export const SBB_BICYCLES = {
+const SBB_BICYCLES = {
   title: "SBB bicycle tickets and reservations",
   url: "https://www.sbb.ch/en/travel-information/individual-needs/travelling-with-bikes/carriage-bikes-train.html",
   checked: "2026-09-24",
 };
-const normalized = (text: string) => text.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
 
 // Only these reviewed service codes and the observed, explicit no-reservation
 // sentence establish a rule. Dynamic I_* codes alone never establish permission.

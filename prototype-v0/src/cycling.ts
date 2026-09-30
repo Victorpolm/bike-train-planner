@@ -11,7 +11,7 @@ export type CycleSection = {
   startM: number; endM: number; surface: Surface; infrastructure: Infrastructure;
   speedLimit: string; tags: Record<string, string>;
 } & Partial<TerrainSection>;
-export type SlopeSection = { startM: number; endM: number; gradePercent: number };
+type SlopeSection = { startM: number; endM: number; gradePercent: number };
 export type CyclingRoute = {
   id: string; from: Point; to: Point; points: CyclePoint[]; distanceKm: number;
   ridingSeconds: number; minutes: number; ascentM: number | null; descentM: number | null;
@@ -22,11 +22,11 @@ export type CyclingRoute = {
   turnCount?: number; preference?: RoutePreference; alternativesChecked?: number; preferenceNote?: string;
 };
 export const CYCLING_PROFILE = "trekking";
-export const MAX_CYCLING_SPEED_KMH = 25;
+const MAX_CYCLING_SPEED_KMH = 25;
 // Match BRouter's bounded waypoint search. Building/stop centroids need not
 // sit exactly on a way; the gap remains visible and consumes walking time.
 export const MAX_ENDPOINT_GAP_METRES = 250;
-export const CONNECTOR_WALKING_SPEED_KMH = 4;
+const CONNECTOR_WALKING_SPEED_KMH = 4;
 export class EndpointSnapError extends Error {
   constructor() {
     super(`The routed path is more than ${MAX_ENDPOINT_GAP_METRES} m from a selected point. Move that point closer to a road or path.`);
@@ -34,7 +34,7 @@ export class EndpointSnapError extends Error {
   }
 }
 export const STEEP_PERCENT = 6;
-export const FINAL_CLIMB_METRES = 2000;
+const FINAL_CLIMB_METRES = 2000;
 type Located = Point & { id?: string; stopId?: string };
 export const cyclingKey = (a: Point, b: Point) => `${a.lat.toFixed(6)},${a.lon.toFixed(6)}>${b.lat.toFixed(6)},${b.lon.toFixed(6)}`;
 export function samePlace(a: Located, b: Located) {

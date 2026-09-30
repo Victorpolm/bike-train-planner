@@ -2,9 +2,9 @@ import { swissDateTimeInput } from "./departure.ts";
 import { isSbb, sobMainlineRule } from "./operatorBicycleRules.ts";
 import type { TransitLeg } from "./routing.ts";
 
-export const ZVV_FARES = { title: "ZVV published single tickets", url: "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html", checked: "2026-09-27" };
-export const ZPASS_FARES = { title: "Z-Pass A-Welle–ZVV published single tickets", url: "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html", checked: "2026-09-27" };
-export const FARE_VALID_FROM = "2025-12-14", FARE_VALID_TO = "2026-12-12";
+const ZVV_FARES = { title: "ZVV published single tickets", url: "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html", checked: "2026-09-27" };
+const ZPASS_FARES = { title: "Z-Pass A-Welle–ZVV published single tickets", url: "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html", checked: "2026-09-27" };
+const FARE_VALID_FROM = "2025-12-14", FARE_VALID_TO = "2026-12-12";
 export type PublishedFare = { passengerFull: number; passengerHalf: number; bicycle: number; zones: string[];
   paidZones: number; validMinutes: number; source: typeof ZVV_FARES; from: string; to: string; validFrom: string; validTo: string };
 // Audited rail corridors, not a nationwide fare engine. Each edge includes the

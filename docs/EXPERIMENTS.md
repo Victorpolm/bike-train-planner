@@ -710,3 +710,12 @@ No browser interaction or field test is claimed. No new fare/routing benchmark w
 Other checks preserve exact transit objects and original journey JSON, select a cycling section by full geometry, keep unknown onward details unknown, reject unavailable/blocked partial paths, abort between or during links, retain endpoint-gap disclosure and reject non-potable/restricted stops. Editing visit duration reuses the two route results.
 
 **Release:** private version 41 succeeded on 30 September 2026 at 17:12:53 UTC, environment revision 3, Site source `c68854db9e257e97b6e9f891f01ab18283d234fd`. Browser interaction/visual checks are not claimed: the managed browser-control skill is unavailable. Live cycling-provider detours were not exercised. [Implementation and manual acceptance check](FACILITY_DETOURS_2026-09-30.md).
+
+
+## 2026-09-30 — Review regression sweep, permission cache and engine fixture
+
+**Offline gate:** 300 tests in 11 suites and TypeScript/frontend/Worker builds pass. Mixed rail/bus fixtures use non-station endpoints and parsed cycling durations; 84 per-case monotonic comparisons retain unreachable cases and reject truncated searches. Separate checks exercise pace changes, Baseline inclusion and replacing evidence with a prohibition after warming the cache. Mutation tests include nested source/conditions edits, `Date.setTime` and changed geographic rules. Knip is clean.
+
+**Local diagnostics:** seven samples of 280 mixed-mode legs show median permission passes 5.59 ms uncached / 1.41 ms cached and cold/warm model comparisons 1.90 / 0.71 ms. These are synthetic local observations, not full-search speedups. [Raw measurements](experiments/review-permission-benchmark-2026-09-30.json).
+
+**Local engine comparison:** MOTIS 2.11.3 and the current solver share a synthetic three-service fixture. Strict allowed and unrestricted prohibited winners agree; an unknown-permission winner disappears from MOTIS's unrestricted Pareto result, so postfiltering cannot implement our middle scope. One transit-stop via passes. Other migration criteria remain untested. [Raw result](experiments/motis-permission-pilot-2026-09-30.json) · [reproduction and limitations](REVIEW_IMPLEMENTATION_2026-09-30.md). No public routing API requests or Swiss live-provider retests were made.

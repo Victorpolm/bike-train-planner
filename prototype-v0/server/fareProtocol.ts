@@ -1,3 +1,4 @@
+import { normalizeName } from "../src/normalization.ts";
 import { XMLBuilder, XMLParser, XMLValidator } from "fast-xml-parser";
 import type { FareSegment, FareOffer } from "../src/onlineFare.ts";
 
@@ -65,7 +66,7 @@ export function fareTrips(xml: string): FareTrip[] {
   });
 }
 export function matchesFareSegment(s: FareSegment, e: FareSegment): boolean {
-  const name = (n?: string) => n?.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
+  const name = normalizeName;
   const sameStop = (a: FareSegment, b: FareSegment, role: "from" | "to") => {
     if (a[role] === b[role]) return true;
     const ap = a[`${role}Point`], bp = b[`${role}Point`];

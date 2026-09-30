@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-09-30T21:51:21Z",
+  "motis": "v2.11.3",
+  "fixture": "Synthetic three-service GTFS; station endpoints; one date; no street network",
+  "currentSolver": {
+    "confirmed": {
+      "service": "OK",
+      "arrival": "2026-10-01T06:40:00.000Z"
+    },
+    "allow-uncertain": {
+      "service": "UNKNOWN",
+      "arrival": "2026-10-01T06:30:00.000Z"
+    },
+    "all-transit": {
+      "service": "NO",
+      "arrival": "2026-10-01T06:20:00.000Z"
+    }
+  },
+  "motisStrict": [
+    {
+      "arrival": "2026-10-01T06:40:00Z",
+      "services": [
+        "OK"
+      ]
+    }
+  ],
+  "motisUnrestricted": [
+    {
+      "arrival": "2026-10-01T06:20:00Z",
+      "services": [
+        "NO"
+      ]
+    }
+  ],
+  "motisViaStop": [
+    {
+      "arrival": "2026-10-01T06:40:00Z",
+      "services": [
+        "OK"
+      ]
+    }
+  ],
+  "postfilterProhibitedFromUnrestricted": [],
+  "conclusion": "A simple boolean request plus result postfilter cannot reproduce the middle bicycle scope on this fixture.",
+  "notTested": [
+    "Swiss feed coverage",
+    "intermediate cycling",
+    "coordinate waypoints",
+    "category completeness",
+    "national performance",
+    "fares"
+  ]
+}

@@ -15,7 +15,7 @@ export const SERVICE_FILTERS: Record<ServiceCategory, { kind: ServiceKind; label
     { kind: "restaurant", label: "Restaurants / takeaway", default: false },
   ],
 };
-export const FOOD_VENDING = ["food", "drinks", "snacks", "sweets", "water", "bread", "sandwiches", "milk", "cheese", "eggs", "fruit", "ice_cream", "coffee", "tea", "pizza"];
+const FOOD_VENDING = ["food", "drinks", "snacks", "sweets", "water", "bread", "sandwiches", "milk", "cheese", "eggs", "fruit", "ice_cream", "coffee", "tea", "pizza"];
 const tokens = (value?: string) => (value ?? "").toLowerCase().split(";").map(v => v.trim()).filter(Boolean);
 const groceries = ["supermarket", "convenience", "grocery", "greengrocer", "farm", "food"];
 // Fixed Swiss regional queries: user coordinates, routes and arbitrary queries are never sent upstream.

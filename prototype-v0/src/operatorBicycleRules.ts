@@ -1,3 +1,4 @@
+import { normalizeCode as norm, operatorCode } from "./normalization.ts";
 import type { TransitLeg } from "./routing.ts";
 
 export const SOB_BICYCLES = { title: "SOB bicycle carriage", url: "https://unterwegs.sob.ch/de/stories/velotransport", checked: "2026-09-24" };
@@ -9,8 +10,8 @@ export const SOB_RESERVATIONS = { title: "SOB: bicycle reservations are not avai
 // A dated prohibition always takes precedence over this published operator rule.
 export function sobMainlineRule(leg: TransitLeg) {
   return leg.mode === "transit" && Number.isFinite(leg.departure?.getTime())
-    && ["SOB", "SOB-SOB", "SCHWEIZERISCHE SÜDOSTBAHN", "SCHWEIZERISCHE SÜDOSTBAHN AG", "OJP:82"].includes(leg.operator?.trim().toUpperCase() ?? "")
-    && ["IR", "PE"].includes(leg.category?.toUpperCase() ?? "");
+    && operatorCode(leg.operator) === "SOB"
+    && ["IR", "PE"].includes(norm(leg.category));
 }
 
 export const SBB_IR_BICYCLES = { title: "SBB: bicycles on InterRegio services",
@@ -18,12 +19,12 @@ export const SBB_IR_BICYCLES = { title: "SBB: bicycles on InterRegio services",
 export function sbbInterRegioRule(leg: TransitLeg) {
   // Limit this reviewed default to domestic SBB IR legs. Do not extrapolate it
   // to international trains, peak-hour S-Bahn/RE restrictions or replacements.
-  return leg.mode === "transit" && Number.isFinite(leg.departure?.getTime()) && leg.category?.toUpperCase() === "IR"
-    && ["SBB", "SBB CFF FFS", "CFF", "FFS", "OJP:11"].includes(leg.operator?.trim().toUpperCase() ?? "")
+  return leg.mode === "transit" && Number.isFinite(leg.departure?.getTime()) && norm(leg.category) === "IR"
+    && operatorCode(leg.operator) === "SBB"
     && /^85\d{5}$/.test(leg.fromId ?? "") && /^85\d{5}$/.test(leg.toId ?? "");
 }
 
-export type RuleSource = { title: string; url: string; checked: string };
+type RuleSource = { title: string; url: string; checked: string };
 export type OperatorBicycleRule = {
   permission: "allowed" | "unknown" | "prohibited";
   reservation: "required" | "not-required" | "unknown";
@@ -31,13 +32,12 @@ export type OperatorBicycleRule = {
   source: RuleSource;
   instructions: string[];
 };
-export const BLS_BICYCLES: RuleSource = { title: "BLS bicycle tickets and carriage conditions",
+const BLS_BICYCLES: RuleSource = { title: "BLS bicycle tickets and carriage conditions",
   url: "https://www.bls.ch/en/fahren/fahrgastinformation/velofahrende/velomitnahme", checked: "2026-09-25" };
-export const RHB_BICYCLES: RuleSource = { title: "RhB Rail & Bike",
+const RHB_BICYCLES: RuleSource = { title: "RhB Rail & Bike",
   url: "https://www.rhb.ch/en/transport/rail-bike/", checked: "2026-09-25" };
-const norm = (s?: string | null) => s?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
 export function isSbb(leg: TransitLeg) {
-  return ["SBB", "SBB CFF FFS", "CFF", "FFS", "OJP:11"].includes(norm(leg.operator));
+  return operatorCode(leg.operator) === "SBB";
 }
 export function domesticSwissLeg(leg: TransitLeg) {
   return /^85\d{5}$/.test(leg.fromId ?? "") && /^85\d{5}$/.test(leg.toId ?? "");
@@ -49,10 +49,10 @@ function localDate(date: Date) {
   return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"),
     weekday: new Date(Date.UTC(get("year"), get("month") - 1, get("day"))).getUTCDay() };
 }
-export function regionalBicycleWindow(leg: TransitLeg): { morning: [number, number]; label: string } {
+function regionalBicycleWindow(leg: TransitLeg): { morning: [number, number]; label: string } {
   const names = [leg.from, leg.to].join(" ");
   const points = [leg.fromPoint, leg.toPoint].filter(p => p !== undefined);
-  const zurich = leg.category?.toUpperCase() === "S" && (/\bZürich\b|\bWinterthur\b|\bStadelhofen\b|\bUrdorf\b|\bBirmensdorf ZH\b/.test(names)
+  const zurich = norm(leg.category) === "S" && (/\bZürich\b|\bWinterthur\b|\bStadelhofen\b|\bUrdorf\b|\bBirmensdorf ZH\b/.test(names)
     || points.length === 2 && points.every(p => p.lat >= 47.15 && p.lat <= 47.7 && p.lon >= 8.2 && p.lon <= 8.95));
   const ticino = /\bLugano\b|\bBellinzona\b|\bLocarno\b|\bChiasso\b|\bMendrisio\b/.test(names)
     || points.length === 2 && points.every(p => p.lat >= 45.8 && p.lat <= 46.35 && p.lon >= 8.6 && p.lon <= 9.15);
@@ -99,7 +99,7 @@ export function sbbIcReservation(leg: TransitLeg): "required" | "not-required" |
 // Exact dated restrictions are resolved separately and always take precedence.
 export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null {
   if (leg.mode !== "transit" || !leg.departure || !Number.isFinite(leg.departure.getTime())) return null;
-  const category = norm(leg.category), operator = norm(leg.operator);
+  const category = norm(leg.category), operator = operatorCode(leg.operator);
   if (["EV", "SEV"].includes(category) || /replacement|ersatz|remplacement/i.test(`${leg.service} ${leg.serviceName ?? ""}`)) return null;
   if (["SZU", "SZU-SZU", "SIHLTAL ZÜRICH UETLIBERG BAHN"].includes(operator)
     && /^S\s*10$/.test(norm(leg.service)) && leg.from !== leg.to
@@ -110,12 +110,12 @@ export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null
   if (sobMainlineRule(leg)) return { permission: "allowed", reservation: "not-required", ticket: "required", source: SOB_BICYCLES,
     instructions: ["Use a bicycle ticket or pass and the designated bicycle compartment. Load and unload the bicycle yourself.",
       "Bicycle spaces on these SOB services cannot be reserved. Carriage depends on space."] };
-  if (["BLS", "BLS-BLS", "BLS AG", "OJP:33"].includes(operator) && ["S", "R", "RE", "IR", "B", "BUS", "BAT", "SHIP", "BOAT"].includes(category)) {
+  if (operator === "BLS" && ["S", "R", "RE", "IR", "B", "BUS", "BAT", "SHIP", "BOAT"].includes(category)) {
     return { permission: "allowed", reservation: "not-required", ticket: "required", source: BLS_BICYCLES,
       instructions: ["A bicycle ticket or pass is required. BLS carries bicycles without reservation, when space permits.",
         "Load your bicycle yourself; use its designated area and give priority to wheelchairs and pushchairs."] };
   }
-  if (["RHB", "RHB-RHB", "RHÄTISCHE BAHN", "RHÄTISCHE BAHN AG", "OJP:72"].includes(operator)
+  if (operator === "RHB"
     && ["S", "R", "RE", "IR"].includes(category) && domesticSwissLeg(leg)) {
     return { permission: "allowed", reservation: "unknown", ticket: "required", source: RHB_BICYCLES,
       instructions: ["Carry your passenger ticket and a bicycle ticket or pass. Load and unload the bicycle yourself in the marked compartment or luggage car.",

@@ -7,7 +7,7 @@ import { fallbackCycling } from "./cyclingFallback.ts";
 import { applySwisstopo, simplifyTopoLine, type TopoReply } from "./swisstopo.ts";
 import { chooseCyclingRoute, type RoutePreference } from "./cyclingPreferences.ts";
 
-export const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
+const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
 const cache = new Map<string, CyclingRoute>();
 type Located = Point & { id?: string; stopId?: string; label?: string; name?: string };
 type CyclingFailureKind = "service" | "no-route" | "off-network" | "limit";

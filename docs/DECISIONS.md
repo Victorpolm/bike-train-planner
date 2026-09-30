@@ -529,3 +529,12 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 Unknown/non-potable water and mapped restricted/unavailable facilities cannot be suggested as stops. Coordinates do not establish a verified entrance or indoor route. Applying/saving a preview, multiple facilities, verified opening, broken-bike pushing-only routing and original search-budget validation remain later work.
 
 **Verification and release:** 290 tests in 11 suites and production builds pass. Owner-private version 41 succeeded at 17:12:53 UTC, environment revision 3, Site source `c68854db9e257e97b6e9f891f01ab18283d234fd`. Browser interaction QA and live provider detour tests were unavailable/not run. [Evidence and limits](FACILITY_DETOURS_2026-09-30.md).
+
+
+## 2026-09-30 — Apply the approved external-review corrections
+
+**Decision:** Automatically frame completed detours and remove the two redundant controls while retaining keyboard location selection. Share exact operator/name normalization, invalidate cached permissions whenever rule/evidence inputs change, extract timetable acquisition and adopt automatic offline CI/Knip plus separately committed React formatting.
+
+**Cleanup boundary:** Remove only demonstrated dead code/unused exports. Keep the boarding buffer, BLS/RhB/regional rules, fare tables, journey IDs and search label cap. No identity-only cache or claimed 27× full-search speedup.
+
+**Engine decision:** The local MOTIS 2.11.3 pilot preserves strict/unrestricted winners but cannot recover the middle-scope winner by postfiltering an unrestricted result. Keep the deployed engine and require pre-routing three-state handling, coordinate-waypoint/intermediate-cycling and category tests before any migration. 300 tests/builds pass; browser QA remains unavailable. [Implementation, reproducible pilot and caveats](REVIEW_IMPLEMENTATION_2026-09-30.md).

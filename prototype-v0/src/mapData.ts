@@ -4,7 +4,7 @@ import { busCarriage, busCarriageLabel } from "./busCarriage.ts";
 import { bicyclePermissionLabel } from "./bicyclePermission.ts";
 
 export type ExploredStop = Stop & { notes: string[] };
-export type StopEvent = {
+type StopEvent = {
   action: "Board" | "Alight";
   boarding: number;
   service: string;

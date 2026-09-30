@@ -9,7 +9,7 @@ const json = (data: unknown, status = 200) => new Response(JSON.stringify(data),
   headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
 const stop = (v: unknown) => typeof v === "string" && /^(?:85\d{5}|ch:1:sloid:\d+(?::[\w-]+)*)$/.test(v);
 const instant = (v: unknown): v is string => typeof v === "string" && v.length < 40 && /T.*(?:Z|[+-]\d\d:\d\d)$/.test(v) && Number.isFinite(Date.parse(v));
-export function validFareQuery(v: any): v is FareQuery {
+function validFareQuery(v: any): v is FareQuery {
   return v && ["full", "half-fare", "ga"].includes(v.passenger) && typeof v.bicycle === "boolean"
     && Array.isArray(v.segments) && v.segments.length > 0 && v.segments.length <= 8
     && v.segments.every((s: any, i: number) => s && stop(s.from) && stop(s.to) && instant(s.departure) && instant(s.arrival)

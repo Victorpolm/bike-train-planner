@@ -8,9 +8,9 @@ import type { RoutePreference } from "./cyclingPreferences";
 const clock = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Zurich", hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" });
 const signed = (value: number, unit: "min" | "km") => `${value >= 0 ? "+" : "−"}${unit === "km" ? Math.abs(value).toFixed(1) : Math.ceil(Math.abs(value))} ${unit}`;
 type Props = { facility: DetourFacility; stages: DetourStage[]; pace?: CyclingPace; preference?: RoutePreference;
-  onRoutes: (routes: DetourRoutes | null) => void; onShow: () => void; onClose: () => void };
+  onRoutes: (routes: DetourRoutes | null) => void; onClose: () => void };
 
-export default function DetourPanel({ facility, stages, pace, preference, onRoutes, onShow, onClose }: Props) {
+export default function DetourPanel({ facility, stages, pace, preference, onRoutes, onClose }: Props) {
   const [stageId, setStageId] = useState(() => nearestDetourStage(stages, facility)?.id);
   const stage = stages.find(s => s.id === stageId) ?? stages[0];
   const [visit, setVisit] = useState("5");
@@ -66,7 +66,6 @@ export default function DetourPanel({ facility, stages, pace, preference, onRout
         {timing.status === "unknown" && <p><b>Connection timing cannot be checked.</b> Some onward leg details are missing. Do not assume this detour fits the selected service.</p>}
         {timing.status === "no-connection" && <p>No onward public-transport connection to catch. Estimated destination arrival with this detour: <b>{clock.format(timing.arrival)}</b>.</p>}
       </div>
-      <button type="button" onClick={onShow}>Show detour on map</button>
       <p>The dashed purple path is the preview. Other cycling sections, intermediate stops and transit legs stay as selected.</p>
       <p>{facility.note ?? "The route reaches the mapped location; check access and opening hours."} {timing.facilityGapM > 1 && <>The nearest routed path is up to {Math.ceil(timing.facilityGapM)} m from this pin; estimated walking connectors are included.</>}</p>
       <p className="detour-source">Cycling: {Array.from(new Set(current.routes.map(r => r.source))).join(" + ")}. Travel times include mapped pushing, carrying and endpoint connectors where known. Indoor walking is not estimated.</p>

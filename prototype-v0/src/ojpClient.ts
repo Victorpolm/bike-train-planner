@@ -1,3 +1,4 @@
+import { normalizeName as normalize } from "./normalization.ts";
 import { haversineKm, type TransitLeg } from "./routing.ts";
 import type { BicycleEvidence } from "./bicyclePermission.ts";
 import type { Network, Stop } from "./model.ts";
@@ -5,7 +6,6 @@ import type { OjpConnections, OjpDetails, OjpReference, OjpStop } from "./ojp.ts
 import { fetchJson } from "./http.ts";
 
 const SOURCE = "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/";
-const normalize = (s: string) => s.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ");
 export function addOjpConnections(network: Network, data: OjpConnections) {
   const stop = (s: OjpStop): Stop => {
     // Provider centroids can represent different platforms of the same large

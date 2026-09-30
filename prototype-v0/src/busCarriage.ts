@@ -1,3 +1,4 @@
+import { normalizeCode as normalize, operatorCode } from "./normalization.ts";
 import type { TransitLeg } from "./routing.ts";
 
 export type BusPreference = "known-rules" | "include-unknown" | "no-buses";
@@ -16,7 +17,6 @@ export type BusCarriage = {
 const POSTBUS = { title: "PostBus bicycle rules", url: "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike", checked: "2026-09-24" };
 const ZVV = { title: "ZVV bicycle rules", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-24" };
 const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/helpful-tips/cyclists", checked: "2026-09-24" };
-const normalize = (value?: string | null) => value?.trim().toUpperCase().replace(/\s+/g, " ") ?? "";
 const postbus = new Set(["PAG", "POSTAUTO", "POSTAUTO AG", "POSTBUS", "OJP:801"]);
 const zvvOperators: Record<string, string> = {
   VBZ: "VBZ", "VERKEHRSBETRIEBE ZÜRICH": "VBZ", VBG: "VBG", "VERKEHRSBETRIEBE GLATTAL": "VBG",
@@ -36,7 +36,7 @@ export function isBus(leg: TransitLeg): boolean {
 // Conditions (ticket, space) are separate; dated prohibitions take precedence.
 export function busCarriage(leg: TransitLeg): BusCarriage | null {
   if (!isBus(leg) && !(leg.mode === "transit" && ["T", "TRAM"].includes(normalize(leg.category)))) return null;
-  const operator = normalize(leg.operator);
+  const operator = operatorCode(leg.operator);
   const unknown: BusCarriage = {
     permission: "unknown", operator: leg.operator || "Operator not supplied",
     reservation: "unknown", reservationAvailability: "unknown", capacity: "unknown", ticket: "unknown",

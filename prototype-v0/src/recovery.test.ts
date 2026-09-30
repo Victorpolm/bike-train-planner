@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { it, mock } from "node:test";
-import { plan, searchWarnings, TimetableClient } from "./api.ts";
+import { plan, searchWarnings } from "./api.ts";
+import { TimetableClient } from "./timetableClient.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import { cyclingKey } from "./cycling.ts";
 import { DEFAULT_OPTIONS, categorize, metrics, type Stop } from "./model.ts";

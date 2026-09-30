@@ -5,7 +5,7 @@ export type TravelMode = "cycle" | "push" | "carry" | "blocked";
 export type TerrainSection = { mode: TravelMode; reasons: string[]; pathType: string; seconds: number };
 const yes = (value?: string) => ["yes", "designated", "permissive", "official"].includes(value ?? "");
 const forbidden = (value?: string) => ["no", "private"].includes(value ?? "");
-export function pathType(tags: Record<string, string>) {
+function pathType(tags: Record<string, string>) {
   if (yes(tags.route_mtb) || tags.route === "mtb") return "Mapped MTB route";
   if (tags.highway === "steps") return "Stairs";
   if (tags.highway === "cycleway") return "Cycleway";

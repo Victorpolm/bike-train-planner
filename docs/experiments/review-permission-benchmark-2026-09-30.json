@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-09-30T21:43:33.181Z",
+  "node": "v24.19.0",
+  "fixture": "synthetic mixed rail/bus, non-station endpoints, routed cycling durations",
+  "legs": 280,
+  "samples": 7,
+  "permissionPasses": 10,
+  "permissionMedianMs": 5.589607000000001,
+  "cachedPermissionMedianMs": 1.4117860000000064,
+  "comparisonColdCacheMedianMs": 1.8963959999999815,
+  "comparisonWarmCacheMedianMs": 0.7100989999999854,
+  "caveat": "Cold/warm Baseline+Extended comparison on one synthetic graph; not a live full-search speedup or the PDF benchmark."
+}

@@ -4,7 +4,8 @@ import { bicycleLegAllowed, bicyclePermission, type BicycleEvidence } from "./bi
 import { DEFAULT_OPTIONS, emptyNetwork, solve, type Network, type Options } from "./model.ts";
 import { solveWaypoints } from "./waypoints.ts";
 import { recommend, compareCycling, waitingMinutes } from "./recommendations.ts";
-import { findCandidateStations, plan, selectStationPairs, TimetableClient } from "./api.ts";
+import { findCandidateStations, plan, selectStationPairs } from "./api.ts";
+import { TimetableClient } from "./timetableClient.ts";
 import type { CyclingComparison, Journey, Place, TransitLeg } from "./routing.ts";
 
 const start = new Date("2026-09-21T08:00:00+02:00");

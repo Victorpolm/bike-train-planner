@@ -42,7 +42,7 @@ export async function nameMapPlace(point: Point, signal: AbortSignal, fetcher: t
 
 export type TransportLocation = { id: string | null; name: string; icon?: string | null;
   coordinate?: { x: number | null; y: number | null } };
-export const normalizePlace = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const normalizePlace = (text: string) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 export const KNOWN_PLACES: Place[] = [
   ...MAJOR_STATIONS.map(s => ({ lat: s.lat, lon: s.lon, label: s.name, stopId: s.id, kind: "train" })),
   // Coordinates from the recorded Zürich–Laax provider response in fixtures/.
@@ -59,7 +59,7 @@ function validPoint(lat: unknown, lon: unknown): boolean {
   return typeof lat === "number" && Number.isFinite(lat) && Math.abs(lat) <= 90 &&
     typeof lon === "number" && Number.isFinite(lon) && Math.abs(lon) <= 180;
 }
-export function transportPlaces(data: { stations?: TransportLocation[] }): Place[] {
+function transportPlaces(data: { stations?: TransportLocation[] }): Place[] {
   return (Array.isArray(data.stations) ? data.stations : []).filter(s => s.name && validPoint(s.coordinate?.x, s.coordinate?.y))
     .map(s => ({ label: s.name, lat: s.coordinate!.x!, lon: s.coordinate!.y!, stopId: s.id ?? undefined, kind: s.icon ?? undefined }));
 }
@@ -71,7 +71,6 @@ function uniquePlaces(lists: Place[][]): Place[] {
   }
   return [...unique.values()];
 }
-export function mergePlaces(...lists: Place[][]): Place[] { return uniquePlaces(lists).slice(0, 8); }
 const words = (text: string) => normalizePlace(text).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
 function matchingWords(query: string, place: Place): number {
   const candidate = words(`${place.label} ${place.detail ?? ""}`);
@@ -81,7 +80,7 @@ function matchesWholeQuery(query: string, place: Place): boolean {
   const count = words(query).length;
   return count > 0 && matchingWords(query, place) === count;
 }
-export function rankPlaces(query: string, places: Place[]): Place[] {
+function rankPlaces(query: string, places: Place[]): Place[] {
   const key = words(query).join(" ");
   const score = (place: Place) => (matchesWholeQuery(query, place) ? 1000 : 0) + matchingWords(query, place) * 20
     + (words(place.label).join(" ") === key ? 100 : words(place.label).join(" ").startsWith(key) ? 50 : 0);

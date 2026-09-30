@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/build-worker.mjs",
     "preview": "vite preview",
-    "test": "node --test src/*.test.ts"
+    "test": "node --test src/*.test.ts",
+    "check:unused": "knip",
+    "format": "prettier --write \"src/**/*.tsx\"",
+    "format:check": "prettier --check \"src/**/*.tsx\""
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.1",
@@ -21,6 +24,8 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.3.4",
+    "knip": "6.39.0",
+    "prettier": "3.9.9",
     "typescript": "^5.8.3",
     "vite": "^6.1.0"
   }

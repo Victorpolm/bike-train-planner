@@ -1,3 +1,4 @@
+import { normalizeCode, operatorCode } from "./normalization.ts";
 import { carriageForLeg } from "./bicycleCarriage.ts";
 import { domesticSwissLeg, isSbb, sobMainlineRule } from "./operatorBicycleRules.ts";
 import { swissDateTimeInput } from "./departure.ts";
@@ -19,8 +20,8 @@ export function bikeDayPrice(date: Date): number | null {
   return day >= "2026-01-01" && day <= "2026-12-12" ? 15 : day >= "2026-12-13" && day <= "2027-12-11" ? 16 : null;
 }
 export function nationalBikeTariff(leg: TransitLeg) {
-  return domesticSwissLeg(leg) && (isSbb(leg) || sobMainlineRule(leg) || ["BLS", "BLS-BLS", "BLS AG", "OJP:33"].includes(leg.operator?.toUpperCase() ?? ""))
-    && ["IC", "IR", "RE", "S", "R", "EC", "ICE", "RJX", "PE"].includes(leg.category?.toUpperCase() ?? "");
+  return domesticSwissLeg(leg) && (isSbb(leg) || sobMainlineRule(leg) || operatorCode(leg.operator) === "BLS")
+    && ["IC", "IR", "RE", "S", "R", "EC", "ICE", "RJX", "PE"].includes(normalizeCode(leg.category));
 }
 export function chooseBikeTicket(reduced: number | null, dayPass: number | null, annualPass = false) {
   if (annualPass) return { chf: 0, product: "Existing annual bike pass", minimumVerified: true };

@@ -112,9 +112,12 @@ export default function MapView({
     }
     L.circleMarker([currentDetour.lat, currentDetour.lon], { color: COLORS.bikeOnly, fillColor: "white", fillOpacity: 1,
       weight: 4, radius: 9, interactive: false }).addTo(layer);
+    // Fit once for each completed preview. Pointer/viewport events never refit it.
+    const points = detourRoutes.flatMap(route => [route.from, ...route.points, route.to]);
+    const bounds = L.latLngBounds(points.map(p => [p.lat, p.lon]));
+    visibleBoundsRef.current = bounds; fitMap(map, bounds);
     return () => { layer.remove(); };
   }, [detourRoutes, currentDetour]);
-  const pickerRef = useRef<((point: L.LatLng) => void) | null>(null);
   const handlers = useRef({ editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus });
   handlers.current = { editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus };
   const [showStops, setShowStops] = useState(true);
@@ -249,15 +252,22 @@ export default function MapView({
       L.DomEvent.disableClickPropagation(content);
       L.popup({ maxWidth: 260, className: "location-popup" }).setLatLng(point).setContent(content).openOn(map);
     };
-    pickerRef.current = choosePoint;
     map.on("click", (event: L.LeafletMouseEvent) => choosePoint(event.latlng.wrap()));
+    // Arrow keys pan the focused map; Enter opens the same location picker.
+    const chooseWithKeyboard = (event: KeyboardEvent) => {
+      if (event.key === "Enter" && event.target === map.getContainer()) {
+        event.preventDefault(); choosePoint(map.getCenter());
+      }
+    };
+    map.getContainer().addEventListener("keydown", chooseWithKeyboard);
     const observer = new ResizeObserver(() => {
       map.invalidateSize({ pan: false });
       if (visibleBoundsRef.current?.isValid()) fitMap(map, visibleBoundsRef.current);
       redrawPinsRef.current?.();
     });
     observer.observe(containerRef.current);
-    return () => { observer.disconnect(); map.remove(); mapRef.current = null; pickerRef.current = null; fittedRef.current = ""; };
+    return () => { observer.disconnect(); map.getContainer().removeEventListener("keydown", chooseWithKeyboard);
+      map.remove(); mapRef.current = null; fittedRef.current = ""; };
   }, []);
 
   useEffect(() => {
@@ -433,9 +443,6 @@ export default function MapView({
 
   return <>
     <div className="map-controls map-tools">
-      <button type="button" disabled={editingDisabled} onClick={() => {
-        if (mapRef.current) pickerRef.current?.(mapRef.current.getCenter());
-      }}>Choose map centre</button>
       <label><input type="checkbox" checked={showStops} onChange={e => setShowStops(e.target.checked)} />Explored stops ({stops.length})</label>
       <div className="map-facility-controls" role="group" aria-label="Useful stops">
       <button type="button" className="parking-toggle" aria-pressed={showParking} aria-controls="parking-panel"
@@ -469,7 +476,7 @@ export default function MapView({
           fitMap(mapRef.current, allBoundsRef.current);
         }
       }}>Fit all stops</button>
-      <div className="map-instruction">{editingDisabled ? "Stop the search to edit locations." : "Tap the map to choose locations. Drag A, B or a stop to move it."}</div>
+      <div className="map-instruction">{editingDisabled ? "Stop the search to edit locations." : "Tap the map to choose locations. Drag A, B or a stop to move it. With the map focused, use arrow keys to move and Enter to choose."}</div>
     </div>
     <div className="map-shell">
     <div ref={containerRef} className="map" aria-label={bikeOnlySelected ? "Cycling-only estimate map" : "Selected journey and explored stops map"} />
@@ -494,13 +501,7 @@ export default function MapView({
   </div>
     {currentDetour && stages.length > 0 && <DetourPanel key={`${detourScope}:${currentDetour.id}:${currentDetour.category}`}
       facility={currentDetour} stages={stages} pace={cyclingPace} preference={routePreference} onRoutes={setDetourRoutes}
-      onClose={() => { setDetour(null); setDetourRoutes(null); }} onShow={() => {
-        const map = mapRef.current;
-        if (!map || !detourRoutes) return;
-        const points = detourRoutes.flatMap(route => [route.from, ...route.points, route.to]);
-        const bounds = L.latLngBounds(points.map(p => [p.lat, p.lon]));
-        visibleBoundsRef.current = bounds; fitMap(map, bounds);
-      }} />}
+      onClose={() => { setDetour(null); setDetourRoutes(null); }} />}
     {showParking && <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
       <ul className="parking-legend" aria-label="Parking colours by mapped equipment">
         {PARKING_LEGEND.map(style => <li key={style.label}><b className="parking-badge" style={{ backgroundColor: style.color }} aria-hidden="true">P</b>{style.label}</li>)}

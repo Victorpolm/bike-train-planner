@@ -26,15 +26,40 @@ export function applicableBicycleEvidence(leg: TransitLeg): BicycleEvidence | un
     && e.service === leg.service && e.operator === (leg.operator ?? null)
     && !!e.source.title && /^https:\/\//.test(e.source.url) && Number.isFinite(Date.parse(e.source.checked)) ? e : undefined;
 }
-export function bicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | "prohibited" {
+// The uncached evaluator is also used by equivalence tests and the offline
+// benchmark. Permission remains distinct from tickets, reservations and space.
+export function evaluateBicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | "prohibited" {
   const policy = busCarriage(leg);
   if (policy?.permission === "not-allowed") return "prohibited";
-  if (operatorBicycleRule(leg)?.permission === "prohibited") return "prohibited";
+  const operatorRule = operatorBicycleRule(leg);
+  if (operatorRule?.permission === "prohibited") return "prohibited";
   const e = applicableBicycleEvidence(leg);
   if (e?.permission === "prohibited") return "prohibited";
   if (e?.conditions.some(note => note.includes("restricted to international travel"))) return "uncertain";
-  if (!e || e.permission === "unknown") return operatorBicycleRule(leg)?.permission === "allowed" || policy?.verifiesPermission ? "confirmed" : "uncertain";
+  if (!e || e.permission === "unknown") return operatorRule?.permission === "allowed" || policy?.verifiesPermission ? "confirmed" : "uncertain";
   return e.permission === "allowed" ? "confirmed" : "prohibited";
+}
+
+type Permission = ReturnType<typeof evaluateBicyclePermission>;
+const permissionCache = new WeakMap<TransitLeg, { inputs: unknown[]; permission: Permission }>();
+function permissionInputs(leg: TransitLeg): unknown[] {
+  const e = leg.bicycleEvidence;
+  // Snapshot every input used by the evaluator, bus policy and operator rules.
+  // Store values, not nested object identities: Date.setTime(), edits to source
+  // fields/conditions and point mutations must all invalidate a cached verdict.
+  // Keep these dependencies aligned whenever a permission rule is extended.
+  return [leg.mode, leg.category, leg.operator, leg.service, leg.serviceName, leg.from, leg.to,
+    leg.fromId, leg.toId, leg.departure?.getTime(), leg.arrival?.getTime(),
+    leg.fromPoint?.lat, leg.fromPoint?.lon, leg.toPoint?.lat, leg.toPoint?.lon,
+    !!e, e?.permission, e?.fromId, e?.toId, e?.departure, e?.service, e?.operator,
+    e?.source.title, e?.source.url, e?.source.checked, ...(e?.conditions ?? [])];
+}
+export function bicyclePermission(leg: TransitLeg): Permission {
+  const inputs = permissionInputs(leg), cached = permissionCache.get(leg);
+  if (cached && cached.inputs.length === inputs.length && inputs.every((value, i) => Object.is(value, cached.inputs[i]))) return cached.permission;
+  const permission = evaluateBicyclePermission(leg);
+  permissionCache.set(leg, { inputs, permission });
+  return permission;
 }
 export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, scope: BicycleScope = "allow-uncertain") {
   if (leg.mode !== "transit") return true;

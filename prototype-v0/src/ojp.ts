@@ -60,7 +60,7 @@ function duration(value: unknown) {
   const m = text(value).match(/^P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/);
   return m ? ((+m[1] || 0) * 86400 + (+m[2] || 0) * 3600 + (+m[3] || 0) * 60 + (+m[4] || 0)) * 1000 : NaN;
 }
-export function ojpLegKey(leg: OjpLeg) {
+function ojpLegKey(leg: OjpLeg) {
   return JSON.stringify([leg.mode, leg.reference?.journeyRef, leg.reference?.operatingDay,
     leg.reference?.fromRef ?? leg.from.id, leg.reference?.toRef ?? leg.to.id, leg.departure, leg.arrival, leg.operator]);
 }

@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it, mock } from "node:test";
-import { candidateBands, extend, geocode, plan, selectStations, swissDateParts, TimetableClient, type SearchSession } from "./api.ts";
+import { candidateBands, extend, geocode, plan, selectStations, type SearchSession } from "./api.ts";
+import { swissDateParts, TimetableClient } from "./timetableClient.ts";
 import { atEndpoint, DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
 import { KNOWN_PLACES } from "./places.ts";
 

@@ -66,7 +66,7 @@ export function validAmenityData(value: unknown, dataset?: ServiceDataset): valu
 }
 
 const publicAccess = ["yes", "public", "permissive"];
-export function amenityAccessValue(f: Amenity, category: AmenityCategory) {
+function amenityAccessValue(f: Amenity, category: AmenityCategory) {
   return category === "repairs" || category === "food" ? f.tags.access : f.tags[category === "water" ? "drinking_water:access" : "toilets:access"] ?? f.tags.access;
 }
 export function amenityRestricted(f: Amenity, category: AmenityCategory): boolean {

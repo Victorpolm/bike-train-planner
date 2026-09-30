@@ -15,7 +15,7 @@ export const FACILITY_STATIONS = [
   { id: "8506000", name: "Winterthur", alias: "winterthur" }, { id: "8506302", name: "St. Gallen", alias: "st-gallen" },
   { id: "8500218", name: "Olten", alias: "olten" }, { id: "8505300", name: "Lugano", alias: "lugano" },
 ] as const;
-export const RURAL_WATER_PAGES = ["sagogn-planezzas", "crestasee", "fidazerhof-fidaz", "via-vilada-sagogn", "cresta-sagogn",
+const RURAL_WATER_PAGES = ["sagogn-planezzas", "crestasee", "fidazerhof-fidaz", "via-vilada-sagogn", "cresta-sagogn",
   "via-lavanuz-laax-murschetg", "via-rezga-trin-mulin", "dorfplatz-trin"] as const;
 export const ruralWaterUrl = (slug: string) => `https://www.graubuenden.ch/de/ausflugsziele/wasserbrunnen-${slug}`;
 

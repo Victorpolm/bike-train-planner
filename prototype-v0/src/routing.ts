@@ -1,7 +1,7 @@
 import type { CyclingRoute } from "./cycling.ts";
 import type { BicycleEvidence } from "./bicyclePermission.ts";
-export const BIKE_SPEED_KMH = 15; // Legacy synthetic experiment only; live journeys use road-route durations.
-export const MAX_BIKE_MINUTES = 20;
+const BIKE_SPEED_KMH = 15; // Legacy synthetic experiment only; live journeys use road-route durations.
+const MAX_BIKE_MINUTES = 20;
 export const MAX_BIKE_DISTANCE_KM =
   (BIKE_SPEED_KMH * MAX_BIKE_MINUTES) / 60;
 export const STATION_BUFFER_MINUTES = 3;

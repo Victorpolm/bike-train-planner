@@ -2,7 +2,7 @@ import { FACILITY_STATIONS, ruralWaterUrl, validSwissPoint, type FacilityData, t
 import type { Amenity } from "../src/osmAmenities.ts";
 
 const text = (v: unknown, max = 500) => typeof v === "string" ? v.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, max) : "";
-export function decodeHtml(value: string) {
+function decodeHtml(value: string) {
   return value.replace(/&(?:quot|apos|amp|lt|gt|#(?:x[0-9a-f]+|\d+));/gi, s => {
     const named: Record<string, string> = { "&quot;": '"', "&apos;": "'", "&amp;": "&", "&lt;": "<", "&gt;": ">" };
     if (named[s.toLowerCase()]) return named[s.toLowerCase()];

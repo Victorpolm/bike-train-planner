@@ -4,13 +4,13 @@ export const PARKING_SOURCE = "https://opentransportdata.swiss/en/cookbook/road-
 export const PARKING_DOWNLOAD = "https://data.opentransportdata.swiss/en/dataset/bike-and-car-parking/permalink";
 export const OSM_COPYRIGHT = "https://www.openstreetmap.org/copyright";
 export type ParkingProvider = "official" | "osm";
-export type ParkingReference = { provider: ParkingProvider; id: string; url: string };
+type ParkingReference = { provider: ParkingProvider; id: string; url: string };
 export type BikeParking = Point & { id: string; name: string; operator: string; type: string;
   covered: boolean | null; capacity: number | null; publicAccess: boolean | null; traits: string[]; url?: string;
   access?: string; fee?: boolean | null; openingHours?: string; parkingType?: string; sources?: ParkingReference[] };
 export type ParkingData = { facilities: BikeParking[]; fetchedAt: string; source: string; coverage: string; stale?: boolean;
   provider?: ParkingProvider; updatedAt?: string };
-export type ClosestBikeParking = { facility: BikeParking; distanceKm: number };
+type ClosestBikeParking = { facility: BikeParking; distanceKm: number };
 
 // Accept a coordinate, independent of how it was selected (start point now,
 // a separately authorised GPS fix later). Rank the whole loaded dataset.

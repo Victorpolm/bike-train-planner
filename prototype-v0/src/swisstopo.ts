@@ -112,7 +112,7 @@ export function simplifyTopoLine(points: Point[], toleranceM = 3): Point[] {
   }
   return [...keep].sort((a, b) => a - b).map(i => points[i]);
 }
-export function topoPolyline(points: Point[]) { return JSON.stringify({ paths: [points.map(p => [Number(p.lon.toFixed(6)), Number(p.lat.toFixed(6))])] }); }
+function topoPolyline(points: Point[]) { return JSON.stringify({ paths: [points.map(p => [Number(p.lon.toFixed(6)), Number(p.lat.toFixed(6))])] }); }
 export function topoQuery(points: Point[]) {
   const lat = points[0].lat, lon = points[0].lon;
   // A fixed local display extent makes 10 screen pixels approximately 10 m.

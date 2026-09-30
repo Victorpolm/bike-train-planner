@@ -126,7 +126,7 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
   return [...proposals.values()];
 }
 
-export type Label = {
+type Label = {
   stop: string; time: number; bike: number; walk: number; accessActive: number; egressWalk: number; boardings: number; middle: number;
   needsTransit: boolean; access: Station; legs: TransitLeg[]; alive: boolean;
 };
