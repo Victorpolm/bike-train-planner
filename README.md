@@ -2,7 +2,7 @@
 
 A Switzerland-first planner for travelling with your bicycle, combining road-routed cycling and public transport. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
 
-## Current state — 29 September 2026
+## Current state — 30 September 2026
 
 The app supports Baseline/Extended planning, ordered stops, named places, configurable cycling pace, terrain/profile information and three public-transport bicycle-access scopes. Passenger, bicycle-ticket and reservation costs are separate. OJP fare requests now reuse the exact retained trip or assemble its selected service/walking legs.
 
@@ -12,7 +12,9 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Repairs** and **Food** now have independent filters, service subtypes, closest-from-A and grouped map markers. Food starts with quick stops; cafés and restaurants are optional and load separately. All five categories share adjustable route proximity. [Implementation and limits](docs/REPAIRS_AND_FOOD_2026-09-29.md).
 
-**Last verified release:** owner-private **version 37**, published 29 September 2026; 258 application tests and frontend/Worker production builds passed. [Parking colours and selected-journey filtering](docs/PARKING_COLOURS_AND_ROUTE_2026-09-29.md) now use distinct P markers and a shared grey for other/unknown types. ETH equipment and route-geometry regressions pass; browser interaction QA remains unavailable. The earlier [loading correction](docs/PARKING_LOADING_2026-09-29.md) retains specific sign-in/network/data errors. Earlier [exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records Zürich–Bern/Laax and modified-trip checks; OJP prices remain test estimates.
+**Facility locations:** popups retain mapped floors and directions. A small reviewed inventory adds the owner-reported ETH HG Selecta machines (floor F, beside the Starbucks machines; approximate building location) and enriches existing Zürich HB Hygienecenter records with an official plan. [Behaviour and checks](docs/FACILITY_LOCATIONS_2026-09-30.md). [opendata.swiss investigation and lookup tool](docs/OPENDATA_SWISS_2026-09-30.md) records catalogue access limits, the upcoming API replacement and a successful national SBB plan-link feed.
+
+**Last verified release:** owner-private **version 38**, published 30 September 2026; 265 application tests and frontend/Worker production builds passed. [Parking colours and selected-journey filtering](docs/PARKING_COLOURS_AND_ROUTE_2026-09-29.md) now use distinct P markers and a shared grey for other/unknown types. ETH equipment and route-geometry regressions pass; browser interaction QA remains unavailable. The earlier [loading correction](docs/PARKING_LOADING_2026-09-29.md) retains specific sign-in/network/data errors. Earlier [exact-trip fare evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) records Zürich–Bern/Laax and modified-trip checks; OJP prices remain test estimates.
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 

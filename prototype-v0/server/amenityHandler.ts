@@ -26,7 +26,8 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
     const url = new URL(request.url);
     if (url.pathname !== path) return new Response("Not found", { status: 404 });
     const edge = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
-    const cacheKey = new Request(new URL(dataset ? `/api/services-cache/v1/${dataset}` : "/api/amenities-cache/v1/osm", url.origin));
+    // v2 avoids serving old normalised records that discarded floor/location tags.
+    const cacheKey = new Request(new URL(dataset ? `/api/services-cache/v2/${dataset}` : "/api/amenities-cache/v2/osm", url.origin));
     const age = () => cached ? now() - Date.parse(cached.fetchedAt) : Infinity;
     const load = async () => {
       if (!cached && edge) {

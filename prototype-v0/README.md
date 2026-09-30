@@ -48,6 +48,8 @@ Proposals appear as soon as the necessary road links and a usable timetable resp
 
 ## Run locally
 
+Facility popups now retain mapped floors, building/place names, room/door references and indoor descriptions. Reviewed additions are maintained in `src/reviewedAmenities.ts`: ETH HG's Selecta machines have one approximate building marker labelled floor F, beside the Starbucks coffee machines, with the owner's report and unknown access/product details. Existing Zürich HB Hygienecenter records have floor/zone information and the official station-plan link. Source dates distinguish document review from an on-site check. A small local addition can still be shown when the OSM feed is unavailable; closest then uses only the available records. [Implementation and limits](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/FACILITY_LOCATIONS_2026-09-30.md).
+
 Verified with **Node.js 24**. Basic timetable/cycling searches work without a key. For the additional OJP bicycle-filter and TripInfo source, copy `.env.example` to `.env` and set `OJP_API_KEY` locally. Never use a `VITE_` variable. Vite runs the server-only proxy during development; production uses the Worker in `dist/server/index.js`.
 
 The hosted Site requires its own secret `OJP_API_KEY`. The validated GitHub Actions secret is separate and cannot be read back through GitHub. Without the Site secret, public search.ch connections still provide dated bicycle notes. Missing evidence remains unknown unless a reviewed operator/service rule applies. `npm run preview` serves frontend assets only; use `npm run dev` for local OJP checks.

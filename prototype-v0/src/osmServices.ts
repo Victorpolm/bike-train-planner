@@ -52,7 +52,11 @@ export function serviceKinds(tags: Record<string, string>, category: ServiceCate
   return kinds;
 }
 export function serviceMatches(f: Amenity, category: ServiceCategory, selected: readonly ServiceKind[]) {
-  return serviceKinds(f.tags, category).some(kind => selected.includes(kind));
+  return facilityServiceKinds(f, category).some(kind => selected.includes(kind));
+}
+export function facilityServiceKinds(f: Amenity, category: ServiceCategory): ServiceKind[] {
+  return [...new Set([...serviceKinds(f.tags, category), ...(f.id.startsWith("local:") ? f.reportedKinds ?? [] : [])])]
+    .filter(kind => SERVICE_FILTERS[category].some(item => item.kind === kind));
 }
 export function serviceDatasetMatches(tags: Record<string, string>, dataset: ServiceDataset) {
   const kinds = serviceKinds(tags, dataset === "repairs" ? "repairs" : "food");
@@ -60,7 +64,7 @@ export function serviceDatasetMatches(tags: Record<string, string>, dataset: Ser
     : kinds.some(kind => kind === "bakery" || kind === "groceries" || kind === "vending");
 }
 export function serviceSummary(f: Amenity, category: ServiceCategory) {
-  const kinds = serviceKinds(f.tags, category);
+  const kinds = facilityServiceKinds(f, category);
   return SERVICE_FILTERS[category].filter(item => kinds.includes(item.kind)).map(item => item.label).join(" · ");
 }
 export function serviceUnavailable(tags: Record<string, string>) {

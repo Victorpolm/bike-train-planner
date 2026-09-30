@@ -4,6 +4,7 @@ import { useAmenities } from "./useAmenities";
 import AmenityLayer, { AmenityGlyph, WaterGlyph } from "./AmenityLayer";
 import { mergeFoodData, SERVICE_FILTERS, type ServiceKind } from "./osmServices";
 import type { AmenityCategory } from "./osmAmenities";
+import { withReviewedAmenities } from "./reviewedAmenities";
 import { parkingAlongRoute, parkingIndex, parkingRouteScope, parkingStyle, PARKING_CORRIDOR_METRES, PARKING_LEGEND } from "./parkingMap";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
@@ -99,11 +100,14 @@ export default function MapView({
   const [routeRadius, setRouteRadius] = useState(PARKING_CORRIDOR_METRES);
   const [activeAmenity, setActiveAmenity] = useState<AmenityCategory | null>(null);
   const amenities = useAmenities(showWater || showToilets);
+  const amenityFacilities = useMemo(() => withReviewedAmenities(amenities.data?.facilities ?? [], ["water", "toilets"]), [amenities.data]);
+  const repairFacilities = useMemo(() => withReviewedAmenities(repairs.data?.facilities ?? [], ["repairs"]), [repairs.data]);
+  const foodFacilities = useMemo(() => withReviewedAmenities(food.data?.facilities ?? [], ["food"]), [food.data]);
   const sharedCategories = useMemo(() => {
     const result = new Map<string, AmenityCategory[]>();
-    for (const [enabled, data] of [[showWater || showToilets, amenities.data], [showRepairs, repairs.data], [showFood, food.data]] as const) {
-      if (!enabled || !data) continue;
-      for (const facility of data.facilities) {
+    for (const [enabled, facilities] of [[showWater || showToilets, amenityFacilities], [showRepairs, repairFacilities], [showFood, foodFacilities]] as const) {
+      if (!enabled) continue;
+      for (const facility of facilities) {
         const categories = result.get(facility.id) ?? [];
         for (const category of facility.categories) {
           if (category === "water" && !showWater || category === "toilets" && !showToilets) continue;
@@ -113,7 +117,7 @@ export default function MapView({
       }
     }
     return result;
-  }, [showWater, showToilets, showRepairs, showFood, amenities.data, repairs.data, food.data]);
+  }, [showWater, showToilets, showRepairs, showFood, amenityFacilities, repairFacilities, foodFacilities]);
   const { loads: parkingLoads, datasets: parkingDatasets, facilities: parkingFacilities, loading: parkingLoading, retry: retryParking } = useBikeParking(showParking);
   const [parkingMapNote, setParkingMapNote] = useState("");
   const [onlyAlongJourney, setOnlyAlongJourney] = useState(true);
@@ -475,6 +479,7 @@ export default function MapView({
       const source = category === "repairs" ? repairs : category === "food" ? food : amenities;
       return enabled && <AmenityLayer key={category}
         category={category} map={mapRef.current} origin={origin} data={source.data} loading={source.loading} error={source.error} retry={source.retry}
+        records={category === "repairs" ? repairFacilities : category === "food" ? foodFacilities : amenityFacilities}
         scope={parkingRoute} alongJourney={alongJourney} radius={routeRadius} sharedCategories={sharedCategories} active={activeAmenity === category}
         kinds={category === "repairs" ? repairKinds : category === "food" ? foodKinds : undefined}
         onKinds={category === "repairs" ? setRepairKinds : category === "food" ? setFoodKinds : undefined}

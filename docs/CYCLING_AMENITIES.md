@@ -102,3 +102,9 @@ The initial five-category layer is delivered. Keep remaining parking/access vali
 Numbers and locations are pilot proposals, not commitments or completed work. Verify at least these failure cases: a decorative/non-potable fountain; a winter shutdown; customer-only WC; duplicate municipal/OSM parking; CCTV with only wheel support; a snack machine behind a locked door; unknown pump compatibility; volunteer-only workshop access; a facility across a river; a stop that misses a train; empty/partial provider responses; and two visits to the same place on a looping route.
 
 Measure service classification and attribute correctness, duplicate rate, entrance/access mistakes, missing-hours/condition rates and user task success. Assess coverage against a reviewed local reference sample; a higher pin count alone is not success. Provide a source/correction link initially; moderated user reports with observation dates are a later improvement, without automatic edits to OSM or instant verified-status upgrades.
+
+## 30 September: bounded location improvements delivered
+
+Version 38 preserves floor/location descriptions and adds a small source-labelled reviewed inventory. ETH HG’s reported Selecta machines use one approximate building point with floor F and the Starbucks-machine landmark. Existing Zürich HB Hygienecenter identities receive SBB floor/zone/plan details. [Implementation and verification](FACILITY_LOCATIONS_2026-09-30.md).
+
+The revised [roadmap](APP_ROADMAP.md#30-september-proposal-keep-facility-coverage-manageable) limits manual station work to a proposed ten priority stations and makes additional city sources optional. [opendata.swiss research](OPENDATA_SWISS_2026-09-30.md) isolates catalogue discovery from runtime map requests, records today’s HTTP 403 barrier and the announced API migration, and verifies a national publisher feed with 63 station-plan references. No nationwide indoor mapping or municipal integration is implied.

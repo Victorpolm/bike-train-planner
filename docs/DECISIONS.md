@@ -483,3 +483,13 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 **Decision:** Add independent filters, explicit service types, closest-from-A, marker grouping and 100/500/1,000 m shared route proximity. Keep the toolbar above the map. Split quick food from optional dining after a live combined payload exceeded the 16 MiB bound. Use independent fixed-query caches without sending user coordinates to OSM. A shop is not automatically a workshop; DIY/repair overlap is not proof of a professional service; broken pumps cannot win pump-only searches. Commercial customer access is allowed; private/conditional access stays excluded. No evaluated hours, entrance/pushing route, stop insertion or fare/routing change.
 
 **Release:** Version 37 succeeded at 21:42:17 UTC, environment revision 3, Site source `c3ca72b2c91fcbfbfd1903904a14d9e22ffbf3b6`. 258 tests and production builds pass. [Repair/food implementation and checks](REPAIRS_AND_FOOD_2026-09-29.md).
+
+## 2026-09-30 — Preserve facility locations and bound enrichment
+
+**User authorisation:** Implement the recommended small fixes and investigate the opendata.swiss API. Retain the reported HG location: floor F, next to the Starbucks coffee machines.
+
+**Decision and implementation:** Keep OSM as the national base; preserve floor/place/direction evidence. Add a reviewed file for additions and exact-identity enrichment. HG uses one explicitly approximate building reference; existing Zürich HB Hygienecenter components gain SBB floor/zone/plan evidence without changing raw restrictions or coordinates. Source review does not mean on-site verification. No automatic proximity merge, public submission backend, full indoor router or city-by-city audit.
+
+**API research:** The documented CKAN endpoints returned HTTP 403 in this environment; no API key was requested or transmitted. The official portal announces a future CKAN replacement, so discovery remains an isolated read-only script. One SBB publisher GeoJSON feed successfully returned 63 station-plan references, not indoor facility inventories. [Research and commands](OPENDATA_SWISS_2026-09-30.md).
+
+**Release:** Owner-private version 38 succeeded at 08:18:00 UTC, environment revision 3; 265 tests and builds pass. [Implementation and limits](FACILITY_LOCATIONS_2026-09-30.md).

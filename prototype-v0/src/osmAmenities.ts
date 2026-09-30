@@ -1,10 +1,12 @@
 import { closestBikeParking, OSM_COPYRIGHT } from "./bikeParking.ts";
 import type { Point } from "./routing.ts";
-import { SERVICE_TAGS, serviceDatasetMatches, serviceDetails, serviceKindAvailable, serviceKinds, serviceUnavailable, type ServiceCategory, type ServiceDataset, type ServiceKind } from "./osmServices.ts";
+import { SERVICE_TAGS, serviceDatasetMatches, serviceDetails, serviceKindAvailable, facilityServiceKinds, serviceUnavailable, type ServiceCategory, type ServiceDataset, type ServiceKind } from "./osmServices.ts";
+import { LOCATION_TAGS, amenityLocationDetails, type AmenityEvidence, type AmenityLocation } from "./amenityLocation.ts";
 
 export type AmenityCategory = "water" | "toilets" | ServiceCategory;
 export type Amenity = Point & { id: string; name: string; url: string; categories: AmenityCategory[];
-  potable: "yes" | "no" | "unknown"; area: boolean; tags: Record<string, string> };
+  potable: "yes" | "no" | "unknown"; area: boolean; tags: Record<string, string>;
+  location?: AmenityLocation; additionalSources?: AmenityEvidence[]; reportedKinds?: ServiceKind[] };
 export type AmenityData = { schema: 1; provider: "osm"; facilities: Amenity[]; fetchedAt: string;
   source: string; updatedAt?: string; stale?: boolean; dataset?: ServiceDataset };
 export const OSM_AMENITY_API = "https://overpass.osm.ch/api/interpreter";
@@ -27,7 +29,7 @@ export function parseOsmAmenities(value: unknown, fetchedAt = new Date().toISOSt
     const tag = (key: string) => typeof element.tags![key] === "string" ? element.tags![key] as string : undefined;
     if (["disused", "abandoned", "demolished", "removed", "construction", "proposed"].some(key => ["yes", "true", "1"].includes(tag(key) ?? "")
       || !!tag(`${key}:amenity`) || !!tag(`${key}:man_made`) || dataset && !!tag(`${key}:shop`))) continue;
-    const tags = Object.fromEntries([...retainedTags, ...(dataset ? SERVICE_TAGS : [])].flatMap(key => tag(key) === undefined ? [] : [[key, tag(key)!]]));
+    const tags = Object.fromEntries([...retainedTags, ...LOCATION_TAGS, ...(dataset ? SERVICE_TAGS : [])].flatMap(key => tag(key) === undefined ? [] : [[key, tag(key)!]]));
     const categories: AmenityCategory[] = [];
     if (dataset) { const category = dataset === "repairs" ? "repairs" : "food"; if (serviceDatasetMatches(tags, dataset)) categories.push(category); }
     else {
@@ -58,7 +60,8 @@ export function validAmenityData(value: unknown, dataset?: ServiceDataset): valu
       && f.url === `https://www.openstreetmap.org/${f.id.slice(4)}` && typeof f.name === "string" && typeof f.area === "boolean"
       && ["yes", "no", "unknown"].includes(f.potable) && Array.isArray(f.categories) && f.categories.length > 0 && f.categories.length <= 2
       && f.categories.every(c => dataset ? c === category : c === "water" || c === "toilets") && f.tags && typeof f.tags === "object" && !Array.isArray(f.tags)
-      && Object.values(f.tags).every(v => typeof v === "string") && (!dataset || serviceDatasetMatches(f.tags, dataset)));
+      && Object.values(f.tags).every(v => typeof v === "string") && (!dataset || serviceDatasetMatches(f.tags, dataset))
+      && !f.location && !f.additionalSources && !f.reportedKinds);
 }
 
 const publicAccess = ["yes", "public", "permissive"];
@@ -90,19 +93,19 @@ export const AMENITY_STYLES = {
 export function amenityStyle(f: Amenity, category: AmenityCategory, kinds?: readonly ServiceKind[]) {
   if (category === "water" && f.potable === "no") return AMENITY_STYLES.nonDrink;
   if (amenityRestricted(f, category)) return AMENITY_STYLES.restricted;
-  if ((category === "repairs" || category === "food") && !serviceKinds(f.tags, category).some(kind => (!kinds || kinds.includes(kind)) && serviceKindAvailable(f, kind))) return AMENITY_STYLES.restricted;
+  if ((category === "repairs" || category === "food") && !facilityServiceKinds(f, category).some(kind => (!kinds || kinds.includes(kind)) && serviceKindAvailable(f, kind))) return AMENITY_STYLES.restricted;
   if (category === "water") return f.potable === "yes" ? AMENITY_STYLES.drink : AMENITY_STYLES.waterUnknown;
   if (category === "repairs" || category === "food") return AMENITY_STYLES[category];
   return publicAccess.includes(amenityAccessValue(f, category) ?? "") ? AMENITY_STYLES.public : AMENITY_STYLES.toiletUnknown;
 }
 export function closestAmenity(facilities: readonly Amenity[], from: Point | null, category: AmenityCategory, kinds?: readonly ServiceKind[]) {
   return closestBikeParking(facilities.filter(f => f.categories.includes(category) && !amenityRestricted(f, category)
-    && (!(category === "repairs" || category === "food") || serviceKinds(f.tags, category).some(kind => (!kinds || kinds.includes(kind)) && serviceKindAvailable(f, kind)))
+    && (!(category === "repairs" || category === "food") || facilityServiceKinds(f, category).some(kind => (!kinds || kinds.includes(kind)) && serviceKindAvailable(f, kind)))
     && (category !== "water" || f.potable === "yes")), from);
 }
 export function amenityDetails(f: Amenity, category: AmenityCategory): string[] {
   const tags = f.tags;
-  const details = [amenityStyle(f, category).label, amenityAccess(f, category),
+  const details = [...amenityLocationDetails(f), amenityStyle(f, category).label, amenityAccess(f, category),
     category === "repairs" || category === "food" ? tags.fee ? `Mapped access fee: ${tags.fee}. Products and repairs are priced separately.` : "Product / repair prices not supplied"
       : tags.fee === "yes" ? "Fee applies; check the tariff" : tags.fee === "no" ? "Mapped as free of charge" : tags.fee ? `Mapped fee: ${tags.fee}; check the terms` : "Fee not supplied",
     tags.opening_hours ? `Mapped hours: ${tags.opening_hours} (not checked for arrival)` : "Opening hours unknown"];
@@ -119,7 +122,6 @@ export function amenityDetails(f: Amenity, category: AmenityCategory): string[] 
     ["locked", "Locked"], ["indoor", "Indoors"], ["operational_status", "Mapped operating status"], ["access:conditional", "Conditional access"]]) {
     if (tags[key]) details.push(`${label}: ${tags[key]}`);
   }
-  if (f.area) details.push("Mapped area/line centre; entrance not verified.");
   if (f.categories.length > 1) details.push("This mapped place includes both water and toilets.");
   return details;
 }

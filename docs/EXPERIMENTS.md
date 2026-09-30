@@ -671,3 +671,11 @@ The source audit found 2,425 repair records, 16,275 quick-food records and 32,19
 
 
 The post-publication exact-client checks returned HTTP 200 for repairs, quick food, optional dining and water/toilets. All were fresh, with no retries; the three new first-load durations were 24.01 / 18.44 / 18.29 seconds. [Hosted evidence](experiments/repairs-food-live-2026-09-29.json). This is authenticated endpoint validation, not browser UI testing.
+
+## 2026-09-30 — Floor retention, reviewed additions and catalogue discovery
+
+**Result:** Seven new facility-location regressions pass; full gate is 265 tests in 11 suites, with TypeScript and frontend/Worker production builds passing. Reprocessed captured Swiss regional data confirms retained floors, the single approximate HG report winning the closest-vending check at its building reference, and two intended Zürich HB OSM components receiving the SBB plan evidence. Local additions stay available when no OSM response exists. The normalised edge-cache version changes to prevent old stripped data from being reused.
+
+**Source experiment:** Public CKAN searches/status requests returned HTTP 403; the cause is unknown. Directly following the catalogue’s SBB publisher resource succeeded: 63 station-plan features, 56,105 bytes, HTTP 200. The read-only catalogue helper passes offline smoke checks; successful live CKAN metadata retrieval is not claimed. The portal announces CKAN replacement around late 2026 / early 2027.
+
+**Release and limits:** Private version 38 published at 08:18:00 UTC. Browser QA remains unavailable; no live entrance, indoor-route, stock or access-hour verification. [Facility report](FACILITY_LOCATIONS_2026-09-30.md) · [API investigation](OPENDATA_SWISS_2026-09-30.md).
