@@ -78,7 +78,7 @@ Current OSM raster basemap symbols cannot be individually hidden by our overlay 
 
 ## 30 September implementation and remaining precision work
 
-**Latest user instruction:** implement Graubünden, SBB and swissTLM3D; do not focus further on ETH. The three adapters are delivered with independent source states, explicit unknowns, ten pilot stations and a small rural-water pilot. The source check returned 8 rural water records, 255 SBB toilet/food records and 601 optional TLM candidates; these are not unique or field-verified facility counts. [Implementation, tests and complete outstanding-work audit](FACILITY_SOURCES_2026-09-30.md).
+**Latest user instruction:** implement Graubünden, SBB and swissTLM3D; do not focus further on ETH. The three adapters are delivered with independent source states, explicit unknowns, ten pilot stations and a small rural-water pilot. Version 40 serves TLM from a compact dated edition index after runtime archive extraction timed out on the hosted Site. The source check returned 8 rural water records, 255 SBB toilet/food records and 601 optional TLM candidates; these are not unique or field-verified facility counts. [Implementation, tests and complete outstanding-work audit](FACILITY_SOURCES_2026-09-30.md).
 
 **Still missing:** along-route refill gaps, checked entrances/detours, opening at arrival, visit duration/stop insertion, a reviewed correction workflow, parking suitability/destination shortlists and GPS, then the broader UI. Ten-station feed integration does not complete field curation or indoor navigation. Wider SBB publication/redistribution terms remain a separate gate. The historical first steps below are retained for context.
 

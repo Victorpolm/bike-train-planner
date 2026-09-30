@@ -1,0 +1,206 @@
+{
+  "checkedAt": "2026-09-30T13:35:34.687Z",
+  "homeStatus": 200,
+  "frontendContainsNewControl": true,
+  "results": [
+    {
+      "key": "graubuenden/sagogn-planezzas",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 2517,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:35.790Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/fidazerhof-fidaz",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1540,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:38.348Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/via-vilada-sagogn",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1188,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:39.668Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/cresta-sagogn",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1419,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:41.088Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/via-lavanuz-laax-murschetg",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1212,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:42.275Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/via-rezga-trin-mulin",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1223,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:43.527Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/crestasee",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 9603,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:44.071Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "graubuenden/dorfplatz-trin",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1173,
+      "records": 1,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:44.641Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8503000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 763,
+      "records": 78,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:44.854Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8507000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1027,
+      "records": 42,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:45.797Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8500010",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 991,
+      "records": 19,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:45.919Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8501120",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 998,
+      "records": 10,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:46.683Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8501008",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 1135,
+      "records": 26,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:47.055Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8505000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 768,
+      "records": 25,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:47.624Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8506000",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 996,
+      "records": 17,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:48.057Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8506302",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 942,
+      "records": 20,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:48.568Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8500218",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 992,
+      "records": 11,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:49.054Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "sbb/8505300",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 913,
+      "records": 7,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:35:49.490Z",
+      "unknownWater": 0
+    },
+    {
+      "key": "swisstlm3d",
+      "status": 200,
+      "valid": true,
+      "elapsedMs": 698,
+      "records": 601,
+      "stale": false,
+      "fetchedAt": "2026-09-30T13:10:25.689Z",
+      "unknownWater": 601
+    }
+  ],
+  "total": 19,
+  "passed": 19,
+  "unknownSourceStatus": 404,
+  "queryInjectionStatus": 404,
+  "postStatus": 405,
+  "finishedAt": "2026-09-30T13:35:52.507Z",
+  "siteVersion": 40,
+  "scope": "Authenticated hosted HTTP/schema checks, not browser interactions or field verification",
+  "topographicMode": "Prepared February 2026 edition index; all points have unknown drinkability"
+}

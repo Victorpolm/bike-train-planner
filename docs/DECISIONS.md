@@ -512,3 +512,9 @@ The owner requested the same colour for other mapped equipment and unknown rack 
 **Reuse boundary:** The SBB portal describes service data as freely usable but links restrictive general terms. Use only public factual service exports with attribution in the existing owner-private prototype. Blanket redistribution/publication rights remain unconfirmed and must be clarified before wider distribution. No restricted endpoint, provider message, paid dependency or invented agreement.
 
 **Verification:** 277 offline tests and production builds; 19/19 live adapter checks pass. [Implementation and audited remaining work](FACILITY_SOURCES_2026-09-30.md). Rural route-gap/access evidence, routed detours, arrival-time opening and visit duration are still unimplemented; the broader UI remains the third main milestone.
+
+**Publication:** Owner-private version 39 succeeded at 13:22:19 UTC, environment revision 3; all 163 current application files match GitHub implementation `becab48`.
+
+**Hosted follow-up:** The version-39 checks passed 18 rural/station feeds but TLM archive loading timed out at 80 seconds. Version 40 replaces runtime archive extraction with a compact dated 601-point application index, preserves the import/edition dates and keeps all points excluded from closest drinking water. The maintenance importer remains bounded and was checked again successfully. **278 tests in 11 suites and production builds pass.** Owner-private version 40 succeeded at **13:34:20 UTC**, environment revision 3, Site source `73aa9b1dfbd4ee989e17b3d77824279287e53d23`; all **166 current application files** match GitHub implementation `53ef965e0e20a437431912042f8083ee7d823ad4`.
+
+**Final hosted check:** Version 40 returned valid HTTP 200 data for all 19 endpoints, including 601 TLM points in 698 ms; root/new frontend control and rejection guards passed. [Dated hosted evidence](experiments/facility-sources-hosted-v40-2026-09-30.json).
