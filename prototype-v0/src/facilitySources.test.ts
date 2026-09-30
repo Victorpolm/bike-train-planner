@@ -6,6 +6,7 @@ import { amenityDetails, closestAmenity, parseOsmAmenities } from "./osmAmenitie
 import { facilityData, parseRuralWater, parseStationFacilities } from "../server/facilityParsers.ts";
 import { createFacilityHandler } from "../server/facilityHandler.ts";
 import { loadTlmWater, lv95ToWgs84, parseTlmWater, readBounded, zipDirectory } from "../server/tlmWater.ts";
+import { TLM_WATER_SNAPSHOT } from "../server/tlmSnapshot.ts";
 
 const DATE = "2026-09-30T12:00:00Z", ruralJob = FACILITY_JOBS[0];
 const ruralPage = '<h1>Wasserbrunnen Sagogn Planezzas</h1>Flims Laax Falera Management AG. Offizielles Trinkwasser. Contact: Via Nova 62 <div data-map="{&quot;coordinates&quot;:{&quot;lat&quot;:46.798032,&quot;lng&quot;:9.272311}}"></div>';
@@ -118,6 +119,17 @@ it("TLM refuses full-archive fallbacks and excessive or malformed archive respon
   await assert.rejects(readBounded(new Response('abcd'), 3), /limit/);
   await assert.rejects(readBounded(new Response('small', { headers: { 'Content-Length': '99999' } }), 20), /oversized/);
   assert.throws(() => zipDirectory(new Uint8Array(70)), /Invalid/);
+});
+
+it("the hosted TLM layer serves the dated prepared index without waiting for the archive", async () => {
+  const job = FACILITY_JOBS.find(j => j.provider === 'swisstlm3d')!;
+  assert.equal(validFacilityData(TLM_WATER_SNAPSHOT, job), true);
+  assert.equal(TLM_WATER_SNAPSHOT.facilities.length, 601);
+  assert.ok(TLM_WATER_SNAPSHOT.facilities.every(f => f.potable === 'unknown'));
+  assert.equal(closestAmenity(TLM_WATER_SNAPSHOT.facilities, { lat: 47, lon: 8 }, 'water'), null);
+  const response = await createFacilityHandler()(request(job.path), async () => { assert.fail('Published TLM edition must not download the archive'); });
+  assert.equal(response.status, 200);
+  const data = await response.json(); assert.equal(data.fetchedAt, TLM_WATER_SNAPSHOT.fetchedAt);
 });
 
 it("facility requests use fixed URLs, coalesce/cache work and isolate a failed station", async () => {

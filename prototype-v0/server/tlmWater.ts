@@ -9,6 +9,15 @@ const MAX_COMPRESSED = 2 * 1024 * 1024, MAX_EXPANDED = 16 * 1024 * 1024;
 const view = (b: Uint8Array) => new DataView(b.buffer, b.byteOffset, b.byteLength);
 const decoder = new TextDecoder("utf-8");
 
+export function tlmWaterAmenity(p: { id: string; lat: number; lon: number; spring: boolean; name?: string; updatedAt?: string }, fetchedAt: string): Amenity {
+  return { id: `swisstlm3d:${p.id}`, lat: p.lat, lon: p.lon,
+    name: p.name || (p.spring ? "Mapped spring · drinkability unknown" : "Mapped fountain · drinkability unknown"),
+    url: TLM_PAGE, area: false, categories: ["water"], potable: "unknown", tags: p.spring ? { natural: "spring" } : { amenity: "fountain" },
+    provenance: { provider: "swisstlm3d", retrievedAt: fetchedAt, datasetDate: "2026-02", ...(p.updatedAt ? { updatedAt: p.updatedAt } : {}),
+      note: "Topographic point only. Drinkability, public access, bottle filling, seasonal operation and current flow are unknown. Do not rely on this as a refill stop. Coverage is not systematic; it may overlap another source. Fixed edition, prepared for this app release." },
+    additionalSources: [{ kind: "feed", label: "Source: Federal Office of Topography swisstopo", url: TLM_PAGE, date: fetchedAt.slice(0, 10), note: "swissTLM3D; no field verification. Date refers to the edition import, not a live refresh." }] };
+}
+
 export async function readBounded(response: Response, max: number): Promise<Uint8Array> {
   if (!response.ok || !response.body || Number(response.headers.get("Content-Length")) > max) { await response.body?.cancel(); throw new Error("Source unavailable or oversized"); }
   const reader = response.body.getReader(), chunks: Uint8Array[] = []; let size = 0;
@@ -78,11 +87,7 @@ export function parseTlmWater(dbf: Uint8Array, shp: Uint8Array, fetchedAt: strin
       if (!validSwissPoint(p.lat, p.lon) || !/^[0-9a-f-]{36}$/.test(id)) throw new Error("Invalid EO identity or coordinate");
       const spring = kind === "7" || kind === "Quelle";
       const date = read(row, "DATUM_AEND"), updatedAt = /^\d{8}$/.test(date) ? `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}` : undefined;
-      records.push({ id: `swisstlm3d:${id}`, ...p, name: read(row, "NAME") || (spring ? "Mapped spring · drinkability unknown" : "Mapped fountain · drinkability unknown"),
-        url: TLM_PAGE, area: false, categories: ["water"], potable: "unknown", tags: spring ? { natural: "spring" } : { amenity: "fountain" },
-        provenance: { provider: "swisstlm3d", retrievedAt: fetchedAt, datasetDate: "2026-02", ...(updatedAt ? { updatedAt } : {}),
-          note: "Topographic point only. Drinkability, public access, bottle filling, seasonal operation and current flow are unknown. Do not rely on this as a refill stop. Coverage is not systematic; it may overlap another source." },
-        additionalSources: [{ kind: "feed", label: "Source: Federal Office of Topography swisstopo", url: TLM_PAGE, date: fetchedAt.slice(0, 10), note: "swissTLM3D; no field verification." }] });
+      records.push(tlmWaterAmenity({ id, ...p, spring, name: read(row, "NAME"), updatedAt }, fetchedAt));
     }
     offset = start + n; index++;
   }
@@ -112,16 +117,21 @@ export async function loadTlmWater(fetcher: typeof fetch, signal: AbortSignal, f
   if (size < 46 || size > 1024 * 1024 || offset + size > total || offset === 0xffffffff) throw new Error("Archive directory outside bounds");
   const members = zipDirectory(await range(`bytes=${offset}-${offset + size - 1}`, 1024 * 1024));
   const data = new Map<string, Uint8Array>();
-  for (const member of members) {
-    const header = await range(`bytes=${member.offset}-${member.offset + 29}`, 30), h = view(header);
+  await Promise.all(members.map(async member => {
+    // Read each local header and its compressed payload together. ZIP filename
+    // and extra fields are each at most 65535 bytes. This bounded over-read
+    // avoids two extra serial CDN round trips in the hosted Worker.
+    const max = member.compressed + 30 + 2 * 65535, end = Math.min(member.offset + max, offset) - 1;
+    const bytes = await range(`bytes=${member.offset}-${end}`, max), h = view(bytes);
+    if (bytes.length < 30) throw new Error("Truncated local ZIP header");
     if (h.getUint32(0, true) !== 0x04034b50 || h.getUint16(8, true) !== member.method) throw new Error("Invalid local ZIP header");
-    const start = member.offset + 30 + h.getUint16(26, true) + h.getUint16(28, true);
-    if (start + member.compressed > offset) throw new Error("Archive member outside data bounds");
-    const compressed = await range(`bytes=${start}-${start + member.compressed - 1}`, MAX_COMPRESSED);
+    const nameEnd = 30 + h.getUint16(26, true), start = nameEnd + h.getUint16(28, true);
+    if (start + member.compressed > bytes.length || decoder.decode(bytes.subarray(30, nameEnd)) !== member.name) throw new Error("Archive member outside data bounds or identity mismatch");
+    const compressed = bytes.subarray(start, start + member.compressed);
     const expanded = member.method === 0 ? compressed : await readBounded(new Response(new Blob([compressed.slice().buffer]).stream()
       .pipeThrough(new DecompressionStream("deflate-raw"))), MAX_EXPANDED);
     if (expanded.length !== member.size || crc32(expanded) !== member.crc) throw new Error("Archive checksum mismatch");
     data.set(member.name.endsWith(".dbf") ? "dbf" : "shp", expanded);
-  }
+  }));
   return parseTlmWater(data.get("dbf")!, data.get("shp")!, fetchedAt);
 }

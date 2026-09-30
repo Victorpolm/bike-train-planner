@@ -1,6 +1,7 @@
 import { FACILITY_JOBS, ruralWaterUrl, validFacilityData, type FacilityData } from "../src/facilitySources.ts";
 import { facilityData, parseRuralWater, parseStationFacilities } from "./facilityParsers.ts";
-import { loadTlmWater, readBounded } from "./tlmWater.ts";
+import { readBounded } from "./tlmWater.ts";
+import { TLM_WATER_SNAPSHOT } from "./tlmSnapshot.ts";
 
 const DAY = 86400000, STALE = 7 * DAY;
 export function createFacilityHandler(options: { now?: () => number; cache?: Cache } = {}) {
@@ -9,9 +10,11 @@ export function createFacilityHandler(options: { now?: () => number; cache?: Cac
     if (request.method !== "GET") return new Response("Method not allowed", { status: 405 });
     const url = new URL(request.url), job = FACILITY_JOBS.find(j => j.path === url.pathname);
     if (!job || url.search) return new Response("Not found", { status: 404 });
+    if (job.provider === "swisstlm3d") return Response.json(TLM_WATER_SNAPSHOT,
+      { headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
     const cache = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
     const key = new Request(new URL(`/api/facilities-cache/v1/${job.key}`, url.origin));
-    const ttl = job.provider === "swisstlm3d" ? 7 * DAY : DAY;
+    const ttl = DAY;
     const age = (d?: FacilityData) => d ? now() - Date.parse(d.fetchedAt) : Infinity;
     const get = async () => {
       let data = records.get(job.key);
@@ -22,10 +25,9 @@ export function createFacilityHandler(options: { now?: () => number; cache?: Cac
       if (age(data) <= ttl) return data!;
       try {
         if ((cooldown.get(job.key) ?? 0) > now()) throw new Error("Source cooling down");
-        const fetchedAt = new Date(now()).toISOString(), signal = AbortSignal.timeout(job.provider === "swisstlm3d" ? 80000 : 25000);
+        const fetchedAt = new Date(now()).toISOString(), signal = AbortSignal.timeout(25000);
         let facilities;
-        if (job.provider === "swisstlm3d") facilities = await loadTlmWater(fetcher, signal, fetchedAt);
-        else {
+        {
           const part = job.key.split("/")[1];
           const upstream = job.provider === "sbb" ? `https://api.insa.geops.ch/export/geo/stations/${part}/services` : ruralWaterUrl(part);
           const response = await fetcher(upstream, { signal, headers: { Accept: job.provider === "sbb" ? "application/json" : "text/html" } });

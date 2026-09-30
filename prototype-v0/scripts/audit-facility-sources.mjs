@@ -20,5 +20,6 @@ await Promise.all(Array.from({ length: 2 }, async () => {
   }
 }));
 console.log(JSON.stringify({ checkedAt: new Date().toISOString(), scope: 'Live adapter/schema checks; not field verification or a completeness claim',
+  topographicMode: 'Prepared February 2026 edition; optional refresh-tlm-water.mjs tests the upstream archive separately',
   passed: rows.filter(r => r.status === 200 && r.valid).length, total: rows.length, results: rows.sort((a, b) => a.key.localeCompare(b.key)) }, null, 2));
 if (rows.some(r => r.status !== 200 || !r.valid)) process.exitCode = 1;

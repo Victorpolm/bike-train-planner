@@ -5,7 +5,7 @@ export type FacilityProvider = "graubuenden" | "sbb" | "swisstlm3d";
 export const FACILITY_SOURCES = {
   graubuenden: { label: "Graubünden Tourism · rural water pilot", url: "https://www.graubuenden.ch/de/ausflugsziele", scope: "Eight published refill locations around Flims, Laax, Sagogn and Trin." },
   sbb: { label: "© SBB CFF FFS · station facilities", url: "https://doc.trafimage.ch/", scope: "Ten pilot stations; locations and floors from public station-plan data." },
-  swisstlm3d: { label: "© swisstopo · swissTLM3D", url: "https://www.swisstopo.admin.ch/en/landscape-model-swisstlm3d", scope: "Topographic fountains and springs; incomplete coverage and no drinking-water confirmation." },
+  swisstlm3d: { label: "© swisstopo · swissTLM3D", url: "https://www.swisstopo.admin.ch/en/landscape-model-swisstlm3d", scope: "February 2026 edition, prepared 30 September 2026. Topographic fountains and springs; incomplete coverage and no drinking-water confirmation." },
 } as const;
 // Identifiers and aliases observed in SBB's public station-plan catalogue.
 export const FACILITY_STATIONS = [
