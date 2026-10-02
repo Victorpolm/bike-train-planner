@@ -1,19 +1,21 @@
+import AppHeader from "./ui/AppHeader";
+import ProfilePanel from "./ui/ProfilePanel";
+import PlannerForm from "./ui/PlannerForm";
+import RouteFields from "./ui/RouteFields";
+import DepartureControls from "./ui/DepartureControls";
+import TripPresetPicker from "./ui/TripPresetPicker";
+import TripPreferences from "./ui/TripPreferences";
 import type { FareProfile } from "./fares";
-import TravellerProfiles from "./TravellerProfiles";
 import InfoDisclosure from "./InfoDisclosure";
-import PersonalSettingsFields from "./PersonalSettingsFields";
 import {
   loadTravellers,
+  validPersonalSettings,
   personalSettings,
   type PersonalSettings,
   type TravellerProfile,
 } from "./travellerProfiles";
 import { TRIP_PRESETS, type TripPreset } from "./tripPresets";
-import {
-  ROUTE_PREFERENCES,
-  routePreferenceLabels,
-  type RoutePreference,
-} from "./cyclingPreferences";
+import { type RoutePreference } from "./cyclingPreferences";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
 import { metrics, type ModelMode, type EndpointPreference } from "./model";
@@ -31,17 +33,15 @@ import CyclingDetails, { type CycleFocus, type NamedCycleRoute } from "./Cycling
 import { formatMinutes, type CyclingComparison, type Point } from "./routing";
 import { journeySteps } from "./itinerary";
 import { exploredStops } from "./mapData";
-import PlaceInput, { type PlaceValue } from "./PlaceInput";
+import type { PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
 import { slopeSpeedKmh, type CyclingPace, type CyclingPreset } from "./cyclingPace";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 import { bicycleJourneySummary } from "./bicycleCarriage";
 import {
-  BICYCLE_SCOPES,
   bicycleExclusions,
   bicyclePermission,
-  bicycleScopeHelp,
   bicycleScopeOptions,
   type BicycleScope,
 } from "./bicyclePermission";
@@ -307,7 +307,6 @@ export default function App() {
   function choosePreset(preset: TripPreset) {
     setTripPreset(preset);
     if (preset === "personalized") {
-      setProfileOpen(true);
       setPreferencesOpen(true);
       return;
     }
@@ -507,6 +506,10 @@ export default function App() {
   async function search(event: FormEvent) {
     event.preventDefault();
     if (loading || !fromInput.text.trim() || !toInput.text.trim()) return;
+    if (!validPersonalSettings(tripPersonal)) {
+      setProfileOpen(true);
+      return;
+    }
     invalidate();
     controller.current?.abort();
     const id = ++runId.current,
@@ -590,348 +593,118 @@ export default function App() {
 
   return (
     <div className="app-shell" data-mobile-view={mobileView}>
-      <header>
-        <a className="brand" href="#top" aria-label="Bike plus train home">
-          <span className="brand-mark">
-            B<span>+</span>T
-          </span>
-          <span>
-            <strong>Bike + Train</strong>
-            <small>Swiss route experiment</small>
-          </span>
-        </a>
-        <span className="prototype-badge">Swiss journey planner</span>
-      </header>
+      <AppHeader
+        profile={
+          <ProfilePanel
+            open={profileOpen}
+            onOpenChange={setProfileOpen}
+            initial={travellers}
+            settings={tripPersonal}
+            disabled={loading}
+            onSelect={selectTraveller}
+            onChange={applyPersonal}
+          />
+        }
+      />
       <main id="top">
         <section className="planner-panel" id="planning-panel" aria-label="Journey planning">
-          <div className="intro">
-            <h1>Where are you going?</h1>
-            <p>Explore by bike &amp; public transport.</p>
-          </div>
-          <form onSubmit={search} className="search-form">
-            <TravellerProfiles
-              initial={travellers}
-              settings={tripPersonal}
-              disabled={loading}
-              onSelect={selectTraveller}
-              onEdit={() => setProfileOpen(true)}
-            />
-            <div className="place-inputs">
-              <PlaceInput
-                label="From"
-                value={fromInput}
-                disabled={loading}
-                onChange={(value) => {
-                  invalidate();
-                  setFromInput(value);
-                }}
-              />
-              <button
-                type="button"
-                className="reverse-route"
-                aria-label="Reverse route"
-                title="Reverse route"
-                disabled={loading}
-                onClick={() => {
-                  invalidate();
-                  setFromInput(toInput);
-                  setToInput(fromInput);
-                  setViaInputs((inputs) => [...inputs].reverse());
-                }}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  aria-hidden="true"
-                >
-                  <path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4" />
-                </svg>
-              </button>
-              {viaInputs.map((input, index) => (
-                <div className="waypoint-row" key={input.id}>
-                  <PlaceInput
-                    label={`Intermediate stop ${index + 1}`}
-                    value={input.value}
-                    disabled={loading}
-                    onChange={(value) => {
-                      invalidate();
-                      setViaInputs((inputs) =>
-                        inputs.map((item) => (item.id === input.id ? { ...item, value } : item)),
-                      );
-                    }}
-                  />
-                  <div className="waypoint-actions">
-                    <button
-                      type="button"
-                      disabled={loading || index === 0}
-                      aria-label={`Move intermediate stop ${index + 1} up`}
-                      onClick={() => moveWaypoint(index, -1)}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      disabled={loading || index === viaInputs.length - 1}
-                      aria-label={`Move intermediate stop ${index + 1} down`}
-                      onClick={() => moveWaypoint(index, 1)}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      type="button"
-                      disabled={loading}
-                      aria-label={`Remove intermediate stop ${index + 1}`}
-                      onClick={() => {
-                        invalidate();
-                        naming.current.get(input.id)?.abort();
-                        setViaInputs((inputs) => inputs.filter((item) => item.id !== input.id));
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <PlaceInput
-                label="To"
-                value={toInput}
-                disabled={loading}
-                onChange={(value) => {
-                  invalidate();
-                  setToInput(value);
-                }}
-              />
-            </div>
-            <div className="location-actions">
-              <button
-                type="button"
-                disabled={loading || viaInputs.length >= MAX_WAYPOINTS}
-                onClick={() => addWaypoint()}
-              >
-                + Add intermediate stop
-              </button>
-
-              <a href="#journey-map" onClick={() => showMobileView("map")}>
-                Choose on map
-              </a>
-            </div>
-            {!!viaInputs.length && (
-              <p className="waypoint-help">
-                Visit stops in this order · up to {MAX_WAYPOINTS} stops. Cycling and boarding limits
-                apply to the whole journey. No stopover time is added.
-              </p>
-            )}
-            {pointNotice && (
-              <p className="point-notice" role="status">
-                {pointNotice}
-              </p>
-            )}
-            <div className="departure-controls">
-              <label>
-                <span>Departure · Swiss time</span>
-                <input
-                  type="datetime-local"
-                  required
+          <PlannerForm
+            loading={loading}
+            onSubmit={search}
+            sections={{
+              locations: (
+                <RouteFields
+                  from={fromInput}
+                  to={toInput}
+                  vias={viaInputs}
                   disabled={loading}
-                  value={departureInput}
-                  onChange={(e) => {
+                  notice={pointNotice}
+                  onFrom={(value) => {
                     invalidate();
-                    setDepartureInput(e.target.value);
+                    setFromInput(value);
+                  }}
+                  onTo={(value) => {
+                    invalidate();
+                    setToInput(value);
+                  }}
+                  onVia={(id, value) => {
+                    invalidate();
+                    setViaInputs((inputs) =>
+                      inputs.map((item) => (item.id === id ? { ...item, value } : item)),
+                    );
+                  }}
+                  onReverse={() => {
+                    invalidate();
+                    setFromInput(toInput);
+                    setToInput(fromInput);
+                    setViaInputs((inputs) => [...inputs].reverse());
+                  }}
+                  onAdd={() => addWaypoint()}
+                  onRemove={(id) => {
+                    invalidate();
+                    naming.current.get(id)?.abort();
+                    setViaInputs((inputs) => inputs.filter((item) => item.id !== id));
+                  }}
+                  onMove={moveWaypoint}
+                  onChooseMap={() => showMobileView("map")}
+                />
+              ),
+              departure: (
+                <DepartureControls
+                  mode={departureMode}
+                  value={departureInput}
+                  disabled={loading}
+                  onChange={(value) => {
+                    invalidate();
+                    setDepartureInput(value);
                     setDepartureMode("scheduled");
                   }}
+                  onNow={() => {
+                    invalidate();
+                    setDepartureMode("now");
+                    setDepartureInput(swissDateTimeInput(new Date()));
+                  }}
                 />
-              </label>
-              <button
-                type="button"
-                className="leave-now"
-                disabled={loading}
-                aria-pressed={departureMode === "now"}
-                onClick={() => {
-                  invalidate();
-                  setDepartureMode("now");
-                  setDepartureInput(swissDateTimeInput(new Date()));
-                }}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 6v6l4 2" />
-                </svg>
-                Leave now
-              </button>
-            </div>
-            <fieldset className="trip-presets" disabled={loading}>
-              <legend>Your trip</legend>
-              <div>
-                {(
-                  [
-                    ["commuter", "Commuter", "Shorter bike rides"],
-                    ["bikepacking", "Bikepacking", "Room to explore"],
-                    ["personalized", "Personalized", "Your own preferences"],
-                  ] as const
-                ).map(([key, label, hint]) => (
-                  <button
-                    type="button"
-                    key={key}
-                    aria-pressed={tripPreset === key}
-                    onClick={() => choosePreset(key)}
-                  >
-                    <strong>{label}</strong>
-                    <span>{hint}</span>
-                  </button>
-                ))}
-              </div>
-            </fieldset>
-            <p className="preset-summary">
-              {tripPreset === "commuter"
-                ? "Up to 45 min cycling · fewer turns · unverified bike access included"
-                : tripPreset === "bikepacking"
-                  ? "No separate cycling cap · lower traffic stress · verified bike access only"
-                  : "Choose the preferences for this journey below."}
-            </p>
-            <details
-              className="preferences trip-profile"
-              onInvalidCapture={(e) => {
-                setProfileOpen(true);
-                const input = e.target as HTMLInputElement;
-                requestAnimationFrame(() => input.focus());
-              }}
-              open={profileOpen}
-              onToggle={(e) => setProfileOpen(e.currentTarget.open)}
-            >
-              <summary>Profile for this trip</summary>
-              <PersonalSettingsFields
-                value={tripPersonal}
-                disabled={loading}
-                onChange={applyPersonal}
-              />
-            </details>
-            <details
-              className="preferences trip-preferences"
-              open={preferencesOpen}
-              onToggle={(e) => setPreferencesOpen(e.currentTarget.open)}
-            >
-              <summary>Preferences</summary>
-              <fieldset className="model-picker" disabled={loading}>
-                <legend>Journey options</legend>
-                <div className="model-buttons">
-                  <button
-                    type="button"
-                    aria-pressed={mode === "baseline"}
-                    onClick={() => void changeMode("baseline")}
-                  >
-                    <strong>Baseline</strong>
-                    <span>
-                      {viaInputs.length
-                        ? "Cycle at the ends of each stage"
-                        : "Cycle before and after transit"}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={mode === "extended"}
-                    onClick={() => void changeMode("extended")}
-                  >
-                    <strong>Extended</strong>
-                    <span>Also allow one {viaInputs.length ? "extra " : ""}cycling transfer</span>
-                  </button>
-                </div>
-              </fieldset>
-              <fieldset
-                className="bicycle-access"
-                disabled={loading}
-                aria-describedby="bicycle-access-help"
-              >
-                <legend>Public transport with my bicycle</legend>
-                {BICYCLE_SCOPES.map((scope) => (
-                  <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
-                    <input
-                      type="radio"
-                      name="bicycle-access"
-                      value={scope}
-                      checked={bicycleScope === scope}
-                      onChange={() => {
-                        invalidate();
-                        setBicycleScope(scope);
-                        setTripPreset("personalized");
-                      }}
-                    />
-                    <span>{bicycleScopeOptions[scope]}</span>
-                  </label>
-                ))}
-              </fieldset>
-              <p className="bus-preference-help" id="bicycle-access-help">
-                {bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other
-                public transport.
-              </p>
-              <div className="preference-grid">
-                <label>
-                  <span>Cycling path</span>
-                  <select
-                    disabled={loading}
-                    value={routePreference}
-                    onChange={(e) => {
-                      invalidate();
-                      setRoutePreference(e.target.value as RoutePreference);
-                      setTripPreset("personalized");
-                    }}
-                  >
-                    {ROUTE_PREFERENCES.map((p) => (
-                      <option key={p} value={p}>
-                        {routePreferenceLabels[p]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>How much cycling?</span>
-                  <select
-                    disabled={loading}
-                    value={cycling}
-                    onChange={(e) => {
-                      invalidate();
-                      setCycling(e.target.value as CyclingPreference);
-                      setTripPreset("personalized");
-                    }}
-                  >
-                    <option value="less">Less · up to 40 min total</option>
-                    <option value="commuter">Commuter · up to 45 min total</option>
-                    <option value="balanced">Balanced · up to 90 min total</option>
-                    <option value="more">More · up to 150 min total</option>
-                    <option value="unrestricted">
-                      No separate cycling cap · can exceed 150 min
-                    </option>
-                  </select>
-                </label>
-                <label>
-                  <span>Extra category</span>
-                  <select
-                    disabled={loading}
-                    value={endpoint}
-                    onChange={(e) => {
-                      invalidate();
-                      setEndpoint(e.target.value as EndpointPreference);
-                      setTripPreset("personalized");
-                    }}
-                  >
-                    <option value="none">Just the three main categories</option>
-                    <option value="start">Less cycling or walking at start</option>
-                    <option value="end">Less cycling or walking at arrival</option>
-                  </select>
-                </label>
-              </div>
-            </details>
-            <button className="search-button" type="submit" disabled={loading}>
-              {loading ? "Finding journeys…" : "Find journeys"}
-            </button>
-          </form>
+              ),
+              presets: (
+                <TripPresetPicker value={tripPreset} disabled={loading} onChange={choosePreset} />
+              ),
+              preferences: (
+                <TripPreferences
+                  open={preferencesOpen}
+                  onOpenChange={setPreferencesOpen}
+                  disabled={loading}
+                  mode={mode}
+                  hasWaypoints={viaInputs.length > 0}
+                  bicycleScope={bicycleScope}
+                  routePreference={routePreference}
+                  cycling={cycling}
+                  endpoint={endpoint}
+                  onMode={(next) => void changeMode(next)}
+                  onScope={(scope) => {
+                    invalidate();
+                    setBicycleScope(scope);
+                    setTripPreset("personalized");
+                  }}
+                  onRoute={(route) => {
+                    invalidate();
+                    setRoutePreference(route);
+                    setTripPreset("personalized");
+                  }}
+                  onCycling={(amount) => {
+                    invalidate();
+                    setCycling(amount);
+                    setTripPreset("personalized");
+                  }}
+                  onEndpoint={(preference) => {
+                    invalidate();
+                    setEndpoint(preference);
+                    setTripPreset("personalized");
+                  }}
+                />
+              ),
+            }}
+          />
           <details className="planning-notes">
             <summary>Planning notes &amp; assumptions</summary>
             <p id="cycling-pace-help">

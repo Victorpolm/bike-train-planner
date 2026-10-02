@@ -68,3 +68,10 @@ Explanations use native details/summary: click, touch, Enter/Space, persistent c
 - GPS and navigation/Start require permission, location lifecycle, route progress and reroute handling.
 - An arbitrary cycling-minute slider and before/after/both bicycle-availability modes are separate functionality. Existing endpoint ranking is preserved, not relabelled as those modes.
 - Cross-device profiles/accounts, indoor routing, parking retrieval modes, applying a detour to a journey and richer facility precision remain separate work.
+
+
+## Follow-up — compact header profile and modular editing
+
+The owner asked to reduce profile/route spacing and make interface editing modular. Profile selection and all personal fields now open from a circular person icon at the top right. The search form no longer repeats profile controls. A compact side-mounted reverse action removes its empty row. The form is split into header, profile, locations, departure, presets and preferences components, with a central module-order/text file and a dedicated stylesheet with named spacing/width settings. Routing and the local-profile data format remain unchanged; 309 regressions and format/unused-code gates pass. Extended has an inline explanation. [Editing guide, component map, future visual-editor proposal and manual checks](INTERFACE_EDITING.md).
+
+**Follow-up publication:** owner-private version 44 at 20:32:54 UTC, Site source `fc0591d62b03d959c210e687289d43538e7d2c07`, environment revision 3. All 197 current application files match the feature branch.

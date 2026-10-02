@@ -551,3 +551,12 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Evidence:** 309 offline tests in 11 suites, including profile isolation/storage and 45/46-minute routed boundary cases, plus formatting/Knip and production builds. Browser QA remains pending. [Full mapping and remaining work](INTERFACE_PROFILES_2026-10-02.md).
 
 **Publication:** Owner-private version 43 succeeded on 2 October at 19:34:27 UTC, environment revision 3, Site source `79394f5eb992779f1d48048fb5d4f1abf9ec3bf4`; all 188 current application files match the feature branch.
+
+
+## 2026-10-02 — Compact header profile and modular presentation
+
+**User request:** place profile behind a circular person icon at the header's right, reduce reverse/To spacing, explain Extended and make the editing interface more modular.
+
+**Delivery:** consolidate the existing personal controls in a native modal; keep device-local storage and explicit Save to profile. Place the reversal action beside the field boundary without consuming a grid row. Extract independent presentation components and named layout/style settings, with [an editing guide](INTERFACE_EDITING.md). Preserve the existing planning state, model constraints, fares and facilities. Personalized opens trip preferences; personal settings are always accessible from the header. Extended remains at most one extra automatic cycling transfer across the complete journey.
+
+**Boundary:** this is a modular code structure and configuration, not a delivered visual drag-and-drop editor. A possible owner-only preview/editor is documented separately. 309 regressions pass; browser interaction QA remains pending.

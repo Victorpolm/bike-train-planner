@@ -101,16 +101,12 @@ export default function TravellerProfiles({
           onClick={() => {
             setEditing("new");
             setName("");
-            onEdit();
           }}
         >
           Add profile
         </button>
       </div>
       <div className="profile-actions">
-        <button type="button" disabled={disabled} onClick={onEdit}>
-          Edit for this trip
-        </button>
         {selected && (
           <>
             <button
@@ -158,10 +154,20 @@ export default function TravellerProfiles({
           <label>
             <span>{editing === "new" ? "New profile name" : "Profile name"}</span>
             <input
+              autoFocus
               value={name}
               maxLength={60}
               disabled={disabled}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                if (!disabled && name.trim())
+                  e.currentTarget
+                    .closest(".profile-editor")
+                    ?.querySelector<HTMLButtonElement>(".profile-actions button")
+                    ?.click();
+              }}
             />
           </label>
           <p className="profile-hint">
