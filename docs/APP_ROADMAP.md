@@ -132,7 +132,7 @@ Baseline/Extended remain available for the current mathematical experiment. Movi
 
 ## Technical work retained after these priorities
 
-- **More than one automatic cycling transfer — proposed, not implemented:** the owner asked what prevents multiple cycling connections between services. The cap is in both solvers and discovery currently expands only one round. Start with a bounded 0/1/2 experiment, shared journey budgets and measured quality/runtime before considering more. [Code constraints and acceptance cases](MULTIPLE_CYCLING_TRANSFERS.md).
+- **Two automatic cycling transfers — implemented on the UI branch:** Baseline 0 / Extended up to 2, two-round discovery, and beginning-only/end-only hard constraints now share the existing budgets. Next measure live route quality, runtime and truncation with a small fixed Swiss pilot; address walking access and per-block fare aggregation remain separate work. [Scope, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md).
 
 - **Later road safety:** investigate crossings/signals, turning manoeuvres, physical separation, documented lower speed limits and pedestrian access. Review official injury-crash data with exposure, age and geometry limitations. Existing lower-traffic-stress summaries remain heuristics; no “every turn is dangerous” rule or guaranteed-safe route. See [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md).
 

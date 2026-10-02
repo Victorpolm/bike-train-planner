@@ -10,7 +10,7 @@ import {
   routePreferenceLabels,
   type RoutePreference,
 } from "../cyclingPreferences";
-import type { ModelMode, EndpointPreference } from "../model";
+import type { ModelMode, EndpointPreference, CyclingPosition } from "../model";
 import type { CyclingPreference } from "../preferences";
 
 export default function TripPreferences({
@@ -23,11 +23,13 @@ export default function TripPreferences({
   routePreference,
   cycling,
   endpoint,
+  cyclingPosition,
   onMode,
   onScope,
   onRoute,
   onCycling,
   onEndpoint,
+  onPosition,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,11 +40,13 @@ export default function TripPreferences({
   routePreference: RoutePreference;
   cycling: CyclingPreference;
   endpoint: EndpointPreference;
+  cyclingPosition: CyclingPosition;
   onMode: (mode: ModelMode) => void;
   onScope: (scope: BicycleScope) => void;
   onRoute: (route: RoutePreference) => void;
   onCycling: (cycling: CyclingPreference) => void;
   onEndpoint: (endpoint: EndpointPreference) => void;
+  onPosition: (position: CyclingPosition) => void;
 }) {
   return (
     <details
@@ -60,32 +64,60 @@ export default function TripPreferences({
             onClick={() => onMode("baseline")}
           >
             <strong>Baseline</strong>
-            <span>
-              {hasWaypoints ? "Cycle at the ends of each stage" : "Cycle before and after transit"}
-            </span>
+            <span>0 cycling connections between services</span>
           </button>
           <button
             type="button"
             aria-pressed={mode === "extended"}
+            disabled={cyclingPosition !== "anywhere"}
             onClick={() => onMode("extended")}
           >
             <strong>Extended</strong>
-            <span>Also allow one bike connection between services</span>
+            <span>Up to 2 cycling connections between services</span>
           </button>
         </div>
       </fieldset>
       <InfoDisclosure label="What does Extended add?">
         <p>
           Baseline allows cycling at the start and finish, plus ordinary public-transport changes.
-          Extended also allows one cycling connection between services, for example: bike → train →
-          bike to another station → train → bike.
+          Extended allows up to two cycling connections between services. It can still choose zero
+          or one when that gives a better journey. Cycling to the first service and from the last
+          service does not count towards this limit.
         </p>
         <p>
           Your cycling limits and bicycle-access rules still apply. This does not require a longer
-          ride. With intermediate stops, the one extra cycling connection is shared across the whole
-          journey.
+          ride. The two-connection allowance is shared across the whole journey.
         </p>
+        {hasWaypoints && (
+          <p>
+            Requested intermediate stops can add cycling at stage boundaries in either model. The
+            beginning-only and end-only restrictions apply across the whole journey, including these
+            stops.
+          </p>
+        )}
       </InfoDisclosure>
+      <label>
+        <span>Where would you like to cycle?</span>
+        <select
+          disabled={disabled}
+          value={cyclingPosition}
+          onChange={(e) => onPosition(e.target.value as CyclingPosition)}
+        >
+          <option value="anywhere">At either end and between services</option>
+          <option value="start-only">Only at the beginning</option>
+          <option value="end-only">Only at the end</option>
+        </select>
+      </label>
+      <p className="bus-preference-help">
+        {cyclingPosition === "start-only"
+          ? "Ride before your first service only. Choose a public-transport stop as your destination."
+          : cyclingPosition === "end-only"
+            ? "Ride after your last service only. Choose a public-transport stop as your starting point."
+            : "Baseline allows cycling at either end. Extended also explores cycling between services."}
+        {cyclingPosition !== "anywhere" &&
+          " Cycling between services is disabled. Existing walking transfers remain possible; walking routes to or from an address are not yet supported."}{" "}
+        Your bicycle travels with you on public transport.
+      </p>
       <fieldset
         className="bicycle-access"
         disabled={disabled}

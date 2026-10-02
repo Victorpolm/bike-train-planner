@@ -80,12 +80,13 @@ describe("bounded multimodal model", () => {
     n.edges.delete(`C-D-${ready}-50-transit`); ride(n, "C", "D", ready - 1 / 60, 50);
     assert.equal(fastest(solve(n, origin, destination, start, limits, "extended").journeys), 80);
   });
-  it("cannot chain two intermediate cycling legs or finish immediately after an intermediate ride", () => {
+  it("allows two intermediate cycling connections but cannot finish immediately after one", () => {
     const n = fixture(); n.edges.clear();
     const e = { id: "E", name: "Third station", lat: 47.8, lon: 8 }, f = { ...e, id: "F", name: "Fourth station", lon: 8.03 };
     n.stops.set(e.id, e); n.stops.set(f.id, f);
     ride(n, "A", "B", 5, 20); ride(n, "C", "E", 34, 45); ride(n, "F", "D", 60, 80);
-    assert.equal(solve(n, origin, destination, start, limits, "extended").journeys.length, 0);
+    assert.equal(solve(n, origin, destination, start, { ...limits, maxCyclingTransfers: 1 }, "extended").journeys.length, 0);
+    assert.equal(fastest(solve(n, origin, destination, start, limits, "extended").journeys), 80);
     const c = { ...stops[2], label: "At C" };
     assert.equal(solve(n, origin, c, start, limits, "extended").journeys.length, 0);
   });
@@ -114,18 +115,18 @@ describe("bounded multimodal model", () => {
     const n = fixture(), bike = cyclingMinutes(haversineKm(stops[1], stops[2]));
     for (const budget of [0, bike - 1, bike]) for (const k of [1, 2, 3]) for (const horizon of [50, 80, 120]) for (const mode of ["baseline", "extended"] as const) {
       const expected: number[][] = [];
-      const visit = (stop: string, t: number, b: number, boards: number, middle: boolean, needsTransit: boolean) => {
+      const visit = (stop: string, t: number, b: number, boards: number, middle: number, needsTransit: boolean) => {
         if (t > horizon || b > budget || boards > k) return;
         if (stop === "D" && boards > 0 && !needsTransit) expected.push([t, b, boards]);
         for (const e of n.edges.values()) if (e.from === stop && e.leg.departure!.getTime() >= time(t + 3).getTime()) {
           visit(e.to, (e.leg.arrival!.getTime() - start.getTime()) / 60_000, b, boards + 1, middle, false);
         }
-        if (mode === "extended" && boards > 0 && !middle && !needsTransit) for (const target of stops) {
+        if (mode === "extended" && boards > 0 && middle < 2 && !needsTransit) for (const target of stops) {
           const minutes = cyclingMinutes(haversineKm(n.stops.get(stop)!, target));
-          if (target.id !== stop && minutes > 0 && minutes <= limits.maxIntermediateMinutes) visit(target.id, t + minutes, b + minutes, boards, true, true);
+          if (target.id !== stop && minutes > 0 && minutes <= limits.maxIntermediateMinutes) visit(target.id, t + minutes, b + minutes, boards, middle + 1, true);
         }
       };
-      visit("A", 0, 0, 0, false, true);
+      visit("A", 0, 0, 0, 0, true);
       const expectedFront = [...new Set(expected.filter(a => !expected.some(b => b.every((v, i) => v <= a[i]) && b.some((v, i) => v < a[i]))).map(v => v.join(",")))].sort();
       const actual = solve(n, origin, destination, start, { ...limits, maxBikeMinutes: budget, maxBoardings: k, horizonMinutes: horizon }, mode);
       assert.deepEqual(vectors(actual.journeys), expectedFront, JSON.stringify({ budget, k, horizon, mode }));

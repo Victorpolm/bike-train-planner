@@ -568,3 +568,13 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Delivery:** saved profiles have selectable cards with name, pace, fare and selected/modified status. Cards and the header manager share profile state and persistence, including creation, rename, deletion and storage errors. Profiles apply personal settings while trip-style and route preferences remain independent. Saves remain explicit; schema and device-only scope are unchanged. 312 offline tests pass, including three new persistence regressions; browser QA is pending.
 
 **Routing finding/proposal:** the single automatic-transfer limit is hard-coded in both solvers and reflected in one-round timetable discovery; no provider restriction is established. A bounded 0/1/2 experiment with shared budgets, measured discovery/runtime and permission/fare regressions is proposed, not implemented. [Details](MULTIPLE_CYCLING_TRANSFERS.md).
+
+## 2026-10-02 — Baseline 0, Extended up to 2, and cycling position
+
+**User authorisation:** implement zero automatic cycling connections in Baseline, up to two in Extended and choices to ride only at the beginning or only at the end.
+
+**Decision/delivery:** count automatic transfers in both solvers and expand the sampled network in two bounded discovery rounds, including a departure-board seed after the first cycling link. Keep the original total request/deadline/cycling/boarding budgets and independent permission scopes. Preserve zero/one-transfer solutions in the larger comparison. Explicit waypoint-stage cycling remains separate, but beginning/end-only constraints apply to the entire journey and cannot reset at a visit.
+
+**Position semantics:** a hard restriction on riding, distinct from ranking a less-active endpoint. Choosing one end selects Baseline and disables intermediate cycling. The other endpoint must match a transport stop; existing timed walking links remain usable. No new pedestrian router, parking/retrieval or bike rental. Bike custody and saved-profile fields are unchanged. The cycling-only card is labelled as an outside-preference reference and cannot automatically win.
+
+**Evidence/boundary:** 322 offline regressions pass; new golden/acquisition cases are recorded in [EXPERIMENTS.md](EXPERIMENTS.md). Through quotes across cycling gaps remain unsupported; no price substitution. Live nationwide coverage/performance and browser interaction QA remain unmeasured. [Implementation and publication](MULTIPLE_CYCLING_TRANSFERS.md).

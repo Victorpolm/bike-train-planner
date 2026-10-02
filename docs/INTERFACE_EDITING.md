@@ -1,6 +1,6 @@
 # Editing the interface in modules
 
-_2 October 2026 · feature/novice-interface-profiles. These changes affect presentation; the search state and routing remain in their existing layers._
+_2 October 2026 · feature/novice-interface-profiles. This guide covers modular presentation; the later routing changes are documented separately below._
 
 ## What you can change in one place
 
@@ -23,7 +23,7 @@ The interface is now made of separate React sections. The central [layout settin
 | From/To, reversing and ordered intermediate stops | `src/ui/RouteFields.tsx` |
 | Date/time and Leave now | `src/ui/DepartureControls.tsx` |
 | Trip-style cards and saved traveller cards under Your trip | `src/ui/TripPresetPicker.tsx` |
-| Model, bicycle access, route preference, cycling cap and extra category | `src/ui/TripPreferences.tsx` |
+| Model, cycling position, bicycle access, route preference, cycling cap and extra category | `src/ui/TripPreferences.tsx` |
 | Composition of the form, module wrappers and submit button | `src/ui/PlannerForm.tsx` |
 | Map, results and journey details | Existing `MapView.tsx`, `JourneyPlan.tsx`, `JourneyPrice.tsx` and related components |
 
@@ -48,11 +48,11 @@ The reverse button sits beside the boundary between the location fields instead 
 ## What Extended means
 
 - **Baseline:** cycle to the first public-transport service and from the last service to the destination; ordinary service changes and walking transfers remain possible.
-- **Extended:** also allow at most one automatic cycling connection between public-transport services. Example: bike → train → bike to another station → train → bike.
+- **Extended:** also allow up to two automatic cycling connections between public-transport services. Example: bike → train → bike to another station → train → bike.
 - The same total cycling/time limits, bicycle-access scope and rider settings apply. Extended does not require extra cycling or select Bikepacking. Actual fares still depend on the services chosen.
-- Requested intermediate stops split a journey into stages; the one extra automatic cycling transfer is shared across the entire journey. The UI explains this beside the model selector.
+- Requested intermediate stops split a journey into stages; the two automatic cycling connections are shared across the entire journey. The UI explains this beside the model selector.
 
-Allowing two or more requires additional discovery rounds as well as a counted allowance in both solvers. [Current constraints and proposed 0/1/2 experiment](MULTIPLE_CYCLING_TRANSFERS.md). This routing expansion is not part of the profile-card change.
+**Where would you like to cycle?** adds hard beginning-only/end-only choices separately from the optional endpoint ranking category. They switch to Baseline and disable intermediate cycling. Select a transport stop at the non-cycling end; existing timed walking links remain usable. This constraint applies across requested stops and stays selected when a profile or trip style changes. [Two-round routing, exact semantics and remaining limits](MULTIPLE_CYCLING_TRANSFERS.md).
 
 ## A possible visual editor
 
@@ -60,7 +60,7 @@ If direct manipulation is wanted next, add an owner-only layout preview with mov
 
 ## Verification and manual checks
 
-312 offline tests in 11 suites pass, including three new shared-profile persistence cases (create/rename/delete, temporary selection, rejected edits). Existing profile isolation, invalid values and Baseline/Extended cases pass. React formatting and Knip pass; the production TypeScript/frontend/Worker build passes. No routing algorithm, fare support or saved-profile schema is changed.
+322 offline tests in 11 suites pass, including profile persistence and ten new two-transfer/discovery/position regressions. React formatting and Knip pass; the production TypeScript/frontend/Worker build passes. The saved-profile schema is unchanged. Routing now supports two automatic connections; through-fare quoting across cycling gaps remains unsupported.
 
 Browser interaction/visual QA is unavailable in this session. Check the header icon at desktop/phone widths; opening/closing by keyboard, Escape and backdrop; profile creation by keyboard; invalid speed/age handling; compact From/To spacing with zero/four intermediate stops; and 200% zoom. Check that switching phone views and opening the profile preserve the selected map and filters. These manual checks remain pending, not claimed as automated results.
 
@@ -69,4 +69,4 @@ For the new cards: create two profiles, close the header panel, select either ca
 
 ## Publication
 
-Owner-private version **45** succeeded on **2 October 2026 at 21:09:11 UTC**, environment revision **3**, from Site source `f8dfcb0e46ac945f8c1b52fb12f284ed0d02315d`. All **197 current application files** match the feature branch. The existing [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remains unmerged; sharing and main are unchanged.
+Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, environment revision **3**, Site source `043d35340c35317a2c54b3f473e3bf0a85d30125`. All **198 current application files** match `feature/novice-interface-profiles`; the branch and [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remain unmerged. Sharing and runtime secrets are unchanged.

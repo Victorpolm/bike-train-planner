@@ -7,7 +7,10 @@ import { BICYCLE_SCOPES, bicycleLegAllowed, type BicycleScope } from "./bicycleP
 
 export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
+export type CyclingPosition = "anywhere" | "start-only" | "end-only";
 export type Options = {
+  cyclingPosition?: CyclingPosition;
+  maxCyclingTransfers?: number;
   maxBikeMinutes: number;
   maxAccessMinutes: number;
   maxEgressMinutes: number;
@@ -23,10 +26,19 @@ export type Options = {
   cyclingRoutePreference?: RoutePreference;
 };
 export const DEFAULT_OPTIONS: Options = {
+  cyclingPosition: "anywhere", maxCyclingTransfers: 2,
   maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60,
   maxIntermediateMinutes: 20, maxBoardings: 4, horizonMinutes: 1440,
   boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none", busPreference: "include-unknown",
 };
+export function cyclingTransferLimit(o: Options, mode: ModelMode): number {
+  return mode === "extended" && (o.cyclingPosition ?? "anywhere") === "anywhere"
+    ? Math.min(o.maxCyclingTransfers ?? 2, o.maxBoardings - 1) : 0;
+}
+export function endpointCyclingLimit(o: Options, direction: "access" | "egress"): number {
+  if (direction === "access" && o.cyclingPosition === "end-only" || direction === "egress" && o.cyclingPosition === "start-only") return 0;
+  return Math.min(o.maxBikeMinutes, direction === "access" ? o.maxAccessMinutes : o.maxEgressMinutes);
+}
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
 export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
 export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge>; cycling?: Map<string, CyclingRoute | null> };
@@ -49,6 +61,8 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 };
 
 export function validateOptions(o: Options) {
+  if (o.cyclingPosition !== undefined && !["anywhere", "start-only", "end-only"].includes(o.cyclingPosition)) throw new Error("Invalid cycling position.");
+  if (o.maxCyclingTransfers !== undefined && (!Number.isInteger(o.maxCyclingTransfers) || o.maxCyclingTransfers < 0 || o.maxCyclingTransfers > 2)) throw new Error("Cycling connections must be a whole number from 0 to 2.");
   if (o.cyclingRoutePreference !== undefined && !ROUTE_PREFERENCES.includes(o.cyclingRoutePreference)) throw new Error("Invalid cycling route preference.");
   if (o.cyclingPace) validateCyclingPace(o.cyclingPace);
   const bounds: [keyof Options, number, number][] = [
@@ -140,6 +154,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   validateOptions(o);
   if (!Number.isFinite(start.getTime())) throw new Error("Invalid departure time.");
   const horizon = start.getTime() + o.horizonMinutes * 60_000;
+  const transferLimit = cyclingTransferLimit(o, mode);
   const outgoing = new Map<string, Edge[]>();
   for (const edge of network.edges.values()) {
     const l = edge.leg;
@@ -168,9 +183,10 @@ export function solve(network: Network, origin: Place, destination: Place, start
     for (const l of bucket) if (dominates(v, vector(l))) l.alive = false;
     labels.set(key, [...bucket.filter(l => l.alive), label]); queue.push(label);
   };
-  for (const stop of boardingStops) {
+  for (const stop of network.stops.values()) {
+    if (!outgoing.has(stop.id)) continue;
     const access = atEndpoint(stop, origin, network);
-    if (access.bikeMinutes <= o.maxAccessMinutes) add({ stop: stop.id,
+    if (access.bikeMinutes <= endpointCyclingLimit(o, "access")) add({ stop: stop.id,
       time: start.getTime() + access.bikeMinutes * 60_000, bike: access.bikeMinutes,
       walk: 0, accessActive: access.bikeMinutes, egressWalk: 0,
       boardings: 0, middle: 0, needsTransit: true, access, legs: [], alive: true });
@@ -192,7 +208,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
         boardings: current.boardings + Number(ride), needsTransit: ride ? false : current.needsTransit,
         legs: [...current.legs, edge.leg], alive: true });
     }
-    if (mode !== "extended" || current.middle !== 0 || current.needsTransit || !current.boardings || current.boardings >= o.maxBoardings) continue;
+    if (current.middle >= transferLimit || current.needsTransit || !current.boardings || current.boardings >= o.maxBoardings) continue;
     const from = network.stops.get(current.stop)!;
     let neighbors = cycling.get(from.id);
     if (!neighbors) {
@@ -207,7 +223,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
         service: "Cycle between stops", serviceName: null, direction: null,
         fromId: from.id, toId: stop.id, fromPoint: from, toPoint: stop, cyclingRoute: route, geometry: route?.points };
       add({ ...current, stop: stop.id, time: arrival, bike: current.bike + minutes,
-        middle: 1, needsTransit: true, legs: [...current.legs, leg], alive: true });
+        middle: current.middle + 1, needsTransit: true, legs: [...current.legs, leg], alive: true });
     }
   }
   const reachable = [...labels.values()].flat().filter(l => l.alive);
@@ -215,7 +231,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   for (const label of reachable) {
     if (!label.boardings || label.needsTransit) continue;
     const egress = atEndpoint(network.stops.get(label.stop)!, destination, network, "egress");
-    if (egress.bikeMinutes > o.maxEgressMinutes || label.bike + egress.bikeMinutes > o.maxBikeMinutes ||
+    if (egress.bikeMinutes > endpointCyclingLimit(o, "egress") || label.bike + egress.bikeMinutes > o.maxBikeMinutes ||
       label.time + egress.bikeMinutes * 60_000 > horizon) continue;
     const departure = label.legs[0].departure!, arrival = new Date(label.time);
     journeys.push({ id: JSON.stringify([label.access.id, ...label.legs.map(l =>
@@ -233,7 +249,10 @@ export function solve(network: Network, origin: Place, destination: Place, start
 export function compareModels(network: Network, origin: Place, destination: Place, start: Date, o: Options, labelLimit = 50_000) {
   const baseline = solve(network, origin, destination, start, o, "baseline", labelLimit);
   const extended = solve(network, origin, destination, start, o, "extended", labelLimit);
-  // Preserve the baseline even if the extended search reaches its resource cap.
-  extended.journeys = [...new Map([...baseline.journeys, ...extended.journeys].map(j => [j.id, j])).values()];
+  const one = cyclingTransferLimit(o, "extended") > 1
+    ? solve(network, origin, destination, start, { ...o, maxCyclingTransfers: 1 }, "extended", labelLimit) : null;
+  // Preserve 0/1-transfer alternatives if the larger search reaches its cap.
+  extended.journeys = [...new Map([...baseline.journeys, ...one?.journeys ?? [], ...extended.journeys].map(j => [j.id, j])).values()];
+  extended.limited ||= one?.limited ?? false;
   return { baseline, extended };
 }

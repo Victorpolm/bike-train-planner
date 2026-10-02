@@ -82,4 +82,10 @@ Version 45 adds cards for saved profiles below the trip styles. Selection applie
 
 Owner-private version **45** succeeded on **2 October 2026 at 21:09:11 UTC**, environment revision **3**, from Site source `f8dfcb0e46ac945f8c1b52fb12f284ed0d02315d`. All **197 current application files** match the feature branch. The existing [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remains unmerged; sharing and main are unchanged.
 
-The question of multiple automatic cycling connections is investigated separately. The current one-transfer cap remains; [constraints and proposed 0/1/2 experiment](MULTIPLE_CYCLING_TRANSFERS.md) are recorded in the roadmap.
+The question of multiple automatic cycling connections is investigated separately. Version 45 kept the one-transfer cap. The following release supersedes that investigation.
+
+## Follow-up — two connections and cycling position
+
+The owner requested Baseline 0 / Extended up to 2 plus beginning-only/end-only cycling. Both solvers and discovery implement this; the position restriction applies across the complete journey and stays independent of the optional least-active endpoint category. The non-cycling end must match a public-transport stop; existing walking transfers remain possible. Exact scope, through-fare limitations, regression evidence and manual checks are in [MULTIPLE_CYCLING_TRANSFERS.md](MULTIPLE_CYCLING_TRANSFERS.md). 322 regressions and production builds pass; browser QA remains pending.
+
+Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, environment revision **3**, Site source `043d35340c35317a2c54b3f473e3bf0a85d30125`. All **198 current application files** match `feature/novice-interface-profiles`; the branch and [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remain unmerged. Sharing and runtime secrets are unchanged.

@@ -19,7 +19,7 @@ import { TRIP_PRESETS, type TripPreset } from "./tripPresets";
 import { type RoutePreference } from "./cyclingPreferences";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
-import { metrics, type ModelMode, type EndpointPreference } from "./model";
+import { metrics, type ModelMode, type EndpointPreference, type CyclingPosition } from "./model";
 import {
   recommend,
   compareCycling,
@@ -65,6 +65,7 @@ function CyclingCard({
   start,
   maxBikeMinutes,
   fastest,
+  cyclingPosition,
   onSelect,
 }: {
   comparison: CyclingComparison;
@@ -72,6 +73,7 @@ function CyclingCard({
   start: Date;
   maxBikeMinutes: number;
   fastest: boolean;
+  cyclingPosition: CyclingPosition;
   onSelect: () => void;
 }) {
   return (
@@ -108,6 +110,12 @@ function CyclingCard({
       {comparison.minutes > maxBikeMinutes && (
         <span className="comparison-caution">
           Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.
+        </span>
+      )}
+      {cyclingPosition !== "anywhere" && (
+        <span className="comparison-caution">
+          Reference only: a cycling-only trip does not match your choice to ride only{" "}
+          {cyclingPosition === "start-only" ? "before" : "after"} public transport.
         </span>
       )}
       <span className="journey-plan-toggle">
@@ -329,6 +337,7 @@ export default function App() {
     setPreferencesOpen(false);
   }
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
+  const [cyclingPosition, setCyclingPosition] = useState<CyclingPosition>("anywhere");
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
@@ -341,8 +350,9 @@ export default function App() {
         bicycleScope,
         cyclingPace,
         routePreference,
+        cyclingPosition,
       ),
-    [cycling, endpoint, bicycleScope, cyclingPace, routePreference],
+    [cycling, endpoint, bicycleScope, cyclingPace, routePreference, cyclingPosition],
   );
   const [session, setSession] = useState<SearchSession | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -380,6 +390,7 @@ export default function App() {
   );
   const { proposals } = recommendation;
   const cyclingFastest =
+    (session?.options.cyclingPosition ?? "anywhere") === "anywhere" &&
     !!session?.cyclingComparison &&
     session.cyclingComparison.minutes <= session.options.maxBikeMinutes &&
     proposals.every((p) => session.cyclingComparison!.minutes <= p.journey.totalMinutes);
@@ -701,6 +712,13 @@ export default function App() {
                   routePreference={routePreference}
                   cycling={cycling}
                   endpoint={endpoint}
+                  cyclingPosition={cyclingPosition}
+                  onPosition={(position) => {
+                    invalidate();
+                    setCyclingPosition(position);
+                    if (position !== "anywhere") setMode("baseline");
+                    setTripPreset("personalized");
+                  }}
                   onMode={(next) => void changeMode(next)}
                   onScope={(scope) => {
                     invalidate();
@@ -965,6 +983,7 @@ export default function App() {
                     start={session.start}
                     maxBikeMinutes={session.options.maxBikeMinutes}
                     fastest={cyclingFastest}
+                    cyclingPosition={session.options.cyclingPosition ?? "anywhere"}
                     onSelect={() => {
                       setSelectedId(BIKE_ONLY_ID);
                       setExpandedId(null);
