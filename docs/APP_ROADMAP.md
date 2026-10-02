@@ -1,6 +1,6 @@
 # App roadmap: bicycle + public transport
 
-_Updated 2026-09-30. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
+_Updated 2026-10-02. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
 
 ## Product direction
 
@@ -13,6 +13,12 @@ _Updated 2026-09-30. The user's latest order supersedes the delivery orders reco
 **29 September follow-up brainstorming:** The owner repeatedly needs drinking water, snacks/vending, public toilets, good parking and repair help on long rides. Treat these five categories as the next product's useful-stop scope. Their proposed data model, filters, route association and staged delivery are in [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md). All five useful-stop categories now have map filters and basic route association. Cycling-section detour previews with an editable visit duration and fixed-service timing checks are delivered in version 41. Evaluated opening, verified entrances, Apply/save stop insertion and road-safety classification remain later work.
 
 **Review follow-up, implemented 30 September:** automatic detour framing and keyboard map selection simplify the controls. Permission cache/alias fixes, timetable extraction, conservative cleanup and automated offline verification are delivered. [Accepted/rejected review items and MOTIS pilot](REVIEW_IMPLEMENTATION_2026-09-30.md). Next: check the interaction on desktop/mobile, then resume facility precision. The engine pilot is not a migration.
+
+## Interface milestone — branch implementation, 2 October
+
+The owner authorised the revised interface and local profiles on `feature/novice-interface-profiles`. Profiles are independent of trip presets; all existing model/access/pace/fare/category choices remain accessible. Phone views keep the same mounted map and planner. Single-total cards and persistent ? explanations simplify inspection without hiding required bicycle conditions. [Implemented controls, evidence and manual acceptance](INTERFACE_PROFILES_2026-10-02.md).
+
+Next: complete desktop/phone and keyboard acceptance, review the branch, then merge. Continue facility precision afterwards. Historical departures, real next-departure search, additional SBB fare products and GPS navigation are separate work; do not add cosmetic buttons or change the current endpoint category into a bicycle-availability constraint. Cross-device profile accounts remain optional future work.
 
 ## Agreed ordering and proposed milestones
 

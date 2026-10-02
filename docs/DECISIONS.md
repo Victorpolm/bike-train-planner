@@ -538,3 +538,16 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Cleanup boundary:** Remove only demonstrated dead code/unused exports. Keep the boarding buffer, BLS/RhB/regional rules, fare tables, journey IDs and search label cap. No identity-only cache or claimed 27× full-search speedup.
 
 **Engine decision:** The local MOTIS 2.11.3 pilot preserves strict/unrestricted winners but cannot recover the middle-scope winner by postfiltering an unrestricted result. Keep the deployed engine and require pre-routing three-state handling, coordinate-waypoint/intermediate-cycling and category tests before any migration. 300 tests/builds pass; browser QA remains unavailable. [Implementation, reproducible pilot and caveats](REVIEW_IMPLEMENTATION_2026-09-30.md).
+
+
+## 2026-10-02 — Novice interface and optional local traveller profiles
+
+**Authorisation:** Implement the revised proposal on a new GitHub branch. Branch `feature/novice-interface-profiles` starts at main `5f17985`; do not merge as part of the redesign.
+
+**Decision:** Simplify presentation while preserving options and routing semantics. Separate named personal settings from trip presets and per-trip overrides. Store profiles only in this browser, keep Guest, require explicit Save to profile, preserve legacy fare selections and show storage failures. Age is optional metadata, not a fare entitlement. Presets retain current personal fare/pace; new Guest pace is Relaxed 20 km/h. Add a 45-minute total cycling choice without replacing existing limits. Bikepacking uses no separate cap within the existing overall horizon.
+
+**Preservation:** Baseline/Extended stay independent; endpoint preferences remain extra categories. Phone views hide rather than unmount. Map filter changes and view switches do not start journey search. Permission/reservation requirements remain visible; explanatory sources use accessible persistent disclosures. No functional More/Start controls until their separate capabilities exist.
+
+**Evidence:** 309 offline tests in 11 suites, including profile isolation/storage and 45/46-minute routed boundary cases, plus formatting/Knip and production builds. Browser QA remains pending. [Full mapping and remaining work](INTERFACE_PROFILES_2026-10-02.md).
+
+**Publication:** Owner-private version 43 succeeded on 2 October at 19:34:27 UTC, environment revision 3, Site source `79394f5eb992779f1d48048fb5d4f1abf9ec3bf4`; all 188 current application files match the feature branch.

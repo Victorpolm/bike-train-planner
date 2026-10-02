@@ -1,6 +1,6 @@
 # Project state
 
-_Last consolidated: 2026-09-30. This is the current summary; dated reports and Git history preserve earlier states._
+_Last consolidated: 2026-10-02. This is the current summary; dated reports and Git history preserve earlier states._
 
 ## Objective and current scope
 
@@ -8,7 +8,9 @@ _Last consolidated: 2026-09-30. This is the current summary; dated reports and G
 
 **User's requested priority order, 29 September:** (1) bike parking, (2) bike shops/repair referencing, (3) the broader user-interface improvement. The broader proposed scope remains in [APP_ROADMAP.md](APP_ROADMAP.md) and [BIKE_PARKING.md](BIKE_PARKING.md).
 
-**Latest implementation, 30 September — version 42:** approved review changes add automatic detour framing, remove redundant map controls, share exact operator normalization and cache bicycle permission with evidence-mutation invalidation. `TimetableClient` is extracted; active rules/fares are retained during cleanup. Automatic offline CI, broader mixed-mode sweeps, Knip and separate React formatting are added. **300 tests/builds pass.** The bounded local MOTIS pilot reproduces a three-scope integration gap; migration remains deferred. [Implementation and evidence](REVIEW_IMPLEMENTATION_2026-09-30.md).
+**Latest branch implementation, 2 October:** `feature/novice-interface-profiles` delivers optional browser-local traveller profiles with explicit save, separate Commuter/Bikepacking/Personalized trip presets, a simpler form, persistent phone Planning / Map views, a map filter menu, single-total cards and clickable explanations. Existing options and route semantics are retained. **309 offline tests**, formatting/Knip and builds pass. Browser QA is pending. [Capability mapping, acceptance checks and scope](INTERFACE_PROFILES_2026-10-02.md). The branch is not merged into main.
+
+**Previous implementation, 30 September — version 42:** approved review changes add automatic detour framing, remove redundant map controls, share exact operator normalization and cache bicycle permission with evidence-mutation invalidation. `TimetableClient` is extracted; active rules/fares are retained during cleanup. Automatic offline CI, broader mixed-mode sweeps, Knip and separate React formatting are added. **300 tests/builds pass.** The bounded local MOTIS pilot reproduces a three-scope integration gap; migration remains deferred. [Implementation and evidence](REVIEW_IMPLEMENTATION_2026-09-30.md).
 
 **Previous implementation, 30 September:** **Version 41** fixes facility popups disappearing after map movement and adds cycling-only facility detour previews. Only the selected cycling section is routed again; public-transport services, required waypoint boundaries, original cards and prices remain fixed. The preview includes editable visit time, extra distance/travel time and a same-connection check with walking and the three-minute buffer. **290 tests and production builds pass.** [Implementation, checks and limits](FACILITY_DETOURS_2026-09-30.md).
 
@@ -41,9 +43,9 @@ _Last consolidated: 2026-09-30. This is the current summary; dated reports and G
 
 ## Last verified publication and tests
 
-**Fact:** Owner-private **version 42** published on **30 September 2026 at 21:58:44 UTC**, environment revision **3**, Site source `c5ed6f1a3cdf392c727ad64492a6e43368eae4e6`. All **182 current application files** match GitHub implementation `a97c872af7b55543221781fde4bca30d2ccaa923`; historical Site documentation snapshots are excluded. Owner-only access and runtime configuration remain unchanged. GitHub source is public; GitHub CI verifies code but does not publish the website.
+**Fact:** Owner-private **version 43** published on **2 October 2026 at 19:34:27 UTC**, environment revision **3**, Site source `79394f5eb992779f1d48048fb5d4f1abf9ec3bf4`. All **188 current application files** match `feature/novice-interface-profiles`; historical Site documentation snapshots are excluded. The branch is not merged into main. Owner-only access and runtime configuration remain unchanged. GitHub source is public; GitHub CI verifies code but does not publish the website.
 
-**Last code-release gate:** **300 application tests in 11 suites**, Prettier/Knip and TypeScript/frontend/Worker builds pass. The new automatic [GitHub Actions run](https://github.com/Victorpolm/bike-train-planner/actions/runs/36782578264) also passed on the exact published application source. Added regressions cover normalization, mutable permission evidence and mixed-mode parameter invariants. [Review evidence and local MOTIS comparison](REVIEW_IMPLEMENTATION_2026-09-30.md). Browser interaction/visual QA remains unavailable; no new live Swiss provider checks are claimed.
+**Last code-release gate:** **309 application tests in 11 suites**, React formatting/Knip and TypeScript/frontend/Worker builds pass. New tests cover profiles, storage failures and the Commuter 45-minute boundary. [Implementation, CI status and acceptance checks](INTERFACE_PROFILES_2026-10-02.md). Browser interaction/visual QA remains pending; no new live Swiss provider checks are claimed.
 
 Live checks on 28 September returned passenger CHF 36.20 for Zürich HB–Bern and CHF 45.80 for Zürich HB–Laax on the documented 29 September departures. The Laax route combined services from different OJP responses. Later-bus and bus-only subtrip checks also passed. These are dated test observations, not standing tariffs. [Exact cases and limits](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
@@ -57,7 +59,7 @@ The 29 September public-feed audit found **1,608 BIKE facility records** and 1,2
 
 1. **Parking:** try the colours and adjustable selected-journey filter on familiar trips, then review municipal coverage, unresolved duplicate identities and entrances. GPS is a later explicit permission-based action. Do not treat proximity or equipment colours as a completed suitability/entrance-routing milestone.
 2. **Bike services and useful stops:** validate all five filters against familiar places, especially DIY/repair ambiguity, broken pumps, food-machine access and hours. Validate the new timed detour preview, then add checked entrances and opening-at-visit evidence. Applying/saving a preview must revalidate original search limits before changing cards or fares.
-3. **Broader interface:** simplify search, preferences, result comparison and the map/detail flow using the two completed features and short user-task tests.
+3. **Broader interface:** the novice/profile implementation is on the new branch. Run the [desktop/phone acceptance pass](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass) before merging; preserve all options. Historical search, next departures, extra fare products and navigation remain separate backlog items.
 
 Fix route/price/permission regressions when demonstrated; the unresolved Baden–Witikon search and bounded discovery remain tracked work. New amenities must load independently and must not consume the transit search budget. Keep each stage small, documented and independently reviewable; preserve completed test evidence between sessions.
 

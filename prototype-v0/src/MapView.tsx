@@ -42,6 +42,7 @@ import type { CyclingPace } from "./cyclingPace";
 import type { RoutePreference } from "./cyclingPreferences";
 
 type MapViewProps = {
+  visible?: boolean;
   origin: Place | null;
   destination: Place | null;
   waypoints: { id: string; place: Place; number: number }[];
@@ -115,7 +116,13 @@ function parkingIcon(color: string, closest = false) {
     popupAnchor: [0, -size / 2],
   });
 }
+const pendingFit = new WeakMap<L.Map, L.LatLngBounds>();
 function fitMap(map: L.Map, bounds: L.LatLngBounds) {
+  if (!map.getContainer().clientWidth || !map.getContainer().clientHeight) {
+    pendingFit.set(map, bounds);
+    return;
+  }
+  pendingFit.delete(map);
   // Reserve room for the legend and displaced stop labels on mobile.
   const controls =
     map.getContainer().parentElement?.querySelector(".map-controls")?.getBoundingClientRect()
@@ -129,6 +136,7 @@ function fitMap(map: L.Map, bounds: L.LatLngBounds) {
 }
 
 export default function MapView({
+  visible = true,
   origin,
   destination,
   waypoints,
@@ -155,6 +163,17 @@ export default function MapView({
   const redrawPinsRef = useRef<(() => void) | null>(null);
   const fittedRef = useRef("");
   const skipFitRef = useRef(false);
+  useEffect(() => {
+    if (!visible) return;
+    const frame = requestAnimationFrame(() => {
+      const map = mapRef.current;
+      if (!map || !map.getContainer().clientWidth) return;
+      map.invalidateSize({ animate: false });
+      const pending = pendingFit.get(map);
+      if (pending?.isValid()) fitMap(map, pending);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [visible]);
   const stages = useMemo(
     () =>
       detourStages(selectedJourney, bikeOnlySelected ? cycling : null, origin, destination, start),
@@ -489,6 +508,7 @@ export default function MapView({
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, {
+      trackResize: false,
       zoomControl: false,
       attributionControl: true,
     }).setView([46.8182, 8.2275], 8);
@@ -539,8 +559,11 @@ export default function MapView({
     };
     map.getContainer().addEventListener("keydown", chooseWithKeyboard);
     const observer = new ResizeObserver(() => {
-      map.invalidateSize({ pan: false });
-      if (visibleBoundsRef.current?.isValid()) fitMap(map, visibleBoundsRef.current);
+      // Keep the last valid size while the mobile planning view hides the map.
+      if (!map.getContainer().clientWidth || !map.getContainer().clientHeight) return;
+      map.invalidateSize({ animate: false });
+      const pending = pendingFit.get(map);
+      if (pending?.isValid()) fitMap(map, pending);
       redrawPinsRef.current?.();
     });
     observer.observe(containerRef.current);
@@ -822,7 +845,7 @@ export default function MapView({
         L.polyline(coordinates, {
           color: leg.mode === "walk" ? COLORS.walk : COLORS.transit,
           weight: leg.mode === "transit" ? 5 : 4,
-          dashArray: leg.mode === "transit" ? undefined : "4 7",
+          dashArray: leg.mode === "transit" ? "12 7" : "3 7",
           className: "journey-line",
         })
           .bindTooltip(textNode(leg.service + ": " + leg.from + " → " + leg.to))
@@ -915,139 +938,160 @@ export default function MapView({
 
   return (
     <>
-      <div className="map-controls map-tools">
-        <label>
-          <input
-            type="checkbox"
-            checked={showStops}
-            onChange={(e) => setShowStops(e.target.checked)}
-          />
-          Explored stops ({stops.length})
-        </label>
-        <div className="map-facility-controls" role="group" aria-label="Useful stops">
-          <button
-            type="button"
-            className="parking-toggle"
-            aria-pressed={showParking}
-            aria-controls="parking-panel"
-            title={showParking ? "Hide bicycle parking" : "Show bicycle parking"}
-            onClick={() => {
-              setShowParking((value) => !value);
-              setClosestRequest(null);
-            }}
+      <details className="map-filter-menu">
+        <summary>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            aria-hidden="true"
           >
-            <span className="parking-button-icon" aria-hidden="true">
-              <b>P</b>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <circle cx="5" cy="17" r="4" />
-                <circle cx="19" cy="17" r="4" />
-                <path d="m5 17 5-9 5 9H5m5-9h7l2 9M8 5h4m4-1h3l1 4" />
-              </svg>
-            </span>
-            Bike parking
-          </button>
-          <button
-            type="button"
-            className="amenity-toggle"
-            aria-pressed={showWater}
-            aria-controls="water-panel"
-            onClick={() => setShowWater((value) => !value)}
-          >
-            <WaterGlyph />
-            Water
-          </button>
-          <button
-            type="button"
-            className="amenity-toggle"
-            aria-pressed={showToilets}
-            aria-controls="toilets-panel"
-            onClick={() => setShowToilets((value) => !value)}
-          >
-            <b aria-hidden="true">WC</b>Toilets
-          </button>
-          <button
-            type="button"
-            className="amenity-toggle repairs-toggle"
-            aria-pressed={showRepairs}
-            aria-controls="repairs-panel"
-            onClick={() => setShowRepairs((value) => !value)}
-          >
-            <AmenityGlyph category="repairs" />
-            Repairs
-          </button>
-          <button
-            type="button"
-            className="amenity-toggle food-toggle"
-            aria-pressed={showFood}
-            aria-controls="food-panel"
-            onClick={() => setShowFood((value) => !value)}
-          >
-            <AmenityGlyph category="food" />
-            Food
-          </button>
-        </div>
-        {(showParking || showWater || showToilets || showRepairs || showFood) && parkingRoute && (
-          <label className="parking-route-toggle">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+            <circle cx="8" cy="6" r="2" fill="white" />
+            <circle cx="16" cy="12" r="2" fill="white" />
+            <circle cx="10" cy="18" r="2" fill="white" />
+          </svg>
+          Map filters{" "}
+          <span>
+            {[showParking, showWater, showToilets, showRepairs, showFood].filter(Boolean).length}{" "}
+            facilities on
+          </span>
+        </summary>
+        <div className="map-controls map-tools">
+          <label>
             <input
               type="checkbox"
-              checked={onlyAlongJourney}
-              onChange={(e) => {
-                setOnlyAlongJourney(e.target.checked);
+              checked={showStops}
+              onChange={(e) => setShowStops(e.target.checked)}
+            />
+            Explored stops ({stops.length})
+          </label>
+          <div className="map-facility-controls" role="group" aria-label="Useful stops">
+            <button
+              type="button"
+              className="parking-toggle"
+              aria-pressed={showParking}
+              aria-controls="parking-panel"
+              title={showParking ? "Hide bicycle parking" : "Show bicycle parking"}
+              onClick={() => {
+                setShowParking((value) => !value);
                 setClosestRequest(null);
               }}
-            />
-            Along selected journey
-          </label>
-        )}
-        {(showParking || showWater || showToilets || showRepairs || showFood) && alongJourney && (
-          <label className="route-distance-control">
-            Route distance
-            <select
-              aria-label="Distance from selected journey"
-              value={routeRadius}
-              onChange={(e) => setRouteRadius(Number(e.target.value))}
             >
-              <option value={100}>100 m</option>
-              <option value={500}>500 m</option>
-              <option value={1000}>1 km</option>
-            </select>
-          </label>
-        )}
-        {showParking && (
+              <span className="parking-button-icon" aria-hidden="true">
+                <b>P</b>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="5" cy="17" r="4" />
+                  <circle cx="19" cy="17" r="4" />
+                  <path d="m5 17 5-9 5 9H5m5-9h7l2 9M8 5h4m4-1h3l1 4" />
+                </svg>
+              </span>
+              Bike parking
+            </button>
+            <button
+              type="button"
+              className="amenity-toggle"
+              aria-pressed={showWater}
+              aria-controls="water-panel"
+              onClick={() => setShowWater((value) => !value)}
+            >
+              <WaterGlyph />
+              Water
+            </button>
+            <button
+              type="button"
+              className="amenity-toggle"
+              aria-pressed={showToilets}
+              aria-controls="toilets-panel"
+              onClick={() => setShowToilets((value) => !value)}
+            >
+              <b aria-hidden="true">WC</b>Toilets
+            </button>
+            <button
+              type="button"
+              className="amenity-toggle repairs-toggle"
+              aria-pressed={showRepairs}
+              aria-controls="repairs-panel"
+              onClick={() => setShowRepairs((value) => !value)}
+            >
+              <AmenityGlyph category="repairs" />
+              Repairs
+            </button>
+            <button
+              type="button"
+              className="amenity-toggle food-toggle"
+              aria-pressed={showFood}
+              aria-controls="food-panel"
+              onClick={() => setShowFood((value) => !value)}
+            >
+              <AmenityGlyph category="food" />
+              Food
+            </button>
+          </div>
+          {(showParking || showWater || showToilets || showRepairs || showFood) && parkingRoute && (
+            <label className="parking-route-toggle">
+              <input
+                type="checkbox"
+                checked={onlyAlongJourney}
+                onChange={(e) => {
+                  setOnlyAlongJourney(e.target.checked);
+                  setClosestRequest(null);
+                }}
+              />
+              Along selected journey
+            </label>
+          )}
+          {(showParking || showWater || showToilets || showRepairs || showFood) && alongJourney && (
+            <label className="route-distance-control">
+              Route distance
+              <select
+                aria-label="Distance from selected journey"
+                value={routeRadius}
+                onChange={(e) => setRouteRadius(Number(e.target.value))}
+              >
+                <option value={100}>100 m</option>
+                <option value={500}>500 m</option>
+                <option value={1000}>1 km</option>
+              </select>
+            </label>
+          )}
+          {showParking && (
+            <button
+              type="button"
+              className="parking-closest-button"
+              disabled={!origin || parkingLoading || visibleParking.length === 0}
+              onClick={() => {
+                setActiveAmenity(null);
+                setClosestRequest((value) => ({
+                  scope: parkingScopeKey,
+                  serial: (value?.serial ?? 0) + 1,
+                }));
+              }}
+            >
+              Find closest parking
+            </button>
+          )}
           <button
             type="button"
-            className="parking-closest-button"
-            disabled={!origin || parkingLoading || visibleParking.length === 0}
+            disabled={!stops.length}
             onClick={() => {
-              setActiveAmenity(null);
-              setClosestRequest((value) => ({
-                scope: parkingScopeKey,
-                serial: (value?.serial ?? 0) + 1,
-              }));
+              setShowStops(true);
+              if (allBoundsRef.current?.isValid() && mapRef.current) {
+                visibleBoundsRef.current = allBoundsRef.current;
+                fitMap(mapRef.current, allBoundsRef.current);
+              }
             }}
           >
-            Find closest parking
+            Fit all stops
           </button>
-        )}
-        <button
-          type="button"
-          disabled={!stops.length}
-          onClick={() => {
-            setShowStops(true);
-            if (allBoundsRef.current?.isValid() && mapRef.current) {
-              visibleBoundsRef.current = allBoundsRef.current;
-              fitMap(mapRef.current, allBoundsRef.current);
-            }
-          }}
-        >
-          Fit all stops
-        </button>
-        <div className="map-instruction">
-          {editingDisabled
-            ? "Stop the search to edit locations."
-            : "Tap the map to choose locations. Drag A, B or a stop to move it. With the map focused, use arrow keys to move and Enter to choose."}
+          <div className="map-instruction">
+            {editingDisabled
+              ? "Stop the search to edit locations."
+              : "Tap the map to choose locations. Drag A, B or a stop to move it. With the map focused, use arrow keys to move and Enter to choose."}
+          </div>
         </div>
-      </div>
+      </details>
       <div className="map-shell">
         <div
           ref={containerRef}
@@ -1058,93 +1102,110 @@ export default function MapView({
               : "Selected journey and explored stops map"
           }
         />
-        <div className="map-legend">
+        <div className="mode-key" aria-label="Route line styles">
           <span>
-            <i className="legend-bike-only" />
-            Cycling only
+            <i className="key-bike" />
+            Bike
           </span>
           <span>
-            <i className="legend-bike" />
-            Cycling leg
-          </span>
-          {detourRoutes && currentDetour && (
-            <span>
-              <i className="legend-detour" />
-              Detour preview
-            </span>
-          )}
-          <span>
-            <i className="legend-train" />
-            Transit
+            <i className="key-transit" />
+            Public transport
           </span>
           <span>
-            <i className="legend-walk" />
-            Walking
-          </span>
-          <span>
-            <i className="legend-push" />
-            Push bicycle
-          </span>
-          <span>
-            <i className="legend-carry" />
-            Carry bicycle
-          </span>
-          <span>
-            <i className="legend-climb" />
-            Steep climb
-          </span>
-          <span>
-            <i className="legend-descent" />
-            Steep descent
-          </span>
-          <span>
-            <i className="legend-stop" />
-            Explored stop
-          </span>
-          {showParking && (
-            <span>
-              <b className="legend-parking" aria-hidden="true">
-                P
-              </b>
-              Bike parking
-            </span>
-          )}
-          {showWater && (
-            <span>
-              <span className="legend-water">
-                <WaterGlyph />
-              </span>
-              Water
-            </span>
-          )}
-          {showToilets && (
-            <span>
-              <b className="legend-parking" aria-hidden="true">
-                WC
-              </b>
-              Toilets
-            </span>
-          )}
-          {showRepairs && (
-            <span>
-              <span className="legend-service legend-repairs">
-                <AmenityGlyph category="repairs" />
-              </span>
-              Repairs
-            </span>
-          )}
-          {showFood && (
-            <span>
-              <span className="legend-service legend-food">
-                <AmenityGlyph category="food" />
-              </span>
-              Food
-            </span>
-          )}
-          <span>
-            <b className="legend-pin">1</b>Board / alight
+            <i className="key-walk" />
+            Walk
           </span>
         </div>
+        <details className="map-key">
+          <summary>Full map key</summary>
+          <div className="map-legend">
+            <span>
+              <i className="legend-bike-only" />
+              Cycling only
+            </span>
+            <span>
+              <i className="legend-bike" />
+              Cycling leg
+            </span>
+            {detourRoutes && currentDetour && (
+              <span>
+                <i className="legend-detour" />
+                Detour preview
+              </span>
+            )}
+            <span>
+              <i className="legend-train" />
+              Transit
+            </span>
+            <span>
+              <i className="legend-walk" />
+              Walking
+            </span>
+            <span>
+              <i className="legend-push" />
+              Push bicycle
+            </span>
+            <span>
+              <i className="legend-carry" />
+              Carry bicycle
+            </span>
+            <span>
+              <i className="legend-climb" />
+              Steep climb
+            </span>
+            <span>
+              <i className="legend-descent" />
+              Steep descent
+            </span>
+            <span>
+              <i className="legend-stop" />
+              Explored stop
+            </span>
+            {showParking && (
+              <span>
+                <b className="legend-parking" aria-hidden="true">
+                  P
+                </b>
+                Bike parking
+              </span>
+            )}
+            {showWater && (
+              <span>
+                <span className="legend-water">
+                  <WaterGlyph />
+                </span>
+                Water
+              </span>
+            )}
+            {showToilets && (
+              <span>
+                <b className="legend-parking" aria-hidden="true">
+                  WC
+                </b>
+                Toilets
+              </span>
+            )}
+            {showRepairs && (
+              <span>
+                <span className="legend-service legend-repairs">
+                  <AmenityGlyph category="repairs" />
+                </span>
+                Repairs
+              </span>
+            )}
+            {showFood && (
+              <span>
+                <span className="legend-service legend-food">
+                  <AmenityGlyph category="food" />
+                </span>
+                Food
+              </span>
+            )}
+            <span>
+              <b className="legend-pin">1</b>Board / alight
+            </span>
+          </div>
+        </details>
       </div>
       {currentDetour && stages.length > 0 && (
         <DetourPanel

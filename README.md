@@ -2,7 +2,9 @@
 
 A Switzerland-first planner for travelling with your bicycle, combining road-routed cycling and public transport. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
 
-## Current state — 30 September 2026
+## Current state — 2 October 2026
+
+**New branch implementation:** `feature/novice-interface-profiles` adds optional device-local traveller profiles, Commuter/Bikepacking/Personalized presets, a simpler desktop form, phone Planning / Map views, compact prices and expandable explanations. All existing planner choices remain accessible. **309 offline tests pass.** [Controls, verification, manual checks and remaining work](docs/INTERFACE_PROFILES_2026-10-02.md).
 
 The app supports Baseline/Extended planning, ordered stops, named places, configurable cycling pace, terrain/profile information and three public-transport bicycle-access scopes. Passenger, bicycle-ticket and reservation costs are separate. OJP fare requests now reuse the exact retained trip or assemble its selected service/walking legs.
 
@@ -18,7 +20,7 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** owner-private **version 42**, published 30 September 2026. New cycling detours frame automatically, redundant map controls are removed, and permission/cache/tooling improvements are active. **300 tests**, formatting/Knip checks and TypeScript/frontend/Worker builds pass locally and in [GitHub Actions](https://github.com/Victorpolm/bike-train-planner/actions/runs/36782578264). Browser interaction QA remains unavailable. [Review changes, release and limits](docs/REVIEW_IMPLEMENTATION_2026-09-30.md). Exact-trip OJP fare behaviour is unchanged; [earlier dated price evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) is a test observation, not a standing tariff.
+**Last verified release:** owner-private **version 43**, published 2 October 2026, runs the redesigned interface and local profiles from `feature/novice-interface-profiles`. The branch is not merged into main. **309 offline tests**, formatting/Knip and TypeScript/frontend/Worker builds pass; all 188 current application files match the Site source. Browser interaction QA remains pending. [Release, controls and acceptance checklist](docs/INTERFACE_PROFILES_2026-10-02.md). Exact-trip OJP fare behaviour is unchanged; [earlier dated price evidence](docs/OJP_EXACT_TRIP_FARES_2026-09-28.md) is a test observation, not a standing tariff.
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 

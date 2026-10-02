@@ -721,3 +721,10 @@ Other checks preserve exact transit objects and original journey JSON, select a 
 **Local engine comparison:** MOTIS 2.11.3 and the current solver share a synthetic three-service fixture. Strict allowed and unrestricted prohibited winners agree; an unknown-permission winner disappears from MOTIS's unrestricted Pareto result, so postfiltering cannot implement our middle scope. One transit-stop via passes. Other migration criteria remain untested. [Raw result](experiments/motis-permission-pilot-2026-09-30.json) · [reproduction and limitations](REVIEW_IMPLEMENTATION_2026-09-30.md). No public routing API requests or Swiss live-provider retests were made.
 
 **Publication confirmed:** Owner-private version 42 succeeded at 21:58:44 UTC, environment revision 3, Site source `c5ed6f1a3cdf392c727ad64492a6e43368eae4e6`. All 182 application files match GitHub `a97c872`; [automatic CI](https://github.com/Victorpolm/bike-train-planner/actions/runs/36782578264) passed. Browser QA remains outstanding.
+
+
+## 2026-10-02 — Preset/profile compatibility and the Commuter boundary
+
+Golden offline fixture in `prototype-v0/src/travellerProfiles.test.ts`: one routed bicycle access leg followed by a timed service. Both Baseline and Extended admit 45 minutes of access and reject 46 under the new Commuter total budget. The original 40/90/150 presets retain their limits; Bikepacking preserves the 24-hour horizon and confirmed scope. Multiple profiles roundtrip, trip edits do not mutate a saved profile, invalid data/storage errors are surfaced, and age does not imply fare discounts.
+
+**Result:** 309 cases in 11 suites pass using `node --test --test-isolation=none src/*.test.ts` (sandbox child-process reporting returned file-level results under ordinary `npm test`). Build, format and unused-code gates pass. These are deterministic regressions, not 250 new live route queries. [UI manual checks and limits](INTERFACE_PROFILES_2026-10-02.md).

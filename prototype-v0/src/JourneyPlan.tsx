@@ -1,3 +1,4 @@
+import InfoDisclosure from "./InfoDisclosure";
 import FareDetails from "./FareDetails";
 import CyclingTerrainSummary from "./CyclingTerrainSummary";
 import { DEFAULT_FARE_PROFILE, type FareProfile } from "./fares";
@@ -112,11 +113,13 @@ export default function JourneyPlan({
                 </div>
               </div>
               {step.mode === "bike" && (
-                <p className="plan-note">
-                  {step.cyclingRoute
-                    ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
-                    : "Cycling route details unavailable."}
-                </p>
+                <InfoDisclosure label="Cycling distance and time estimate">
+                  <p className="plan-note">
+                    {step.cyclingRoute
+                      ? `${step.cyclingRoute.distanceKm.toFixed(1)} km routed · ascent ${step.cyclingRoute.ascentM === null ? "unknown" : `${step.cyclingRoute.ascentM} m`} · descent ${step.cyclingRoute.descentM === null ? "unknown" : `${step.cyclingRoute.descentM} m`}. Estimated time includes short walking access to the path.`
+                      : "Cycling route details unavailable."}
+                  </p>
+                </InfoDisclosure>
               )}
               {leg?.mode === "transit" && (
                 <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />
@@ -136,11 +139,13 @@ export default function JourneyPlan({
         })}
       </ol>
       <FareDetails journey={journey} profile={fareProfile} />
-      <p className="plan-caution">
-        Bicycle guidance covers a standard, unfolded bicycle. Check uncertain departures with the
-        operator. Permission does not guarantee space or make a reservation; this app does not book
-        bicycle spaces. Times and platforms come from the timetable service.
-      </p>
+      <InfoDisclosure label="Journey guidance">
+        <p className="plan-caution">
+          Bicycle guidance covers a standard, unfolded bicycle. Check uncertain departures with the
+          operator. Permission does not guarantee space or make a reservation; this app does not
+          book bicycle spaces. Times and platforms come from the timetable service.
+        </p>
+      </InfoDisclosure>
     </section>
   );
 }

@@ -1,4 +1,14 @@
-import { DEFAULT_FARE_PROFILE, readFareProfile, type FareProfile } from "./fares";
+import type { FareProfile } from "./fares";
+import TravellerProfiles from "./TravellerProfiles";
+import InfoDisclosure from "./InfoDisclosure";
+import PersonalSettingsFields from "./PersonalSettingsFields";
+import {
+  loadTravellers,
+  personalSettings,
+  type PersonalSettings,
+  type TravellerProfile,
+} from "./travellerProfiles";
+import { TRIP_PRESETS, type TripPreset } from "./tripPresets";
 import {
   ROUTE_PREFERENCES,
   routePreferenceLabels,
@@ -23,13 +33,7 @@ import { journeySteps } from "./itinerary";
 import { exploredStops } from "./mapData";
 import PlaceInput, { type PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
-import {
-  CYCLING_PRESETS,
-  DEFAULT_CYCLING_PACE,
-  slopeSpeedKmh,
-  type CyclingPace,
-  type CyclingPreset,
-} from "./cyclingPace";
+import { slopeSpeedKmh, type CyclingPace, type CyclingPreset } from "./cyclingPace";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 import { bicycleJourneySummary } from "./bicycleCarriage";
@@ -248,33 +252,78 @@ export default function App() {
   const naming = useRef(new Map<string, AbortController>());
   const [pointNotice, setPointNotice] = useState("");
   const [cycleFocus, setCycleFocus] = useState<CycleFocus | null>(null);
-  const [fareProfile, setFareProfile] = useState<FareProfile>(() => {
-    try {
-      return readFareProfile(
-        JSON.parse(localStorage.getItem("bike-train-fare-profile-v1") ?? "null"),
-      );
-    } catch {
-      return DEFAULT_FARE_PROFILE;
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem("bike-train-fare-profile-v1", JSON.stringify(fareProfile));
-    } catch {
-      /* Device storage is optional. */
-    }
-  }, [fareProfile]);
+  const [travellers] = useState(loadTravellers);
+  const initialTraveller =
+    travellers.library.profiles.find((p) => p.id === travellers.library.activeId) ??
+    travellers.guest;
+  const guest = useRef(travellers.guest);
+  const activeProfile = useRef(travellers.library.activeId);
+  const [fareProfile, setFareProfile] = useState<FareProfile>(initialTraveller.fare);
+  const [age, setAge] = useState<number | null>(initialTraveller.age);
   const [mode, setMode] = useState<ModelMode>("baseline");
-  const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">("regular");
-  const [cyclingPace, setCyclingPace] = useState<CyclingPace>(DEFAULT_CYCLING_PACE);
-  const [cycling, setCycling] = useState<CyclingPreference>("balanced");
-  const [routePreference, setRoutePreference] = useState<RoutePreference>("fastest");
+  const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">(
+    initialTraveller.ridingPreset,
+  );
+  const [cyclingPace, setCyclingPace] = useState<CyclingPace>(initialTraveller.pace);
+  const [cycling, setCycling] = useState<CyclingPreference>("commuter");
+  const [routePreference, setRoutePreference] = useState<RoutePreference>("simplest");
+  const [tripPreset, setTripPreset] = useState<TripPreset>("commuter");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"planning" | "map">("planning");
+  const viewScroll = useRef({ planning: 0, map: 0 });
+  function showMobileView(view: "planning" | "map") {
+    if (view === mobileView) return;
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      viewScroll.current[mobileView] = window.scrollY;
+      requestAnimationFrame(() =>
+        window.scrollTo({ top: viewScroll.current[view], behavior: "instant" }),
+      );
+    }
+    setMobileView(view);
+  }
+  const tripPersonal: PersonalSettings = {
+    fare: fareProfile,
+    age,
+    pace: cyclingPace,
+    ridingPreset,
+  };
+  function applyPersonal(next: PersonalSettings) {
+    if (
+      next.pace.flatSpeedKmh !== cyclingPace.flatSpeedKmh ||
+      next.pace.electricAssist !== cyclingPace.electricAssist
+    )
+      invalidate();
+    setFareProfile({ ...next.fare });
+    setCyclingPace({ ...next.pace });
+    setAge(next.age);
+    setRidingPreset(next.ridingPreset);
+  }
+  function selectTraveller(profile: TravellerProfile | null) {
+    if (activeProfile.current === null) guest.current = personalSettings(tripPersonal);
+    activeProfile.current = profile?.id ?? null;
+    applyPersonal(profile ?? guest.current);
+  }
+  function choosePreset(preset: TripPreset) {
+    setTripPreset(preset);
+    if (preset === "personalized") {
+      setProfileOpen(true);
+      setPreferencesOpen(true);
+      return;
+    }
+    invalidate();
+    const next = TRIP_PRESETS[preset];
+    setCycling(next.cycling);
+    setRoutePreference(next.routePreference);
+    setBicycleScope(next.bicycleScope);
+    setEndpoint(next.endpoint);
+    setProfileOpen(false);
+    setPreferencesOpen(false);
+  }
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
-  const [departureInput, setDepartureInput] = useState(() =>
-    swissDateTimeInput(new Date(Date.now() + 60 * 60_000)),
-  );
+  const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
   const options = useMemo(
     () =>
       preferenceOptions(
@@ -540,7 +589,7 @@ export default function App() {
   const extendedFastest = session?.extended ? best(session.extended.journeys) : Infinity;
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-mobile-view={mobileView}>
       <header>
         <a className="brand" href="#top" aria-label="Bike plus train home">
           <span className="brand-mark">
@@ -551,15 +600,22 @@ export default function App() {
             <small>Swiss route experiment</small>
           </span>
         </a>
-        <span className="prototype-badge">Baseline + Extended</span>
+        <span className="prototype-badge">Swiss journey planner</span>
       </header>
       <main id="top">
-        <section className="planner-panel">
+        <section className="planner-panel" id="planning-panel" aria-label="Journey planning">
           <div className="intro">
             <h1>Where are you going?</h1>
-            <p>Find your way with a bike, trains, buses, trams and boats.</p>
+            <p>Explore by bike &amp; public transport.</p>
           </div>
           <form onSubmit={search} className="search-form">
+            <TravellerProfiles
+              initial={travellers}
+              settings={tripPersonal}
+              disabled={loading}
+              onSelect={selectTraveller}
+              onEdit={() => setProfileOpen(true)}
+            />
             <div className="place-inputs">
               <PlaceInput
                 label="From"
@@ -570,6 +626,29 @@ export default function App() {
                   setFromInput(value);
                 }}
               />
+              <button
+                type="button"
+                className="reverse-route"
+                aria-label="Reverse route"
+                title="Reverse route"
+                disabled={loading}
+                onClick={() => {
+                  invalidate();
+                  setFromInput(toInput);
+                  setToInput(fromInput);
+                  setViaInputs((inputs) => [...inputs].reverse());
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden="true"
+                >
+                  <path d="M7 4v16m-4-4 4 4 4-4M17 20V4m-4 4 4-4 4 4" />
+                </svg>
+              </button>
               {viaInputs.map((input, index) => (
                 <div className="waypoint-row" key={input.id}>
                   <PlaceInput
@@ -633,19 +712,10 @@ export default function App() {
               >
                 + Add intermediate stop
               </button>
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  invalidate();
-                  setFromInput(toInput);
-                  setToInput(fromInput);
-                  setViaInputs((inputs) => [...inputs].reverse());
-                }}
-              >
-                Reverse route
-              </button>
-              <a href="#journey-map">Choose on map</a>
+
+              <a href="#journey-map" onClick={() => showMobileView("map")}>
+                Choose on map
+              </a>
             </div>
             {!!viaInputs.length && (
               <p className="waypoint-help">
@@ -661,120 +731,146 @@ export default function App() {
             <div className="departure-controls">
               <label>
                 <span>Departure · Swiss time</span>
-                <select
+                <input
+                  type="datetime-local"
+                  required
                   disabled={loading}
-                  value={departureMode}
+                  value={departureInput}
                   onChange={(e) => {
                     invalidate();
-                    setDepartureMode(e.target.value as "now" | "scheduled");
+                    setDepartureInput(e.target.value);
+                    setDepartureMode("scheduled");
                   }}
-                >
-                  <option value="now">Leave now</option>
-                  <option value="scheduled">Choose date and time</option>
-                </select>
+                />
               </label>
-              {departureMode === "scheduled" && (
-                <label>
-                  <span>Date and time in Switzerland</span>
-                  <input
-                    type="datetime-local"
-                    required
-                    disabled={loading}
-                    value={departureInput}
-                    min={swissDateTimeInput(new Date())}
-                    onChange={(e) => {
-                      invalidate();
-                      setDepartureInput(e.target.value);
-                    }}
-                  />
-                </label>
-              )}
+              <button
+                type="button"
+                className="leave-now"
+                disabled={loading}
+                aria-pressed={departureMode === "now"}
+                onClick={() => {
+                  invalidate();
+                  setDepartureMode("now");
+                  setDepartureInput(swissDateTimeInput(new Date()));
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+                Leave now
+              </button>
             </div>
-            <fieldset className="model-picker" disabled={loading}>
-              <legend>Journey options</legend>
-              <div className="model-buttons">
-                <button
-                  type="button"
-                  aria-pressed={mode === "baseline"}
-                  onClick={() => void changeMode("baseline")}
-                >
-                  <strong>Baseline</strong>
-                  <span>
-                    {viaInputs.length
-                      ? "Cycle at the ends of each stage"
-                      : "Cycle before and after transit"}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={mode === "extended"}
-                  onClick={() => void changeMode("extended")}
-                >
-                  <strong>Extended</strong>
-                  <span>Also allow one {viaInputs.length ? "extra " : ""}cycling transfer</span>
-                </button>
+            <fieldset className="trip-presets" disabled={loading}>
+              <legend>Your trip</legend>
+              <div>
+                {(
+                  [
+                    ["commuter", "Commuter", "Shorter bike rides"],
+                    ["bikepacking", "Bikepacking", "Room to explore"],
+                    ["personalized", "Personalized", "Your own preferences"],
+                  ] as const
+                ).map(([key, label, hint]) => (
+                  <button
+                    type="button"
+                    key={key}
+                    aria-pressed={tripPreset === key}
+                    onClick={() => choosePreset(key)}
+                  >
+                    <strong>{label}</strong>
+                    <span>{hint}</span>
+                  </button>
+                ))}
               </div>
             </fieldset>
-            <fieldset
-              className="bicycle-access"
-              disabled={loading}
-              aria-describedby="bicycle-access-help"
-            >
-              <legend>Public transport with my bicycle</legend>
-              {BICYCLE_SCOPES.map((scope) => (
-                <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
-                  <input
-                    type="radio"
-                    name="bicycle-access"
-                    value={scope}
-                    checked={bicycleScope === scope}
-                    onChange={() => {
-                      invalidate();
-                      setBicycleScope(scope);
-                    }}
-                  />
-                  <span>{bicycleScopeOptions[scope]}</span>
-                </label>
-              ))}
-            </fieldset>
-            <p className="bus-preference-help" id="bicycle-access-help">
-              {bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other
-              public transport.
+            <p className="preset-summary">
+              {tripPreset === "commuter"
+                ? "Up to 45 min cycling · fewer turns · unverified bike access included"
+                : tripPreset === "bikepacking"
+                  ? "No separate cycling cap · lower traffic stress · verified bike access only"
+                  : "Choose the preferences for this journey below."}
             </p>
-            <details className="preferences">
-              <summary>Preferences · optional</summary>
-              <fieldset className="fare-profile">
-                <legend>Tickets · saved on this device</legend>
-                <label>
-                  <span>Your passenger travelcard</span>
-                  <select
-                    value={fareProfile.passenger}
-                    onChange={(e) =>
-                      setFareProfile((p) => ({
-                        ...p,
-                        passenger: e.target.value as FareProfile["passenger"],
-                      }))
-                    }
+            <details
+              className="preferences trip-profile"
+              onInvalidCapture={(e) => {
+                setProfileOpen(true);
+                const input = e.target as HTMLInputElement;
+                requestAnimationFrame(() => input.focus());
+              }}
+              open={profileOpen}
+              onToggle={(e) => setProfileOpen(e.currentTarget.open)}
+            >
+              <summary>Profile for this trip</summary>
+              <PersonalSettingsFields
+                value={tripPersonal}
+                disabled={loading}
+                onChange={applyPersonal}
+              />
+            </details>
+            <details
+              className="preferences trip-preferences"
+              open={preferencesOpen}
+              onToggle={(e) => setPreferencesOpen(e.currentTarget.open)}
+            >
+              <summary>Preferences</summary>
+              <fieldset className="model-picker" disabled={loading}>
+                <legend>Journey options</legend>
+                <div className="model-buttons">
+                  <button
+                    type="button"
+                    aria-pressed={mode === "baseline"}
+                    onClick={() => void changeMode("baseline")}
                   >
-                    <option value="full">Full fare · no travelcard</option>
-                    <option value="half-fare">Half Fare · Halbtax</option>
-                    <option value="ga">GA Travelcard</option>
-                  </select>
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={fareProfile.annualBikePass}
-                    onChange={(e) =>
-                      setFareProfile((p) => ({ ...p, annualBikePass: e.target.checked }))
-                    }
-                  />
-                  I already have an annual bike pass
-                </label>
-                <p>
-                  Adult fares in 2nd class. Your passenger travelcard and bicycle pass are separate.
-                </p>
+                    <strong>Baseline</strong>
+                    <span>
+                      {viaInputs.length
+                        ? "Cycle at the ends of each stage"
+                        : "Cycle before and after transit"}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={mode === "extended"}
+                    onClick={() => void changeMode("extended")}
+                  >
+                    <strong>Extended</strong>
+                    <span>Also allow one {viaInputs.length ? "extra " : ""}cycling transfer</span>
+                  </button>
+                </div>
               </fieldset>
+              <fieldset
+                className="bicycle-access"
+                disabled={loading}
+                aria-describedby="bicycle-access-help"
+              >
+                <legend>Public transport with my bicycle</legend>
+                {BICYCLE_SCOPES.map((scope) => (
+                  <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
+                    <input
+                      type="radio"
+                      name="bicycle-access"
+                      value={scope}
+                      checked={bicycleScope === scope}
+                      onChange={() => {
+                        invalidate();
+                        setBicycleScope(scope);
+                        setTripPreset("personalized");
+                      }}
+                    />
+                    <span>{bicycleScopeOptions[scope]}</span>
+                  </label>
+                ))}
+              </fieldset>
+              <p className="bus-preference-help" id="bicycle-access-help">
+                {bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other
+                public transport.
+              </p>
               <div className="preference-grid">
                 <label>
                   <span>Cycling path</span>
@@ -784,6 +880,7 @@ export default function App() {
                     onChange={(e) => {
                       invalidate();
                       setRoutePreference(e.target.value as RoutePreference);
+                      setTripPreset("personalized");
                     }}
                   >
                     {ROUTE_PREFERENCES.map((p) => (
@@ -794,51 +891,6 @@ export default function App() {
                   </select>
                 </label>
                 <label>
-                  <span>Riding profile</span>
-                  <select
-                    disabled={loading}
-                    value={ridingPreset}
-                    onChange={(e) => {
-                      invalidate();
-                      const preset = e.target.value as CyclingPreset;
-                      setRidingPreset(preset);
-                      setCyclingPace({
-                        flatSpeedKmh: CYCLING_PRESETS[preset].flatSpeedKmh,
-                        electricAssist: CYCLING_PRESETS[preset].electricAssist,
-                      });
-                    }}
-                  >
-                    {ridingPreset === "custom" && (
-                      <option value="custom" disabled>
-                        Custom pace
-                      </option>
-                    )}
-                    {Object.entries(CYCLING_PRESETS).map(([key, value]) => (
-                      <option key={key} value={key}>
-                        {value.label} · {value.flatSpeedKmh} km/h
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Your flat-ground speed · km/h</span>
-                  <input
-                    type="number"
-                    min="8"
-                    max="35"
-                    step="0.5"
-                    required
-                    disabled={loading}
-                    value={Number.isNaN(cyclingPace.flatSpeedKmh) ? "" : cyclingPace.flatSpeedKmh}
-                    aria-describedby="cycling-pace-help"
-                    onChange={(e) => {
-                      invalidate();
-                      setRidingPreset("custom");
-                      setCyclingPace((p) => ({ ...p, flatSpeedKmh: e.target.valueAsNumber }));
-                    }}
-                  />
-                </label>
-                <label>
                   <span>How much cycling?</span>
                   <select
                     disabled={loading}
@@ -846,12 +898,16 @@ export default function App() {
                     onChange={(e) => {
                       invalidate();
                       setCycling(e.target.value as CyclingPreference);
+                      setTripPreset("personalized");
                     }}
                   >
                     <option value="less">Less · up to 40 min total</option>
+                    <option value="commuter">Commuter · up to 45 min total</option>
                     <option value="balanced">Balanced · up to 90 min total</option>
                     <option value="more">More · up to 150 min total</option>
-                    <option value="unrestricted">Above 150 minutes cycling</option>
+                    <option value="unrestricted">
+                      No separate cycling cap · can exceed 150 min
+                    </option>
                   </select>
                 </label>
                 <label>
@@ -862,6 +918,7 @@ export default function App() {
                     onChange={(e) => {
                       invalidate();
                       setEndpoint(e.target.value as EndpointPreference);
+                      setTripPreset("personalized");
                     }}
                   >
                     <option value="none">Just the three main categories</option>
@@ -870,86 +927,95 @@ export default function App() {
                   </select>
                 </label>
               </div>
-              <p id="cycling-pace-help">
-                These are flat-ground pace presets, not fitness ratings. Choose one and adjust it to
-                your usual moving speed. Climbs are calculated from your riding power, so stronger
-                riders gain more uphill.
-                {cyclingPace.electricAssist
-                  ? " Electric assistance adds climbing power and fades near 25 km/h."
-                  : " Descents can be faster than your flat pace."}{" "}
-                This setting changes station access, transfers and arrival times. Wind, traffic
-                stops and battery range are not modelled.
-              </p>
-              {Number.isFinite(cyclingPace.flatSpeedKmh) &&
-                cyclingPace.flatSpeedKmh >= 8 &&
-                cyclingPace.flatSpeedKmh <= 35 && (
-                  <details className="pace-model">
-                    <summary>How hills change your speed</summary>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th scope="col">Terrain</th>
-                          <th scope="col">Estimated speed</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          [0, "Flat"],
-                          [0.03, "3% climb"],
-                          [0.06, "6% climb"],
-                          [0.1, "10% climb"],
-                        ].map(([grade, label]) => (
-                          <tr key={label}>
-                            <th scope="row">{label}</th>
-                            <td>{slopeSpeedKmh(Number(grade), cyclingPace).toFixed(1)} km/h</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <p>
-                      Planning assumptions: rider plus bicycle{" "}
-                      {cyclingPace.electricAssist ? "105" : "90"} kg; touring-bike rolling and air
-                      resistance.
-                      {cyclingPace.electricAssist &&
-                        " The model adds up to 250 W of climbing help, fading between 20 and 25 km/h; actual motors and assistance settings vary."}{" "}
-                      Downhill speed is capped at 45 km/h. Missing elevation uses flat-ground speed.
-                    </p>
-                  </details>
-                )}
-              <p>
-                {cycling === "unrestricted"
-                  ? "No separate cycling cap; shorter rides are also included."
-                  : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}{" "}
-                Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours
-                overall, including waiting.
-              </p>
             </details>
             <button className="search-button" type="submit" disabled={loading}>
               {loading ? "Finding journeys…" : "Find journeys"}
             </button>
           </form>
-          <div className="assumptions">
-            <span>
-              <b>{cyclingPace.electricAssist ? "Electric bike" : "Bicycle"}</b> ·{" "}
-              {cyclingPace.flatSpeedKmh || "—"} km/h on flat ground
-            </span>
-            <span>
-              <b>3 min</b> before each boarding
-            </span>
-            <span>
-              <b>
-                {session
-                  ? `${day.format(session.start)}, ${clock.format(session.start)}`
-                  : departureMode === "now"
-                    ? "Leave now"
-                    : "Chosen departure"}
-              </b>{" "}
-              · Swiss time
-            </span>
-            <span>
-              Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight waiting
-            </span>
-          </div>
+          <details className="planning-notes">
+            <summary>Planning notes &amp; assumptions</summary>
+            <p id="cycling-pace-help">
+              These are flat-ground pace presets, not fitness ratings. Choose one and adjust it to
+              your usual moving speed. Climbs are calculated from your riding power, so stronger
+              riders gain more uphill.
+              {cyclingPace.electricAssist
+                ? " Electric assistance adds climbing power and fades near 25 km/h."
+                : " Descents can be faster than your flat pace."}{" "}
+              This setting changes station access, transfers and arrival times. Wind, traffic stops
+              and battery range are not modelled.
+            </p>
+            {Number.isFinite(cyclingPace.flatSpeedKmh) &&
+              cyclingPace.flatSpeedKmh >= 8 &&
+              cyclingPace.flatSpeedKmh <= 35 && (
+                <details className="pace-model">
+                  <summary>How hills change your speed</summary>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Terrain</th>
+                        <th scope="col">Estimated speed</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        [0, "Flat"],
+                        [0.03, "3% climb"],
+                        [0.06, "6% climb"],
+                        [0.1, "10% climb"],
+                      ].map(([grade, label]) => (
+                        <tr key={label}>
+                          <th scope="row">{label}</th>
+                          <td>{slopeSpeedKmh(Number(grade), cyclingPace).toFixed(1)} km/h</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p>
+                    Planning assumptions: rider plus bicycle{" "}
+                    {cyclingPace.electricAssist ? "105" : "90"} kg; touring-bike rolling and air
+                    resistance.
+                    {cyclingPace.electricAssist &&
+                      " The model adds up to 250 W of climbing help, fading between 20 and 25 km/h; actual motors and assistance settings vary."}{" "}
+                    Downhill speed is capped at 45 km/h. Missing elevation uses flat-ground speed.
+                  </p>
+                </details>
+              )}
+            <p>
+              {cycling === "unrestricted"
+                ? "No separate cycling cap; shorter rides are also included."
+                : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}{" "}
+              Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours
+              overall, including waiting.
+            </p>
+
+            <p>
+              Scheduled searches currently require a future departure. Historical journey searches
+              are planned separately.
+            </p>
+            <div className="assumptions">
+              <span>
+                <b>{cyclingPace.electricAssist ? "Electric bike" : "Bicycle"}</b> ·{" "}
+                {cyclingPace.flatSpeedKmh || "—"} km/h on flat ground
+              </span>
+              <span>
+                <b>3 min</b> before each boarding
+              </span>
+              <span>
+                <b>
+                  {session
+                    ? `${day.format(session.start)}, ${clock.format(session.start)}`
+                    : departureMode === "now"
+                      ? "Leave now"
+                      : "Chosen departure"}
+                </b>{" "}
+                · Swiss time
+              </span>
+              <span>
+                Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight
+                waiting
+              </span>
+            </div>
+          </details>
           {loading && (
             <div className="loading-block" role="status">
               <div className="progress-track">
@@ -1028,7 +1094,7 @@ export default function App() {
                     ? "Some timetable or cycling data was unavailable. Please try this journey again."
                     : `No transit journey was found with your cycling limits, bicycle-access choice and ${session.options.horizonMinutes / 60}-hour arrival window. ${
                         session.options.maxBikeMinutes < session.options.horizonMinutes
-                          ? "Try Above 150 minutes cycling in Preferences, or a different departure time."
+                          ? "Try No separate cycling cap in Preferences, or a different departure time."
                           : "Try a different departure time or nearby stops."
                       } This limited search can miss connections.`}
                 </p>
@@ -1038,63 +1104,65 @@ export default function App() {
                   Checking cycling paths and train connections. Options appear as they are found.
                 </p>
               )}
-              <div className="permission-summary">
-                {recommendation.groups.map((group) => (
-                  <div key={group.scope} className={`permission-group scope-${group.scope}`}>
-                    <h3>Search filter: {bicycleScopeOptions[group.scope]}</h3>
-                    {group.scope === "all-transit" && (
-                      <p>
-                        Bicycle restrictions are ignored in this comparison. It can include services
-                        that prohibit bicycles; these are labelled on the journey.
-                      </p>
-                    )}
-                    {group.proposals.length ? (
-                      <p>
-                        {group.proposals.length} recommendation
-                        {group.proposals.length === 1 ? "" : "s"} · fastest with transit{" "}
-                        {formatMinutes(
-                          Math.min(...group.proposals.map((p) => p.journey.totalMinutes)),
-                        )}
-                      </p>
-                    ) : (
-                      <p>
-                        {group.scope === "confirmed"
-                          ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
-                          : loading
-                            ? "Checking possible journeys…"
-                            : "No journey found in this limited search."}
-                      </p>
-                    )}
-                  </div>
-                ))}
-                <p className="comparison-caution">
-                  Verified access means bicycles are permitted on every transit leg, based on
-                  service data or applicable published operator rules. Open a journey for ticket and
-                  reservation requirements. Unknown ticket or reservation details do not change
-                  verified permission. Permission does not reserve a place.
-                </p>
-              </div>
-              {session.extended && Number.isFinite(extendedFastest) && (
-                <p className="comparison-note">
-                  <strong>
-                    {scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}:{" "}
-                  </strong>
-                  {!Number.isFinite(baselineFastest)
-                    ? "Extended found a journey where Baseline found none in this search."
-                    : extendedFastest < baselineFastest
-                      ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
-                      : "Both models have the same fastest arrival in this search."}{" "}
-                  Same departure time and limits.
-                </p>
-              )}
-              {proposals.length > 0 && (
-                <p className="result-explanation">
-                  Results use your bicycle-access choice for fastest, fewest boardings and least
-                  cycling or walking. Boardings include the first vehicle. Alternatives arrive at
-                  most {session.options.extraTimeMinutes} minutes after the fastest eligible transit
-                  journey. Cycling only remains a separate comparison.
-                </p>
-              )}
+              <InfoDisclosure label="How these journeys are compared">
+                <div className="permission-summary">
+                  {recommendation.groups.map((group) => (
+                    <div key={group.scope} className={`permission-group scope-${group.scope}`}>
+                      <h3>Search filter: {bicycleScopeOptions[group.scope]}</h3>
+                      {group.scope === "all-transit" && (
+                        <p>
+                          Bicycle restrictions are ignored in this comparison. It can include
+                          services that prohibit bicycles; these are labelled on the journey.
+                        </p>
+                      )}
+                      {group.proposals.length ? (
+                        <p>
+                          {group.proposals.length} recommendation
+                          {group.proposals.length === 1 ? "" : "s"} · fastest with transit{" "}
+                          {formatMinutes(
+                            Math.min(...group.proposals.map((p) => p.journey.totalMinutes)),
+                          )}
+                        </p>
+                      ) : (
+                        <p>
+                          {group.scope === "confirmed"
+                            ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
+                            : loading
+                              ? "Checking possible journeys…"
+                              : "No journey found in this limited search."}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  <p className="comparison-caution">
+                    Verified access means bicycles are permitted on every transit leg, based on
+                    service data or applicable published operator rules. Open a journey for ticket
+                    and reservation requirements. Unknown ticket or reservation details do not
+                    change verified permission. Permission does not reserve a place.
+                  </p>
+                </div>
+                {session.extended && Number.isFinite(extendedFastest) && (
+                  <p className="comparison-note">
+                    <strong>
+                      {scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}:{" "}
+                    </strong>
+                    {!Number.isFinite(baselineFastest)
+                      ? "Extended found a journey where Baseline found none in this search."
+                      : extendedFastest < baselineFastest
+                        ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
+                        : "Both models have the same fastest arrival in this search."}{" "}
+                    Same departure time and limits.
+                  </p>
+                )}
+                {proposals.length > 0 && (
+                  <p className="result-explanation">
+                    Results use your bicycle-access choice for fastest, fewest boardings and least
+                    cycling or walking. Boardings include the first vehicle. Alternatives arrive at
+                    most {session.options.extraTimeMinutes} minutes after the fastest eligible
+                    transit journey. Cycling only remains a separate comparison.
+                  </p>
+                )}
+              </InfoDisclosure>
               <div className="journey-list">
                 {cyclingReference ? (
                   <CyclingCard
@@ -1198,6 +1266,7 @@ export default function App() {
         </section>
         <aside className="map-panel" id="journey-map">
           <MapView
+            visible={mobileView === "map"}
             origin={fromInput.place ?? session?.origin ?? null}
             destination={toInput.place ?? session?.destination ?? null}
             stops={stops}
@@ -1221,15 +1290,15 @@ export default function App() {
             }
             onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })}
           />
-          <div className="model-note">
-            <strong>Routed cycling · estimated times</strong>
+          <details className="model-note">
+            <summary>About the map and estimated times</summary>
             <p>
               Cycling follows mapped roads and paths. Transit lines remain schematic. Each
               public-transport leg shows its bicycle-permission status. All-public-transport results
               may prohibit bicycles. The map shows explored stops and routes, not the complete Swiss
               network.
             </p>
-          </div>
+          </details>
           <p className="timetable-attribution">
             Timetables:{" "}
             <a href="https://search.ch/timetable/" target="_blank" rel="noreferrer">
@@ -1242,6 +1311,24 @@ export default function App() {
           </p>
         </aside>
       </main>
+      <nav className="mobile-view-switch" aria-label="Planner view">
+        <button
+          type="button"
+          aria-pressed={mobileView === "planning"}
+          aria-controls="planning-panel"
+          onClick={() => showMobileView("planning")}
+        >
+          Planning
+        </button>
+        <button
+          type="button"
+          aria-pressed={mobileView === "map"}
+          aria-controls="journey-map"
+          onClick={() => showMobileView("map")}
+        >
+          Map
+        </button>
+      </nav>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import InfoDisclosure from "./InfoDisclosure";
 import { useEffect, useRef, useState } from "react";
 import { carriageForLeg, withTripInfoRule } from "./bicycleCarriage";
 import { checkOjpTripInfo } from "./ojpClient";
@@ -144,80 +145,82 @@ export default function BicycleCarriageDetails({
       {rule.evidence?.conditions.map((note) => (
         <p key={note}>{note}</p>
       ))}
-      {rule.evidence?.basis === "ojp-filter" && (
-        <p>
-          OJP returned this dated service with bicycle transport enabled. Missing ticket or
-          reservation information remains unknown.
-        </p>
-      )}
-      {rule.evidence && (
-        <p className="carriage-source">
-          <a href={rule.evidence.source.url} target="_blank" rel="noreferrer">
-            {rule.evidence.source.title}
-          </a>{" "}
-          · checked {new Date(rule.evidence.source.checked).toLocaleDateString("en-GB")}
-        </p>
-      )}
-      {rule.permissionSource && (
-        <p className="carriage-source">
-          {prohibited ? "Restriction source: " : "Access verified against "}
-          <a href={rule.permissionSource.url} target="_blank" rel="noreferrer">
-            {rule.permissionSource.title}
-          </a>{" "}
-          for this operator and service type · reviewed {rule.permissionSource.checked}
-        </p>
-      )}
-      {!prohibited && rule.ticketSource && (
-        <p className="carriage-source">
-          Ticket guidance:{" "}
-          <a href={rule.ticketSource.url} target="_blank" rel="noreferrer">
-            {rule.ticketSource.title}
-          </a>{" "}
-          · reviewed {rule.ticketSource.checked}
-        </p>
-      )}
-      {!prohibited && rule.reservationSource && (
-        <p className="carriage-source">
-          <a href={rule.reservationSource.url} target="_blank" rel="noreferrer">
-            {rule.reservationSource.title}
-          </a>{" "}
-          · reviewed {rule.reservationSource.checked}
-        </p>
-      )}
-      {!prohibited && rule.bookingUrl && (
-        <p>
-          <a href={rule.bookingUrl} target="_blank" rel="noreferrer">
-            Operator ticket and reservation instructions ↗
-          </a>
-        </p>
-      )}
-      {notes.length > 0 && (
-        <details>
-          <summary>Original provider notes</summary>
-          <ul>
-            {notes.map((note) => (
-              <li key={note}>{note}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-      {rule.guidance.length > 0 && rule.policySource && (
-        <div className="operator-guidance">
+      <InfoDisclosure label="Sources and operator guidance">
+        {rule.evidence?.basis === "ojp-filter" && (
           <p>
-            <strong>General operator guidance</strong>
+            OJP returned this dated service with bicycle transport enabled. Missing ticket or
+            reservation information remains unknown.
           </p>
-          <ul>
-            {rule.guidance
-              .filter((note) => note.trim())
-              .map((note) => (
+        )}
+        {rule.evidence && (
+          <p className="carriage-source">
+            <a href={rule.evidence.source.url} target="_blank" rel="noreferrer">
+              {rule.evidence.source.title}
+            </a>{" "}
+            · checked {new Date(rule.evidence.source.checked).toLocaleDateString("en-GB")}
+          </p>
+        )}
+        {rule.permissionSource && (
+          <p className="carriage-source">
+            {prohibited ? "Restriction source: " : "Access verified against "}
+            <a href={rule.permissionSource.url} target="_blank" rel="noreferrer">
+              {rule.permissionSource.title}
+            </a>{" "}
+            for this operator and service type · reviewed {rule.permissionSource.checked}
+          </p>
+        )}
+        {!prohibited && rule.ticketSource && (
+          <p className="carriage-source">
+            Ticket guidance:{" "}
+            <a href={rule.ticketSource.url} target="_blank" rel="noreferrer">
+              {rule.ticketSource.title}
+            </a>{" "}
+            · reviewed {rule.ticketSource.checked}
+          </p>
+        )}
+        {!prohibited && rule.reservationSource && (
+          <p className="carriage-source">
+            <a href={rule.reservationSource.url} target="_blank" rel="noreferrer">
+              {rule.reservationSource.title}
+            </a>{" "}
+            · reviewed {rule.reservationSource.checked}
+          </p>
+        )}
+        {!prohibited && rule.bookingUrl && (
+          <p>
+            <a href={rule.bookingUrl} target="_blank" rel="noreferrer">
+              Operator ticket and reservation instructions ↗
+            </a>
+          </p>
+        )}
+        {notes.length > 0 && (
+          <details>
+            <summary>Original provider notes</summary>
+            <ul>
+              {notes.map((note) => (
                 <li key={note}>{note}</li>
               ))}
-          </ul>
-          <a href={rule.policySource.url} target="_blank" rel="noreferrer">
-            {rule.policySource.title}
-          </a>
-        </div>
-      )}
+            </ul>
+          </details>
+        )}
+        {rule.guidance.length > 0 && rule.policySource && (
+          <div className="operator-guidance">
+            <p>
+              <strong>General operator guidance</strong>
+            </p>
+            <ul>
+              {rule.guidance
+                .filter((note) => note.trim())
+                .map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+            </ul>
+            <a href={rule.policySource.url} target="_blank" rel="noreferrer">
+              {rule.policySource.title}
+            </a>
+          </div>
+        )}
+      </InfoDisclosure>
       <p className="carriage-check" role="status">
         {status === "loading"
           ? "Checking this service’s detailed conditions…"

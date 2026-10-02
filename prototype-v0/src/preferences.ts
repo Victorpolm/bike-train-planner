@@ -3,9 +3,10 @@ import type { RoutePreference } from "./cyclingPreferences.ts";
 import { DEFAULT_OPTIONS, type EndpointPreference, type Options } from "./model.ts";
 import type { BicycleScope } from "./bicyclePermission.ts";
 import type { BusPreference } from "./busCarriage.ts";
-export type CyclingPreference = "less" | "balanced" | "more" | "unrestricted";
+export type CyclingPreference = "less" | "commuter" | "balanced" | "more" | "unrestricted";
 export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown", bicycleScope?: BicycleScope, cyclingPace: CyclingPace = DEFAULT_CYCLING_PACE, cyclingRoutePreference: RoutePreference = "fastest"): Options {
   const budgets = {
+    commuter: { maxBikeMinutes: 45, maxAccessMinutes: 45, maxEgressMinutes: 45, maxIntermediateMinutes: 45 },
     less: { maxBikeMinutes: 40, maxAccessMinutes: 20, maxEgressMinutes: 20, maxIntermediateMinutes: 10 },
     balanced: { maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60, maxIntermediateMinutes: 20 },
     more: { maxBikeMinutes: 150, maxAccessMinutes: 90, maxEgressMinutes: 90, maxIntermediateMinutes: 30 },
