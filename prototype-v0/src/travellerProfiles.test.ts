@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
-import { emptyLibrary, guestSettings, parseTravellerLibrary, personalSettings, persistTravellers, samePersonalSettings, validPersonalSettings } from "./travellerProfiles.ts";
+import { changeTravellerLibrary, emptyLibrary, guestSettings, parseTravellerLibrary, personalSettings, persistTravellers, samePersonalSettings, validPersonalSettings } from "./travellerProfiles.ts";
 import { TRIP_PRESETS } from "./tripPresets.ts";
 import { preferenceOptions } from "./preferences.ts";
 import { DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
@@ -42,6 +42,40 @@ it("does not silently accept corrupt, duplicate, unsupported or out-of-range sav
 });
 it("reports storage failures instead of pretending a profile was saved", () => {
   assert.throws(() => persistTravellers(emptyLibrary(), { setItem() { throw new Error("Quota exceeded"); } }), /Quota/);
+});
+it("keeps the shared profile list and persisted selection together through create, rename and delete", () => {
+  const profile = { ...guestSettings(), id: "one", name: "Weekend" };
+  let stored = "";
+  const storage = { setItem(_key: string, value: string) { stored = value; } };
+  const created = changeTravellerLibrary(emptyLibrary(), { ...emptyLibrary(), profiles: [profile], activeId: profile.id }, "save", storage);
+  assert.equal(created.accepted, true);
+  assert.deepEqual(parseTravellerLibrary(stored), created.library);
+  const renamed = changeTravellerLibrary(created.library, { ...created.library, profiles: [{ ...profile, name: "Touring" }] }, "save", storage);
+  assert.equal(renamed.library.profiles[0].name, "Touring");
+  assert.deepEqual(parseTravellerLibrary(stored), renamed.library);
+  const deleted = changeTravellerLibrary(renamed.library, emptyLibrary(), "save", storage);
+  assert.deepEqual(deleted.library, emptyLibrary());
+  assert.deepEqual(parseTravellerLibrary(stored), deleted.library);
+});
+it("allows temporary selection from either control when storage is blocked without overwriting saved settings", () => {
+  const profile = { ...guestSettings(), id: "one", name: "Weekend" };
+  const before = { ...emptyLibrary(), profiles: [profile] };
+  const selected = changeTravellerLibrary(before, { ...before, activeId: profile.id }, "select", { setItem() { throw new Error("Blocked"); } });
+  assert.equal(selected.accepted, true);
+  assert.equal(selected.library.activeId, profile.id);
+  assert.match(selected.notice, /this visit/);
+  assert.equal(before.activeId, null);
+  assert.deepEqual(selected.library.profiles[0], profile);
+});
+it("keeps the displayed list and active profile intact when a save or deletion cannot persist", () => {
+  const profile = { ...guestSettings(), id: "one", name: "Weekend" };
+  const before = { ...emptyLibrary(), profiles: [profile], activeId: profile.id };
+  for (const next of [emptyLibrary(), { ...before, profiles: [{ ...profile, name: "Renamed" }] }]) {
+    const rejected = changeTravellerLibrary(before, next, "save", { setItem() { throw new Error("Quota exceeded"); } });
+    assert.equal(rejected.accepted, false);
+    assert.equal(rejected.library, before);
+    assert.match(rejected.notice, /could not save/);
+  }
 });
 it("validates custom speed and optional age before saving", () => {
   const value = guestSettings();

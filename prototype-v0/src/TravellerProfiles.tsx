@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   personalSettings,
-  persistTravellers,
   samePersonalSettings,
   validPersonalSettings,
   type PersonalSettings,
@@ -10,40 +9,33 @@ import {
 } from "./travellerProfiles";
 
 export default function TravellerProfiles({
-  initial,
+  library,
+  notice,
+  onNotice,
+  onLibraryChange,
   settings,
   disabled,
-  onSelect,
   onEdit,
 }: {
-  initial: { library: TravellerLibrary; notice: string };
+  library: TravellerLibrary;
+  notice: string;
+  onNotice: (notice: string) => void;
+  onLibraryChange: (next: TravellerLibrary, action: "save" | "select") => boolean;
   settings: PersonalSettings;
   disabled: boolean;
-  onSelect: (profile: TravellerProfile | null) => void;
   onEdit: () => void;
 }) {
-  const [library, setLibrary] = useState(initial.library);
-  const [notice, setNotice] = useState(initial.notice);
   const [editing, setEditing] = useState<"new" | "rename" | "delete" | null>(null);
   const [name, setName] = useState("");
+  useEffect(() => setEditing(null), [library.activeId]);
   const selected = library.profiles.find((p) => p.id === library.activeId);
   const changed = !!selected && !samePersonalSettings(selected, settings);
   function store(next: TravellerLibrary) {
-    try {
-      persistTravellers(next);
-      setLibrary(next);
-      setNotice("Saved on this device.");
-      return true;
-    } catch {
-      setNotice(
-        "Your browser could not save this change. Your trip settings still work; allow device storage to save profiles.",
-      );
-      return false;
-    }
+    return onLibraryChange(next, "save");
   }
   function save() {
     if (!validPersonalSettings(settings)) {
-      setNotice("Enter a speed from 8 to 35 km/h and a valid optional age before saving.");
+      onNotice("Enter a speed from 8 to 35 km/h and a valid optional age before saving.");
       onEdit();
       return;
     }
@@ -59,7 +51,6 @@ export default function TravellerProfiles({
       profiles: [...library.profiles.filter((p) => p.id !== profile.id), profile],
     };
     if (store(next)) {
-      onSelect(profile);
       setEditing(null);
     }
   }
@@ -74,17 +65,8 @@ export default function TravellerProfiles({
             onChange={(e) => {
               const activeId = e.target.value || null;
               const next = { ...library, activeId };
-              setLibrary(next);
               setEditing(null);
-              setNotice("");
-              onSelect(next.profiles.find((p) => p.id === activeId) ?? null);
-              try {
-                persistTravellers(next);
-              } catch {
-                setNotice(
-                  "Profile selected for this visit. Your browser could not remember the selection.",
-                );
-              }
+              onLibraryChange(next, "select");
             }}
           >
             <option value="">Guest · no profile</option>
@@ -115,7 +97,7 @@ export default function TravellerProfiles({
               onClick={() => {
                 if (!validPersonalSettings(settings)) {
                   onEdit();
-                  setNotice("Check your speed and optional age before saving.");
+                  onNotice("Check your speed and optional age before saving.");
                   return;
                 }
                 store({
@@ -216,7 +198,6 @@ export default function TravellerProfiles({
                     profiles: library.profiles.filter((p) => p.id !== selected.id),
                   })
                 ) {
-                  onSelect(null);
                   setEditing(null);
                 }
               }}

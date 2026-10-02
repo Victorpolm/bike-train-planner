@@ -55,6 +55,11 @@ button:disabled { cursor: default; opacity: .55; }
 .trip-presets strong { display: block; font-size: .9375rem; overflow-wrap: anywhere; }
 .trip-presets span { display: block; font-size: .75rem; color: #52675f; margin-top: 5px; line-height: 1.3; }
 .trip-presets button[aria-pressed=true] { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); background: #edf7f0; }
+.saved-trip-profiles { margin-top: 14px; }
+.trip-profile-label { margin: 0 0 8px; font-size: .875rem; font-weight: 650; }
+.trip-profile-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 8px; }
+.trip-profile-cards button { text-align: left; padding: 12px; }
+.trip-profile-cards .trip-profile-state { color: var(--green); font-weight: 600; }
 .preset-summary { font-size: .8125rem; line-height: 1.5; color: var(--muted); margin: -7px 0 0; }
 .preferences { border: 1px solid var(--line); border-radius: 8px; padding: 0 14px; min-width: 0; }
 .preferences > summary { min-height: 46px; padding-block: 12px; font-size: .9375rem; }

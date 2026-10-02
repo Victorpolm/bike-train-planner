@@ -5,24 +5,27 @@ import {
   validPersonalSettings,
   type PersonalSettings,
   type TravellerLibrary,
-  type TravellerProfile,
 } from "../travellerProfiles";
 
 export default function ProfilePanel({
   open,
   onOpenChange,
-  initial,
+  library,
+  notice,
+  onNotice,
+  onLibraryChange,
   settings,
   disabled,
-  onSelect,
   onChange,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initial: { library: TravellerLibrary; notice: string };
+  library: TravellerLibrary;
+  notice: string;
+  onNotice: (notice: string) => void;
+  onLibraryChange: (next: TravellerLibrary, action: "save" | "select") => boolean;
   settings: PersonalSettings;
   disabled: boolean;
-  onSelect: (profile: TravellerProfile | null) => void;
   onChange: (settings: PersonalSettings) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -119,10 +122,12 @@ export default function ProfilePanel({
           }}
         >
           <TravellerProfiles
-            initial={initial}
+            library={library}
+            notice={notice}
+            onNotice={onNotice}
+            onLibraryChange={onLibraryChange}
             settings={settings}
             disabled={disabled}
-            onSelect={onSelect}
             onEdit={focusSettings}
           />
           <h3>Rider &amp; tickets</h3>

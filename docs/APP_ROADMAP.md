@@ -132,6 +132,8 @@ Baseline/Extended remain available for the current mathematical experiment. Movi
 
 ## Technical work retained after these priorities
 
+- **More than one automatic cycling transfer — proposed, not implemented:** the owner asked what prevents multiple cycling connections between services. The cap is in both solvers and discovery currently expands only one round. Start with a bounded 0/1/2 experiment, shared journey budgets and measured quality/runtime before considering more. [Code constraints and acceptance cases](MULTIPLE_CYCLING_TRANSFERS.md).
+
 - **Later road safety:** investigate crossings/signals, turning manoeuvres, physical separation, documented lower speed limits and pedestrian access. Review official injury-crash data with exposure, age and geometry limitations. Existing lower-traffic-stress summaries remain heuristics; no “every turn is dangerous” rule or guaranteed-safe route. See [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md).
 
 - **Route acquisition and engine comparison:** diagnose missed useful routes (including Baden–Witikon) and evaluate the four-versus-eight station-pair trade-off with fixed date/input cases, bounded requests and checkpoints. A local MOTIS 2.11.3 permission/stop-via pilot is complete: strict and unrestricted cases match, but postfiltering loses the middle-scope winner. Next evaluate pre-routing three-state permission handling, intermediate cycling, four coordinate stops and category completeness; national performance remains unmeasured. [Pilot and evidence](REVIEW_IMPLEMENTATION_2026-09-30.md#motis-pilot-result).

@@ -560,3 +560,11 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Delivery:** consolidate the existing personal controls in a native modal; keep device-local storage and explicit Save to profile. Place the reversal action beside the field boundary without consuming a grid row. Extract independent presentation components and named layout/style settings, with [an editing guide](INTERFACE_EDITING.md). Preserve the existing planning state, model constraints, fares and facilities. Personalized opens trip preferences; personal settings are always accessible from the header. Extended remains at most one extra automatic cycling transfer across the complete journey.
 
 **Boundary:** this is a modular code structure and configuration, not a delivered visual drag-and-drop editor. A possible owner-only preview/editor is documented separately. 309 regressions pass; browser interaction QA remains pending.
+
+## 2026-10-02 — Saved profiles visible in Your trip
+
+**User request:** represent created profiles among the Your trip choices, and explain the limitation on more than one optional cycling connection between services.
+
+**Delivery:** saved profiles have selectable cards with name, pace, fare and selected/modified status. Cards and the header manager share profile state and persistence, including creation, rename, deletion and storage errors. Profiles apply personal settings while trip-style and route preferences remain independent. Saves remain explicit; schema and device-only scope are unchanged. 312 offline tests pass, including three new persistence regressions; browser QA is pending.
+
+**Routing finding/proposal:** the single automatic-transfer limit is hard-coded in both solvers and reflected in one-round timetable discovery; no provider restriction is established. A bounded 0/1/2 experiment with shared budgets, measured discovery/runtime and permission/fare regressions is proposed, not implemented. [Details](MULTIPLE_CYCLING_TRANSFERS.md).

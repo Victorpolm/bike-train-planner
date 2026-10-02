@@ -75,3 +75,11 @@ Explanations use native details/summary: click, touch, Enter/Space, persistent c
 The owner asked to reduce profile/route spacing and make interface editing modular. Profile selection and all personal fields now open from a circular person icon at the top right. The search form no longer repeats profile controls. A compact side-mounted reverse action removes its empty row. The form is split into header, profile, locations, departure, presets and preferences components, with a central module-order/text file and a dedicated stylesheet with named spacing/width settings. Routing and the local-profile data format remain unchanged; 309 regressions and format/unused-code gates pass. Extended has an inline explanation. [Editing guide, component map, future visual-editor proposal and manual checks](INTERFACE_EDITING.md).
 
 **Follow-up publication:** owner-private version 44 at 20:32:54 UTC, Site source `fc0591d62b03d959c210e687289d43538e7d2c07`, environment revision 3. All 197 current application files match the feature branch.
+
+## Follow-up — profiles in Your trip
+
+Version 45 adds cards for saved profiles below the trip styles. Selection applies saved rider/ticket settings and keeps the current trip style and route preferences. Creation, rename and deletion update the cards immediately; trip-only edits are identified and can be restored by selecting the card. Both controls share state and handle storage failure consistently. 312 offline tests, formatting/Knip and builds pass. Browser interaction checks remain pending. [Editing and acceptance guide](INTERFACE_EDITING.md).
+
+Owner-private version **45** succeeded on **2 October 2026 at 21:09:11 UTC**, environment revision **3**, from Site source `f8dfcb0e46ac945f8c1b52fb12f284ed0d02315d`. All **197 current application files** match the feature branch. The existing [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remains unmerged; sharing and main are unchanged.
+
+The question of multiple automatic cycling connections is investigated separately. The current one-transfer cap remains; [constraints and proposed 0/1/2 experiment](MULTIPLE_CYCLING_TRANSFERS.md) are recorded in the roadmap.

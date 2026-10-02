@@ -11,8 +11,9 @@ import {
   loadTravellers,
   validPersonalSettings,
   personalSettings,
+  changeTravellerLibrary,
   type PersonalSettings,
-  type TravellerProfile,
+  type TravellerLibrary,
 } from "./travellerProfiles";
 import { TRIP_PRESETS, type TripPreset } from "./tripPresets";
 import { type RoutePreference } from "./cyclingPreferences";
@@ -253,11 +254,12 @@ export default function App() {
   const [pointNotice, setPointNotice] = useState("");
   const [cycleFocus, setCycleFocus] = useState<CycleFocus | null>(null);
   const [travellers] = useState(loadTravellers);
+  const [profileLibrary, setProfileLibrary] = useState(travellers.library);
+  const [profileNotice, setProfileNotice] = useState(travellers.notice);
   const initialTraveller =
     travellers.library.profiles.find((p) => p.id === travellers.library.activeId) ??
     travellers.guest;
   const guest = useRef(travellers.guest);
-  const activeProfile = useRef(travellers.library.activeId);
   const [fareProfile, setFareProfile] = useState<FareProfile>(initialTraveller.fare);
   const [age, setAge] = useState<number | null>(initialTraveller.age);
   const [mode, setMode] = useState<ModelMode>("baseline");
@@ -299,10 +301,17 @@ export default function App() {
     setAge(next.age);
     setRidingPreset(next.ridingPreset);
   }
-  function selectTraveller(profile: TravellerProfile | null) {
-    if (activeProfile.current === null) guest.current = personalSettings(tripPersonal);
-    activeProfile.current = profile?.id ?? null;
-    applyPersonal(profile ?? guest.current);
+  function updateProfiles(next: TravellerLibrary, action: "save" | "select") {
+    const result = changeTravellerLibrary(profileLibrary, next, action);
+    setProfileNotice(result.notice);
+    if (!result.accepted) return false;
+    setProfileLibrary(result.library);
+    if (action === "select" || next.activeId !== profileLibrary.activeId) {
+      if (profileLibrary.activeId === null) guest.current = personalSettings(tripPersonal);
+      const profile = next.profiles.find((p) => p.id === next.activeId);
+      applyPersonal(profile ?? guest.current);
+    }
+    return true;
   }
   function choosePreset(preset: TripPreset) {
     setTripPreset(preset);
@@ -598,10 +607,12 @@ export default function App() {
           <ProfilePanel
             open={profileOpen}
             onOpenChange={setProfileOpen}
-            initial={travellers}
+            library={profileLibrary}
+            notice={profileNotice}
+            onNotice={setProfileNotice}
+            onLibraryChange={updateProfiles}
             settings={tripPersonal}
             disabled={loading}
-            onSelect={selectTraveller}
             onChange={applyPersonal}
           />
         }
@@ -667,7 +678,17 @@ export default function App() {
                 />
               ),
               presets: (
-                <TripPresetPicker value={tripPreset} disabled={loading} onChange={choosePreset} />
+                <TripPresetPicker
+                  value={tripPreset}
+                  disabled={loading}
+                  onChange={choosePreset}
+                  library={profileLibrary}
+                  settings={tripPersonal}
+                  notice={profileNotice}
+                  onSelectProfile={(activeId) =>
+                    updateProfiles({ ...profileLibrary, activeId }, "select")
+                  }
+                />
               ),
               preferences: (
                 <TripPreferences

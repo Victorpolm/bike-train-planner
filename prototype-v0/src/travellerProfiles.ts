@@ -48,3 +48,18 @@ export function loadTravellers(): { library: TravellerLibrary; guest: PersonalSe
 export function persistTravellers(library: TravellerLibrary, storage: Pick<Storage, "setItem"> = localStorage): void {
   storage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(library));
 }
+
+// Both the header manager and trip cards use this same persistence boundary.
+// Selection may work for this visit; edits must not pretend to be saved.
+export function changeTravellerLibrary(current: TravellerLibrary, next: TravellerLibrary, action: "save" | "select",
+  storage?: Pick<Storage, "setItem">): { library: TravellerLibrary; notice: string; accepted: boolean } {
+  try {
+    persistTravellers(next, storage);
+    return { library: next, notice: action === "save" ? "Saved on this device." : "", accepted: true };
+  } catch {
+    if (action === "select") return { library: next, accepted: true,
+      notice: "Profile selected for this visit. Your browser could not remember the selection." };
+    return { library: current, accepted: false,
+      notice: "Your browser could not save this change. Your trip settings still work; allow device storage to save profiles." };
+  }
+}
