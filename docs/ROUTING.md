@@ -1,6 +1,10 @@
 # Routing and optimization
 
-## Current implementation update — 2026-09-21
+## Latest routing update — 2026-10-02
+
+Baseline allows 0 automatic cycling connections between services; Extended allows up to 2, discovered in bounded rounds. Beginning-only and end-only cycling are hard journey constraints, separate from endpoint ranking. They disable intermediate cycling and require a transport-stop match at the non-cycling end; existing timed walking transfers remain usable. [Implementation, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md). The dated architectural snapshot below is historical; [PROJECT_STATE.md](PROJECT_STATE.md) describes current hosting/data integration.
+
+## Historical implementation update — 2026-09-21
 
 The active implementation uses React/TypeScript and Leaflet, directed BRouter cycling routes, sampled Transport API services and bounded multi-label Baseline/Extended solvers. Three permission comparisons are independent before deduplication. OJP TripRequest has been benchmarked; TripInfo evaluation tooling is prepared but not live-validated. There is no production OJP backend, imported national GTFS/OSM graph, or remaining-bike-space integration. The proposed stack below is direction, not a list of deployed components. Read [MATHEMATICAL_MODEL.md](MATHEMATICAL_MODEL.md) for the current state graph, feasibility, Pareto labels, categories, data acquisition, defaults and limitations. It supersedes the earlier scalar-only/fixed-radius prototype direction below. Earlier sections remain design history and longer-term architecture guidance. OpenTripPlanner is still the production-engine candidate; no complete nationwide router has been built.
 

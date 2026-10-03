@@ -1,3 +1,4 @@
+import { DEFAULT_HILLS, uphillParameters, validateHills, type HillPreferences } from "./hills.ts";
 import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
 import { cachedCycling, cyclingKey, CYCLING_PROFILE, MAX_ENDPOINT_GAP_METRES, EndpointSnapError, parseCyclingRoute, samePlace, zeroCycling, type CyclingRoute } from "./cycling.ts";
 import { haversineKm, type Point } from "./routing.ts";
@@ -60,12 +61,14 @@ export class CyclingClient {
   private topoCorridors = new Map<string, TopoReply>();
   private terrainFetcher: typeof fetch | null;
   readonly routePreference?: RoutePreference;
+  readonly hills: HillPreferences;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true,
     fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, pace?: CyclingPace, routePreference?: RoutePreference,
-    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null) {
+    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, hills: HillPreferences = DEFAULT_HILLS) {
+    validateHills(hills); this.hills = { ...hills };
     if (pace) validateCyclingPace(pace);
     this.pace = pace ? { ...pace } : undefined;
-    this.routePreference = routePreference;
+    this.routePreference = routePreference ?? (hills.mode !== "none" ? "fastest" : undefined);
     this.terrainFetcher = terrainFetcher;
     this.signal = signal; this.fetcher = fetcher; this.gapMs = gapMs; this.useCache = useCache;
     this.fallbackFetcher = fallbackFetcher;
@@ -99,6 +102,12 @@ export class CyclingClient {
     }
   }
   beginPhase() { this.remainingMs = CYCLING_LIMITS.phaseMs; }
+  fork(signal: AbortSignal) {
+    const next = new CyclingClient(signal, this.fetcher, this.gapMs, this.useCache, this.fallbackFetcher,
+      this.pace, this.routePreference, this.terrainFetcher, this.hills);
+    for (const [key, route] of this.routes) if (route) next.routes.set(key, route);
+    return next;
+  }
   getCached(a: Located, b: Located) { return cachedCycling(this.routes, a, b); }
   route(a: Located, b: Located): Promise<CyclingRoute | null> {
     if (this.signal.aborted) return Promise.reject(this.signal.reason);
@@ -108,7 +117,7 @@ export class CyclingClient {
     const equivalent = cachedCycling(this.routes, a, b);
     if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
-    const cacheKey = "terrain-v1|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    const cacheKey = "terrain-hills-v2|" + JSON.stringify(this.hills) + "|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
     if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }
     const task = this.queue.then(async () => {
@@ -117,7 +126,7 @@ export class CyclingClient {
       const remaining = () => this.remainingMs - Math.max(0, Date.now() - started);
       const remember = (route: CyclingRoute) => {
         if (route.source === "OSRM" && this.routePreference) route = { ...route, preference: this.routePreference,
-          alternativesChecked: 1, preferenceNote: "Backup cycling service: alternatives, turn counts and traffic-stress preferences could not be compared." };
+          alternativesChecked: 1, preferenceNote: "Backup cycling service: path preferences and hill avoidance could not be compared. Elevation may be unavailable." };
         if (route.blocked) throw new TerrainRouteError("No bicycle-suitable checked path: " +
           [...new Set(route.sections.filter(s => s.mode === "blocked").flatMap(s => s.reasons ?? []))].join(" "));
         this.routes.set(key, route);
@@ -173,16 +182,17 @@ export class CyclingClient {
               // Check the primary path while the route provider computes a genuine
               // alternative. Unchosen alternatives need no second terrain request.
               const [checkedPrimary, rawAlternative] = await Promise.all([this.terrainCheck(route), (async () => {
-                if (this.alternativeRequests >= 6 || this.requests >= CYCLING_LIMITS.requests - 4 || remaining() <= 7000) return null;
+                if (this.alternativeRequests >= (this.hills.mode === "none" ? 6 : 12) || this.requests >= CYCLING_LIMITS.requests - 4 || remaining() <= 7000) return null;
                 const alternative = new URLSearchParams(params);
                 const stairs = route.sections.some(s => s.tags.highway === "steps");
+                uphillParameters(alternative, this.hills);
                 if (stairs || route.blocked) {
                   alternative.set("profile:allow_steps", "0");
                   alternative.set("profile:avoid_unsafe", "1");
-                } else alternative.set("alternativeidx", "1");
+                } else if (this.hills.mode === "none") alternative.set("alternativeidx", "1");
                 try {
                   await waitFor(this.gapMs, this.signal); this.lastRequest = Date.now(); this.requests++; this.alternativeRequests++;
-                  const timeout = !stairs && !route.blocked && this.routes.size < 2 ? 2500 : 10000;
+                  const timeout = this.hills.mode !== "none" ? 10000 : !stairs && !route.blocked && this.routes.size < 2 ? 2500 : 10000;
                   const alternate = await fetchJson<unknown>("https://brouter.de/brouter?" + alternative, this.signal,
                     Math.min(timeout, remaining()), this.fetcher);
                   return parseCyclingRoute(alternate, a, b, Date.now(), this.pace);
@@ -195,11 +205,11 @@ export class CyclingClient {
               })()]);
               const candidates = [checkedPrimary];
               if (rawAlternative) {
-                const preliminary = chooseCyclingRoute([checkedPrimary, rawAlternative], this.routePreference);
+                const preliminary = chooseCyclingRoute([checkedPrimary, rawAlternative], this.routePreference, this.hills);
                 // IDs identify endpoints, so compare the point-array identity here.
                 candidates.push(preliminary?.points === rawAlternative.points ? await this.terrainCheck(rawAlternative) : rawAlternative);
               }
-              const choice = chooseCyclingRoute(candidates, this.routePreference);
+              const choice = chooseCyclingRoute(candidates, this.routePreference, this.hills);
               if (!choice) throw new TerrainRouteError("No bicycle-suitable checked path: " +
                 [...new Set(candidates.flatMap(r => r.sections.filter(s => s.mode === "blocked").flatMap(s => s.reasons ?? [])))].join(" "));
               route = choice;

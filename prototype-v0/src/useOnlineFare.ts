@@ -9,7 +9,8 @@ const cache = new Map<string, { expires: number; promise: Promise<State> }>();
 let queue: Promise<unknown> = Promise.resolve();
 export function useOnlineFare(legs: TransitLeg[], profile: FareProfile): State {
   const query = fareQuery(legs, profile), prohibited = fareSummary(legs, profile).prohibited;
-  const key = query && !prohibited && !(profile.passenger === "ga" && profile.annualBikePass) ? JSON.stringify(query) : "";
+  const past = !!query && query.segments.some(segment => Date.parse(segment.departure) <= Date.now());
+  const key = query && !past && !prohibited && !(profile.passenger === "ga" && profile.annualBikePass) ? JSON.stringify(query) : "";
   const [state, setState] = useState<State & { key: string }>({ key: "", message: "" });
   useEffect(() => {
     if (!key) return;
@@ -35,5 +36,5 @@ export function useOnlineFare(legs: TransitLeg[], profile: FareProfile): State {
     entry.promise.then(value => { if (active) setState({ ...value, key }); });
     return () => { active = false; };
   }, [key]);
-  return !key ? { message: "" } : state.key === key ? state : { message: "Checking online fare…" };
+  return !key ? { message: past ? "Online fares are available for future departures only; historical fares cannot be quoted." : "" } : state.key === key ? state : { message: "Checking online fare…" };
 }

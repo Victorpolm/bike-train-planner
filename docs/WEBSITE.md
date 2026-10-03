@@ -1,10 +1,10 @@
 # Website access and development
 
-**Current publication:** Owner-private **version 42** published on **30 September 2026 at 21:58:44 UTC**, environment revision **3**, Site source `c5ed6f1a3cdf392c727ad64492a6e43368eae4e6`. New detours draw and frame automatically, redundant map controls are removed with keyboard location selection retained, and reviewed permission/cache/tooling changes are active. All **182 application files** match GitHub implementation `a97c872af7b55543221781fde4bca30d2ccaa923`. **300 tests, formatting/Knip and production builds pass** locally and in [GitHub Actions](https://github.com/Victorpolm/bike-train-planner/actions/runs/36782578264). [Implementation, engine pilot and limits](REVIEW_IMPLEMENTATION_2026-09-30.md). Browser interaction/visual QA remains unavailable.
+**Current publication:** Owner-private **version 50** published on **3 October 2026 at 16:40:52 UTC**, environment revision **3**, Site source `f3ae94634aacdf402bed6f17c641540adb5815f6`. All **208 current application files** match `feature/novice-interface-profiles`, which remains unmerged. **360 regressions**, React formatting, Knip and TypeScript/frontend/Worker builds pass. Two dated production OJP checks succeeded; browser interaction QA remains pending. **Reduce climbing** is now a separate optional proposition. OJP platform-access and interchange times replace the generic buffer where matching evidence exists, with source explanations in journey details. Cycling hills retains its gentle-slope controls with adjacent help. [Controls, live evidence and caveats](STATION_TIMES_2026-10-03.md).
 
-Refresh and enable Water, Toilets or Food to load the additional sources. In the Water panel, optionally select **Show topographic fountains and springs (drinkability unknown)**. Select a journey to filter by its paths; adjust the route distance or disable Along selected journey to explore more widely. Click overlapping markers at detailed zoom to inspect separate floors/sources. Closest remains straight-line from A. Once a journey is selected, click a facility and choose **Preview cycling detour**; adjust the section and stop duration, then use **Show detour on map** for the dashed purple preview. Original cards and fares stay unchanged. Entrances, indoor paths and opening at arrival are not verified.
+Open **Map filters** and enable Water, Toilets or Food to load the additional sources. In the Water panel, optionally select **Show topographic fountains and springs (drinkability unknown)**. Select a journey to filter by its paths; adjust the route distance or disable Along selected journey to explore more widely. Click overlapping markers at detailed zoom to inspect separate floors/sources. Closest remains straight-line from A. Once a journey is selected, click a facility and choose **Preview cycling detour**; adjust the section and stop duration, the dashed purple preview draws and frames automatically. Original cards and fares stay unchanged. Entrances, indoor paths and opening at arrival are not verified.
 
-OJP configuration and exact-trip fare behavior remain unchanged from version 30. [Earlier pricing checks and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md).
+OJP runtime keys are unchanged. Compact timetable requests preserve exact city-fare evidence; stationary zero-time connectors no longer block fares. Real cycling gaps still do not receive an unsupported through quote. [Current checks](SEARCH_RELIABILITY_2026-10-03.md) · [Earlier fare pipeline and limitations](OJP_EXACT_TRIP_FARES_2026-09-28.md).
 
 ## Open the private website
 
@@ -20,7 +20,9 @@ Install Git and Node.js 24, the version used for verification. The source reposi
 
 ```bash
 git clone https://github.com/Victorpolm/bike-train-planner.git
-cd bike-train-planner/prototype-v0
+cd bike-train-planner
+git switch feature/novice-interface-profiles
+cd prototype-v0
 npm ci
 npm run dev
 ```

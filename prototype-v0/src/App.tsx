@@ -1,12 +1,38 @@
-import { DEFAULT_FARE_PROFILE, readFareProfile, type FareProfile } from "./fares";
+import type { AppliedCyclingEdit } from "./cyclingEditor";
 import {
-  ROUTE_PREFERENCES,
-  routePreferenceLabels,
-  type RoutePreference,
-} from "./cyclingPreferences";
+  DEFAULT_HILLS,
+  addClimb,
+  climbSummary,
+  emptyClimb,
+  hillSearch,
+  journeyClimb,
+  routeClimb,
+  type HillPreferences,
+} from "./hills";
+import AppHeader from "./ui/AppHeader";
+import ProfilePanel from "./ui/ProfilePanel";
+import PlannerForm from "./ui/PlannerForm";
+import RouteFields from "./ui/RouteFields";
+import DepartureControls from "./ui/DepartureControls";
+import TripPresetPicker from "./ui/TripPresetPicker";
+import TripPreferences from "./ui/TripPreferences";
+import type { FareProfile } from "./fares";
+import InfoDisclosure from "./InfoDisclosure";
+import {
+  loadTravellers,
+  validPersonalSettings,
+  personalSettings,
+  changeTravellerLibrary,
+  type PersonalSettings,
+  type TravellerLibrary,
+} from "./travellerProfiles";
+import { TRIP_PRESETS, type TripPreset } from "./tripPresets";
+import { type RoutePreference } from "./cyclingPreferences";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
-import { metrics, type ModelMode, type EndpointPreference } from "./model";
+import { firstBoarding, laterDepartures } from "./laterDepartures";
+import type { Journey } from "./routing";
+import { metrics, type ModelMode, type EndpointPreference, type CyclingPosition } from "./model";
 import {
   recommend,
   compareCycling,
@@ -21,23 +47,15 @@ import CyclingDetails, { type CycleFocus, type NamedCycleRoute } from "./Cycling
 import { formatMinutes, type CyclingComparison, type Point } from "./routing";
 import { journeySteps } from "./itinerary";
 import { exploredStops } from "./mapData";
-import PlaceInput, { type PlaceValue } from "./PlaceInput";
+import type { PlaceValue } from "./PlaceInput";
 import { KNOWN_PLACES, mapPlace, nameMapPlace, MAX_WAYPOINTS } from "./places";
-import {
-  CYCLING_PRESETS,
-  DEFAULT_CYCLING_PACE,
-  slopeSpeedKmh,
-  type CyclingPace,
-  type CyclingPreset,
-} from "./cyclingPace";
+import { slopeSpeedKmh, type CyclingPace, type CyclingPreset } from "./cyclingPace";
 import { preferenceOptions, type CyclingPreference } from "./preferences";
 import { parseSwissDateTime, swissDateTimeInput } from "./departure";
 import { bicycleJourneySummary } from "./bicycleCarriage";
 import {
-  BICYCLE_SCOPES,
   bicycleExclusions,
   bicyclePermission,
-  bicycleScopeHelp,
   bicycleScopeOptions,
   type BicycleScope,
 } from "./bicyclePermission";
@@ -60,6 +78,7 @@ function CyclingCard({
   start,
   maxBikeMinutes,
   fastest,
+  cyclingPosition,
   onSelect,
 }: {
   comparison: CyclingComparison;
@@ -67,6 +86,7 @@ function CyclingCard({
   start: Date;
   maxBikeMinutes: number;
   fastest: boolean;
+  cyclingPosition: CyclingPosition;
   onSelect: () => void;
 }) {
   return (
@@ -105,6 +125,12 @@ function CyclingCard({
           Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.
         </span>
       )}
+      {cyclingPosition !== "anywhere" && (
+        <span className="comparison-caution">
+          Reference only: a cycling-only trip does not match your choice to ride only{" "}
+          {cyclingPosition === "start-only" ? "before" : "after"} public transport.
+        </span>
+      )}
       <span className="journey-plan-toggle">
         {selected ? "Shown on the map" : "Show cycling route on map"}
       </span>
@@ -120,6 +146,7 @@ function JourneyCard({
   comparison,
   fareProfile,
   extraTimeMinutes,
+  hills,
   onSelect,
 }: {
   proposal: ScopedProposal;
@@ -129,6 +156,7 @@ function JourneyCard({
   comparison: CyclingComparison | null;
   fareProfile: FareProfile;
   extraTimeMinutes: number;
+  hills?: HillPreferences;
   onSelect: () => void;
 }) {
   const { journey: j, wins } = proposal;
@@ -215,6 +243,26 @@ function JourneyCard({
         Active time at start {formatMinutes(m.activeStart)} · arrival {formatMinutes(m.activeEnd)}
         {m.middle > 0 && ` · cycling between services ${formatMinutes(m.middle)}`}
       </span>
+      <span className="cycling-summary">
+        {climbSummary(
+          journeyClimb(j, hills?.maxUphillPercent),
+          hills?.mode === "gentler" ? hills.maxUphillPercent : undefined,
+        )}
+      </span>
+      {comparison?.routes &&
+        (() => {
+          const direct = comparison.routes.reduce(
+            (sum, route) => addClimb(sum, routeClimb(route)),
+            emptyClimb(),
+          );
+          const mixed = journeyClimb(j);
+          const saved = Math.round(direct.ascent - mixed.ascent);
+          return !direct.unknown && !mixed.unknown && saved !== 0 ? (
+            <span className="tradeoff">
+              {Math.abs(saved)} m {saved > 0 ? "less" : "more"} climbing than the cycling-only route
+            </span>
+          ) : null;
+        })()}
       <span className="route-stops">
         {j.originStation.name} → {j.destinationStation.name}
       </span>
@@ -248,33 +296,90 @@ export default function App() {
   const naming = useRef(new Map<string, AbortController>());
   const [pointNotice, setPointNotice] = useState("");
   const [cycleFocus, setCycleFocus] = useState<CycleFocus | null>(null);
-  const [fareProfile, setFareProfile] = useState<FareProfile>(() => {
-    try {
-      return readFareProfile(
-        JSON.parse(localStorage.getItem("bike-train-fare-profile-v1") ?? "null"),
-      );
-    } catch {
-      return DEFAULT_FARE_PROFILE;
-    }
-  });
-  useEffect(() => {
-    try {
-      localStorage.setItem("bike-train-fare-profile-v1", JSON.stringify(fareProfile));
-    } catch {
-      /* Device storage is optional. */
-    }
-  }, [fareProfile]);
+  const [travellers] = useState(loadTravellers);
+  const [profileLibrary, setProfileLibrary] = useState(travellers.library);
+  const [profileNotice, setProfileNotice] = useState(travellers.notice);
+  const initialTraveller =
+    travellers.library.profiles.find((p) => p.id === travellers.library.activeId) ??
+    travellers.guest;
+  const guest = useRef(travellers.guest);
+  const [fareProfile, setFareProfile] = useState<FareProfile>(initialTraveller.fare);
+  const [age, setAge] = useState<number | null>(initialTraveller.age);
   const [mode, setMode] = useState<ModelMode>("baseline");
-  const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">("regular");
-  const [cyclingPace, setCyclingPace] = useState<CyclingPace>(DEFAULT_CYCLING_PACE);
-  const [cycling, setCycling] = useState<CyclingPreference>("balanced");
-  const [routePreference, setRoutePreference] = useState<RoutePreference>("fastest");
+  const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">(
+    initialTraveller.ridingPreset,
+  );
+  const [cyclingPace, setCyclingPace] = useState<CyclingPace>(initialTraveller.pace);
+  const [cycling, setCycling] = useState<CyclingPreference>("commuter");
+  const [hills, setHills] = useState<HillPreferences>({ ...DEFAULT_HILLS });
+  const [climbOptimization, setClimbOptimization] = useState(false);
+  const [routePreference, setRoutePreference] = useState<RoutePreference>("simplest");
+  const [tripPreset, setTripPreset] = useState<TripPreset>("commuter");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"planning" | "map">("planning");
+  const viewScroll = useRef({ planning: 0, map: 0 });
+  function showMobileView(view: "planning" | "map") {
+    if (view === mobileView) return;
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      viewScroll.current[mobileView] = window.scrollY;
+      requestAnimationFrame(() =>
+        window.scrollTo({ top: viewScroll.current[view], behavior: "instant" }),
+      );
+    }
+    setMobileView(view);
+  }
+  const tripPersonal: PersonalSettings = {
+    fare: fareProfile,
+    age,
+    pace: cyclingPace,
+    ridingPreset,
+  };
+  function applyPersonal(next: PersonalSettings) {
+    if (
+      next.pace.flatSpeedKmh !== cyclingPace.flatSpeedKmh ||
+      next.pace.electricAssist !== cyclingPace.electricAssist
+    )
+      invalidate();
+    setFareProfile({ ...next.fare });
+    setCyclingPace({ ...next.pace });
+    setAge(next.age);
+    setRidingPreset(next.ridingPreset);
+  }
+  function updateProfiles(next: TravellerLibrary, action: "save" | "select") {
+    const result = changeTravellerLibrary(profileLibrary, next, action);
+    setProfileNotice(result.notice);
+    if (!result.accepted) return false;
+    setProfileLibrary(result.library);
+    if (action === "select" || next.activeId !== profileLibrary.activeId) {
+      if (profileLibrary.activeId === null) guest.current = personalSettings(tripPersonal);
+      const profile = next.profiles.find((p) => p.id === next.activeId);
+      applyPersonal(profile ?? guest.current);
+    }
+    return true;
+  }
+  function choosePreset(preset: TripPreset) {
+    setTripPreset(preset);
+    if (preset === "personalized") {
+      setPreferencesOpen(true);
+      return;
+    }
+    invalidate();
+    const next = TRIP_PRESETS[preset];
+    setCycling(next.cycling);
+    setRoutePreference(next.routePreference);
+    setBicycleScope(next.bicycleScope);
+    setEndpoint(next.endpoint);
+    setHills({ ...DEFAULT_HILLS });
+    setClimbOptimization(false);
+    setProfileOpen(false);
+    setPreferencesOpen(false);
+  }
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
+  const [cyclingPosition, setCyclingPosition] = useState<CyclingPosition>("anywhere");
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
-  const [departureInput, setDepartureInput] = useState(() =>
-    swissDateTimeInput(new Date(Date.now() + 60 * 60_000)),
-  );
+  const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
   const options = useMemo(
     () =>
       preferenceOptions(
@@ -284,10 +389,31 @@ export default function App() {
         bicycleScope,
         cyclingPace,
         routePreference,
+        cyclingPosition,
+        hills,
+        climbOptimization,
       ),
-    [cycling, endpoint, bicycleScope, cyclingPace, routePreference],
+    [
+      cycling,
+      endpoint,
+      bicycleScope,
+      cyclingPace,
+      routePreference,
+      cyclingPosition,
+      hills,
+      climbOptimization,
+    ],
   );
   const [session, setSession] = useState<SearchSession | null>(null);
+  const [laterBatches, setLaterBatches] = useState<
+    { key: string; session: SearchSession; categories: string[] }[]
+  >([]);
+  const [customJourneys, setCustomJourneys] = useState<
+    { journey: Journey; source: SearchSession; baseId: string }[]
+  >([]);
+  const [customCycling, setCustomCycling] = useState<CyclingComparison | null>(null);
+  const editSerial = useRef(0);
+  const [laterNotices, setLaterNotices] = useState<Record<string, string>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -321,11 +447,77 @@ export default function App() {
       ),
     [confirmedSolution, solution, allTransitSolution, session, options],
   );
-  const { proposals } = recommendation;
+  const proposalEntries = useMemo(() => {
+    const entries = recommendation.proposals.map((proposal) => ({
+      proposal,
+      source: session!,
+      batch: "",
+    }));
+    for (const batch of laterBatches) {
+      const choose = (
+        group:
+          | { baseline: { journeys: Journey[] }; extended: { journeys: Journey[] } | null }
+          | undefined,
+      ) =>
+        (mode === "extended" ? (group?.extended ?? group?.baseline) : group?.baseline)?.journeys ??
+        [];
+      const later = recommend(
+        choose(batch.session.confirmed),
+        choose(batch.session),
+        choose(batch.session.allTransit),
+        batch.session.options,
+      );
+      for (const proposal of later.proposals) {
+        const categories = proposal.categories.filter((category) =>
+          batch.categories.includes(category),
+        );
+        if (
+          categories.length &&
+          !entries.some((entry) => entry.proposal.journey.id === proposal.journey.id)
+        )
+          entries.push({
+            proposal: {
+              ...proposal,
+              categories,
+              wins: proposal.wins.map((win) => ({
+                ...win,
+                categories: win.categories.filter((c) => categories.includes(c)),
+              })),
+            },
+            source: batch.session,
+            batch: batch.key,
+          });
+      }
+    }
+    for (const custom of customJourneys)
+      entries.push({
+        proposal: {
+          journey: custom.journey,
+          categories: ["Your edited journey"],
+          extraMinutes: 0,
+          cyclingSaved: 0,
+          activeSaved: 0,
+          wins: [
+            {
+              scope: custom.source.options.bicycleScope ?? "allow-uncertain",
+              categories: ["Your edited journey"],
+              extraMinutes: 0,
+            },
+          ],
+        },
+        source: custom.source,
+        batch: "custom",
+      });
+    return entries;
+  }, [recommendation, session, laterBatches, mode, customJourneys]);
+  const proposals = proposalEntries.map((entry) => entry.proposal);
+  const cyclingReference = customCycling ?? session?.cyclingComparison ?? null;
   const cyclingFastest =
-    !!session?.cyclingComparison &&
-    session.cyclingComparison.minutes <= session.options.maxBikeMinutes &&
-    proposals.every((p) => session.cyclingComparison!.minutes <= p.journey.totalMinutes);
+    (session?.options.cyclingPosition ?? "anywhere") === "anywhere" &&
+    !!session &&
+    !!cyclingReference &&
+    cyclingReference.minutes <= session.options.maxBikeMinutes &&
+    proposals.every((p) => cyclingReference.minutes <= p.journey.totalMinutes);
   const selected =
     selectedId === BIKE_ONLY_ID || (selectedId === null && cyclingFastest)
       ? null
@@ -333,7 +525,34 @@ export default function App() {
         proposals[0]?.journey ??
         null);
   const bikeOnlySelected = !!session && selected === null;
-  const cyclingReference = session?.cyclingComparison ?? null;
+  const selectedSource =
+    proposalEntries.find((entry) => entry.proposal.journey.id === selected?.id)?.source ?? session;
+  function applyCyclingChange(edit: AppliedCyclingEdit) {
+    if (edit.journey && selected && selectedSource) {
+      const baseId =
+        customJourneys.find((entry) => entry.journey.id === selected.id)?.baseId ?? selected.id;
+      const journey = { ...edit.journey, id: `custom:${++editSerial.current}:${baseId}` };
+      setCustomJourneys((current) => [
+        ...current.filter((entry) => entry.baseId !== baseId),
+        { journey, source: selectedSource, baseId },
+      ]);
+      setSelectedId(journey.id);
+      setExpandedId(journey.id);
+    } else if (edit.cycling) {
+      setCustomCycling(edit.cycling);
+      setSelectedId(BIKE_ONLY_ID);
+    }
+    setCycleFocus(null);
+  }
+  function restoreCyclingChange() {
+    const custom = customJourneys.find((entry) => entry.journey.id === selected?.id);
+    if (custom) {
+      setCustomJourneys((current) => current.filter((entry) => entry !== custom));
+      setSelectedId(custom.baseId);
+      setExpandedId(custom.baseId);
+    } else setCustomCycling(null);
+    setCycleFocus(null);
+  }
   const cyclingRoutes = useMemo<NamedCycleRoute[]>(
     () =>
       selected && session
@@ -371,6 +590,10 @@ export default function App() {
 
   function invalidate() {
     setSession(null);
+    setCustomJourneys([]);
+    setCustomCycling(null);
+    setLaterBatches([]);
+    setLaterNotices({});
     setSelectedId(null);
     setExpandedId(null);
     setCycleFocus(null);
@@ -458,6 +681,10 @@ export default function App() {
   async function search(event: FormEvent) {
     event.preventDefault();
     if (loading || !fromInput.text.trim() || !toInput.text.trim()) return;
+    if (!validPersonalSettings(tripPersonal)) {
+      setProfileOpen(true);
+      return;
+    }
     invalidate();
     controller.current?.abort();
     const id = ++runId.current,
@@ -466,9 +693,6 @@ export default function App() {
     setLoading(true);
     try {
       const start = departureMode === "now" ? new Date() : parseSwissDateTime(departureInput);
-      if (departureMode === "scheduled" && start.getTime() < Date.now() - 60_000) {
-        throw new Error("Choose a future departure time, or select Leave now.");
-      }
       const next = await plan(
         fromInput.place ?? fromInput.text.trim(),
         toInput.place ?? toInput.text.trim(),
@@ -500,16 +724,16 @@ export default function App() {
   async function changeMode(next: ModelMode) {
     if (loading || next === mode) return;
     setMode(next);
+    setCustomJourneys([]);
+    setCustomCycling(null);
+    setLaterBatches([]);
+    setLaterNotices({});
     setExpandedId(null);
     setSelectedId(null);
     setError("");
     if (next === "extended" && session && !session.extendedComplete) {
-      if (session.client.signal.aborted) {
-        setProgress(
-          "Search again to explore cycling transfers. Your existing proposals are kept below.",
-        );
-        return;
-      }
+      const abort = new AbortController();
+      controller.current = abort;
       const id = ++runId.current;
       setLoading(true);
       try {
@@ -521,6 +745,7 @@ export default function App() {
           (result) => {
             if (id === runId.current) setSession(result);
           },
+          abort.signal,
         );
         if (id === runId.current) {
           setSession(result);
@@ -534,422 +759,306 @@ export default function App() {
       }
     }
   }
+  async function showLater(source: SearchSession, proposal: ScopedProposal) {
+    if (loading) return;
+    // Repeated clicks on an earlier card advance beyond the latest displayed
+    // departure for those categories, rather than loading the same page again.
+    const cursor = proposalEntries
+      .filter((entry) =>
+        entry.proposal.categories.some((category) => proposal.categories.includes(category)),
+      )
+      .reduce(
+        (latest, entry) =>
+          +(firstBoarding(entry.proposal.journey) ?? 0) >
+          +(firstBoarding(latest.proposal.journey) ?? 0)
+            ? entry
+            : latest,
+        { proposal, source, batch: "" },
+      );
+    const id = ++runId.current,
+      key = String(id),
+      abort = new AbortController();
+    controller.current = abort;
+    setLoading(true);
+    setError("");
+    setLaterNotices((current) => ({ ...current, [proposal.journey.id]: "" }));
+    let found = false;
+    const accept = (next: SearchSession) => {
+      if (id !== runId.current) return;
+      const solution = mode === "extended" ? (next.extended ?? next.baseline) : next.baseline;
+      if (!solution.journeys.length) return;
+      found = true;
+      setLaterBatches((current) => [
+        ...current.filter((batch) => batch.key !== key),
+        { key, session: next, categories: proposal.categories },
+      ]);
+    };
+    try {
+      const next = await laterDepartures(
+        cursor.source,
+        cursor.proposal.journey,
+        mode,
+        abort.signal,
+        (message) => {
+          if (id === runId.current) setProgress(message);
+        },
+        accept,
+      );
+      accept(next);
+      if (id === runId.current) {
+        setProgress("");
+        setLaterNotices((current) => ({
+          ...current,
+          [proposal.journey.id]: found
+            ? "Later options are shown below. Your earlier journeys are kept."
+            : "No later departure was found in this limited search. Your earlier journeys are kept.",
+        }));
+      }
+    } catch (error) {
+      if (id === runId.current && !abort.signal.aborted)
+        setLaterNotices((current) => ({
+          ...current,
+          [proposal.journey.id]:
+            "Later departures could not be loaded. Try again; your earlier journeys are kept.",
+        }));
+    } finally {
+      if (id === runId.current) setLoading(false);
+    }
+  }
   const best = (journeys: { totalMinutes: number }[]) =>
     Math.min(...journeys.map((j) => j.totalMinutes));
   const baselineFastest = session ? best(session.baseline.journeys) : Infinity;
   const extendedFastest = session?.extended ? best(session.extended.journeys) : Infinity;
 
   return (
-    <div className="app-shell">
-      <header>
-        <a className="brand" href="#top" aria-label="Bike plus train home">
-          <span className="brand-mark">
-            B<span>+</span>T
-          </span>
-          <span>
-            <strong>Bike + Train</strong>
-            <small>Swiss route experiment</small>
-          </span>
-        </a>
-        <span className="prototype-badge">Baseline + Extended</span>
-      </header>
+    <div className="app-shell" data-mobile-view={mobileView}>
+      <AppHeader
+        profile={
+          <ProfilePanel
+            open={profileOpen}
+            onOpenChange={setProfileOpen}
+            library={profileLibrary}
+            notice={profileNotice}
+            onNotice={setProfileNotice}
+            onLibraryChange={updateProfiles}
+            settings={tripPersonal}
+            disabled={loading}
+            onChange={applyPersonal}
+          />
+        }
+      />
       <main id="top">
-        <section className="planner-panel">
-          <div className="intro">
-            <h1>Where are you going?</h1>
-            <p>Find your way with a bike, trains, buses, trams and boats.</p>
-          </div>
-          <form onSubmit={search} className="search-form">
-            <div className="place-inputs">
-              <PlaceInput
-                label="From"
-                value={fromInput}
-                disabled={loading}
-                onChange={(value) => {
-                  invalidate();
-                  setFromInput(value);
-                }}
-              />
-              {viaInputs.map((input, index) => (
-                <div className="waypoint-row" key={input.id}>
-                  <PlaceInput
-                    label={`Intermediate stop ${index + 1}`}
-                    value={input.value}
-                    disabled={loading}
-                    onChange={(value) => {
-                      invalidate();
-                      setViaInputs((inputs) =>
-                        inputs.map((item) => (item.id === input.id ? { ...item, value } : item)),
-                      );
-                    }}
-                  />
-                  <div className="waypoint-actions">
-                    <button
-                      type="button"
-                      disabled={loading || index === 0}
-                      aria-label={`Move intermediate stop ${index + 1} up`}
-                      onClick={() => moveWaypoint(index, -1)}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      disabled={loading || index === viaInputs.length - 1}
-                      aria-label={`Move intermediate stop ${index + 1} down`}
-                      onClick={() => moveWaypoint(index, 1)}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      type="button"
-                      disabled={loading}
-                      aria-label={`Remove intermediate stop ${index + 1}`}
-                      onClick={() => {
-                        invalidate();
-                        naming.current.get(input.id)?.abort();
-                        setViaInputs((inputs) => inputs.filter((item) => item.id !== input.id));
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <PlaceInput
-                label="To"
-                value={toInput}
-                disabled={loading}
-                onChange={(value) => {
-                  invalidate();
-                  setToInput(value);
-                }}
-              />
-            </div>
-            <div className="location-actions">
-              <button
-                type="button"
-                disabled={loading || viaInputs.length >= MAX_WAYPOINTS}
-                onClick={() => addWaypoint()}
-              >
-                + Add intermediate stop
-              </button>
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => {
-                  invalidate();
-                  setFromInput(toInput);
-                  setToInput(fromInput);
-                  setViaInputs((inputs) => [...inputs].reverse());
-                }}
-              >
-                Reverse route
-              </button>
-              <a href="#journey-map">Choose on map</a>
-            </div>
-            {!!viaInputs.length && (
-              <p className="waypoint-help">
-                Visit stops in this order · up to {MAX_WAYPOINTS} stops. Cycling and boarding limits
-                apply to the whole journey. No stopover time is added.
-              </p>
-            )}
-            {pointNotice && (
-              <p className="point-notice" role="status">
-                {pointNotice}
-              </p>
-            )}
-            <div className="departure-controls">
-              <label>
-                <span>Departure · Swiss time</span>
-                <select
+        <section className="planner-panel" id="planning-panel" aria-label="Journey planning">
+          <PlannerForm
+            loading={loading}
+            onSubmit={search}
+            sections={{
+              locations: (
+                <RouteFields
+                  from={fromInput}
+                  to={toInput}
+                  vias={viaInputs}
                   disabled={loading}
-                  value={departureMode}
-                  onChange={(e) => {
+                  notice={pointNotice}
+                  onFrom={(value) => {
                     invalidate();
-                    setDepartureMode(e.target.value as "now" | "scheduled");
+                    setFromInput(value);
                   }}
-                >
-                  <option value="now">Leave now</option>
-                  <option value="scheduled">Choose date and time</option>
-                </select>
-              </label>
-              {departureMode === "scheduled" && (
-                <label>
-                  <span>Date and time in Switzerland</span>
-                  <input
-                    type="datetime-local"
-                    required
-                    disabled={loading}
-                    value={departureInput}
-                    min={swissDateTimeInput(new Date())}
-                    onChange={(e) => {
-                      invalidate();
-                      setDepartureInput(e.target.value);
-                    }}
-                  />
-                </label>
-              )}
-            </div>
-            <fieldset className="model-picker" disabled={loading}>
-              <legend>Journey options</legend>
-              <div className="model-buttons">
-                <button
-                  type="button"
-                  aria-pressed={mode === "baseline"}
-                  onClick={() => void changeMode("baseline")}
-                >
-                  <strong>Baseline</strong>
-                  <span>
-                    {viaInputs.length
-                      ? "Cycle at the ends of each stage"
-                      : "Cycle before and after transit"}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={mode === "extended"}
-                  onClick={() => void changeMode("extended")}
-                >
-                  <strong>Extended</strong>
-                  <span>Also allow one {viaInputs.length ? "extra " : ""}cycling transfer</span>
-                </button>
-              </div>
-            </fieldset>
-            <fieldset
-              className="bicycle-access"
-              disabled={loading}
-              aria-describedby="bicycle-access-help"
-            >
-              <legend>Public transport with my bicycle</legend>
-              {BICYCLE_SCOPES.map((scope) => (
-                <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
-                  <input
-                    type="radio"
-                    name="bicycle-access"
-                    value={scope}
-                    checked={bicycleScope === scope}
-                    onChange={() => {
-                      invalidate();
-                      setBicycleScope(scope);
-                    }}
-                  />
-                  <span>{bicycleScopeOptions[scope]}</span>
-                </label>
-              ))}
-            </fieldset>
-            <p className="bus-preference-help" id="bicycle-access-help">
-              {bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other
-              public transport.
+                  onTo={(value) => {
+                    invalidate();
+                    setToInput(value);
+                  }}
+                  onVia={(id, value) => {
+                    invalidate();
+                    setViaInputs((inputs) =>
+                      inputs.map((item) => (item.id === id ? { ...item, value } : item)),
+                    );
+                  }}
+                  onReverse={() => {
+                    invalidate();
+                    setFromInput(toInput);
+                    setToInput(fromInput);
+                    setViaInputs((inputs) => [...inputs].reverse());
+                  }}
+                  onAdd={() => addWaypoint()}
+                  onRemove={(id) => {
+                    invalidate();
+                    naming.current.get(id)?.abort();
+                    setViaInputs((inputs) => inputs.filter((item) => item.id !== id));
+                  }}
+                  onMove={moveWaypoint}
+                  onChooseMap={() => showMobileView("map")}
+                />
+              ),
+              departure: (
+                <DepartureControls
+                  mode={departureMode}
+                  value={departureInput}
+                  disabled={loading}
+                  onChange={(value) => {
+                    invalidate();
+                    setDepartureInput(value);
+                    setDepartureMode("scheduled");
+                  }}
+                  onNow={() => {
+                    invalidate();
+                    setDepartureMode("now");
+                    setDepartureInput(swissDateTimeInput(new Date()));
+                  }}
+                />
+              ),
+              presets: (
+                <TripPresetPicker
+                  value={tripPreset}
+                  disabled={loading}
+                  onChange={choosePreset}
+                  library={profileLibrary}
+                  settings={tripPersonal}
+                  notice={profileNotice}
+                  onSelectProfile={(activeId) =>
+                    updateProfiles({ ...profileLibrary, activeId }, "select")
+                  }
+                />
+              ),
+              preferences: (
+                <TripPreferences
+                  open={preferencesOpen}
+                  onOpenChange={setPreferencesOpen}
+                  disabled={loading}
+                  mode={mode}
+                  hasWaypoints={viaInputs.length > 0}
+                  bicycleScope={bicycleScope}
+                  routePreference={routePreference}
+                  cycling={cycling}
+                  endpoint={endpoint}
+                  cyclingPosition={cyclingPosition}
+                  hills={hills}
+                  climbOptimization={climbOptimization}
+                  onHills={(next) => {
+                    invalidate();
+                    setHills(next);
+                    setTripPreset("personalized");
+                  }}
+                  onClimbOptimization={(enabled) => {
+                    invalidate();
+                    setClimbOptimization(enabled);
+                    setTripPreset("personalized");
+                  }}
+                  onPosition={(position) => {
+                    invalidate();
+                    setCyclingPosition(position);
+                    if (position !== "anywhere") setMode("baseline");
+                    setTripPreset("personalized");
+                  }}
+                  onMode={(next) => void changeMode(next)}
+                  onScope={(scope) => {
+                    invalidate();
+                    setBicycleScope(scope);
+                    setTripPreset("personalized");
+                  }}
+                  onRoute={(route) => {
+                    invalidate();
+                    setRoutePreference(route);
+                    setTripPreset("personalized");
+                  }}
+                  onCycling={(amount) => {
+                    invalidate();
+                    setCycling(amount);
+                    setTripPreset("personalized");
+                  }}
+                  onEndpoint={(preference) => {
+                    invalidate();
+                    setEndpoint(preference);
+                    setTripPreset("personalized");
+                  }}
+                />
+              ),
+            }}
+          />
+          <details className="planning-notes">
+            <summary>Planning notes &amp; assumptions</summary>
+            <p id="cycling-pace-help">
+              These are flat-ground pace presets, not fitness ratings. Choose one and adjust it to
+              your usual moving speed. Climbs are calculated from your riding power, so stronger
+              riders gain more uphill.
+              {cyclingPace.electricAssist
+                ? " Electric assistance adds climbing power and fades near 25 km/h."
+                : " Descents can be faster than your flat pace."}{" "}
+              This setting changes station access, transfers and arrival times. Wind, traffic stops
+              and battery range are not modelled.
             </p>
-            <details className="preferences">
-              <summary>Preferences · optional</summary>
-              <fieldset className="fare-profile">
-                <legend>Tickets · saved on this device</legend>
-                <label>
-                  <span>Your passenger travelcard</span>
-                  <select
-                    value={fareProfile.passenger}
-                    onChange={(e) =>
-                      setFareProfile((p) => ({
-                        ...p,
-                        passenger: e.target.value as FareProfile["passenger"],
-                      }))
-                    }
-                  >
-                    <option value="full">Full fare · no travelcard</option>
-                    <option value="half-fare">Half Fare · Halbtax</option>
-                    <option value="ga">GA Travelcard</option>
-                  </select>
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={fareProfile.annualBikePass}
-                    onChange={(e) =>
-                      setFareProfile((p) => ({ ...p, annualBikePass: e.target.checked }))
-                    }
-                  />
-                  I already have an annual bike pass
-                </label>
-                <p>
-                  Adult fares in 2nd class. Your passenger travelcard and bicycle pass are separate.
-                </p>
-              </fieldset>
-              <div className="preference-grid">
-                <label>
-                  <span>Cycling path</span>
-                  <select
-                    disabled={loading}
-                    value={routePreference}
-                    onChange={(e) => {
-                      invalidate();
-                      setRoutePreference(e.target.value as RoutePreference);
-                    }}
-                  >
-                    {ROUTE_PREFERENCES.map((p) => (
-                      <option key={p} value={p}>
-                        {routePreferenceLabels[p]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Riding profile</span>
-                  <select
-                    disabled={loading}
-                    value={ridingPreset}
-                    onChange={(e) => {
-                      invalidate();
-                      const preset = e.target.value as CyclingPreset;
-                      setRidingPreset(preset);
-                      setCyclingPace({
-                        flatSpeedKmh: CYCLING_PRESETS[preset].flatSpeedKmh,
-                        electricAssist: CYCLING_PRESETS[preset].electricAssist,
-                      });
-                    }}
-                  >
-                    {ridingPreset === "custom" && (
-                      <option value="custom" disabled>
-                        Custom pace
-                      </option>
-                    )}
-                    {Object.entries(CYCLING_PRESETS).map(([key, value]) => (
-                      <option key={key} value={key}>
-                        {value.label} · {value.flatSpeedKmh} km/h
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Your flat-ground speed · km/h</span>
-                  <input
-                    type="number"
-                    min="8"
-                    max="35"
-                    step="0.5"
-                    required
-                    disabled={loading}
-                    value={Number.isNaN(cyclingPace.flatSpeedKmh) ? "" : cyclingPace.flatSpeedKmh}
-                    aria-describedby="cycling-pace-help"
-                    onChange={(e) => {
-                      invalidate();
-                      setRidingPreset("custom");
-                      setCyclingPace((p) => ({ ...p, flatSpeedKmh: e.target.valueAsNumber }));
-                    }}
-                  />
-                </label>
-                <label>
-                  <span>How much cycling?</span>
-                  <select
-                    disabled={loading}
-                    value={cycling}
-                    onChange={(e) => {
-                      invalidate();
-                      setCycling(e.target.value as CyclingPreference);
-                    }}
-                  >
-                    <option value="less">Less · up to 40 min total</option>
-                    <option value="balanced">Balanced · up to 90 min total</option>
-                    <option value="more">More · up to 150 min total</option>
-                    <option value="unrestricted">Above 150 minutes cycling</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Extra category</span>
-                  <select
-                    disabled={loading}
-                    value={endpoint}
-                    onChange={(e) => {
-                      invalidate();
-                      setEndpoint(e.target.value as EndpointPreference);
-                    }}
-                  >
-                    <option value="none">Just the three main categories</option>
-                    <option value="start">Less cycling or walking at start</option>
-                    <option value="end">Less cycling or walking at arrival</option>
-                  </select>
-                </label>
-              </div>
-              <p id="cycling-pace-help">
-                These are flat-ground pace presets, not fitness ratings. Choose one and adjust it to
-                your usual moving speed. Climbs are calculated from your riding power, so stronger
-                riders gain more uphill.
-                {cyclingPace.electricAssist
-                  ? " Electric assistance adds climbing power and fades near 25 km/h."
-                  : " Descents can be faster than your flat pace."}{" "}
-                This setting changes station access, transfers and arrival times. Wind, traffic
-                stops and battery range are not modelled.
-              </p>
-              {Number.isFinite(cyclingPace.flatSpeedKmh) &&
-                cyclingPace.flatSpeedKmh >= 8 &&
-                cyclingPace.flatSpeedKmh <= 35 && (
-                  <details className="pace-model">
-                    <summary>How hills change your speed</summary>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th scope="col">Terrain</th>
-                          <th scope="col">Estimated speed</th>
+            {Number.isFinite(cyclingPace.flatSpeedKmh) &&
+              cyclingPace.flatSpeedKmh >= 8 &&
+              cyclingPace.flatSpeedKmh <= 35 && (
+                <details className="pace-model">
+                  <summary>How hills change your speed</summary>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th scope="col">Terrain</th>
+                        <th scope="col">Estimated speed</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        [0, "Flat"],
+                        [0.03, "3% climb"],
+                        [0.06, "6% climb"],
+                        [0.1, "10% climb"],
+                      ].map(([grade, label]) => (
+                        <tr key={label}>
+                          <th scope="row">{label}</th>
+                          <td>{slopeSpeedKmh(Number(grade), cyclingPace).toFixed(1)} km/h</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {[
-                          [0, "Flat"],
-                          [0.03, "3% climb"],
-                          [0.06, "6% climb"],
-                          [0.1, "10% climb"],
-                        ].map(([grade, label]) => (
-                          <tr key={label}>
-                            <th scope="row">{label}</th>
-                            <td>{slopeSpeedKmh(Number(grade), cyclingPace).toFixed(1)} km/h</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <p>
-                      Planning assumptions: rider plus bicycle{" "}
-                      {cyclingPace.electricAssist ? "105" : "90"} kg; touring-bike rolling and air
-                      resistance.
-                      {cyclingPace.electricAssist &&
-                        " The model adds up to 250 W of climbing help, fading between 20 and 25 km/h; actual motors and assistance settings vary."}{" "}
-                      Downhill speed is capped at 45 km/h. Missing elevation uses flat-ground speed.
-                    </p>
-                  </details>
-                )}
-              <p>
-                {cycling === "unrestricted"
-                  ? "No separate cycling cap; shorter rides are also included."
-                  : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}{" "}
-                Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours
-                overall, including waiting.
-              </p>
-            </details>
-            <button className="search-button" type="submit" disabled={loading}>
-              {loading ? "Finding journeys…" : "Find journeys"}
-            </button>
-          </form>
-          <div className="assumptions">
-            <span>
-              <b>{cyclingPace.electricAssist ? "Electric bike" : "Bicycle"}</b> ·{" "}
-              {cyclingPace.flatSpeedKmh || "—"} km/h on flat ground
-            </span>
-            <span>
-              <b>3 min</b> before each boarding
-            </span>
-            <span>
-              <b>
-                {session
-                  ? `${day.format(session.start)}, ${clock.format(session.start)}`
-                  : departureMode === "now"
-                    ? "Leave now"
-                    : "Chosen departure"}
-              </b>{" "}
-              · Swiss time
-            </span>
-            <span>
-              Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight waiting
-            </span>
-          </div>
+                      ))}
+                    </tbody>
+                  </table>
+                  <p>
+                    Planning assumptions: rider plus bicycle{" "}
+                    {cyclingPace.electricAssist ? "105" : "90"} kg; touring-bike rolling and air
+                    resistance.
+                    {cyclingPace.electricAssist &&
+                      " The model adds up to 250 W of climbing help, fading between 20 and 25 km/h; actual motors and assistance settings vary."}{" "}
+                    Downhill speed is capped at 45 km/h. Missing elevation uses flat-ground speed.
+                  </p>
+                </details>
+              )}
+            <p>
+              {cycling === "unrestricted"
+                ? "No separate cycling cap; shorter rides are also included."
+                : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}{" "}
+              Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours
+              overall, including waiting.
+            </p>
+
+            <p>
+              You can choose a past departure when timetable data is available. Online fares can
+              only be requested for future departures.
+            </p>
+            <div className="assumptions">
+              <span>
+                <b>{cyclingPace.electricAssist ? "Electric bike" : "Bicycle"}</b> ·{" "}
+                {cyclingPace.flatSpeedKmh || "—"} km/h on flat ground
+              </span>
+              <span>
+                <b>3 min</b> before each boarding
+              </span>
+              <span>
+                <b>
+                  {session
+                    ? `${day.format(session.start)}, ${clock.format(session.start)}`
+                    : departureMode === "now"
+                      ? "Leave now"
+                      : "Chosen departure"}
+                </b>{" "}
+                · Swiss time
+              </span>
+              <span>
+                Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight
+                waiting
+              </span>
+            </div>
+          </details>
           {loading && (
             <div className="loading-block" role="status">
               <div className="progress-track">
@@ -1028,7 +1137,7 @@ export default function App() {
                     ? "Some timetable or cycling data was unavailable. Please try this journey again."
                     : `No transit journey was found with your cycling limits, bicycle-access choice and ${session.options.horizonMinutes / 60}-hour arrival window. ${
                         session.options.maxBikeMinutes < session.options.horizonMinutes
-                          ? "Try Above 150 minutes cycling in Preferences, or a different departure time."
+                          ? "Try No separate cycling cap in Preferences, or a different departure time."
                           : "Try a different departure time or nearby stops."
                       } This limited search can miss connections.`}
                 </p>
@@ -1038,64 +1147,78 @@ export default function App() {
                   Checking cycling paths and train connections. Options appear as they are found.
                 </p>
               )}
-              <div className="permission-summary">
-                {recommendation.groups.map((group) => (
-                  <div key={group.scope} className={`permission-group scope-${group.scope}`}>
-                    <h3>Search filter: {bicycleScopeOptions[group.scope]}</h3>
-                    {group.scope === "all-transit" && (
-                      <p>
-                        Bicycle restrictions are ignored in this comparison. It can include services
-                        that prohibit bicycles; these are labelled on the journey.
-                      </p>
-                    )}
-                    {group.proposals.length ? (
-                      <p>
-                        {group.proposals.length} recommendation
-                        {group.proposals.length === 1 ? "" : "s"} · fastest with transit{" "}
-                        {formatMinutes(
-                          Math.min(...group.proposals.map((p) => p.journey.totalMinutes)),
-                        )}
-                      </p>
-                    ) : (
-                      <p>
-                        {group.scope === "confirmed"
-                          ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
-                          : loading
-                            ? "Checking possible journeys…"
-                            : "No journey found in this limited search."}
-                      </p>
-                    )}
-                  </div>
-                ))}
-                <p className="comparison-caution">
-                  Verified access means bicycles are permitted on every transit leg, based on
-                  service data or applicable published operator rules. Open a journey for ticket and
-                  reservation requirements. Unknown ticket or reservation details do not change
-                  verified permission. Permission does not reserve a place.
-                </p>
-              </div>
-              {session.extended && Number.isFinite(extendedFastest) && (
-                <p className="comparison-note">
-                  <strong>
-                    {scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}:{" "}
-                  </strong>
-                  {!Number.isFinite(baselineFastest)
-                    ? "Extended found a journey where Baseline found none in this search."
-                    : extendedFastest < baselineFastest
-                      ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
-                      : "Both models have the same fastest arrival in this search."}{" "}
-                  Same departure time and limits.
-                </p>
-              )}
-              {proposals.length > 0 && (
-                <p className="result-explanation">
-                  Results use your bicycle-access choice for fastest, fewest boardings and least
-                  cycling or walking. Boardings include the first vehicle. Alternatives arrive at
-                  most {session.options.extraTimeMinutes} minutes after the fastest eligible transit
-                  journey. Cycling only remains a separate comparison.
-                </p>
-              )}
+              <InfoDisclosure label="How these journeys are compared">
+                <div className="permission-summary">
+                  {recommendation.groups.map((group) => (
+                    <div key={group.scope} className={`permission-group scope-${group.scope}`}>
+                      <h3>Search filter: {bicycleScopeOptions[group.scope]}</h3>
+                      {group.scope === "all-transit" && (
+                        <p>
+                          Bicycle restrictions are ignored in this comparison. It can include
+                          services that prohibit bicycles; these are labelled on the journey.
+                        </p>
+                      )}
+                      {group.proposals.length ? (
+                        <p>
+                          {group.proposals.length} recommendation
+                          {group.proposals.length === 1 ? "" : "s"} · fastest with transit{" "}
+                          {formatMinutes(
+                            Math.min(...group.proposals.map((p) => p.journey.totalMinutes)),
+                          )}
+                        </p>
+                      ) : (
+                        <p>
+                          {group.scope === "confirmed"
+                            ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
+                            : loading
+                              ? "Checking possible journeys…"
+                              : "No journey found in this limited search."}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  <p className="comparison-caution">
+                    Verified access means bicycles are permitted on every transit leg, based on
+                    service data or applicable published operator rules. Open a journey for ticket
+                    and reservation requirements. Unknown ticket or reservation details do not
+                    change verified permission. Permission does not reserve a place.
+                  </p>
+                </div>
+                {session.extended && Number.isFinite(extendedFastest) && (
+                  <p className="comparison-note">
+                    <strong>
+                      {scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}:{" "}
+                    </strong>
+                    {!Number.isFinite(baselineFastest)
+                      ? "Extended found a journey where Baseline found none in this search."
+                      : extendedFastest < baselineFastest
+                        ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
+                        : "Both models have the same fastest arrival in this search."}{" "}
+                    Same departure time and limits.
+                  </p>
+                )}
+                {proposals.length > 0 && (
+                  <p className="result-explanation">
+                    Results use your bicycle-access choice for fastest, fewest boardings and least
+                    cycling or walking. Boardings include the first vehicle. Alternatives arrive at
+                    most {session.options.extraTimeMinutes} minutes after the fastest eligible
+                    transit journey. Cycling only remains a separate comparison.
+                  </p>
+                )}
+              </InfoDisclosure>
               <div className="journey-list">
+                {hillSearch(session.options) &&
+                  proposals.length > 0 &&
+                  !proposals.some(
+                    (p) =>
+                      p.categories.includes("Reduce climbing") ||
+                      p.categories.includes("Gentlest cycling"),
+                  ) && (
+                    <p className="notice">
+                      Elevation is incomplete for the checked journeys. A climbing recommendation
+                      could not be verified; other journey categories remain available.
+                    </p>
+                  )}
                 {cyclingReference ? (
                   <CyclingCard
                     comparison={cyclingReference}
@@ -1103,6 +1226,7 @@ export default function App() {
                     start={session.start}
                     maxBikeMinutes={session.options.maxBikeMinutes}
                     fastest={cyclingFastest}
+                    cyclingPosition={session.options.cyclingPosition ?? "anywhere"}
                     onSelect={() => {
                       setSelectedId(BIKE_ONLY_ID);
                       setExpandedId(null);
@@ -1119,16 +1243,24 @@ export default function App() {
                     </p>
                   </div>
                 )}
-                {proposals.map((proposal, index) => {
+                {proposalEntries.map(({ proposal, source, batch }, index) => {
                   const j = proposal.journey,
                     expanded = expandedId === j.id,
                     planId = `journey-plan-${index}`;
                   return (
                     <div key={j.id} className="journey-option">
+                      {batch && (
+                        <p className="later-option-label">
+                          {batch === "custom"
+                            ? "Edited cycling · selected services preserved"
+                            : "Later departure"}
+                        </p>
+                      )}
                       <JourneyCard
                         proposal={proposal}
                         selected={selected?.id === j.id}
-                        extraTimeMinutes={session!.options.extraTimeMinutes}
+                        extraTimeMinutes={source.options.extraTimeMinutes}
+                        hills={source.options.hills}
                         expanded={expanded}
                         planId={planId}
                         comparison={cyclingReference}
@@ -1141,20 +1273,63 @@ export default function App() {
                       />
                       {expanded && (
                         <JourneyPlan
+                          boardingMinutes={source.options.boardingMinutes}
                           fareProfile={fareProfile}
                           id={planId}
                           journey={j}
-                          origin={session.origin}
-                          destination={session.destination}
+                          origin={source.origin}
+                          destination={source.destination}
                           onEvidence={(leg, evidence) => {
-                            if (session.client.signal.aborted) return;
-                            updateBicycleEvidence(session, leg, evidence, (next) =>
-                              setSession((current) =>
-                                current?.network === session.network ? next : current,
-                              ),
-                            );
+                            if (batch === "custom") {
+                              setCustomJourneys((current) =>
+                                current.map((item) =>
+                                  item.journey.id === j.id
+                                    ? {
+                                        ...item,
+                                        journey: {
+                                          ...item.journey,
+                                          transitLegs: item.journey.transitLegs.map((existing) =>
+                                            existing === leg
+                                              ? { ...existing, bicycleEvidence: evidence }
+                                              : existing,
+                                          ),
+                                        },
+                                      }
+                                    : item,
+                                ),
+                              );
+                              return;
+                            }
+                            updateBicycleEvidence(source, leg, evidence, (next) => {
+                              if (batch)
+                                setLaterBatches((current) =>
+                                  current.map((item) =>
+                                    item.key === batch ? { ...item, session: next } : item,
+                                  ),
+                                );
+                              else
+                                setSession((current) =>
+                                  current?.network === source.network ? next : current,
+                                );
+                            });
                           }}
                         />
+                      )}
+                      {batch !== "custom" && (
+                        <button
+                          type="button"
+                          className="more-departures"
+                          disabled={loading}
+                          aria-label={`More later departures for ${proposal.categories.join(" and ")}`}
+                          onClick={() => void showLater(source, proposal)}
+                        >
+                          More · later departures
+                        </button>
+                      )}
+                      {laterNotices[j.id] && (
+                        <p className="later-notice" role="status">
+                          {laterNotices[j.id]}
+                        </p>
                       )}
                     </div>
                   );
@@ -1198,6 +1373,7 @@ export default function App() {
         </section>
         <aside className="map-panel" id="journey-map">
           <MapView
+            visible={mobileView === "map"}
             origin={fromInput.place ?? session?.origin ?? null}
             destination={toInput.place ?? session?.destination ?? null}
             stops={stops}
@@ -1211,9 +1387,18 @@ export default function App() {
             selectedJourney={selected}
             cycling={cyclingReference}
             bikeOnlySelected={bikeOnlySelected}
-            start={session?.start ?? null}
-            cyclingPace={session?.options.cyclingPace}
-            routePreference={session?.options.cyclingRoutePreference}
+            start={selectedSource?.start ?? null}
+            cyclingPace={selectedSource?.options.cyclingPace}
+            routePreference={selectedSource?.options.cyclingRoutePreference}
+            hills={selectedSource?.options.hills}
+            editOptions={selectedSource?.options}
+            onApplyCycling={applyCyclingChange}
+            onRestoreCycling={
+              (selected && customJourneys.some((entry) => entry.journey.id === selected.id)) ||
+              (bikeOnlySelected && customCycling)
+                ? restoreCyclingChange
+                : undefined
+            }
             cycleFocus={
               focusedRoute && cycleFocus
                 ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM }
@@ -1221,15 +1406,15 @@ export default function App() {
             }
             onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })}
           />
-          <div className="model-note">
-            <strong>Routed cycling · estimated times</strong>
+          <details className="model-note">
+            <summary>About the map and estimated times</summary>
             <p>
               Cycling follows mapped roads and paths. Transit lines remain schematic. Each
               public-transport leg shows its bicycle-permission status. All-public-transport results
               may prohibit bicycles. The map shows explored stops and routes, not the complete Swiss
               network.
             </p>
-          </div>
+          </details>
           <p className="timetable-attribution">
             Timetables:{" "}
             <a href="https://search.ch/timetable/" target="_blank" rel="noreferrer">
@@ -1242,6 +1427,24 @@ export default function App() {
           </p>
         </aside>
       </main>
+      <nav className="mobile-view-switch" aria-label="Planner view">
+        <button
+          type="button"
+          aria-pressed={mobileView === "planning"}
+          aria-controls="planning-panel"
+          onClick={() => showMobileView("planning")}
+        >
+          Planning
+        </button>
+        <button
+          type="button"
+          aria-pressed={mobileView === "map"}
+          aria-controls="journey-map"
+          onClick={() => showMobileView("map")}
+        >
+          Map
+        </button>
+      </nav>
     </div>
   );
 }

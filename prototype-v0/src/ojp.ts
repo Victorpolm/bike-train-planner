@@ -1,3 +1,4 @@
+import { mergeAccessRules, mergeTransferRules, type StationAccessRule, type StationTransferRule } from "./transferTimes.ts";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import { interpretBicycleAttributes, type BicycleAttribute, type CarriageRule } from "./bicycleCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
@@ -6,6 +7,8 @@ export type OjpStop = { id: string; name: string; lat: number; lon: number };
 export type OjpQuery = { from: OjpStop; to: OjpStop; departure: string };
 export type OjpReference = NonNullable<TransitLeg["ojp"]>;
 export type OjpLeg = {
+  transferRules?: StationTransferRule[];
+  accessRules?: StationAccessRule[];
   mode: "transit" | "walk"; from: OjpStop; to: OjpStop; departure: string; arrival: string;
   service: string; serviceName: string | null; category: string | null; operator: string | null;
   direction: string | null; departurePlatform: string | null; arrivalPlatform: string | null;
@@ -68,12 +71,23 @@ function ojpLegKey(leg: OjpLeg) {
 export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[] {
   const data = delivery(xml, "OJPTripDelivery"), stops = places(data.TripResponseContext);
   const legs: OjpLeg[] = [];
+  const sameRef = (a: string, b: string) => a === b || stops.get(a)?.id === b || stops.get(b)?.id === a;
   for (const result of list<Xml>(data.TripResult)) {
     const trip = result.Trip;
     if (!trip) continue;
     let previousArrival: string | null = null;
+    let previousRide: OjpLeg | null = null;
+    let access: { point: { lat: number; lon: number }; toRef: string; seconds: number | null } | null = null;
+    let pending: { kind: StationTransferRule["kind"]; seconds: number | null; from: string; to: string }[] = [];
     for (const item of list<Xml>(trip.Leg)) {
-      const timed = item.TimedLeg, transfer = item.TransferLeg;
+      const timed = item.TimedLeg, transfer = item.TransferLeg, continuous = item.ContinuousLeg;
+      if (continuous && !previousRide) {
+        const geo = continuous.LegStart?.GeoPosition, toRef = text(continuous.LegEnd?.StopPointRef ?? continuous.LegEnd?.StopPlaceRef);
+        const lat = Number(text(geo?.Latitude)), lon = Number(text(geo?.Longitude)), ms = duration(continuous.Duration ?? item.Duration);
+        access = text(continuous.Service?.PersonalMode) === "foot" && toRef && text(geo?.Latitude) && text(geo?.Longitude)
+          && Number.isFinite(lat) && Math.abs(lat) <= 90 && Number.isFinite(lon) && Math.abs(lon) <= 180
+          ? { point: { lat, lon }, toRef, seconds: Number.isFinite(ms) && ms >= 0 ? ms / 1000 : null } : null;
+      }
       if (timed) {
         const board = timed.LegBoard, alight = timed.LegAlight, service = timed.Service;
         const fromRef = text(board?.StopPointRef), toRef = text(alight?.StopPointRef);
@@ -91,23 +105,43 @@ export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[
         const mode = text(service.Mode?.PtMode), label = text(service.PublicCode) || text(service.PublishedServiceName) || mode;
         const category = ({ bus: "B", tram: "Tram", metro: "M", water: "BAT", rail: text(service.ProductCategory?.ShortName) || "Train" } as Record<string, string>)[mode] || mode;
         const serviceLabel = label.startsWith(category) ? label : [category, label].filter(Boolean).join(" ");
-        legs.push({ mode: "transit", from, to, departure, arrival, service: serviceLabel,
+        const previous = previousRide;
+        const connected = previous?.reference && pending.length && sameRef(pending[0].from, previous.reference.toRef)
+          && sameRef(pending.at(-1)!.to, fromRef) && pending.every((part, i) => i === 0 || sameRef(pending[i - 1].to, part.from));
+        const transferRules: StationTransferRule[] = previous?.reference && pending.length ? [{
+          incomingJourneyRef: previous.reference.journeyRef, incomingOperatingDay: previous.reference.operatingDay, operatingDay, fromRef: previous.reference.toRef, toRef: fromRef,
+          arrival: previous.arrival, departure, seconds: connected && pending.every(p => p.seconds !== null) ? pending.reduce((s, p) => s + p.seconds!, 0) : null,
+          kind: !connected || pending.some(p => p.kind === "unknown") ? "unknown" : pending.some(p => p.kind === "guaranteedConnection") ? "guaranteedConnection" : "walk",
+          checked: instant(data.ResponseTimestamp) ?? undefined,
+        }] : [];
+        const accessRules: StationAccessRule[] = !previousRide && access && sameRef(access.toRef, fromRef)
+          ? [{ ...access, toRef: fromRef, departure, operatingDay, checked: instant(data.ResponseTimestamp) ?? undefined }] : [];
+        const parsed: OjpLeg = { accessRules, mode: "transit", from, to, departure, arrival, service: serviceLabel, transferRules,
           serviceName: text(service.PublishedServiceName) || null, category,
           operator: text(service.OperatorRef) || null, direction: text(service.DestinationText) || null,
           departurePlatform: text(board.PlannedQuay) || null, arrivalPlatform: text(alight.PlannedQuay) || null,
           reference: { journeyRef, operatingDay, fromRef, toRef, fromOrder, toOrder, departure, arrival, bikeFiltered, attributes: scoped },
           rule: interpretBicycleAttributes(scoped, bikeFiltered),
-        });
-      } else if (transfer && previousArrival && text(transfer.TransferType) === "walk") {
-        const from = stops.get(text(transfer.LegStart?.StopPointRef)), to = stops.get(text(transfer.LegEnd?.StopPointRef));
-        const ms = duration(transfer.Duration ?? item.Duration), departure = previousArrival;
+        };
+        legs.push(parsed); previousRide = parsed; pending = []; access = null;
+      } else if (transfer && previousRide) {
+        const kinds = list<unknown>(transfer.TransferType).map(text);
+        const kind = kinds.length && kinds.every(k => ["walk", "guaranteedConnection", "protectedConnection"].includes(k))
+          ? kinds.includes("guaranteedConnection") || kinds.includes("protectedConnection") ? "guaranteedConnection" : "walk" : "unknown";
+        const ms = duration(transfer.Duration ?? item.Duration);
+        pending.push({ from: text(transfer.LegStart?.StopPointRef ?? transfer.LegStart?.StopPlaceRef), to: text(transfer.LegEnd?.StopPointRef ?? transfer.LegEnd?.StopPlaceRef),
+          kind: kind === "walk" || kind === "guaranteedConnection" ? kind : "unknown",
+          seconds: Number.isFinite(ms) && ms >= 0 ? ms / 1000 : null });
+        if (!previousArrival || !["walk", "guaranteedConnection"].includes(kind)) { previousArrival = null; continue; }
+        const from = stops.get(text(transfer.LegStart?.StopPointRef ?? transfer.LegStart?.StopPlaceRef)), to = stops.get(text(transfer.LegEnd?.StopPointRef ?? transfer.LegEnd?.StopPlaceRef));
+        const departure = previousArrival;
         if (!Number.isFinite(ms) || ms < 0) { previousArrival = null; continue; }
         previousArrival = new Date(Date.parse(departure) + ms).toISOString();
-        if (from && to) legs.push({ mode: "walk", from, to, departure, arrival: previousArrival,
+        if (from && to && from.id !== to.id) legs.push({ mode: "walk", from, to, departure, arrival: previousArrival,
           service: "Transfer on foot", serviceName: null, category: null, operator: null,
           direction: null, departurePlatform: null, arrivalPlatform: null });
       }
-      // Leading/trailing provider walks are replaced by our road-routed cycling.
+      // Leading foot access is scoped to its exact station point; trailing walks stay outside this adapter.
     }
   }
   return legs;
@@ -118,12 +152,14 @@ export function mergeOjpConnections(unfiltered: OjpLeg[], filtered: OjpLeg[]): O
   for (const leg of [...unfiltered, ...filtered]) {
     const key = ojpLegKey(leg), existing = result.get(key);
     if (!existing) { result.set(key, leg); continue; }
+    const transferRules = mergeTransferRules(existing.transferRules, leg.transferRules);
+    const accessRules = mergeAccessRules(existing.accessRules, leg.accessRules);
     const fareSourceIds = [...new Set([...(existing.fareSourceIds ?? []), ...(leg.fareSourceIds ?? [])])];
-    if (!leg.reference || !existing.reference) { result.set(key, { ...existing, fareSourceIds }); continue; }
+    if (!leg.reference || !existing.reference) { result.set(key, { ...existing, fareSourceIds, transferRules, accessRules }); continue; }
     // Keep a prohibition even if a second response is filtered or omits the note.
     const attributes = [...existing.reference.attributes, ...leg.reference.attributes];
     const bikeFiltered = existing.reference.bikeFiltered || leg.reference.bikeFiltered;
-    result.set(key, { ...leg, fareSourceIds,
+    result.set(key, { ...leg, fareSourceIds, transferRules, accessRules,
       reference: { ...leg.reference, attributes, bikeFiltered }, rule: interpretBicycleAttributes(attributes, bikeFiltered) });
   }
   return [...result.values()];

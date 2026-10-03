@@ -1,6 +1,8 @@
 # App roadmap: bicycle + public transport
 
-_Updated 2026-09-30. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
+**3 October follow-up, proposed:** Merge Reduce climbing and Gentler slopes into Extra categories. Gentle slope settings should affect the additional proposal, with ordinary cycling candidates retained. National station-transfer data has been found and sampled; implement a lossless, dated platform-pair lookup to improve recombined connections before claiming complete coverage. [Data and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
+
+_Updated 2026-10-03. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
 
 ## Product direction
 
@@ -13,6 +15,27 @@ _Updated 2026-09-30. The user's latest order supersedes the delivery orders reco
 **29 September follow-up brainstorming:** The owner repeatedly needs drinking water, snacks/vending, public toilets, good parking and repair help on long rides. Treat these five categories as the next product's useful-stop scope. Their proposed data model, filters, route association and staged delivery are in [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md). All five useful-stop categories now have map filters and basic route association. Cycling-section detour previews with an editable visit duration and fixed-service timing checks are delivered in version 41. Evaluated opening, verified entrances, Apply/save stop insertion and road-safety classification remain later work.
 
 **Review follow-up, implemented 30 September:** automatic detour framing and keyboard map selection simplify the controls. Permission cache/alias fixes, timetable extraction, conservative cleanup and automated offline verification are delivered. [Accepted/rejected review items and MOTIS pilot](REVIEW_IMPLEMENTATION_2026-09-30.md). Next: check the interaction on desktop/mobile, then resume facility precision. The engine pilot is not a migration.
+
+## Interface milestone — branch implementation, 2 October
+
+The owner authorised the revised interface and local profiles on `feature/novice-interface-profiles`. Profiles are independent of trip presets; all existing model/access/pace/fare/category choices remain accessible. Phone views keep the same mounted map and planner. Single-total cards and persistent ? explanations simplify inspection without hiding required bicycle conditions. [Implemented controls, evidence and manual acceptance](INTERFACE_PROFILES_2026-10-02.md).
+
+The header profile/compact route follow-up now provides independent UI components and central layout settings; see the [editing guide](INTERFACE_EDITING.md). An owner-only visual layout preview/editor is a possible separate follow-up, not implemented. Next: complete desktop/phone and keyboard acceptance, review the branch, then merge. Continue facility precision afterwards. Past-date entry and real next-departure search are implemented on 3 October ([evidence](SEARCH_RELIABILITY_2026-10-03.md)); historical timetable completeness, additional SBB fare products and GPS navigation remain separate work; do not add cosmetic buttons or change the current endpoint category into a bicycle-availability constraint. Cross-device profile accounts remain optional future work.
+
+<a id="route-editing-and-climbing--proposed-3-october"></a>
+## Route editing and climbing — implemented, 3 October
+
+The owner subsequently approved implementation, requested a better cycling editor and a user-selectable uphill percentage, and explicitly asked for transit-assisted climbing optimization. The previous proposal is now delivered on `feature/novice-interface-profiles`:
+
+| Option | Delivered behaviour | Remaining limit |
+|---|---|---|
+| Edit cycling path | Ordered clickable/draggable points, section selection, automatic preview, Apply, Undo/reset and Restore | Keep selected services; reject missed connections or budget violations; no persistent saved route or facility visit duration |
+| Gentler slopes | User-set 1–20% preference, default 6%, with 0–60 extra minutes per cycling section | Soft preference; short steep ramps may be missed and routes can still exceed it |
+| Offer a Reduce climbing alternative | Optional Reduce climbing category, lower-climb station-pair/exit acquisition, original three ranking functions retained | Within 60 extra journey minutes and the same bicycle-access/cycling constraints; unknown elevation cannot win |
+
+**360 regression cases pass** after the station-time follow-up. The global Less climbing preference and Climbing heading are removed; help is adjacent to Cycling hills. Scoped OJP access/interchange times are integrated. Complete station/platform coverage and bicycle-accessible pathways remain future work. [Current evidence](STATION_TIMES_2026-10-03.md). Earlier version-49 observation: A real Zürich HB–Zoo test found 3 m of cycling ascent with tram 6 versus 207 m cycling-only. The gentler 5% route still contained sampled grades around 10.2%, illustrating why the percentage is not a hard guarantee. [Controls, architecture, live evidence and remaining work](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).
+
+Next: desktop/phone/keyboard acceptance of point editing, then a small fixed hilly-route pilot. Facility-stop Apply with visit duration, saved journeys and finer slope validation remain separate. The **What does Extended add?** question mark remains beside **Journey options**.
 
 ## Agreed ordering and proposed milestones
 
@@ -125,6 +148,8 @@ Include long-ride tasks: find drinking water, a public toilet and a food stop re
 Baseline/Extended remain available for the current mathematical experiment. Moving that comparison into advanced controls is a later interface decision, not a change made by this documentation update.
 
 ## Technical work retained after these priorities
+
+- **Two automatic cycling transfers — implemented on the UI branch:** Baseline 0 / Extended up to 2, two-round discovery, and beginning-only/end-only hard constraints now share the existing budgets. Next measure live route quality, runtime and truncation with a small fixed Swiss pilot; address walking access and per-block fare aggregation remain separate work. [Scope, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md).
 
 - **Later road safety:** investigate crossings/signals, turning manoeuvres, physical separation, documented lower speed limits and pedestrian access. Review official injury-crash data with exposure, age and geometry limitations. Existing lower-traffic-stress summaries remain heuristics; no “every turn is dangerous” rule or guaranteed-safe route. See [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md).
 

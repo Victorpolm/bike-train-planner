@@ -1,0 +1,255 @@
+{
+  "checkedAt": "2026-10-03T16:41:21.256Z",
+  "departure": "2026-10-05T06:00:00Z",
+  "cases": [
+    {
+      "from": "Rapperswil SG",
+      "to": "Lausanne",
+      "status": 200,
+      "providerChecked": "2026-10-03T16:41:22.543Z",
+      "legs": 10,
+      "warnings": [],
+      "access": [
+        {
+          "station": "Rapperswil SG",
+          "minutes": 6
+        },
+        {
+          "station": "Rapperswil SG",
+          "minutes": 4
+        }
+      ],
+      "transfers": [
+        {
+          "station": "Zürich HB",
+          "minutes": 7,
+          "kind": "walk"
+        },
+        {
+          "station": "Bern",
+          "minutes": 6,
+          "kind": "walk"
+        },
+        {
+          "station": "Pfäffikon SZ",
+          "minutes": 3,
+          "kind": "walk"
+        },
+        {
+          "station": "Olten",
+          "minutes": 5,
+          "kind": "walk"
+        }
+      ],
+      "journeys": 6,
+      "limited": false,
+      "examples": [
+        {
+          "totalMinutes": 223,
+          "checks": [
+            {
+              "station": "Rapperswil SG",
+              "service": "S7",
+              "source": "ojp-access",
+              "minutes": 6,
+              "feasible": true
+            },
+            {
+              "station": "Zürich HB",
+              "service": "IC1",
+              "source": "swiss-default",
+              "minutes": 2,
+              "feasible": true
+            }
+          ],
+          "timedStationSteps": [
+            {
+              "station": "Rapperswil SG",
+              "type": "access",
+              "minutes": 6
+            }
+          ]
+        },
+        {
+          "totalMinutes": 223,
+          "checks": [
+            {
+              "station": "Rapperswil SG",
+              "service": "S5",
+              "source": "ojp-access",
+              "minutes": 4,
+              "feasible": true
+            },
+            {
+              "station": "Pfäffikon SZ",
+              "service": "IR35",
+              "source": "ojp",
+              "minutes": 3,
+              "feasible": true
+            },
+            {
+              "station": "Zürich HB",
+              "service": "IC1",
+              "source": "swiss-default",
+              "minutes": 2,
+              "feasible": true
+            }
+          ],
+          "timedStationSteps": [
+            {
+              "station": "Rapperswil SG",
+              "type": "access",
+              "minutes": 4
+            },
+            {
+              "station": "Pfäffikon SZ",
+              "type": "transfer",
+              "minutes": 3
+            }
+          ]
+        },
+        {
+          "totalMinutes": 206,
+          "checks": [
+            {
+              "station": "Rapperswil SG",
+              "service": "S7",
+              "source": "ojp-access",
+              "minutes": 6,
+              "feasible": true
+            },
+            {
+              "station": "Zürich HB",
+              "service": "IC5",
+              "source": "ojp",
+              "minutes": 7,
+              "feasible": true
+            }
+          ],
+          "timedStationSteps": [
+            {
+              "station": "Rapperswil SG",
+              "type": "access",
+              "minutes": 6
+            },
+            {
+              "station": "Zürich HB",
+              "type": "transfer",
+              "minutes": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "from": "Zürich Oerlikon",
+      "to": "Bern",
+      "status": 200,
+      "providerChecked": "2026-10-03T16:41:26.156Z",
+      "legs": 9,
+      "warnings": [],
+      "access": [
+        {
+          "station": "Zürich Oerlikon",
+          "minutes": 4
+        },
+        {
+          "station": "Zürich Oerlikon",
+          "minutes": 5
+        }
+      ],
+      "transfers": [
+        {
+          "station": "Zürich HB",
+          "minutes": 7,
+          "kind": "walk"
+        },
+        {
+          "station": "Aarau",
+          "minutes": 3,
+          "kind": "guaranteedConnection"
+        },
+        {
+          "station": "Olten",
+          "minutes": 5,
+          "kind": "walk"
+        }
+      ],
+      "journeys": 4,
+      "limited": false,
+      "examples": [
+        {
+          "totalMinutes": 88,
+          "checks": [
+            {
+              "station": "Zürich Oerlikon",
+              "service": "IC1",
+              "source": "ojp-access",
+              "minutes": 4,
+              "feasible": true
+            }
+          ],
+          "timedStationSteps": [
+            {
+              "station": "Zürich Oerlikon",
+              "type": "access",
+              "minutes": 4
+            }
+          ]
+        },
+        {
+          "totalMinutes": 118,
+          "checks": [
+            {
+              "station": "Zürich Oerlikon",
+              "service": "S6",
+              "source": "ojp-access",
+              "minutes": 5,
+              "feasible": true
+            },
+            {
+              "station": "Zürich HB",
+              "service": "IC81",
+              "source": "swiss-default",
+              "minutes": 2,
+              "feasible": true
+            }
+          ],
+          "timedStationSteps": [
+            {
+              "station": "Zürich Oerlikon",
+              "type": "access",
+              "minutes": 5
+            }
+          ]
+        },
+        {
+          "totalMinutes": 144,
+          "checks": [
+            {
+              "station": "Zürich Oerlikon",
+              "service": "S6",
+              "source": "ojp-access",
+              "minutes": 5,
+              "feasible": true
+            },
+            {
+              "station": "Zürich HB",
+              "service": "IR16",
+              "source": "swiss-default",
+              "minutes": 2,
+              "feasible": true
+            }
+          ],
+          "timedStationSteps": [
+            {
+              "station": "Zürich Oerlikon",
+              "type": "access",
+              "minutes": 5
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

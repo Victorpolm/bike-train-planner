@@ -4,9 +4,28 @@ import { candidateBands, extend, geocode, plan, selectStations, type SearchSessi
 import { swissDateParts, TimetableClient } from "./timetableClient.ts";
 import { atEndpoint, DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
 import { KNOWN_PLACES } from "./places.ts";
+import { OjpClient } from "./ojpClient.ts";
 
 const response = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status });
 describe("live data boundaries", () => {
+  it("queries OJP from station arrival without doubling its access allowance, while retaining the fallback buffer", async () => {
+    const origin = KNOWN_PLACES.find(p => p.stopId === "8503000")!, destination = KNOWN_PLACES.find(p => p.stopId === "8507000")!;
+    const start = new Date("2026-10-05T06:00:00Z");
+    for (const available of [true, false]) {
+      const signal = new AbortController().signal, departures: string[] = [], fallback: URL[] = [];
+      const ojpClient = new OjpClient(signal, async (_input, init) => {
+        departures.push(JSON.parse(String(init!.body)).departure);
+        return available ? response({ legs: [], warnings: [], checked: start.toISOString() }) : response({}, 503);
+      });
+      await plan(origin, destination, "baseline", { ...DEFAULT_OPTIONS, maxAccessMinutes: 0, maxEgressMinutes: 0, maxBikeMinutes: 0 },
+        signal, () => {}, () => {}, { start, cyclingClient: null, ojpClient, gapMs: 0,
+          fetcher: async input => { const url = new URL(String(input)); if (url.pathname.endsWith("connections")) fallback.push(url);
+            return response({ stations: [], connections: [] }); } });
+      assert.ok(departures.length > 0); assert.ok(departures.every(d => d === start.toISOString()));
+      if (available) assert.equal(fallback.length, 0);
+      else { assert.ok(fallback.length > 0); assert.ok(fallback.every(u => u.searchParams.get("time") === "08:03")); }
+    }
+  });
   it("rounds boarding readiness up across midnight in Swiss time", () => {
     assert.deepEqual(swissDateParts(new Date("2026-09-05T23:59:30+02:00")), { date: "2026-09-06", time: "00:00" });
     assert.deepEqual(swissDateParts(new Date("2026-01-05T08:00:00+01:00")), { date: "2026-01-05", time: "08:00" });

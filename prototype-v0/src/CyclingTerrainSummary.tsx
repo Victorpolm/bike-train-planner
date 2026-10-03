@@ -1,3 +1,4 @@
+import InfoDisclosure from "./InfoDisclosure";
 import type { CyclingRoute } from "./cycling";
 import { modeTotals, travelModeLabel } from "./cyclingTerrain";
 import { formatMinutes } from "./routing";
@@ -22,29 +23,31 @@ export default function CyclingTerrainSummary({ route }: { route: CyclingRoute }
             </div>
           ))}
       </dl>
-      {route.preference && (
+      <InfoDisclosure label="Path choice and swisstopo check">
+        {route.preference && (
+          <p className="cycle-caption">
+            {routePreferenceLabels[route.preference]} ·{" "}
+            {route.turnCount === undefined
+              ? "Turn count unavailable"
+              : route.turnCount + " navigation instructions"}
+            . {route.preferenceNote}
+          </p>
+        )}
         <p className="cycle-caption">
-          {routePreferenceLabels[route.preference]} ·{" "}
-          {route.turnCount === undefined
-            ? "Turn count unavailable"
-            : route.turnCount + " navigation instructions"}
-          . {route.preferenceNote}
+          <a href={SWISSTOPO_SOURCE.url} target="_blank" rel="noreferrer">
+            swisstopo check
+          </a>
+          :{" "}
+          {topo
+            ? topo.status === "unavailable"
+              ? topo.note
+              : (topo.status === "partial" ? "Partial check. " : "") +
+                (topo.matchedMetres / 1000).toFixed(2) +
+                " km matched to official path data. " +
+                topo.note
+            : "Unavailable for this path; riding access is not certified."}
         </p>
-      )}
-      <p className="cycle-caption">
-        <a href={SWISSTOPO_SOURCE.url} target="_blank" rel="noreferrer">
-          swisstopo check
-        </a>
-        :{" "}
-        {topo
-          ? topo.status === "unavailable"
-            ? topo.note
-            : (topo.status === "partial" ? "Partial check. " : "") +
-              (topo.matchedMetres / 1000).toFixed(2) +
-              " km matched to official path data. " +
-              topo.note
-          : "Unavailable for this path; riding access is not certified."}
-      </p>
+      </InfoDisclosure>
       {!!flagged.length && (
         <details className="cycle-breakdown">
           <summary>Walking and path restrictions ({flagged.length})</summary>

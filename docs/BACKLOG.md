@@ -1,5 +1,16 @@
 # Backlog
 
+## Interface follow-up — 2 October 2026
+
+- [Branch implementation and acceptance checks](INTERFACE_PROFILES_2026-10-02.md): local profiles, simpler desktop/mobile UI, presets and accessible explanations implemented; browser task checks and branch review pending.
+- Historical departures: validate provider support, time windows and cache behaviour before accepting past searches.
+- Next departure within each category: fetch real later trips, preserve category/permission eligibility and deduplicate results.
+- Additional SBB fare products and age eligibility: extend the fare backend before showing unsupported discounts. Current age is metadata only.
+- GPS/navigation Start: explicit location permission, device lifecycle and route progress; no fake Start button.
+- Arbitrary cycling-minute slider and bicycle availability before/after/both transit: separate model/UI work; preserve existing endpoint ranking meaning.
+- Cross-device profile accounts only if requested; current profiles belong to this browser.
+
+
 **Current priorities (29 September 2026):** improve bike parking, add bike-shop/repair referencing, then improve the broader interface. The OJP adapter and exact-trip test-fare integration are implemented and active. See [APP_ROADMAP.md](APP_ROADMAP.md), [BIKE_PARKING.md](BIKE_PARKING.md) and [PROJECT_STATE.md](PROJECT_STATE.md) for current scope and completion criteria.
 
 The follow-up brainstorm expands the service milestone to **water, snacks/vending and public toilets**, with parking/repair filters and facilities along the selected cycling path. These are active planned categories, not parked ideas. [CYCLING_AMENITIES.md](CYCLING_AMENITIES.md) records proposed sequencing and data treatment; no feature delivery is claimed.
