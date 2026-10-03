@@ -52,3 +52,5 @@ Owner-private **version 50** published on **3 October 2026 at 16:40:52 UTC**, en
 This is passenger-timetable timing, not verified bicycle accessibility. Lifts, ramps, stairs, crowding, disruption, exact entrances and trailing station-exit paths are not established. Coordinated connections are not a real-time waiting guarantee. Coverage follows the queried provider journeys; the app does not yet have complete platform-pair timings for every Swiss station.
 
 Next: test a familiar large-station interchange on desktop/phone, then integrate a regularly updated official transfer table with explicit SLOID/parent-station mapping to replace the default in recombined connections. Treat entrance/platform pathways and bicycle suitability as separate evidence.
+
+**Later source investigation:** [National transfer data found and verified](STATION_TRANSFER_DATA_2026-10-03.md). The publisher's separate database is accessible; the original archives remain blocked in this execution environment. This research does not change version 50's runtime coverage.

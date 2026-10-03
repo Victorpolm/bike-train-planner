@@ -1,5 +1,7 @@
 # Project state
 
+**Research follow-up, 3 October:** Official national transfer sources are located and actual Zürich HB/Bern platform rules verified from the publisher's accessible 30 September database (1,112,959 transfer rows). Its copy omits transfer validity and legacy-ID fields; a lossless production import is still pending. Grouping gentle slopes with Extra categories is proposed, including a separate candidate set so ordinary results stay intact. [Verified sources and integration plan](STATION_TRANSFER_DATA_2026-10-03.md). Version 50 remains live.
+
 **Latest implementation, 3 October:** Optional **Reduce climbing** is a separate result category; **Cycling hills** has adjacent help and only No hill preference/Gentler slopes. OJP platform access and scoped station transfers are enforced in both solvers, editing and detour timing, with labelled defaults/estimates where evidence is absent. **360 regressions** and two dated production queries pass. [Sources, exact evidence and limits](STATION_TIMES_2026-10-03.md).
 
 **Earlier branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).

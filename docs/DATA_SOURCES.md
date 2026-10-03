@@ -1,5 +1,7 @@
 # Data sources and data risks
 
+**3 October source investigation:** The primary national GTFS/HRDF sources contain station/platform transfer rules. An accessible official SQLite snapshot allowed verification of actual records; its schema omits fields required for some date-specific exceptions and legacy-ID mappings. Production import remains pending. [Exact URLs, source counts, sampled records and integration contract](STATION_TRANSFER_DATA_2026-10-03.md).
+
 _Consolidated 2026-09-29. Current integrations are separated from source options and historical experiments._
 
 ## Current source registry

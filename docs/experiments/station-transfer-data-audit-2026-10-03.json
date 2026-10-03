@@ -1,0 +1,350 @@
+{
+  "source": "https://tools.opentransportdata.swiss/gtfs-static-dbs/gtfs_2026-09-30.sqlite",
+  "checked_at": "2026-10-03T17:12:27Z",
+  "schema": [
+    [
+      "calendar",
+      "CREATE TABLE calendar (service_id TEXT PRIMARY KEY, monday INTEGER, tuesday INTEGER, wednesday INTEGER, thursday INTEGER, friday INTEGER, saturday INTEGER, sunday INTEGER, start_date TEXT NOT NULL, end_date TEXT NOT NULL, day_bits TEXT)"
+    ],
+    [
+      "feed_info",
+      "CREATE TABLE feed_info (feed_publisher_name TEXT NOT NULL, feed_publisher_url TEXT, feed_lang TEXT, feed_start_date TEXT NOT NULL, feed_end_date TEXT NOT NULL, feed_version TEXT NOT NULL)"
+    ],
+    [
+      "stops",
+      "CREATE TABLE stops (stop_id TEXT PRIMARY KEY, stop_name TEXT NOT NULL, stop_lon REAL NOT NULL, stop_lat REAL NOT NULL, location_type TEXT, parent_station TEXT, platform_code TEXT, original_stop_id TEXT)"
+    ],
+    [
+      "transfers",
+      "CREATE TABLE transfers (from_stop_id TEXT NOT NULL, to_stop_id TEXT NOT NULL, from_route_id TEXT, to_route_id TEXT, from_trip_id TEXT, to_trip_id TEXT, transfer_type INTEGER NOT NULL, min_transfer_time INTEGER, FOREIGN KEY (from_stop_id) REFERENCES stops(stop_id), FOREIGN KEY (to_stop_id) REFERENCES stops(stop_id))"
+    ],
+    [
+      "trips",
+      "CREATE TABLE trips (trip_id TEXT PRIMARY KEY, route_id TEXT NOT NULL, service_id TEXT NOT NULL, trip_headsign TEXT, trip_short_name TEXT, direction_id TEXT, block_id INTEGER, departure_day_minutes INTEGER, arrival_day_minutes INTEGER, departure_time TEXT, arrival_time TEXT, stop_times_s TEXT, stop_times_count INTEGER, shape_id TEXT, original_trip_id TEXT, hints TEXT, FOREIGN KEY (route_id) REFERENCES routes(route_id), FOREIGN KEY (service_id) REFERENCES calendar(service_id), FOREIGN KEY (shape_id) REFERENCES shapes(shape_id))"
+    ]
+  ],
+  "samples": {
+    "Zurich HB": {
+      "stops": [
+        {
+          "stop_id": "ch:1:sloid:3000:502:42",
+          "stop_name": "Zürich HB",
+          "stop_lon": 8.53881017,
+          "stop_lat": 47.37890615,
+          "location_type": "",
+          "parent_station": "Parentch:1:sloid:3000",
+          "platform_code": "41/42",
+          "original_stop_id": "ch:1:sloid:3000:502:42"
+        }
+      ],
+      "transfers": [
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:10:18",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:2:3",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:3:4",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:3:5",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:4:6",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:4:7",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:5:8",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:5:9",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:500:31",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:500:32",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        },
+        {
+          "from_stop_id": "ch:1:sloid:3000:502:42",
+          "to_stop_id": "ch:1:sloid:3000:501:33",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 420
+        }
+      ]
+    },
+    "Bern": {
+      "stops": [
+        {
+          "stop_id": "ch:1:sloid:7000:6:32",
+          "stop_name": "Bern",
+          "stop_lon": 7.43770919,
+          "stop_lat": 46.94929102,
+          "location_type": "",
+          "parent_station": "Parentch:1:sloid:7000",
+          "platform_code": "12D-F",
+          "original_stop_id": "ch:1:sloid:7000:6:32"
+        }
+      ],
+      "transfers": [
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:30257",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 600
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:0:349752",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:1:1",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:1:2",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:1:21",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:2:3",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:2:4",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:3:5",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:3:6",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:4:7",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        },
+        {
+          "from_stop_id": "ch:1:sloid:7000:6:32",
+          "to_stop_id": "ch:1:sloid:7000:4:8",
+          "from_route_id": "",
+          "to_route_id": "",
+          "from_trip_id": "",
+          "to_trip_id": "",
+          "transfer_type": 2,
+          "min_transfer_time": 360
+        }
+      ]
+    }
+  },
+  "feed": [
+    [
+      "SBB",
+      "https://sbb.ch",
+      "DE",
+      "20251214",
+      "20261212",
+      "20260930"
+    ]
+  ],
+  "http_requests": 0,
+  "downloaded_bytes": 0,
+  "catalogue": {
+    "url": "https://tools.opentransportdata.swiss/gtfs-static-dbs/gtfs-static-dbs.json",
+    "metadata": "Created at 2026-10-01 14:21:33",
+    "latest": {
+      "gtfs_datetime_s": "2026-10-01 09:00",
+      "gtfs_day": "2026-09-30",
+      "gtfs_rt_switch_datetime_s": "2026-10-01 15:00",
+      "table_stats": {
+        "agency": 473,
+        "calendar": 88565,
+        "calendar_dates": 10979614,
+        "feed_info": 1,
+        "frequencies": 1894,
+        "shapes": 0,
+        "stop_times": 42680411,
+        "stops": 104297,
+        "transfers": 1112959,
+        "link_agency": 473,
+        "trips": 2987710,
+        "routes": 5165,
+        "fts_routes_content": 5165,
+        "fts_routes_segments": 204,
+        "fts_routes_segdir": 3,
+        "fts_routes": 5165
+      },
+      "db_relative_path": "gtfs_2026-09-30.sqlite"
+    }
+  },
+  "schema_omissions": [
+    "transfers.service_id",
+    "stops.didok"
+  ],
+  "use": "Research sample only; not integrated into production. Counts are rows, not unique stations. Minimum times are scoped to the shown pairs.",
+  "archive_access": {
+    "gtfs": "HTTP 403",
+    "hrdf": "HTTP 403"
+  },
+  "cached_range_bytes": 1376256
+}

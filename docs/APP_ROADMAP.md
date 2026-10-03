@@ -1,5 +1,7 @@
 # App roadmap: bicycle + public transport
 
+**3 October follow-up, proposed:** Merge Reduce climbing and Gentler slopes into Extra categories. Gentle slope settings should affect the additional proposal, with ordinary cycling candidates retained. National station-transfer data has been found and sampled; implement a lossless, dated platform-pair lookup to improve recombined connections before claiming complete coverage. [Data and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
+
 _Updated 2026-10-03. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
 
 ## Product direction

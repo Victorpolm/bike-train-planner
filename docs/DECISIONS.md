@@ -599,3 +599,9 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Decision:** Reduce climbing is an optional recommendation category, not a global cycling-route preference. Keep Gentler slopes and its editable percentage, remove the Climbing heading, and place help beside Cycling hills.
 
 **Decision:** Use exact dated OJP interchange and point-to-platform access evidence before the documented Swiss stop default or app estimate. Keep passenger timing distinct from bicycle accessibility. Preserve incoming service/platform context during pruning; do not add the app buffer twice. A complete static transfer-table import remains pending (the official bulk endpoint returned HTTP 403 in this session). Source keys and hosting audience are unchanged. [Implementation and evidence](STATION_TIMES_2026-10-03.md).
+
+## 2026-10-03 — National transfer sources and extra-category follow-up
+
+**Research:** The publisher's dated GTFS SQLite copy is publicly readable with HTTP ranges and contains actual platform-pair rules. Its schema drops the Swiss transfer service-validity field and the stop DIDOK column. Do not treat the research copy as a complete lossless production import. Prefer a pinned original GTFS feed, explicit SLOID/platform mapping and scoped calendar-aware resolution. [Evidence and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
+
+**Proposed interface:** Group Reduce climbing and Gentler slopes under Extra categories, retaining ordinary cycling candidates separately. The owner asked whether the controls could be merged; this update records the recommendation and does not change runtime behaviour.
