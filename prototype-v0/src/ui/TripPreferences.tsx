@@ -1,4 +1,3 @@
-import InfoDisclosure from "../InfoDisclosure";
 import InlineHelp from "./InlineHelp";
 import {
   BICYCLE_SCOPES,
@@ -57,7 +56,24 @@ export default function TripPreferences({
     >
       <summary>Preferences</summary>
       <fieldset className="model-picker" disabled={disabled}>
-        <legend>Journey options</legend>
+        <legend className="preference-heading">
+          Journey options
+          <InlineHelp
+            label="What does Extended add?"
+            text={
+              "Baseline allows cycling at the start and finish, plus ordinary public-transport changes. " +
+              "Extended allows up to two cycling connections between services. It can still choose zero " +
+              "or one when that gives a better journey. Cycling to the first service and from the last " +
+              "service does not count towards this limit. " +
+              "Your cycling limits and bicycle-access rules still apply. This does not require a longer " +
+              "ride. The two-connection allowance is shared across the whole journey." +
+              (hasWaypoints
+                ? " Requested intermediate stops can add cycling at stage boundaries in either model. " +
+                  "The beginning-only and end-only restrictions apply across the whole journey, including these stops."
+                : "")
+            }
+          />
+        </legend>
         <div className="model-buttons">
           <button
             type="button"
@@ -78,25 +94,6 @@ export default function TripPreferences({
           </button>
         </div>
       </fieldset>
-      <InfoDisclosure label="What does Extended add?">
-        <p>
-          Baseline allows cycling at the start and finish, plus ordinary public-transport changes.
-          Extended allows up to two cycling connections between services. It can still choose zero
-          or one when that gives a better journey. Cycling to the first service and from the last
-          service does not count towards this limit.
-        </p>
-        <p>
-          Your cycling limits and bicycle-access rules still apply. This does not require a longer
-          ride. The two-connection allowance is shared across the whole journey.
-        </p>
-        {hasWaypoints && (
-          <p>
-            Requested intermediate stops can add cycling at stage boundaries in either model. The
-            beginning-only and end-only restrictions apply across the whole journey, including these
-            stops.
-          </p>
-        )}
-      </InfoDisclosure>
       <div className="preference-heading">
         <label htmlFor="cycling-position">Where would you like to cycle?</label>
         <InlineHelp

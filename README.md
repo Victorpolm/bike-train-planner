@@ -1,10 +1,12 @@
 # Bike + Train Journey Planner
 
+**3 October interface follow-up:** **What does Extended add?** now opens from the question mark beside **Journey options**. Editable bike sections, gentler slopes, less climbing and uphill public-transport alternatives are recorded as [proposed next steps](docs/APP_ROADMAP.md#route-editing-and-climbing--proposed-3-october), not delivered features.
+
 **3 October reliability update:** Compact OJP requests fix rejected searches and preserve exact city-fare evidence. Extended gets bounded transfer-discovery work; endpoint checks retry a larger candidate pool. Clickable ? help and functional **More · later departures** are delivered, with past-date entry restored. **327 regressions pass** and live ZVV/Libero fares and Extended/later-departure checks succeeded. [Changes, evidence and limits](docs/SEARCH_RELIABILITY_2026-10-03.md).
 
 A Switzerland-first planner for travelling with your bicycle, combining road-routed cycling and public transport. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
 
-## Current state — 2 October 2026
+## Current state — 3 October 2026
 
 **Interface branch implementation:** `feature/novice-interface-profiles` adds optional device-local traveller profiles behind a compact header icon, modular interface sections, Commuter/Bikepacking/Personalized presets, a simpler desktop form, phone Planning / Map views, compact prices and expandable explanations. Baseline now allows 0 automatic cycling connections and Extended up to 2, with beginning-only/end-only restrictions in Preferences. [Routing changes and limits](docs/MULTIPLE_CYCLING_TRANSFERS.md). All existing planner choices remain accessible. **327 offline tests pass.** [Controls, verification, manual checks and remaining work](docs/INTERFACE_PROFILES_2026-10-02.md). [How to edit the modular interface](docs/INTERFACE_EDITING.md).
 
@@ -22,7 +24,7 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** Owner-private **version 47** published on **3 October 2026 at 11:52:51 UTC**, environment revision **3**, Site source `f840d619fb214c03474c679f71ceebace5c63acc`. Compact OJP requests, Extended recovery, clickable preference help and later-departure pages are delivered on `feature/novice-interface-profiles`, which is not merged into main. **327 offline tests**, formatting/Knip and production builds pass; all 201 current application files match Site source. Browser interaction QA remains pending. [Evidence and limits](docs/SEARCH_RELIABILITY_2026-10-03.md).
+**Last verified release:** Owner-private **version 48** published on **3 October 2026 at 13:55:18 UTC**, environment revision **3**, Site source `c8957ae48edd9229efe065c3192b103d871864d8`. The Extended help relocation is delivered alongside the earlier compact OJP requests, Extended recovery and later-departure pages on `feature/novice-interface-profiles`, which is not merged into main. **327 offline tests**, formatting/Knip and production builds pass; all 201 current application files match Site source. Browser interaction QA remains pending. [Evidence and limits](docs/SEARCH_RELIABILITY_2026-10-03.md).
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 

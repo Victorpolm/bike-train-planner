@@ -65,6 +65,7 @@ button:disabled { cursor: default; opacity: .55; }
 .preferences > summary { min-height: 46px; padding-block: 12px; font-size: .9375rem; }
 .preferences[open] { padding-bottom: 16px; }
 .preferences .model-picker { padding: 8px 0 18px; }
+.preferences .model-picker > .preference-heading { width: 100%; }
 .preferences .bicycle-access { margin-top: 8px; }
 .preferences .preference-grid { margin-top: 16px; }
 .personal-fields { padding-top: 4px; }

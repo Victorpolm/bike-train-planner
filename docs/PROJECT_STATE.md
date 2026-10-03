@@ -1,5 +1,7 @@
 # Project state
 
+**Latest interface follow-up, 3 October — version 48:** **What does Extended add?** is now the persistent question-mark help beside **Journey options**. The full explanation and waypoint-specific note are retained. Automated tests, formatting/Knip and production builds pass. [Bike-section editing and hill preferences](APP_ROADMAP.md#route-editing-and-climbing--proposed-3-october) are discussion proposals; no new routing objective was implemented.
+
 **Latest branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).
 
 _Last consolidated: 2026-10-03. This is the current summary; dated reports and Git history preserve earlier states._
@@ -45,9 +47,11 @@ _Last consolidated: 2026-10-03. This is the current summary; dated reports and G
 
 ## Last verified publication and tests
 
-**Fact:** Owner-private **version 47** published on **3 October 2026 at 11:52:51 UTC**, environment revision **3**, Site source `f840d619fb214c03474c679f71ceebace5c63acc`. All **201 current application files** match `feature/novice-interface-profiles`; historical Site documentation snapshots are excluded. The branch remains unmerged. Owner-only access and runtime keys are unchanged. GitHub CI verifies code; Site publication is separate.
+**Fact:** Owner-private **version 48** published on **3 October 2026 at 13:55:18 UTC**, environment revision **3**, Site source `c8957ae48edd9229efe065c3192b103d871864d8`. All **201 current application files** match `feature/novice-interface-profiles`; historical Site documentation snapshots are excluded. The branch remains unmerged. Owner-only access and runtime keys are unchanged. GitHub CI verifies code; Site publication is separate.
 
-**Last code-release gate:** **327 application tests in 11 suites**, React formatting/Knip and TypeScript/frontend/Worker builds pass. Both GitHub push and pull-request Test and build runs passed for application commit `bdb49e28e38a0fd9f80057500b0b87a01489e351`. Live Extended and More searches passed for Zürich–Laax; all three Kunsthaus–Zoo recommendation categories returned ZVV prices, and ZVV/Libero full/Half Fare checks succeeded. One independent cycling-only BRouter request failed without blocking transit results. Browser interaction/visual QA remains pending. [Current release evidence](SEARCH_RELIABILITY_2026-10-03.md).
+**Version 48 gate:** `npm test` passes all 38 test files; React formatting, Knip and the TypeScript/frontend/Worker production build pass. The application test suite is unchanged. Browser interaction/visual QA remains pending.
+
+**Earlier version 47 routing/fare evidence:** **327 application tests in 11 suites**, React formatting/Knip and TypeScript/frontend/Worker builds pass. Both GitHub push and pull-request Test and build runs passed for application commit `bdb49e28e38a0fd9f80057500b0b87a01489e351`. Live Extended and More searches passed for Zürich–Laax; all three Kunsthaus–Zoo recommendation categories returned ZVV prices, and ZVV/Libero full/Half Fare checks succeeded. One independent cycling-only BRouter request failed without blocking transit results. Browser interaction/visual QA remains pending. [Current release evidence](SEARCH_RELIABILITY_2026-10-03.md).
 
 
 Live checks on 28 September returned passenger CHF 36.20 for Zürich HB–Bern and CHF 45.80 for Zürich HB–Laax on the documented 29 September departures. The Laax route combined services from different OJP responses. Later-bus and bus-only subtrip checks also passed. These are dated test observations, not standing tariffs. [Exact cases and limits](OJP_EXACT_TRIP_FARES_2026-09-28.md).
