@@ -1,3 +1,4 @@
+import { boardingCheck } from "./transferTimes.ts";
 import { detourStages, type DetourStage } from "./cyclingDetour.ts";
 import type { CyclingRoute } from "./cycling.ts";
 import { journeySteps } from "./itinerary.ts";
@@ -88,8 +89,10 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
           cyclingSectionId: group, cyclingSectionLimit: cap });
       });
     } else if (i < target || step.mode === "transit") {
-      if (i > target && cursor + options.boardingMinutes * 60_000 > +step.departure)
+      const boarding = i > target && step.mode === "transit" ? boardingCheck(legs, plainLeg(i), cursor, options.boardingMinutes) : null;
+      if (boarding && boarding.readyAt > +step.departure)
         throw new Error(`This edit would miss ${step.title}. Shorten the ride or search for different services.`);
+      if (boarding?.transferLeg) legs.push(boarding.transferLeg);
       legs.push(plainLeg(i)); cursor = +step.arrival;
     } else {
       const duration = +step.arrival - +step.departure;

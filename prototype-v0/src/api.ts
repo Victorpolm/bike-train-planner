@@ -109,11 +109,14 @@ export async function findCandidateStations(point: Place, maxMinutes: number, cl
   return selectStations(stops, point, maxMinutes, expand ? SEARCH_LIMITS.stopsPerSide * 2 : SEARCH_LIMITS.stopsPerSide);
 }
 
-async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date) {
+async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number) {
   if (from.id === to.id) return;
   if (client.national) await client.timed(() => client.national!.add(network, from, to, ready));
   if (client.ojp) {
-    const result = await client.timed(() => client.ojp!.connections(from, to, ready, calls => client.claimRequests(calls)));
+    // OJP adds point-to-platform access itself. Query from arrival at the station,
+    // then enforce its allowance (or our fallback) in the solver, exactly once.
+    const stationArrival = new Date(+ready - boardingMinutes * 60_000);
+    const result = await client.timed(() => client.ojp!.connections(from, to, stationArrival, calls => client.claimRequests(calls)));
     if (result) { addOjpConnections(network, result); return; }
   }
   const dt = swissDateParts(ready);
@@ -413,7 +416,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
       progress(session.baseline.journeys.length ? "Your first options are ready. Checking a few alternatives…" : `Finding connections from ${a.name} to ${b.name}…`);
       queried.add(`${a.id}:${b.id}`);
       normalPairs++;
-      await connections(network, client, a, b, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000));
+      await connections(network, client, a, b, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes);
       signal.throwIfAborted();
       refresh(session, mode === "extended", publish);
       if (!railExitsChecked && mode !== "extended") {
@@ -422,7 +425,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
         for (const exit of exits) {
           progress(`Checking earlier trains to ${exit.name} for a cycling finish…`);
           queried.add(`${a.id}:${exit.id}`);
-          await connections(network, client, a, exit, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000));
+          await connections(network, client, a, exit, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes);
           if (cyclingClient) {
             progress(`Checking the cycling finish from ${exit.name}…`);
             await cyclingClient.route(network.stops.get(exit.id) ?? exit, destination);
@@ -525,7 +528,7 @@ async function extendInternal(session: SearchSession, progress: Progress, publis
           for (const end of ends.slice(0, 1)) {
             if (queries >= SEARCH_LIMITS.suffixQueries) break;
             queries++;
-            await connections(network, client, neighbor, end, ready);
+            await connections(network, client, neighbor, end, ready, o.boardingMinutes);
           }
           // A second cycling transfer can be essential: the first onward query
           // may return nothing. Seed the next ride instead of stopping there.
@@ -586,7 +589,7 @@ async function queryWaypointStages(session: SearchSession, mode: ModelMode, prog
         solveWaypoints(network, points, start, { ...options, bicycleScope }, mode).stageArrivals[stage]).filter(Number.isFinite))];
       for (const reachable of arrivals) {
         progress(`Checking stage ${stage + 1} of ${points.length - 1}: ${points[stage].label} → ${points[stage + 1].label}…`);
-        await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000));
+        await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes);
         client.signal.throwIfAborted();
         await refreshRoads(session, mode === "extended", publish, progress);
       }

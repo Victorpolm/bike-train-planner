@@ -29,19 +29,20 @@ it("distinguishes total ascent, downhill and adjustable uphill thresholds", () =
   assert.equal(routeClimb(r).maxGrade, 8);
   assert.equal(routeClimb(route(origin, destination, 10, [408, 400])).steepM, 0);
 });
-it("chooses different low-ascent and gentle paths, respecting detour time and unknown elevation", () => {
+it("chooses gentle paths while preserving the ordinary preference and respecting detour time", () => {
   const steep = route(origin, destination, 5, [400, 408]);
   const gentle = route(origin, destination, 8, [400, 405, 410]);
   const unknown = route(origin, destination, 4, [400, null]);
-  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "less-climbing" })?.minutes, 5);
+  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", DEFAULT_HILLS)?.minutes, 5);
   assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler" })?.minutes, 8);
   assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler", extraMinutes: 2 })?.minutes, 5);
-  assert.equal(chooseCyclingRoute([unknown, gentle], "fastest", { ...DEFAULT_HILLS, mode: "less-climbing" })?.minutes, 8);
+  assert.equal(chooseCyclingRoute([unknown, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler" })?.minutes, 8);
   assert.equal(routeClimb(unknown).unknown, 1);
   assert.equal(routeClimb(undefined, 2).unknown, 1);
   assert.equal(routeClimb(zeroCycling(origin, origin)).unknown, 0);
 });
 it("validates slope percentages and builds soft uphill penalties", () => {
+  assert.throws(() => validateHills({ ...DEFAULT_HILLS, mode: "less-climbing" as never }));
   for (const maxUphillPercent of [0, 21, NaN, Infinity]) assert.throws(() => validateHills({ ...DEFAULT_HILLS, maxUphillPercent }));
   for (const extraMinutes of [-1, 61, NaN]) assert.throws(() => validateHills({ ...DEFAULT_HILLS, extraMinutes }));
   const params = new URLSearchParams(); uphillParameters(params, { ...DEFAULT_HILLS, mode: "gentler", maxUphillPercent: 4.5 });
@@ -70,7 +71,7 @@ it("retains the slower low-climb state at a common stop in both solvers", () => 
     const old = run({ ...options, climbOptimization: false });
     assert.equal(old.journeys.some(j => j.transitLegs.some(l => l.fromId === "B")), false);
     const found = run(options), proposals = categorize(found.journeys, options);
-    const low = proposals.find(p => p.categories.includes("Least cycling ascent"))!.journey;
+    const low = proposals.find(p => p.categories.includes("Reduce climbing"))!.journey;
     assert.ok(low.transitLegs.some(l => l.fromId === "B")); assert.equal(journeyClimb(low).ascent, 0);
     assert.ok(proposals.some(p => p.categories.includes("Fastest") && p.journey.transitLegs.some(l => l.fromId === "A")));
   }
@@ -80,7 +81,7 @@ it("does not select unknown elevation as a climbing winner or relax bicycle perm
   for (const [key, r] of n.cycling!) if (r) n.cycling!.set(key, { ...r, ascentM: null, elevationCoverage: 0 });
   const result = solve(n, origin, destination, start, options, "baseline");
   assert.ok(result.journeys.length);
-  assert.ok(categorize(result.journeys, options).every(p => !p.categories.includes("Least cycling ascent")));
+  assert.ok(categorize(result.journeys, options).every(p => !p.categories.includes("Reduce climbing")));
   assert.equal(solve(network(), origin, destination, start, { ...options, bicycleScope: "confirmed" }, "baseline").journeys.length, 0);
 });
 it("keeps a gentler option even when it has more total ascent", () => {
@@ -91,7 +92,7 @@ it("keeps a gentler option even when it has more total ascent", () => {
   for (const found of [solve(n, origin, destination, start, o, "baseline"), solveWaypoints(n, [origin, destination], start, o, "baseline")]) {
     const proposals = categorize(found.journeys, o);
     assert.ok(proposals.find(p => p.categories.includes("Gentlest cycling"))!.journey.transitLegs.some(l => l.fromId === "B"));
-    assert.ok(proposals.find(p => p.categories.includes("Least cycling ascent"))!.journey.transitLegs.some(l => l.fromId === "A"));
+    assert.ok(proposals.find(p => p.categories.includes("Reduce climbing"))!.journey.transitLegs.some(l => l.fromId === "A"));
   }
 });
 it("reserves a timetable query for the road-checked low-ascent pair", () => {
@@ -118,4 +119,15 @@ it("requests a hill-specific alternative, carries the threshold through fork and
     await cached.route(from, to);
   }
   assert.equal(calls.length - before, 4, "Each threshold gets its own pair of requests; returning to the first threshold reuses its cache.");
+});
+
+it("offers Reduce climbing only as a separate category without changing the main winners", () => {
+  const journeys = solve(network(), origin, destination, start, options, "baseline").journeys;
+  const normal = categorize(journeys, { ...options, climbOptimization: false });
+  const extra = categorize(journeys, options);
+  assert.ok(normal.every(p => !p.categories.includes("Reduce climbing")));
+  assert.ok(extra.some(p => p.categories.includes("Reduce climbing")));
+  for (const name of ["Fastest", "Fewest boardings", "Least cycling or walking"])
+    assert.equal(extra.find(p => p.categories.includes(name))!.journey.id, normal.find(p => p.categories.includes(name))!.journey.id);
+  assert.equal(options.hills!.mode, "none");
 });

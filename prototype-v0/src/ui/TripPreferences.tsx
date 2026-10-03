@@ -198,48 +198,60 @@ export default function TripPreferences({
               onEndpoint(e.target.value as EndpointPreference);
             }}
           >
-            <option value="none">Just the three main categories</option>
+            <option value="none">No extra endpoint category</option>
             <option value="start">Less cycling or walking at start</option>
             <option value="end">Less cycling or walking at arrival</option>
           </select>
         </label>
       </div>
-      <fieldset className="hill-preferences" disabled={disabled}>
-        <legend className="preference-heading">
-          Climbing
+      <label className="check-row">
+        <input
+          type="checkbox"
+          disabled={disabled}
+          checked={climbOptimization}
+          onChange={(e) => onClimbOptimization(e.target.checked)}
+        />
+        <span>Offer a Reduce climbing alternative</span>
+      </label>
+      {climbOptimization && (
+        <p className="preference-note">
+          Adds a journey suggestion alongside Fastest and Fewest boardings, within 60 extra minutes.
+          Your cycling-path preference stays selected.
+        </p>
+      )}
+      <fieldset className="hill-preferences" disabled={disabled} aria-label="Cycling hills">
+        <div className="preference-heading">
+          <label htmlFor="cycling-hills">Cycling hills</label>
           <InlineHelp
-            label="About climbing preferences"
-            text="Less climbing reduces cumulative ascent. Gentler slopes favours paths with less uphill travel above your chosen percentage. These are preferences within your time limits, not guaranteed gradient limits. Elevation is sampled and may miss short ramps; missing data stays unknown."
+            label="About cycling hills"
+            text="Gentler slopes favours paths with less uphill travel above your chosen percentage, within your time limits. Elevation is sampled and may miss short ramps, so this is a preference rather than a guaranteed limit. Reduce climbing is offered separately as a journey alternative."
           />
-        </legend>
-        <label>
-          <span>Cycling hills</span>
-          <select
-            value={hills.mode}
-            onChange={(e) =>
-              onHills({
-                ...hills,
-                mode: e.target.value as HillPreferences["mode"],
-                maxUphillPercent:
-                  Number.isFinite(hills.maxUphillPercent) &&
-                  hills.maxUphillPercent >= 1 &&
-                  hills.maxUphillPercent <= 20
-                    ? hills.maxUphillPercent
-                    : 6,
-                extraMinutes:
-                  Number.isInteger(hills.extraMinutes) &&
-                  hills.extraMinutes >= 0 &&
-                  hills.extraMinutes <= 60
-                    ? hills.extraMinutes
-                    : 15,
-              })
-            }
-          >
-            <option value="none">No hill preference</option>
-            <option value="less-climbing">Less climbing</option>
-            <option value="gentler">Gentler slopes</option>
-          </select>
-        </label>
+        </div>
+        <select
+          id="cycling-hills"
+          value={hills.mode}
+          onChange={(e) =>
+            onHills({
+              ...hills,
+              mode: e.target.value as HillPreferences["mode"],
+              maxUphillPercent:
+                Number.isFinite(hills.maxUphillPercent) &&
+                hills.maxUphillPercent >= 1 &&
+                hills.maxUphillPercent <= 20
+                  ? hills.maxUphillPercent
+                  : 6,
+              extraMinutes:
+                Number.isInteger(hills.extraMinutes) &&
+                hills.extraMinutes >= 0 &&
+                hills.extraMinutes <= 60
+                  ? hills.extraMinutes
+                  : 15,
+            })
+          }
+        >
+          <option value="none">No hill preference</option>
+          <option value="gentler">Gentler slopes</option>
+        </select>
         {hills.mode === "gentler" && (
           <label>
             <span>Prefer to avoid uphill slopes above (%)</span>
@@ -274,21 +286,6 @@ export default function TripPreferences({
               applies.
             </small>
           </label>
-        )}
-        <label className="check-row">
-          <input
-            type="checkbox"
-            checked={climbOptimization}
-            onChange={(e) => onClimbOptimization(e.target.checked)}
-          />
-          <span>Use public transport to reduce climbing</span>
-        </label>
-        {climbOptimization && (
-          <p>
-            Adds a <b>Least cycling ascent</b> recommendation. Compares the climbing you do on the
-            bike, within 60 extra journey minutes. Bicycle access and fares still apply; public
-            transport does not have to be uphill itself.
-          </p>
         )}
       </fieldset>
     </details>

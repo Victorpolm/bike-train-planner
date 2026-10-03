@@ -206,18 +206,17 @@ export default function DetourPanel({
                   The same {timing.nextService} at {clock.format(timing.nextDeparture)} still fits
                   the estimate.
                 </b>{" "}
-                About {Math.floor(timing.marginMinutes)} min remain after the{" "}
-                {STATION_BUFFER_MINUTES}-minute boarding buffer. Destination arrival stays{" "}
-                {clock.format(timing.arrival!)}.
+                About {Math.floor(timing.marginMinutes)} min remain after the transfer and boarding
+                check. Destination arrival stays {clock.format(timing.arrival!)}.
               </p>
             )}
             {timing.status === "missed" && (
               <p>
                 <b>This detour does not fit the selected connection.</b> You need about{" "}
                 {Math.ceil(-timing.marginMinutes)} more minutes to catch {timing.nextService} at{" "}
-                {clock.format(timing.nextDeparture)} with the {STATION_BUFFER_MINUTES}-minute
-                boarding buffer. Shorten the stop or choose another facility. No replacement service
-                has been searched.
+                {clock.format(timing.nextDeparture)} after allowing for transfer and boarding time.
+                Shorten the stop or choose another facility. No replacement service has been
+                searched.
               </p>
             )}
             {timing.status === "unknown" && (
@@ -225,6 +224,9 @@ export default function DetourPanel({
                 <b>Connection timing cannot be checked.</b> Some onward leg details are missing. Do
                 not assume this detour fits the selected service.
               </p>
+            )}
+            {(timing.status === "kept" || timing.status === "missed") && (
+              <p className="detour-note">{timing.boardingNote}</p>
             )}
             {timing.status === "no-connection" && (
               <p>

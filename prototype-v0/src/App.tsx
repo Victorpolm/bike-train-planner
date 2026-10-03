@@ -1211,7 +1211,7 @@ export default function App() {
                   proposals.length > 0 &&
                   !proposals.some(
                     (p) =>
-                      p.categories.includes("Least cycling ascent") ||
+                      p.categories.includes("Reduce climbing") ||
                       p.categories.includes("Gentlest cycling"),
                   ) && (
                     <p className="notice">
@@ -1273,6 +1273,7 @@ export default function App() {
                       />
                       {expanded && (
                         <JourneyPlan
+                          boardingMinutes={source.options.boardingMinutes}
                           fareProfile={fareProfile}
                           id={planId}
                           journey={j}

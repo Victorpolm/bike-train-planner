@@ -1,3 +1,4 @@
+import { boardingCheck, transferContextKey } from "./transferTimes.ts";
 import { addClimb, climbVector, emptyClimb, hillSearch, routeClimb, type Climb } from "./hills.ts";
 import { atEndpoint, cyclingLink, cyclingTransferLimit, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
@@ -24,6 +25,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   const horizon = start.getTime() + options.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(options, mode);
   const outgoing = new Map<string, Edge[]>();
+  const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length);
   for (const edge of network.edges.values()) {
     const leg = edge.leg;
     if (!leg.departure || !leg.arrival || !Number.isFinite(leg.departure.getTime()) || !Number.isFinite(leg.arrival.getTime())
@@ -38,7 +40,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   let limited = false, explored = 0;
   const add = (state: State) => {
     if (state.time > horizon || state.bike > options.maxBikeMinutes || state.boardings > options.maxBoardings) return;
-    const key = `${state.stop}|${state.stage}|${state.extraTransfers}|${state.stageHasTransit}|${state.needsTransit}|${state.boardings > 0}|${state.endCycling}`;
+    const key = `${state.stop}|${state.stage}|${state.extraTransfers}|${state.stageHasTransit}|${state.needsTransit}|${state.boardings > 0}|${state.endCycling}|${transferSensitive ? transferContextKey(state.legs) : ""}`;
     const bucket = buckets.get(key) ?? [];
     const vector = (s: State) => [s.time, s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive, ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
     const values = vector(state);
@@ -103,12 +105,13 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     for (const edge of outgoing.get(current.stop) ?? []) {
       const ride = edge.leg.mode === "transit";
       if (ride && current.endCycling) continue;
-      if (edge.leg.departure!.getTime() < current.time + (ride ? options.boardingMinutes * 60_000 : 0)) continue;
-      const walk = ride ? 0 : (edge.leg.arrival!.getTime() - edge.leg.departure!.getTime()) / 60_000;
+      const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, options.boardingMinutes, from) : null;
+      if (edge.leg.departure!.getTime() < (boarding?.readyAt ?? current.time)) continue;
+      const walk = ride ? (boarding?.transferLeg ? (+boarding.transferLeg.arrival! - +boarding.transferLeg.departure!) / 60_000 : 0) : (edge.leg.arrival!.getTime() - edge.leg.departure!.getTime()) / 60_000;
       add({ ...current, stop: edge.to, time: edge.leg.arrival!.getTime(), boardings: current.boardings + Number(ride),
         walk: current.walk + walk, accessActive: current.accessActive + (current.boardings === 0 ? walk : 0),
         egressActive: ride ? 0 : current.egressActive + walk, stageHasTransit: ride || current.stageHasTransit,
-        needsTransit: ride ? false : current.needsTransit, legs: [...current.legs, edge.leg], alive: true });
+        needsTransit: ride ? false : current.needsTransit, legs: [...current.legs, ...(boarding?.transferLeg ? [boarding.transferLeg] : []), edge.leg], alive: true });
     }
     if (!current.boardings || current.needsTransit) continue;
     visitNext(current, from, options.maxEgressMinutes);

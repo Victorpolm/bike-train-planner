@@ -83,3 +83,7 @@ Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, en
 `CyclingEditor.tsx` owns the ordered-point form and map preview. `cyclingEditor.ts` owns pure application and validation, independently tested. `MapView.tsx` mounts the editor, suppresses whole-journey endpoint picking while editing, and keeps draggable shaping points separate from fixed endpoints. `App.tsx` owns session-local edited results, correct source sessions for later departures, restored originals and coherent map/card selection. `interface.css` contains hill/editor styles.
 
 [Current controls, 343 regressions, live smoke evidence and pending browser checks](HILLS_AND_CYCLING_EDITOR_2026-10-03.md). The facility detour panel still has its separate visit-duration preview; adding a shaping point does not imply a timed facility visit.
+
+## Station-time and climbing follow-up, 3 October
+
+`TripPreferences.tsx` places help beside **Cycling hills** and keeps the optional **Offer a Reduce climbing alternative** checkbox separate. There is no global Less climbing mode. `model.ts` ranks the extra **Reduce climbing** proposition without changing the three main ranking functions. `transferTimes.ts` owns shared readiness checks; `ojp.ts` extracts exact access/interchange evidence, while `JourneyPlan.tsx` presents source explanations. Do not encode station times in the UI. [Rules, fallbacks and tests](STATION_TIMES_2026-10-03.md).

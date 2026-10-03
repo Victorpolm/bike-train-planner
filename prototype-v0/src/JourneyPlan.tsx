@@ -1,3 +1,4 @@
+import { boardingCheck } from "./transferTimes";
 import InfoDisclosure from "./InfoDisclosure";
 import FareDetails from "./FareDetails";
 import CyclingTerrainSummary from "./CyclingTerrainSummary";
@@ -36,12 +37,14 @@ export default function JourneyPlan({
   destination,
   onEvidence,
   fareProfile = DEFAULT_FARE_PROFILE,
+  boardingMinutes = 3,
 }: {
   id: string;
   journey: Journey;
   origin: Place;
   destination: Place;
   fareProfile?: FareProfile;
+  boardingMinutes?: number;
   onEvidence?: EvidenceUpdate;
 }) {
   const stopNumbers = new Map(journeyStops(journey).map((stop) => [stop.id, stop.number]));
@@ -69,6 +72,22 @@ export default function JourneyPlan({
               ? Math.round((step.arrival.getTime() - step.departure.getTime()) / 60_000)
               : null;
           const leg = step.leg;
+          const legIndex = leg ? journey.transitLegs.indexOf(leg) : -1;
+          const prefix = journey.transitLegs.slice(0, Math.max(0, legIndex));
+          const readyAt = +(
+            prefix.at(-1)?.arrival ??
+            new Date(+journey.startTime + journey.originStation.bikeMinutes * 60_000)
+          );
+          const transfer =
+            leg?.mode === "transit"
+              ? boardingCheck(
+                  prefix,
+                  leg,
+                  readyAt,
+                  boardingMinutes,
+                  journey.originStation.cyclingRoute?.to ?? journey.originStation,
+                )
+              : null;
           const extraServiceName =
             leg?.serviceName &&
             leg.serviceName.replace(/\s/g, "") !== leg.service.replace(/\s/g, "");
@@ -121,6 +140,27 @@ export default function JourneyPlan({
                   </p>
                 </InfoDisclosure>
               )}
+              {transfer && (
+                <InfoDisclosure label="Station transfer and boarding time">
+                  <p className="plan-note">
+                    {transfer.note}{" "}
+                    {transfer.url && (
+                      <a href={transfer.url} target="_blank" rel="noreferrer">
+                        Source
+                      </a>
+                    )}
+                    {transfer.checked && (
+                      <>
+                        {" "}
+                        · checked{" "}
+                        {new Date(transfer.checked).toLocaleDateString("en-GB", {
+                          timeZone: "Europe/Zurich",
+                        })}
+                      </>
+                    )}
+                  </p>
+                </InfoDisclosure>
+              )}
               {leg?.mode === "transit" && (
                 <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />
               )}
@@ -129,9 +169,9 @@ export default function JourneyPlan({
               )}
               {step.mode === "walk" && (
                 <p className="plan-note">
-                  Push your bicycle during this transfer. The timetable transfer time is shown; a
-                  continuous route suitable for a bicycle, including lifts or steps, has not been
-                  verified.
+                  Push your bicycle during this transfer. The total timetable transfer time is
+                  shown, including any provider buffer; a continuous route suitable for a bicycle,
+                  including lifts or steps, has not been verified.
                 </p>
               )}
             </li>

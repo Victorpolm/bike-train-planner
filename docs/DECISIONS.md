@@ -593,3 +593,9 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Editing decision:** recalculate one cycling section through ordered map points; preserve exact public-transport objects and fare evidence. Apply must revalidate walking/boarding timing, section/total cycling limits, required visits and the horizon. Label custom results as edited journeys and retain the original proposal; support Restore. Do not falsely assign an optimization badge to a manual edit. Facility visit-duration insertion and persistent saved routes remain separate.
 
 **Evidence:** 343 regressions pass, including 16 new cases. A dated Zürich HB–Zoo check returned tram 6 with 3 m cycling ascent versus 207 m cycling-only; live section application preserved transit/fare identity. Gentle 5% still exceeded 5%, confirming the soft-preference wording. [Evidence and pending browser QA](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).
+
+## 2026-10-03 — Separate climbing propositions and retain station-time evidence
+
+**Decision:** Reduce climbing is an optional recommendation category, not a global cycling-route preference. Keep Gentler slopes and its editable percentage, remove the Climbing heading, and place help beside Cycling hills.
+
+**Decision:** Use exact dated OJP interchange and point-to-platform access evidence before the documented Swiss stop default or app estimate. Keep passenger timing distinct from bicycle accessibility. Preserve incoming service/platform context during pruning; do not add the app buffer twice. A complete static transfer-table import remains pending (the official bulk endpoint returned HTTP 403 in this session). Source keys and hosting audience are unchanged. [Implementation and evidence](STATION_TIMES_2026-10-03.md).

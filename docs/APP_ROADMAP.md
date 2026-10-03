@@ -28,11 +28,10 @@ The owner subsequently approved implementation, requested a better cycling edito
 | Option | Delivered behaviour | Remaining limit |
 |---|---|---|
 | Edit cycling path | Ordered clickable/draggable points, section selection, automatic preview, Apply, Undo/reset and Restore | Keep selected services; reject missed connections or budget violations; no persistent saved route or facility visit duration |
-| Less climbing | Generate a penalized cycling alternative, retain ascent in search/pruning and prefer cumulative positive gain | Bounded candidates and sampled elevation; no global optimum |
 | Gentler slopes | User-set 1–20% preference, default 6%, with 0–60 extra minutes per cycling section | Soft preference; short steep ramps may be missed and routes can still exceed it |
-| Use public transport to reduce climbing | Separate Least cycling ascent category, lower-climb station-pair/exit acquisition, original three categories retained | Within 60 extra journey minutes and the same bicycle-access/cycling constraints; unknown elevation cannot win |
+| Offer a Reduce climbing alternative | Optional Reduce climbing category, lower-climb station-pair/exit acquisition, original three ranking functions retained | Within 60 extra journey minutes and the same bicycle-access/cycling constraints; unknown elevation cannot win |
 
-**343 regression cases pass.** A real Zürich HB–Zoo test found 3 m of cycling ascent with tram 6 versus 207 m cycling-only. The gentler 5% route still contained sampled grades around 10.2%, illustrating why the percentage is not a hard guarantee. [Controls, architecture, live evidence and remaining work](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).
+**360 regression cases pass** after the station-time follow-up. The global Less climbing preference and Climbing heading are removed; help is adjacent to Cycling hills. Scoped OJP access/interchange times are integrated. Complete station/platform coverage and bicycle-accessible pathways remain future work. [Current evidence](STATION_TIMES_2026-10-03.md). Earlier version-49 observation: A real Zürich HB–Zoo test found 3 m of cycling ascent with tram 6 versus 207 m cycling-only. The gentler 5% route still contained sampled grades around 10.2%, illustrating why the percentage is not a hard guarantee. [Controls, architecture, live evidence and remaining work](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).
 
 Next: desktop/phone/keyboard acceptance of point editing, then a small fixed hilly-route pilot. Facility-stop Apply with visit duration, saved journeys and finer slope validation remain separate. The **What does Extended add?** question mark remains beside **Journey options**.
 

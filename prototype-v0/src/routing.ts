@@ -46,6 +46,10 @@ export type Journey = {
 };
 
 export type TransitLeg = {
+  transferRules?: import("./transferTimes.ts").StationTransferRule[];
+  stationTransfer?: boolean;
+  stationAccess?: boolean;
+  accessRules?: import("./transferTimes.ts").StationAccessRule[];
   cyclingSectionId?: string;
   cyclingSectionLimit?: number;
   mode: "transit" | "walk" | "unknown" | "bike";

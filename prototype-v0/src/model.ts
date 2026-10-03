@@ -1,3 +1,4 @@
+import { boardingCheck, transferContextKey } from "./transferTimes.ts";
 import { addClimb, climbVector, hillSearch, journeyClimb, routeClimb, validateHills, type Climb, type HillPreferences } from "./hills.ts";
 import { validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { ROUTE_PREFERENCES, type RoutePreference } from "./cyclingPreferences.ts";
@@ -134,11 +135,11 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
     o.endpointPreference === "start" ? "Least cycling or walking at start" : "Least cycling or walking at arrival",
     [o.endpointPreference === "start" ? "activeStart" : "activeEnd", "time", "active", "boardings"],
   ]);
-  if (o.climbOptimization || o.hills?.mode === "less-climbing") definitions.push(["Least cycling ascent", ["ascent", "time", "active", "boardings"]]);
+  if (o.climbOptimization) definitions.push(["Reduce climbing", ["ascent", "time", "active", "boardings"]]);
   if (o.hills?.mode === "gentler") definitions.push(["Gentlest cycling", ["excessM", "steepM", "ascent", "time"]]);
   const proposals = new Map<string, Proposal>();
   for (const [category, keys] of definitions) {
-    const eligible = category === "Least cycling ascent" || category === "Gentlest cycling"
+    const eligible = category === "Reduce climbing" || category === "Gentlest cycling"
       ? frontier.filter(j => !journeyClimb(j, o.hills?.maxUphillPercent).unknown) : frontier;
     const winner = [...eligible].sort(compare(keys))[0];
     if (!winner) continue;
@@ -168,6 +169,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   const horizon = start.getTime() + o.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(o, mode);
   const outgoing = new Map<string, Edge[]>();
+  const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length);
   for (const edge of network.edges.values()) {
     const l = edge.leg;
     if (!l.departure || !l.arrival || !Number.isFinite(l.departure.getTime()) ||
@@ -183,7 +185,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   let limited = false;
   const add = (label: Label) => {
     if (label.time > horizon || label.bike > o.maxBikeMinutes || label.boardings > o.maxBoardings) return;
-    const key = `${label.stop}|${label.middle}|${label.needsTransit}`;
+    const key = `${label.stop}|${label.middle}|${label.needsTransit}|${transferSensitive ? transferContextKey(label.legs) : ""}`;
     const bucket = labels.get(key) ?? [];
     // Keep cycling as a resource as well as total active travel as an objective.
     // A lower active total can use more cycling and leave less budget for later.
@@ -210,15 +212,16 @@ export function solve(network: Network, origin: Place, destination: Place, start
     explored++;
     for (const edge of outgoing.get(current.stop) ?? []) {
       const ride = edge.leg.mode === "transit";
-      const ready = current.time + (ride ? o.boardingMinutes * 60_000 : 0);
+      const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, o.boardingMinutes, network.stops.get(current.stop)) : null;
+      const ready = boarding?.readyAt ?? current.time;
       if (edge.leg.departure!.getTime() < ready || edge.leg.arrival!.getTime() > horizon) continue;
-      const walking = ride ? 0 : (edge.leg.arrival!.getTime() - edge.leg.departure!.getTime()) / 60_000;
+      const walking = ride ? (boarding?.transferLeg ? (+boarding.transferLeg.arrival! - +boarding.transferLeg.departure!) / 60_000 : 0) : (edge.leg.arrival!.getTime() - edge.leg.departure!.getTime()) / 60_000;
       add({ ...current, stop: edge.to, time: edge.leg.arrival!.getTime(),
         walk: current.walk + walking,
         accessActive: current.accessActive + (current.boardings === 0 ? walking : 0),
         egressWalk: ride ? 0 : current.egressWalk + walking,
         boardings: current.boardings + Number(ride), needsTransit: ride ? false : current.needsTransit,
-        legs: [...current.legs, edge.leg], alive: true });
+        legs: [...current.legs, ...(boarding?.transferLeg ? [boarding.transferLeg] : []), edge.leg], alive: true });
     }
     if (current.middle >= transferLimit || current.needsTransit || !current.boardings || current.boardings >= o.maxBoardings) continue;
     const from = network.stops.get(current.stop)!;

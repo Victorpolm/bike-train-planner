@@ -1,10 +1,10 @@
 import type { CyclingRoute } from "./cycling.ts";
 import type { Journey } from "./routing.ts";
 
-export type HillPreferences = { mode: "none" | "less-climbing" | "gentler"; maxUphillPercent: number; extraMinutes: number };
+export type HillPreferences = { mode: "none" | "gentler"; maxUphillPercent: number; extraMinutes: number };
 export const DEFAULT_HILLS: HillPreferences = { mode: "none", maxUphillPercent: 6, extraMinutes: 15 };
 export function validateHills(hills: HillPreferences) {
-  if (!["none", "less-climbing", "gentler"].includes(hills.mode)
+  if (!["none", "gentler"].includes(hills.mode)
     || !Number.isFinite(hills.maxUphillPercent) || hills.maxUphillPercent < 1 || hills.maxUphillPercent > 20
     || !Number.isInteger(hills.extraMinutes) || hills.extraMinutes < 0 || hills.extraMinutes > 60)
     throw new Error("Choose an uphill preference, a slope from 1% to 20%, and 0–60 extra cycling minutes per section.");
@@ -46,8 +46,8 @@ export const climbVector = (climb: Climb, gentler = false) =>
 /** These profile parameters penalize climbs; they do not prohibit a gradient. */
 export function uphillParameters(params: URLSearchParams, hills: HillPreferences) {
   if (hills.mode === "none") return;
-  params.set("profile:uphillcost", hills.mode === "gentler" ? "160" : "100");
-  params.set("profile:uphillcutoff", hills.mode === "gentler" ? String(hills.maxUphillPercent) : "0.5");
+  params.set("profile:uphillcost", "160");
+  params.set("profile:uphillcutoff", String(hills.maxUphillPercent));
 }
 
 export function climbSummary(climb: Climb, threshold?: number): string {

@@ -35,13 +35,13 @@ export function chooseCyclingRoute(candidates: CyclingRoute[], preference: Route
   const compareHills = (a: CyclingRoute, b: CyclingRoute) => {
     if (hills.mode === "none") return 0;
     const aa = routeClimb(a, a.minutes, hills.maxUphillPercent), bb = routeClimb(b, b.minutes, hills.maxUphillPercent);
-    return aa.unknown - bb.unknown || (hills.mode === "gentler" ? aa.excessM - bb.excessM || aa.steepM - bb.steepM : 0)
+    return aa.unknown - bb.unknown || (aa.excessM - bb.excessM || aa.steepM - bb.steepM)
       || aa.ascent - bb.ascent;
   };
   const selected = [...pool].sort((a, b) => compareHills(a, b) || rank(a) - rank(b) || a.minutes - b.minutes)[0];
   const unique = new Set(usable.map(r => r.points.map(p => p.lon.toFixed(5) + "," + p.lat.toFixed(5)).join(";"))).size;
   return { ...selected, preference, alternativesChecked: unique,
-    preferenceNote: (hills.mode !== "none" ? (hills.mode === "gentler" ? `Prefer uphill slopes below ${hills.maxUphillPercent}%. ` : "Prefer less cycling ascent. ") + "This is a preference, not a guaranteed gradient limit. " : "") + (unique < 2 ? "Only one usable path was returned; alternatives could not be compared."
+    preferenceNote: (hills.mode !== "none" ? `Prefer uphill slopes below ${hills.maxUphillPercent}%. ` + "This is a preference, not a guaranteed gradient limit. " : "") + (unique < 2 ? "Only one usable path was returned; alternatives could not be compared."
       : preference === "simplest" && selected.turnCount === undefined ? "Turn instructions were unavailable; the quickest checked path is shown."
         : "Selected from " + unique + " checked paths; extra time " + Math.max(0, selected.minutes - fastest.minutes) + " min compared with the quickest candidate.") };
 }

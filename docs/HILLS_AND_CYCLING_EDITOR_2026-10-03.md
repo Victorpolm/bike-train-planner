@@ -1,5 +1,7 @@
 # Climbing preferences and cycling-section editing
 
+**Historical version-49 report:** the later 3 October [station-time and climbing correction](STATION_TIMES_2026-10-03.md) supersedes the Less climbing control, Climbing heading and Least cycling ascent label below. Current controls use Cycling hills plus an optional Reduce climbing proposition. The earlier test observations remain historical.
+
 _Implemented 3 October 2026 on `feature/novice-interface-profiles`. The branch remains separate from main._
 
 ## Traveller controls
