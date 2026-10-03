@@ -1,5 +1,7 @@
 # Bike + public transport prototype
 
+**3 October update:** Click the ? icons beside bicycle access and cycling position for help. Extended now reserves work for cycling connections and can continue after Baseline uses its allowance. **More · later departures** keeps earlier cards while searching later services with the same preferences and checked cycling paths. OJP stop requests exclude route geometry so exact city itineraries retain their fare evidence; live ZVV and Libero checks succeeded. Past dates are accepted subject to timetable availability; online fares are future-only. [Implementation and evidence](https://github.com/Victorpolm/bike-train-planner/blob/feature/novice-interface-profiles/docs/SEARCH_RELIABILITY_2026-10-03.md).
+
 A Swiss journey-planning experiment comparing cycling and scheduled public transport.
 
 ## Use the app

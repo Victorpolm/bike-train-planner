@@ -1,5 +1,7 @@
 # Interface and local traveller profiles — 2 October 2026
 
+**3 October follow-up:** [Search reliability, clickable preference help, live city fares and functional later departures](SEARCH_RELIABILITY_2026-10-03.md) supersede the earlier deferred More/past-date notes and describe the new per-action discovery budgets. This report preserves the 2 October implementation history.
+
 ## Scope and delivery
 
 Requested branch: `feature/novice-interface-profiles`, based on main `5f179851cf0772fd8930a835f2826db330974784`. The owner approved implementing the revised novice interface with optional device-local profiles and preserving planner capabilities. This branch is not merged into main.

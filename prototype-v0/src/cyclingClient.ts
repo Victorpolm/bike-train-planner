@@ -99,6 +99,12 @@ export class CyclingClient {
     }
   }
   beginPhase() { this.remainingMs = CYCLING_LIMITS.phaseMs; }
+  fork(signal: AbortSignal) {
+    const next = new CyclingClient(signal, this.fetcher, this.gapMs, this.useCache, this.fallbackFetcher,
+      this.pace, this.routePreference, this.terrainFetcher);
+    for (const [key, route] of this.routes) if (route) next.routes.set(key, route);
+    return next;
+  }
   getCached(a: Located, b: Located) { return cachedCycling(this.routes, a, b); }
   route(a: Located, b: Located): Promise<CyclingRoute | null> {
     if (this.signal.aborted) return Promise.reject(this.signal.reason);

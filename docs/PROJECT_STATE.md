@@ -1,6 +1,8 @@
 # Project state
 
-_Last consolidated: 2026-10-02. This is the current summary; dated reports and Git history preserve earlier states._
+**Latest branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).
+
+_Last consolidated: 2026-10-03. This is the current summary; dated reports and Git history preserve earlier states._
 
 ## Objective and current scope
 

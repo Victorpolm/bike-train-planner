@@ -70,3 +70,8 @@ For the new cards: create two profiles, close the header panel, select either ca
 ## Publication
 
 Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, environment revision **3**, Site source `043d35340c35317a2c54b3f473e3bf0a85d30125`. All **198 current application files** match `feature/novice-interface-profiles`; the branch and [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remain unmerged. Sharing and runtime secrets are unchanged.
+
+
+## 3 October help and later-departure modules
+
+`src/ui/InlineHelp.tsx` owns the persistent question-mark button; content remains in `TripPreferences.tsx`. `src/laterDepartures.ts` calculates the next departure boundary and runs a bounded search. `App.tsx` keeps prior result batches and their source sessions, so map selection, fare lookup and later pages refer to the correct itinerary. [Behaviour and checks](SEARCH_RELIABILITY_2026-10-03.md).

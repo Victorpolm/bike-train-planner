@@ -78,6 +78,8 @@ button:disabled { cursor: default; opacity: .55; }
 .results { margin-top: 24px; }
 .results-heading h2 { font-family: inherit; font-size: 1.5rem; font-weight: 700; }
 .journey-card { padding: 18px; border-radius: 12px; }
+.more-departures { margin-top: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #bac9c1; border-radius: 8px; background: #fff; color: var(--green); font: inherit; cursor: pointer; }
+.later-option-label, .later-notice { font-size: .875rem; color: var(--muted); margin: 8px 0; }
 .journey-price { margin-block: 12px; }
 .journey-price > b { font-size: 1.0625rem; }
 .info-disclosure { margin-top: 10px; color: var(--muted); }
@@ -88,6 +90,12 @@ button:disabled { cursor: default; opacity: .55; }
 .info-content { padding: 10px 14px; border-left: 2px solid #a8c4b6; background: #f5f8f7; overflow-wrap: anywhere; }
 .info-content p:first-child { margin-top: 0; }
 .info-content p:last-child { margin-bottom: 0; }
+.preference-heading { position: relative; display: flex; align-items: center; gap: 4px; font-size: .875rem; font-weight: 650; padding: 0; }
+.inline-help { display: inline-flex; font-weight: 400; }
+.inline-help > button { display: inline-grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.inline-help > button[aria-expanded=true] .info-icon { background: var(--green); color: #fff; }
+.inline-help-content { position: absolute; top: 100%; left: 0; z-index: 20; width: min(360px, 100%); padding: 12px; border: 1px solid #a8c4b6; border-radius: 8px; background: #f5f8f7; color: var(--ink); box-shadow: 0 6px 20px #18332d22; font-size: .875rem; line-height: 1.5; }
+.inline-help-content[hidden] { display: none; }
 .bicycle-carriage .carriage-source, .bicycle-carriage .carriage-check { font-size: .8125rem; }
 .map-panel, .map-panel:has(.map-tools) { min-width: 0; position: sticky; top: 16px; height: auto; padding: 24px 24px 30px 0; }
 .map-panel .map-shell, .map-panel:has(.map-tools) .map-shell, .map-panel:has(.parking-panel) .map-shell { height: max(420px, calc(100dvh - 220px)); min-height: 420px; border-radius: 14px; box-shadow: none; border: 1px solid #cad9d2; }

@@ -1,0 +1,491 @@
+{
+  "checked": "2026-10-03",
+  "departure": "2026-10-05T08:00:00Z",
+  "fareEnvironment": "OJP integration/test",
+  "note": "Development client against live version-46 server APIs. No keys, headers or retained signed payloads included. Tests are dated observations, not sale offers.",
+  "cases": [
+    {
+      "tag": "before",
+      "plan": {
+        "case": "Zurich–Laax Extended",
+        "options": {
+          "cyclingPosition": "anywhere",
+          "maxCyclingTransfers": 2,
+          "maxBikeMinutes": 45,
+          "maxAccessMinutes": 45,
+          "maxEgressMinutes": 45,
+          "maxIntermediateMinutes": 45,
+          "maxBoardings": 4,
+          "horizonMinutes": 1440,
+          "boardingMinutes": 3,
+          "extraTimeMinutes": 60,
+          "endpointPreference": "none",
+          "busPreference": "include-unknown",
+          "cyclingPace": {
+            "flatSpeedKmh": 25,
+            "electricAssist": false
+          },
+          "cyclingRoutePreference": "simplest",
+          "bicycleScope": "allow-uncertain"
+        },
+        "start": "2026-10-05T08:00:00.000Z",
+        "baseline": 5,
+        "extended": 14,
+        "completed": true,
+        "warnings": [
+          "Bicycle information could not be checked. The fallback timetable may include services with unknown bicycle permission.",
+          "Sargans → Laax GR, posta: The cycling service found no usable connection between these points with this bicycle profile."
+        ],
+        "origins": [
+          "Zürich HB",
+          "Zürich Landesmuseum (See)",
+          "Zürich, Bahnhofplatz/HB",
+          "Zürich Stadelhofen"
+        ],
+        "destinations": [
+          "Laax GR, posta",
+          "Laax GR, Demvitg"
+        ],
+        "requests": 18
+      },
+      "fares": [
+        {
+          "passenger": "full",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:08:00.000Z",
+              "arrival": "2026-10-05T08:14:00.000Z",
+              "fromName": "Zürich HB",
+              "toName": "Zürich Oerlikon"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 4.7,
+              "productId": "52509",
+              "product": "ZVV Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 3.3,
+              "productId": "40206",
+              "product": "ZVV Velobillett"
+            },
+            "checked": "2026-10-03T11:29:28.031Z",
+            "environment": "test",
+            "itinerarySource": "retained"
+          }
+        },
+        {
+          "passenger": "half-fare",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:08:00.000Z",
+              "arrival": "2026-10-05T08:14:00.000Z",
+              "fromName": "Zürich HB",
+              "toName": "Zürich Oerlikon"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 3.3,
+              "productId": "52509",
+              "product": "ZVV Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 3.3,
+              "productId": "40206",
+              "product": "ZVV Velobillett"
+            },
+            "checked": "2026-10-03T11:29:31.251Z",
+            "environment": "test",
+            "itinerarySource": "retained"
+          }
+        },
+        {
+          "passenger": "full",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:09:00.000Z",
+              "arrival": "2026-10-05T08:17:00.000Z",
+              "fromName": "Bern, Morgartenstrasse",
+              "toName": "Bern, Bollwerk"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 3,
+              "productId": "10972",
+              "product": "Libero Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 2,
+              "productId": "40230",
+              "product": "Libero Velobillett"
+            },
+            "checked": "2026-10-03T11:29:37.310Z",
+            "environment": "test",
+            "itinerarySource": "assembled"
+          }
+        },
+        {
+          "passenger": "half-fare",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:09:00.000Z",
+              "arrival": "2026-10-05T08:17:00.000Z",
+              "fromName": "Bern, Morgartenstrasse",
+              "toName": "Bern, Bollwerk"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 2,
+              "productId": "10972",
+              "product": "Libero Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 2,
+              "productId": "40230",
+              "product": "Libero Velobillett"
+            },
+            "checked": "2026-10-03T11:29:40.217Z",
+            "environment": "test",
+            "itinerarySource": "assembled"
+          }
+        }
+      ],
+      "ojpRequests": [
+        {
+          "from": "Zürich HB",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 1319
+        },
+        {
+          "from": "Zürich HB",
+          "to": "Ilanz",
+          "status": 200,
+          "requestUtf8Bytes": 753
+        },
+        {
+          "from": "Zürich HB",
+          "to": "Chur",
+          "status": 200,
+          "requestUtf8Bytes": 752
+        },
+        {
+          "from": "Zürich Landesmuseum (See)",
+          "to": "Laax GR, posta",
+          "status": 400,
+          "requestUtf8Bytes": 13060
+        },
+        {
+          "from": "Zürich HB",
+          "to": "Zürich Oerlikon",
+          "status": 200,
+          "requestUtf8Bytes": 183
+        },
+        {
+          "from": "Bern, Guisanplatz Expo",
+          "to": "Bern, Länggasse",
+          "status": 200,
+          "requestUtf8Bytes": 197
+        }
+      ]
+    },
+    {
+      "tag": "after",
+      "plan": {
+        "case": "Zürich HB–Laax GR, posta Extended",
+        "options": {
+          "cyclingPosition": "anywhere",
+          "maxCyclingTransfers": 2,
+          "maxBikeMinutes": 45,
+          "maxAccessMinutes": 45,
+          "maxEgressMinutes": 45,
+          "maxIntermediateMinutes": 45,
+          "maxBoardings": 4,
+          "horizonMinutes": 1440,
+          "boardingMinutes": 3,
+          "extraTimeMinutes": 60,
+          "endpointPreference": "none",
+          "busPreference": "include-unknown",
+          "cyclingPace": {
+            "flatSpeedKmh": 20,
+            "electricAssist": false
+          },
+          "cyclingRoutePreference": "simplest",
+          "bicycleScope": "allow-uncertain"
+        },
+        "start": "2026-10-05T08:00:00.000Z",
+        "baseline": 2,
+        "extended": 4,
+        "completed": true,
+        "warnings": [
+          "Cycling-only comparison — Zürich HB → Laax GR, posta: The cycling service could not complete this check. Please try again."
+        ],
+        "origins": [
+          "Zürich HB"
+        ],
+        "destinations": [
+          "Laax GR, posta"
+        ],
+        "requests": 15
+      },
+      "more": {
+        "case": "Later departures",
+        "count": 4,
+        "start": "2026-10-05T08:36:00.000Z",
+        "previousDeparture": "2026-10-05T08:38:00.000Z",
+        "departures": [
+          "2026-10-05T09:02:00.000Z",
+          "2026-10-05T09:02:00.000Z",
+          "2026-10-05T09:02:00.000Z",
+          "2026-10-05T09:02:00.000Z"
+        ],
+        "warnings": [
+          "Cycling-only comparison — Zürich HB → Laax GR, posta: The cycling service could not complete this check. Please try again."
+        ],
+        "requests": 8
+      },
+      "fares": [
+        {
+          "passenger": "full",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:38:00.000Z",
+              "arrival": "2026-10-05T09:52:00.000Z",
+              "fromName": "Zürich HB",
+              "toName": "Chur"
+            },
+            {
+              "departure": "2026-10-05T09:58:00.000Z",
+              "arrival": "2026-10-05T10:48:00.000Z",
+              "fromName": "Chur, Postautostation",
+              "toName": "Laax GR, posta"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 57.6,
+              "productId": "84004",
+              "product": "Sparbillett"
+            },
+            "bicycle": {
+              "chf": 29.6,
+              "productId": "40245",
+              "product": "Velobillett"
+            },
+            "checked": "2026-10-03T11:40:39.394Z",
+            "environment": "test",
+            "itinerarySource": "retained"
+          }
+        }
+      ],
+      "ojpRequests": [
+        {
+          "from": "Zürich HB",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 192
+        },
+        {
+          "from": "Schluein, Casanova",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 199
+        },
+        {
+          "from": "Laax GR, See/Lag",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 198
+        },
+        {
+          "from": "Laax GR, See/Lag",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 198
+        },
+        {
+          "from": "Zürich HB",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 192
+        },
+        {
+          "from": "Schluein, Casanova",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 199
+        },
+        {
+          "from": "Laax GR, See/Lag",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 198
+        },
+        {
+          "from": "Laax GR, See/Lag",
+          "to": "Laax GR, posta",
+          "status": 200,
+          "requestUtf8Bytes": 198
+        }
+      ]
+    },
+    {
+      "tag": "city-after",
+      "plan": {
+        "case": "Zürich Kunsthaus–Zürich Zoo entrance Extended",
+        "options": {
+          "cyclingPosition": "anywhere",
+          "maxCyclingTransfers": 2,
+          "maxBikeMinutes": 45,
+          "maxAccessMinutes": 45,
+          "maxEgressMinutes": 45,
+          "maxIntermediateMinutes": 45,
+          "maxBoardings": 4,
+          "horizonMinutes": 1440,
+          "boardingMinutes": 3,
+          "extraTimeMinutes": 60,
+          "endpointPreference": "none",
+          "busPreference": "include-unknown",
+          "cyclingPace": {
+            "flatSpeedKmh": 20,
+            "electricAssist": false
+          },
+          "cyclingRoutePreference": "simplest",
+          "bicycleScope": "allow-uncertain"
+        },
+        "start": "2026-10-05T08:00:00.000Z",
+        "baseline": 6,
+        "extended": 22,
+        "completed": true,
+        "warnings": [],
+        "origins": [
+          "Zürich, Kunsthaus"
+        ],
+        "destinations": [
+          "Zürich, Im Klösterli"
+        ],
+        "requests": 10
+      },
+      "fares": [
+        {
+          "passenger": "full",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:06:00.000Z",
+              "arrival": "2026-10-05T08:12:00.000Z",
+              "fromName": "Zürich, Kunsthaus",
+              "toName": "Zürich, Kirche Fluntern"
+            },
+            {
+              "departure": "2026-10-05T08:15:00.000Z",
+              "arrival": "2026-10-05T08:18:00.000Z",
+              "fromName": "Zürich, Kirche Fluntern",
+              "toName": "Zürich, Zoo/Forrenweid"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 4.7,
+              "productId": "52509",
+              "product": "ZVV Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 3.3,
+              "productId": "40206",
+              "product": "ZVV Velobillett"
+            },
+            "checked": "2026-10-03T11:44:26.970Z",
+            "environment": "test",
+            "itinerarySource": "retained"
+          }
+        },
+        {
+          "passenger": "full",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:15:00.000Z",
+              "arrival": "2026-10-05T08:24:00.000Z",
+              "fromName": "Zürich, Platte",
+              "toName": "Zürich, Zoo"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 4.7,
+              "productId": "52509",
+              "product": "ZVV Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 3.3,
+              "productId": "40206",
+              "product": "ZVV Velobillett"
+            },
+            "checked": "2026-10-03T11:44:29.739Z",
+            "environment": "test",
+            "itinerarySource": "retained"
+          }
+        },
+        {
+          "passenger": "full",
+          "segments": [
+            {
+              "departure": "2026-10-05T08:13:00.000Z",
+              "arrival": "2026-10-05T08:16:00.000Z",
+              "fromName": "Zürich, Kunsthaus",
+              "toName": "Zürich, Platte"
+            },
+            {
+              "departure": "2026-10-05T08:22:00.000Z",
+              "arrival": "2026-10-05T08:31:00.000Z",
+              "fromName": "Zürich, Platte",
+              "toName": "Zürich, Zoo"
+            }
+          ],
+          "httpStatus": 200,
+          "quote": {
+            "status": "quoted",
+            "passenger": {
+              "chf": 4.7,
+              "productId": "52509",
+              "product": "ZVV Einzelbillett"
+            },
+            "bicycle": {
+              "chf": 3.3,
+              "productId": "40206",
+              "product": "ZVV Velobillett"
+            },
+            "checked": "2026-10-03T11:44:32.927Z",
+            "environment": "test",
+            "itinerarySource": "retained"
+          }
+        }
+      ],
+      "ojpRequests": [
+        {
+          "from": "Zürich, Kunsthaus",
+          "to": "Zürich, Im Klösterli",
+          "status": 200,
+          "requestUtf8Bytes": 208
+        }
+      ]
+    }
+  ]
+}

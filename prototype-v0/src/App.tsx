@@ -19,6 +19,8 @@ import { TRIP_PRESETS, type TripPreset } from "./tripPresets";
 import { type RoutePreference } from "./cyclingPreferences";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
+import { firstBoarding, laterDepartures } from "./laterDepartures";
+import type { Journey } from "./routing";
 import { metrics, type ModelMode, type EndpointPreference, type CyclingPosition } from "./model";
 import {
   recommend,
@@ -355,6 +357,10 @@ export default function App() {
     [cycling, endpoint, bicycleScope, cyclingPace, routePreference, cyclingPosition],
   );
   const [session, setSession] = useState<SearchSession | null>(null);
+  const [laterBatches, setLaterBatches] = useState<
+    { key: string; session: SearchSession; categories: string[] }[]
+  >([]);
+  const [laterNotices, setLaterNotices] = useState<Record<string, string>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -388,7 +394,51 @@ export default function App() {
       ),
     [confirmedSolution, solution, allTransitSolution, session, options],
   );
-  const { proposals } = recommendation;
+  const proposalEntries = useMemo(() => {
+    const entries = recommendation.proposals.map((proposal) => ({
+      proposal,
+      source: session!,
+      batch: "",
+    }));
+    for (const batch of laterBatches) {
+      const choose = (
+        group:
+          | { baseline: { journeys: Journey[] }; extended: { journeys: Journey[] } | null }
+          | undefined,
+      ) =>
+        (mode === "extended" ? (group?.extended ?? group?.baseline) : group?.baseline)?.journeys ??
+        [];
+      const later = recommend(
+        choose(batch.session.confirmed),
+        choose(batch.session),
+        choose(batch.session.allTransit),
+        batch.session.options,
+      );
+      for (const proposal of later.proposals) {
+        const categories = proposal.categories.filter((category) =>
+          batch.categories.includes(category),
+        );
+        if (
+          categories.length &&
+          !entries.some((entry) => entry.proposal.journey.id === proposal.journey.id)
+        )
+          entries.push({
+            proposal: {
+              ...proposal,
+              categories,
+              wins: proposal.wins.map((win) => ({
+                ...win,
+                categories: win.categories.filter((c) => categories.includes(c)),
+              })),
+            },
+            source: batch.session,
+            batch: batch.key,
+          });
+      }
+    }
+    return entries;
+  }, [recommendation, session, laterBatches, mode]);
+  const proposals = proposalEntries.map((entry) => entry.proposal);
   const cyclingFastest =
     (session?.options.cyclingPosition ?? "anywhere") === "anywhere" &&
     !!session?.cyclingComparison &&
@@ -439,6 +489,8 @@ export default function App() {
 
   function invalidate() {
     setSession(null);
+    setLaterBatches([]);
+    setLaterNotices({});
     setSelectedId(null);
     setExpandedId(null);
     setCycleFocus(null);
@@ -538,9 +590,6 @@ export default function App() {
     setLoading(true);
     try {
       const start = departureMode === "now" ? new Date() : parseSwissDateTime(departureInput);
-      if (departureMode === "scheduled" && start.getTime() < Date.now() - 60_000) {
-        throw new Error("Choose a future departure time, or select Leave now.");
-      }
       const next = await plan(
         fromInput.place ?? fromInput.text.trim(),
         toInput.place ?? toInput.text.trim(),
@@ -572,16 +621,14 @@ export default function App() {
   async function changeMode(next: ModelMode) {
     if (loading || next === mode) return;
     setMode(next);
+    setLaterBatches([]);
+    setLaterNotices({});
     setExpandedId(null);
     setSelectedId(null);
     setError("");
     if (next === "extended" && session && !session.extendedComplete) {
-      if (session.client.signal.aborted) {
-        setProgress(
-          "Search again to explore cycling transfers. Your existing proposals are kept below.",
-        );
-        return;
-      }
+      const abort = new AbortController();
+      controller.current = abort;
       const id = ++runId.current;
       setLoading(true);
       try {
@@ -593,6 +640,7 @@ export default function App() {
           (result) => {
             if (id === runId.current) setSession(result);
           },
+          abort.signal,
         );
         if (id === runId.current) {
           setSession(result);
@@ -604,6 +652,72 @@ export default function App() {
       } finally {
         if (id === runId.current) setLoading(false);
       }
+    }
+  }
+  async function showLater(source: SearchSession, proposal: ScopedProposal) {
+    if (loading) return;
+    // Repeated clicks on an earlier card advance beyond the latest displayed
+    // departure for those categories, rather than loading the same page again.
+    const cursor = proposalEntries
+      .filter((entry) =>
+        entry.proposal.categories.some((category) => proposal.categories.includes(category)),
+      )
+      .reduce(
+        (latest, entry) =>
+          +(firstBoarding(entry.proposal.journey) ?? 0) >
+          +(firstBoarding(latest.proposal.journey) ?? 0)
+            ? entry
+            : latest,
+        { proposal, source, batch: "" },
+      );
+    const id = ++runId.current,
+      key = String(id),
+      abort = new AbortController();
+    controller.current = abort;
+    setLoading(true);
+    setError("");
+    setLaterNotices((current) => ({ ...current, [proposal.journey.id]: "" }));
+    let found = false;
+    const accept = (next: SearchSession) => {
+      if (id !== runId.current) return;
+      const solution = mode === "extended" ? (next.extended ?? next.baseline) : next.baseline;
+      if (!solution.journeys.length) return;
+      found = true;
+      setLaterBatches((current) => [
+        ...current.filter((batch) => batch.key !== key),
+        { key, session: next, categories: proposal.categories },
+      ]);
+    };
+    try {
+      const next = await laterDepartures(
+        cursor.source,
+        cursor.proposal.journey,
+        mode,
+        abort.signal,
+        (message) => {
+          if (id === runId.current) setProgress(message);
+        },
+        accept,
+      );
+      accept(next);
+      if (id === runId.current) {
+        setProgress("");
+        setLaterNotices((current) => ({
+          ...current,
+          [proposal.journey.id]: found
+            ? "Later options are shown below. Your earlier journeys are kept."
+            : "No later departure was found in this limited search. Your earlier journeys are kept.",
+        }));
+      }
+    } catch (error) {
+      if (id === runId.current && !abort.signal.aborted)
+        setLaterNotices((current) => ({
+          ...current,
+          [proposal.journey.id]:
+            "Later departures could not be loaded. Try again; your earlier journeys are kept.",
+        }));
+    } finally {
+      if (id === runId.current) setLoading(false);
     }
   }
   const best = (journeys: { totalMinutes: number }[]) =>
@@ -801,8 +915,8 @@ export default function App() {
             </p>
 
             <p>
-              Scheduled searches currently require a future departure. Historical journey searches
-              are planned separately.
+              You can choose a past departure when timetable data is available. Online fares can
+              only be requested for future departures.
             </p>
             <div className="assumptions">
               <span>
@@ -1000,16 +1114,17 @@ export default function App() {
                     </p>
                   </div>
                 )}
-                {proposals.map((proposal, index) => {
+                {proposalEntries.map(({ proposal, source, batch }, index) => {
                   const j = proposal.journey,
                     expanded = expandedId === j.id,
                     planId = `journey-plan-${index}`;
                   return (
                     <div key={j.id} className="journey-option">
+                      {batch && <p className="later-option-label">Later departure</p>}
                       <JourneyCard
                         proposal={proposal}
                         selected={selected?.id === j.id}
-                        extraTimeMinutes={session!.options.extraTimeMinutes}
+                        extraTimeMinutes={source.options.extraTimeMinutes}
                         expanded={expanded}
                         planId={planId}
                         comparison={cyclingReference}
@@ -1025,17 +1140,37 @@ export default function App() {
                           fareProfile={fareProfile}
                           id={planId}
                           journey={j}
-                          origin={session.origin}
-                          destination={session.destination}
+                          origin={source.origin}
+                          destination={source.destination}
                           onEvidence={(leg, evidence) => {
-                            if (session.client.signal.aborted) return;
-                            updateBicycleEvidence(session, leg, evidence, (next) =>
-                              setSession((current) =>
-                                current?.network === session.network ? next : current,
-                              ),
-                            );
+                            updateBicycleEvidence(source, leg, evidence, (next) => {
+                              if (batch)
+                                setLaterBatches((current) =>
+                                  current.map((item) =>
+                                    item.key === batch ? { ...item, session: next } : item,
+                                  ),
+                                );
+                              else
+                                setSession((current) =>
+                                  current?.network === source.network ? next : current,
+                                );
+                            });
                           }}
                         />
+                      )}
+                      <button
+                        type="button"
+                        className="more-departures"
+                        disabled={loading}
+                        aria-label={`More later departures for ${proposal.categories.join(" and ")}`}
+                        onClick={() => void showLater(source, proposal)}
+                      >
+                        More · later departures
+                      </button>
+                      {laterNotices[j.id] && (
+                        <p className="later-notice" role="status">
+                          {laterNotices[j.id]}
+                        </p>
                       )}
                     </div>
                   );

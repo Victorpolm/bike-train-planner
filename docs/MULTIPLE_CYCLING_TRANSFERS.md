@@ -1,5 +1,7 @@
 # Cycling connection count and position
 
+**3 October follow-up:** [Search reliability, clickable preference help, live city fares and functional later departures](SEARCH_RELIABILITY_2026-10-03.md) supersede the earlier deferred More/past-date notes and describe the new per-action discovery budgets. This report preserves the 2 October implementation history.
+
 _2 October 2026 · implemented on `feature/novice-interface-profiles` following the user's request for Baseline 0 / Extended 2 and cycling only at the beginning/end. This supersedes the earlier investigation and proposed 0/1/2 selector._
 
 ## Delivered controls

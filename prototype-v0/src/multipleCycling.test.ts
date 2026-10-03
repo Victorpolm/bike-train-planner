@@ -154,7 +154,9 @@ it("discovers a second cycling connection even when the first onward query has n
     const session: SearchSession = { origin: place(0), destination: place(5), network: n, client, start, options,
       originStations: [endpoint(0)], destinationStations: [endpoint(5)], baseline: solve(n, place(0), place(5), start, options, "baseline"), extended: null,
       ...(withWaypoint ? { waypoints: [place(3)], waypointStations: [[endpoint(0)], [endpoint(3)], [endpoint(5)]] } : {}) };
+    client.claimRequests(18); // Baseline already spent its allowance; Extended is a new user action.
     const result = await extend(session, () => {});
+    assert.ok(result.client.requests <= 18);
     assert.equal(fastest(result.extended!.journeys), 70, `waypoint=${withWaypoint}`);
     assert.ok(urls.some(u => u.pathname.endsWith("stationboard") && u.searchParams.get("id") === "2"));
     assert.ok(urls.some(u => u.pathname.endsWith("connections") && u.searchParams.get("from") === "4"));

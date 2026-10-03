@@ -46,6 +46,15 @@ export class TimetableClient {
   constructor(signal: AbortSignal, gapMs = 400, fetcher: typeof fetch = fetch, budget = SEARCH_LIMITS.requests) {
     this.signal = signal; this.gapMs = gapMs; this.fetcher = fetcher; this.budget = budget;
   }
+  /** A new explicit user action has its own bounded allowance. */
+  fork(signal: AbortSignal) {
+    const next = new TimetableClient(signal, this.gapMs, this.fetcher, this.budget);
+    next.publicTimetable = this.publicTimetable;
+    next.ojp = this.ojp?.fork(signal);
+    next.national = this.national;
+    if (next.national) next.national.signal = signal;
+    return next;
+  }
 
   claimRequests(calls: number) {
     this.signal.throwIfAborted();
@@ -121,4 +130,3 @@ export class TimetableClient {
     return task;
   }
 }
-

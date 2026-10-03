@@ -1,4 +1,5 @@
 import InfoDisclosure from "../InfoDisclosure";
+import InlineHelp from "./InlineHelp";
 import {
   BICYCLE_SCOPES,
   bicycleScopeHelp,
@@ -96,34 +97,44 @@ export default function TripPreferences({
           </p>
         )}
       </InfoDisclosure>
-      <label>
-        <span>Where would you like to cycle?</span>
-        <select
-          disabled={disabled}
-          value={cyclingPosition}
-          onChange={(e) => onPosition(e.target.value as CyclingPosition)}
-        >
-          <option value="anywhere">At either end and between services</option>
-          <option value="start-only">Only at the beginning</option>
-          <option value="end-only">Only at the end</option>
-        </select>
-      </label>
-      <p className="bus-preference-help">
-        {cyclingPosition === "start-only"
-          ? "Ride before your first service only. Choose a public-transport stop as your destination."
-          : cyclingPosition === "end-only"
-            ? "Ride after your last service only. Choose a public-transport stop as your starting point."
-            : "Baseline allows cycling at either end. Extended also explores cycling between services."}
-        {cyclingPosition !== "anywhere" &&
-          " Cycling between services is disabled. Existing walking transfers remain possible; walking routes to or from an address are not yet supported."}{" "}
-        Your bicycle travels with you on public transport.
-      </p>
-      <fieldset
-        className="bicycle-access"
+      <div className="preference-heading">
+        <label htmlFor="cycling-position">Where would you like to cycle?</label>
+        <InlineHelp
+          label="About where you can cycle"
+          text={
+            (cyclingPosition === "start-only"
+              ? "Ride before your first service only. Choose a public-transport stop as your destination."
+              : cyclingPosition === "end-only"
+                ? "Ride after your last service only. Choose a public-transport stop as your starting point."
+                : "Baseline allows cycling at either end. Extended also explores cycling between services.") +
+            (cyclingPosition !== "anywhere"
+              ? " Cycling between services is disabled. Existing walking transfers remain possible; walking routes to or from an address are not yet supported."
+              : "") +
+            " Your bicycle travels with you on public transport."
+          }
+        />
+      </div>
+      <select
+        id="cycling-position"
         disabled={disabled}
-        aria-describedby="bicycle-access-help"
+        value={cyclingPosition}
+        onChange={(e) => onPosition(e.target.value as CyclingPosition)}
       >
-        <legend>Public transport with my bicycle</legend>
+        <option value="anywhere">At either end and between services</option>
+        <option value="start-only">Only at the beginning</option>
+        <option value="end-only">Only at the end</option>
+      </select>
+      <fieldset className="bicycle-access" disabled={disabled}>
+        <legend className="preference-heading">
+          Public transport with my bicycle
+          <InlineHelp
+            label="About bicycle access on public transport"
+            text={
+              bicycleScopeHelp[bicycleScope] +
+              " Applies to trains, buses, trams, boats and other public transport."
+            }
+          />
+        </legend>
         {BICYCLE_SCOPES.map((scope) => (
           <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
             <input
@@ -139,10 +150,6 @@ export default function TripPreferences({
           </label>
         ))}
       </fieldset>
-      <p className="bus-preference-help" id="bicycle-access-help">
-        {bicycleScopeHelp[bicycleScope]} Applies to trains, buses, trams, boats and other public
-        transport.
-      </p>
       <div className="preference-grid">
         <label>
           <span>Cycling path</span>

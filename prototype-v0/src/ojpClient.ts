@@ -56,6 +56,7 @@ export class OjpClient {
   signal: AbortSignal;
   private fetcher: typeof fetch;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch) { this.signal = signal; this.fetcher = fetcher; }
+  fork(signal: AbortSignal) { return new OjpClient(signal, this.fetcher); }
   static async connect(signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<OjpClient | null> {
     try {
       const status = await fetchJson<{ available: boolean }>("/api/ojp/status", signal, 15_000, fetcher);
@@ -64,7 +65,10 @@ export class OjpClient {
     return null;
   }
   connections(from: Stop, to: Stop, departure: Date, claim: (calls: number) => boolean) {
-    const body = { from, to, departure: departure.toISOString() }, key = JSON.stringify([from.id, to.id, body.departure]);
+    // Graph stations also carry road geometry and terrain details. They are not
+    // part of an OJP stop reference and can exceed the backend's 8 KiB limit.
+    const stop = ({ id, name, lat, lon }: Stop): OjpStop => ({ id, name, lat, lon });
+    const body = { from: stop(from), to: stop(to), departure: departure.toISOString() }, key = JSON.stringify([from.id, to.id, body.departure]);
     if (this.cache.has(key)) return this.cache.get(key)!;
     if (this.unavailable || !claim(2)) return Promise.resolve(null);
     const task = (async () => {
