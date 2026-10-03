@@ -583,3 +583,13 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 ## 2026-10-03 — Bound each explicit search action and preserve exact fare evidence
 
 **Authorisation:** Fix Extended and city fares, add the missing More time options and replace two help paragraphs with question-mark controls. **Delivery:** Minimal OJP stop payloads; expanded road-checked endpoint recovery; transfer discovery before ordinary alternatives; a fresh bounded allowance for an explicit Extended/More action, retaining checked paths and prior results. No budget reset inside a round. Functional later-departure pages preserve trip constraints and category ranking for their new start time. Allow past-date entry while keeping online fares future-only. A verified stationary connector does not interrupt fare lookup; real cycling gaps still do. Live city quotes succeeded without key or tariff-table changes. 327 regressions pass; browser QA remains pending. [Detailed evidence and caveats](SEARCH_RELIABILITY_2026-10-03.md). SBB prefilled handoff is the next discussion, not a delivered booking capability.
+
+## 2026-10-03 — Soft hill preferences, transit climbing category and applicable section edits
+
+**Authorisation:** implement the discussed hill options and improved path editing, including adjustable steepness and an independent transit-assisted climb optimization.
+
+**Delivery:** preserve the three main recommendation categories and add optional Least cycling ascent/Gentlest cycling. Carry positive cycling ascent and chosen-grade resources through both solvers and waypoint stages; reserve lower-climb acquisition candidates. Prefer less excess uphill rise, then distance above the user-selected 1–20% threshold; do not claim a hard gradient cap from sampled elevation. Unknown elevation is ineligible for a climbing-category win. Hill preferences retain ordinary bike-access rules and shared budgets.
+
+**Editing decision:** recalculate one cycling section through ordered map points; preserve exact public-transport objects and fare evidence. Apply must revalidate walking/boarding timing, section/total cycling limits, required visits and the horizon. Label custom results as edited journeys and retain the original proposal; support Restore. Do not falsely assign an optimization badge to a manual edit. Facility visit-duration insertion and persistent saved routes remain separate.
+
+**Evidence:** 343 regressions pass, including 16 new cases. A dated Zürich HB–Zoo check returned tram 6 with 3 m cycling ascent versus 207 m cycling-only; live section application preserved transit/fare identity. Gentle 5% still exceeded 5%, confirming the soft-preference wording. [Evidence and pending browser QA](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).

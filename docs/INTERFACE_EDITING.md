@@ -75,3 +75,11 @@ Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, en
 ## 3 October help and later-departure modules
 
 `src/ui/InlineHelp.tsx` owns the persistent question-mark button; content remains in `TripPreferences.tsx`. In version 48, **What does Extended add?** moves beside the **Journey options** legend, matching the other two preference headings. The complete text and conditional waypoint note are retained, with click/tap and Escape behaviour supplied by the existing component. The legend fills the fieldset so the explanation can use the available form width on phones. `src/laterDepartures.ts` calculates the next departure boundary and runs a bounded search. `App.tsx` keeps prior result batches and their source sessions, so map selection, fare lookup and later pages refer to the correct itinerary. [Behaviour and checks](SEARCH_RELIABILITY_2026-10-03.md).
+
+## 3 October climbing and cycling editor modules
+
+`TripPreferences.tsx` owns the Climbing fieldset and separate public-transport climbing objective. `hills.ts` owns typed hill preferences/metrics; route acquisition and solver pruning remain in `cyclingClient.ts`, `api.ts`, `model.ts` and `waypoints.ts`. Do not implement hill optimization as a card-only sort.
+
+`CyclingEditor.tsx` owns the ordered-point form and map preview. `cyclingEditor.ts` owns pure application and validation, independently tested. `MapView.tsx` mounts the editor, suppresses whole-journey endpoint picking while editing, and keeps draggable shaping points separate from fixed endpoints. `App.tsx` owns session-local edited results, correct source sessions for later departures, restored originals and coherent map/card selection. `interface.css` contains hill/editor styles.
+
+[Current controls, 343 regressions, live smoke evidence and pending browser checks](HILLS_AND_CYCLING_EDITOR_2026-10-03.md). The facility detour panel still has its separate visit-duration preview; adding a shaping point does not imply a timed facility visit.

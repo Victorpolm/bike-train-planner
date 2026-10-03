@@ -1,9 +1,11 @@
+import { addClimb, climbVector, emptyClimb, hillSearch, routeClimb, type Climb } from "./hills.ts";
 import { atEndpoint, cyclingLink, cyclingTransferLimit, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
 import { bicycleLegAllowed } from "./bicyclePermission.ts";
 import { samePlace } from "./cycling.ts";
 
 type State = {
+  climb: Climb;
   stop: string; stage: number; time: number; bike: number; walk: number; boardings: number;
   extraTransfers: number; stageHasTransit: boolean; needsTransit: boolean; endCycling: boolean;
   accessActive: number; egressActive: number; legs: TransitLeg[];
@@ -38,7 +40,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     if (state.time > horizon || state.bike > options.maxBikeMinutes || state.boardings > options.maxBoardings) return;
     const key = `${state.stop}|${state.stage}|${state.extraTransfers}|${state.stageHasTransit}|${state.needsTransit}|${state.boardings > 0}|${state.endCycling}`;
     const bucket = buckets.get(key) ?? [];
-    const vector = (s: State) => [s.time, s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive];
+    const vector = (s: State) => [s.time, s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive, ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
     const values = vector(state);
     if (bucket.some(s => vector(s).every((v, i) => v <= values[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -56,6 +58,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
       departurePlatform: null, arrivalPlatform: null, service, serviceName: null, direction: null,
       cyclingRoute: cyclingLink(network, from, to).route, geometry: cyclingLink(network, from, to).route?.points };
     return { ...state, stop: id, time: arrival, bike: state.bike + minutes,
+      climb: addClimb(state.climb, routeClimb(leg.cyclingRoute, minutes, options.hills?.maxUphillPercent)),
       endCycling: state.endCycling || options.cyclingPosition === "end-only" && minutes > 0,
       accessActive: state.accessActive + (state.boardings === 0 ? minutes : 0), egressActive: state.egressActive + minutes,
       legs: [...state.legs, leg], alive: true };
@@ -71,7 +74,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     add({ ...advanced, stage, stageHasTransit: false, needsTransit: false,
       visits: stage === points.length - 1 ? state.visits : [...state.visits, { place: next, arrival: new Date(advanced.time) }] });
   };
-  add({ stop: pointId(0), stage: 0, time: start.getTime(), bike: 0, walk: 0, boardings: 0,
+  add({ climb: emptyClimb(), stop: pointId(0), stage: 0, time: start.getTime(), bike: 0, walk: 0, boardings: 0,
     extraTransfers: 0, stageHasTransit: false, needsTransit: false, endCycling: false, accessActive: 0, egressActive: 0,
     legs: [], visits: [], alive: true });
   for (let index = 0; index < queue.length; index++) {

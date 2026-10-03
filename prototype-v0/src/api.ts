@@ -1,3 +1,4 @@
+import { hillSearch, routeClimb } from "./hills.ts";
 import { SearchDeadline, SEARCH_DEADLINE_MS, TERRAIN_SEARCH_DEADLINE_MS } from "./searchDeadline.ts";
 import { NationalTimetableClient } from "./nationalTimetableClient.ts";
 import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
@@ -43,7 +44,7 @@ export function selectStations(stops: Stop[], point: Place, maxMinutes: number, 
 // Reserve queries for rail access: several adjacent bus stops must not consume
 // every query before a farther, feasible railway station is tried.
 export function selectStationPairs(origins: Station[], destinations: Station[], maxBikeMinutes: number,
-  queried: ReadonlySet<string> = new Set(), limit = SEARCH_LIMITS.baselinePairs): (readonly [Station, Station])[] {
+  queried: ReadonlySet<string> = new Set(), limit = SEARCH_LIMITS.baselinePairs, preferClimbing = false): (readonly [Station, Station])[] {
   const pairs = origins.flatMap(a => destinations
     .filter(b => a.id !== b.id && a.bikeMinutes + b.bikeMinutes <= maxBikeMinutes).map(b => [a, b] as const))
     .sort(([a, b], [c, d]) => a.bikeMinutes + b.bikeMinutes - c.bikeMinutes - d.bikeMinutes
@@ -54,6 +55,13 @@ export function selectStationPairs(origins: Station[], destinations: Station[], 
     if (pair && chosen.size < limit) chosen.set(`${pair[0].id}:${pair[1].id}`, pair);
   };
   add(pairs[0]);
+  if (preferClimbing) {
+    const climb = ([a, b]: readonly [Station, Station]) => {
+      const aa = routeClimb(a.cyclingRoute, a.bikeMinutes), bb = routeClimb(b.cyclingRoute, b.bikeMinutes);
+      return aa.unknown || bb.unknown ? Infinity : aa.ascent + bb.ascent;
+    };
+    add([...pairs].sort((a, b) => (climb(a) === climb(b) ? 0 : climb(a) - climb(b)))[0]);
+  }
   // Give local transport its own query before the railway candidates.
   const local = (s: Station) => s.kind === "bus" || s.kind === "tram";
   add(pairs.find(([a, b]) => local(a) && local(b)) ?? pairs.find(([a, b]) => local(a) || local(b)));
@@ -230,6 +238,8 @@ async function prepareObservedCycling(session: SearchSession, progress: Progress
           const stop = network.stops.get(l.stop)!;
           return !samePlace(stop, point) && !network.cycling!.has(cyclingKey(stop, point));
         });
+        if (hillSearch(options)) add(network.stops.get([...unchecked].sort((a, b) => a.climb.unknown - b.climb.unknown
+          || a.climb.ascent - b.climb.ascent || finish(a) - finish(b))[0]?.stop ?? ""));
         add(network.stops.get([...unchecked].sort((a, b) => finish(a) - finish(b) || a.boardings - b.boardings)[0]?.stop ?? ""));
         add(network.stops.get([...unchecked].sort((a, b) => a.boardings - b.boardings || finish(a) - finish(b))[0]?.stop ?? ""));
         const reachable = new Set(labels.map(l => l.stop));
@@ -294,7 +304,7 @@ function startCyclingComparison(session: SearchSession, publish: SearchUpdate, f
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
   // One separate serial stream keeps a long bicycle-only route from blocking
   // short station access. Transit and cycling cards publish independently.
-  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference);
+  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference, undefined, session.options.hills);
   session.comparisonClient = client;
   session.cyclingTask = (async () => {
     const routes = [];
@@ -361,7 +371,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   if (!dependencies.previous) client.national = dependencies.nationalClient !== undefined ? dependencies.nationalClient
     : dependencies.fetcher ? null : await NationalTimetableClient.connect(signal);
   const cyclingClient = dependencies.cyclingClient === null || dependencies.previous && !dependencies.previous.cyclingClient ? undefined
-    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference);
+    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills);
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const session: SearchSession = { origin, destination, start, options: { ...options }, network, client,
     originStations: [], destinationStations: [], baseline: solve(network, origin, destination, start, options, "baseline"), extended: null, waypoints,
@@ -397,7 +407,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   let railExitsChecked = false, normalPairs = 0;
   const queryPairs = async (limit = SEARCH_LIMITS.baselinePairs) => {
     for (const s of [...session.originStations, ...session.destinationStations]) network.stops.set(s.id, s);
-    const pairs = selectStationPairs(session.originStations, session.destinationStations, options.maxBikeMinutes, queried, limit);
+    const pairs = selectStationPairs(session.originStations, session.destinationStations, options.maxBikeMinutes, queried, limit, hillSearch(options));
     for (const [a, b] of pairs) {
       if (queried.has(`${a.id}:${b.id}`)) continue;
       progress(session.baseline.journeys.length ? "Your first options are ready. Checking a few alternatives…" : `Finding connections from ${a.name} to ${b.name}…`);
@@ -425,9 +435,16 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   };
   // Give Extended its transfer-discovery work before ordinary alternative
   // pairs and rail exits spend the entire shared request/deadline allowance.
-  await queryPairs(mode === "extended" ? 1 : SEARCH_LIMITS.baselinePairs);
+  await queryPairs(mode === "extended" || hillSearch(options) ? 1 : SEARCH_LIMITS.baselinePairs);
+  if (hillSearch(options) && cyclingClient) {
+    progress("Comparing station access and exits for less cycling ascent…");
+    session.originStations = await roadCandidates(session, origin, endpointCyclingLimit(options, "access"), "access", progress, true, true);
+    session.destinationStations = await roadCandidates(session, destination, endpointCyclingLimit(options, "egress"), "egress", progress, true, true);
+    await queryPairs(Math.min(2, SEARCH_LIMITS.baselinePairs - normalPairs));
+  }
   if (mode === "extended") return extendInternal(session, progress, publish);
   if (cyclingClient && normalPairs < SEARCH_LIMITS.baselinePairs) {
+    // The hill search already expanded these pools. Reuse their checked roads.
     session.originStations = await roadCandidates(session, origin, endpointCyclingLimit(options, "access"), "access", progress, false, true);
     session.destinationStations = await roadCandidates(session, destination, endpointCyclingLimit(options, "egress"), "egress", progress, false, true);
     await queryPairs(SEARCH_LIMITS.baselinePairs - normalPairs);
@@ -561,7 +578,7 @@ async function queryWaypointStages(session: SearchSession, mode: ModelMode, prog
   for (let stage = 0; stage < points.length - 1; stage++) {
     const from = (candidates[stage] ?? []).map(s => atEndpoint(s, points[stage], network)).filter(s => s.bikeMinutes <= endpointCyclingLimit(options, "access"));
     const to = (candidates[stage + 1] ?? []).map(s => atEndpoint(s, points[stage + 1], network, "egress")).filter(s => s.bikeMinutes <= endpointCyclingLimit(options, "egress"));
-    const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2);
+    const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2, hillSearch(options));
     for (const [a, b] of pairs) {
       // Preserve independently reachable stage times. An earlier prohibited ride
       // must neither block the comparison nor replace later bicycle-aware queries.

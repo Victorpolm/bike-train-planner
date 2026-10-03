@@ -1,3 +1,14 @@
+import type { AppliedCyclingEdit } from "./cyclingEditor";
+import {
+  DEFAULT_HILLS,
+  addClimb,
+  climbSummary,
+  emptyClimb,
+  hillSearch,
+  journeyClimb,
+  routeClimb,
+  type HillPreferences,
+} from "./hills";
 import AppHeader from "./ui/AppHeader";
 import ProfilePanel from "./ui/ProfilePanel";
 import PlannerForm from "./ui/PlannerForm";
@@ -135,6 +146,7 @@ function JourneyCard({
   comparison,
   fareProfile,
   extraTimeMinutes,
+  hills,
   onSelect,
 }: {
   proposal: ScopedProposal;
@@ -144,6 +156,7 @@ function JourneyCard({
   comparison: CyclingComparison | null;
   fareProfile: FareProfile;
   extraTimeMinutes: number;
+  hills?: HillPreferences;
   onSelect: () => void;
 }) {
   const { journey: j, wins } = proposal;
@@ -230,6 +243,26 @@ function JourneyCard({
         Active time at start {formatMinutes(m.activeStart)} · arrival {formatMinutes(m.activeEnd)}
         {m.middle > 0 && ` · cycling between services ${formatMinutes(m.middle)}`}
       </span>
+      <span className="cycling-summary">
+        {climbSummary(
+          journeyClimb(j, hills?.maxUphillPercent),
+          hills?.mode === "gentler" ? hills.maxUphillPercent : undefined,
+        )}
+      </span>
+      {comparison?.routes &&
+        (() => {
+          const direct = comparison.routes.reduce(
+            (sum, route) => addClimb(sum, routeClimb(route)),
+            emptyClimb(),
+          );
+          const mixed = journeyClimb(j);
+          const saved = Math.round(direct.ascent - mixed.ascent);
+          return !direct.unknown && !mixed.unknown && saved !== 0 ? (
+            <span className="tradeoff">
+              {Math.abs(saved)} m {saved > 0 ? "less" : "more"} climbing than the cycling-only route
+            </span>
+          ) : null;
+        })()}
       <span className="route-stops">
         {j.originStation.name} → {j.destinationStation.name}
       </span>
@@ -278,6 +311,8 @@ export default function App() {
   );
   const [cyclingPace, setCyclingPace] = useState<CyclingPace>(initialTraveller.pace);
   const [cycling, setCycling] = useState<CyclingPreference>("commuter");
+  const [hills, setHills] = useState<HillPreferences>({ ...DEFAULT_HILLS });
+  const [climbOptimization, setClimbOptimization] = useState(false);
   const [routePreference, setRoutePreference] = useState<RoutePreference>("simplest");
   const [tripPreset, setTripPreset] = useState<TripPreset>("commuter");
   const [profileOpen, setProfileOpen] = useState(false);
@@ -335,6 +370,8 @@ export default function App() {
     setRoutePreference(next.routePreference);
     setBicycleScope(next.bicycleScope);
     setEndpoint(next.endpoint);
+    setHills({ ...DEFAULT_HILLS });
+    setClimbOptimization(false);
     setProfileOpen(false);
     setPreferencesOpen(false);
   }
@@ -353,13 +390,29 @@ export default function App() {
         cyclingPace,
         routePreference,
         cyclingPosition,
+        hills,
+        climbOptimization,
       ),
-    [cycling, endpoint, bicycleScope, cyclingPace, routePreference, cyclingPosition],
+    [
+      cycling,
+      endpoint,
+      bicycleScope,
+      cyclingPace,
+      routePreference,
+      cyclingPosition,
+      hills,
+      climbOptimization,
+    ],
   );
   const [session, setSession] = useState<SearchSession | null>(null);
   const [laterBatches, setLaterBatches] = useState<
     { key: string; session: SearchSession; categories: string[] }[]
   >([]);
+  const [customJourneys, setCustomJourneys] = useState<
+    { journey: Journey; source: SearchSession; baseId: string }[]
+  >([]);
+  const [customCycling, setCustomCycling] = useState<CyclingComparison | null>(null);
+  const editSerial = useRef(0);
   const [laterNotices, setLaterNotices] = useState<Record<string, string>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -436,14 +489,35 @@ export default function App() {
           });
       }
     }
+    for (const custom of customJourneys)
+      entries.push({
+        proposal: {
+          journey: custom.journey,
+          categories: ["Your edited journey"],
+          extraMinutes: 0,
+          cyclingSaved: 0,
+          activeSaved: 0,
+          wins: [
+            {
+              scope: custom.source.options.bicycleScope ?? "allow-uncertain",
+              categories: ["Your edited journey"],
+              extraMinutes: 0,
+            },
+          ],
+        },
+        source: custom.source,
+        batch: "custom",
+      });
     return entries;
-  }, [recommendation, session, laterBatches, mode]);
+  }, [recommendation, session, laterBatches, mode, customJourneys]);
   const proposals = proposalEntries.map((entry) => entry.proposal);
+  const cyclingReference = customCycling ?? session?.cyclingComparison ?? null;
   const cyclingFastest =
     (session?.options.cyclingPosition ?? "anywhere") === "anywhere" &&
-    !!session?.cyclingComparison &&
-    session.cyclingComparison.minutes <= session.options.maxBikeMinutes &&
-    proposals.every((p) => session.cyclingComparison!.minutes <= p.journey.totalMinutes);
+    !!session &&
+    !!cyclingReference &&
+    cyclingReference.minutes <= session.options.maxBikeMinutes &&
+    proposals.every((p) => cyclingReference.minutes <= p.journey.totalMinutes);
   const selected =
     selectedId === BIKE_ONLY_ID || (selectedId === null && cyclingFastest)
       ? null
@@ -451,7 +525,34 @@ export default function App() {
         proposals[0]?.journey ??
         null);
   const bikeOnlySelected = !!session && selected === null;
-  const cyclingReference = session?.cyclingComparison ?? null;
+  const selectedSource =
+    proposalEntries.find((entry) => entry.proposal.journey.id === selected?.id)?.source ?? session;
+  function applyCyclingChange(edit: AppliedCyclingEdit) {
+    if (edit.journey && selected && selectedSource) {
+      const baseId =
+        customJourneys.find((entry) => entry.journey.id === selected.id)?.baseId ?? selected.id;
+      const journey = { ...edit.journey, id: `custom:${++editSerial.current}:${baseId}` };
+      setCustomJourneys((current) => [
+        ...current.filter((entry) => entry.baseId !== baseId),
+        { journey, source: selectedSource, baseId },
+      ]);
+      setSelectedId(journey.id);
+      setExpandedId(journey.id);
+    } else if (edit.cycling) {
+      setCustomCycling(edit.cycling);
+      setSelectedId(BIKE_ONLY_ID);
+    }
+    setCycleFocus(null);
+  }
+  function restoreCyclingChange() {
+    const custom = customJourneys.find((entry) => entry.journey.id === selected?.id);
+    if (custom) {
+      setCustomJourneys((current) => current.filter((entry) => entry !== custom));
+      setSelectedId(custom.baseId);
+      setExpandedId(custom.baseId);
+    } else setCustomCycling(null);
+    setCycleFocus(null);
+  }
   const cyclingRoutes = useMemo<NamedCycleRoute[]>(
     () =>
       selected && session
@@ -489,6 +590,8 @@ export default function App() {
 
   function invalidate() {
     setSession(null);
+    setCustomJourneys([]);
+    setCustomCycling(null);
     setLaterBatches([]);
     setLaterNotices({});
     setSelectedId(null);
@@ -621,6 +724,8 @@ export default function App() {
   async function changeMode(next: ModelMode) {
     if (loading || next === mode) return;
     setMode(next);
+    setCustomJourneys([]);
+    setCustomCycling(null);
     setLaterBatches([]);
     setLaterNotices({});
     setExpandedId(null);
@@ -827,6 +932,18 @@ export default function App() {
                   cycling={cycling}
                   endpoint={endpoint}
                   cyclingPosition={cyclingPosition}
+                  hills={hills}
+                  climbOptimization={climbOptimization}
+                  onHills={(next) => {
+                    invalidate();
+                    setHills(next);
+                    setTripPreset("personalized");
+                  }}
+                  onClimbOptimization={(enabled) => {
+                    invalidate();
+                    setClimbOptimization(enabled);
+                    setTripPreset("personalized");
+                  }}
                   onPosition={(position) => {
                     invalidate();
                     setCyclingPosition(position);
@@ -1090,6 +1207,18 @@ export default function App() {
                 )}
               </InfoDisclosure>
               <div className="journey-list">
+                {hillSearch(session.options) &&
+                  proposals.length > 0 &&
+                  !proposals.some(
+                    (p) =>
+                      p.categories.includes("Least cycling ascent") ||
+                      p.categories.includes("Gentlest cycling"),
+                  ) && (
+                    <p className="notice">
+                      Elevation is incomplete for the checked journeys. A climbing recommendation
+                      could not be verified; other journey categories remain available.
+                    </p>
+                  )}
                 {cyclingReference ? (
                   <CyclingCard
                     comparison={cyclingReference}
@@ -1120,11 +1249,18 @@ export default function App() {
                     planId = `journey-plan-${index}`;
                   return (
                     <div key={j.id} className="journey-option">
-                      {batch && <p className="later-option-label">Later departure</p>}
+                      {batch && (
+                        <p className="later-option-label">
+                          {batch === "custom"
+                            ? "Edited cycling · selected services preserved"
+                            : "Later departure"}
+                        </p>
+                      )}
                       <JourneyCard
                         proposal={proposal}
                         selected={selected?.id === j.id}
                         extraTimeMinutes={source.options.extraTimeMinutes}
+                        hills={source.options.hills}
                         expanded={expanded}
                         planId={planId}
                         comparison={cyclingReference}
@@ -1143,6 +1279,26 @@ export default function App() {
                           origin={source.origin}
                           destination={source.destination}
                           onEvidence={(leg, evidence) => {
+                            if (batch === "custom") {
+                              setCustomJourneys((current) =>
+                                current.map((item) =>
+                                  item.journey.id === j.id
+                                    ? {
+                                        ...item,
+                                        journey: {
+                                          ...item.journey,
+                                          transitLegs: item.journey.transitLegs.map((existing) =>
+                                            existing === leg
+                                              ? { ...existing, bicycleEvidence: evidence }
+                                              : existing,
+                                          ),
+                                        },
+                                      }
+                                    : item,
+                                ),
+                              );
+                              return;
+                            }
                             updateBicycleEvidence(source, leg, evidence, (next) => {
                               if (batch)
                                 setLaterBatches((current) =>
@@ -1158,15 +1314,17 @@ export default function App() {
                           }}
                         />
                       )}
-                      <button
-                        type="button"
-                        className="more-departures"
-                        disabled={loading}
-                        aria-label={`More later departures for ${proposal.categories.join(" and ")}`}
-                        onClick={() => void showLater(source, proposal)}
-                      >
-                        More · later departures
-                      </button>
+                      {batch !== "custom" && (
+                        <button
+                          type="button"
+                          className="more-departures"
+                          disabled={loading}
+                          aria-label={`More later departures for ${proposal.categories.join(" and ")}`}
+                          onClick={() => void showLater(source, proposal)}
+                        >
+                          More · later departures
+                        </button>
+                      )}
                       {laterNotices[j.id] && (
                         <p className="later-notice" role="status">
                           {laterNotices[j.id]}
@@ -1228,9 +1386,18 @@ export default function App() {
             selectedJourney={selected}
             cycling={cyclingReference}
             bikeOnlySelected={bikeOnlySelected}
-            start={session?.start ?? null}
-            cyclingPace={session?.options.cyclingPace}
-            routePreference={session?.options.cyclingRoutePreference}
+            start={selectedSource?.start ?? null}
+            cyclingPace={selectedSource?.options.cyclingPace}
+            routePreference={selectedSource?.options.cyclingRoutePreference}
+            hills={selectedSource?.options.hills}
+            editOptions={selectedSource?.options}
+            onApplyCycling={applyCyclingChange}
+            onRestoreCycling={
+              (selected && customJourneys.some((entry) => entry.journey.id === selected.id)) ||
+              (bikeOnlySelected && customCycling)
+                ? restoreCyclingChange
+                : undefined
+            }
             cycleFocus={
               focusedRoute && cycleFocus
                 ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM }

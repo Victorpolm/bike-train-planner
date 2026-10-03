@@ -1,3 +1,7 @@
+import CyclingEditor from "./CyclingEditor";
+import type { AppliedCyclingEdit, EditContext } from "./cyclingEditor";
+import type { HillPreferences } from "./hills";
+import type { Options } from "./model";
 import {
   closestBikeParking,
   parkingAccess,
@@ -42,6 +46,10 @@ import type { CyclingPace } from "./cyclingPace";
 import type { RoutePreference } from "./cyclingPreferences";
 
 type MapViewProps = {
+  hills?: HillPreferences;
+  editOptions?: Options;
+  onApplyCycling: (edit: AppliedCyclingEdit) => void;
+  onRestoreCycling?: () => void;
   visible?: boolean;
   origin: Place | null;
   destination: Place | null;
@@ -153,6 +161,10 @@ export default function MapView({
   start,
   cyclingPace,
   routePreference,
+  hills,
+  editOptions,
+  onApplyCycling,
+  onRestoreCycling,
 }: MapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -188,8 +200,25 @@ export default function MapView({
     waypoints,
     cyclingPace,
     routePreference,
+    hills,
     stages.map((stage) => stage.id),
   ]);
+  const [editorScope, setEditorScope] = useState<string | null>(null);
+  const routeEditing = editorScope === detourScope && !editingDisabled;
+  const editContext = useMemo<EditContext | null>(
+    () =>
+      origin && destination && start && editOptions
+        ? {
+            journey: selectedJourney,
+            cycling: bikeOnlySelected ? cycling : null,
+            origin,
+            destination,
+            start,
+            options: editOptions,
+          }
+        : null,
+    [origin, destination, start, editOptions, selectedJourney, bikeOnlySelected, cycling],
+  );
   const [detour, setDetour] = useState<{ scope: string; facility: DetourFacility } | null>(null);
   const [detourRoutes, setDetourRoutes] = useState<DetourRoutes | null>(null);
   const currentDetour = detour?.scope === detourScope && !editingDisabled ? detour.facility : null;
@@ -197,6 +226,7 @@ export default function MapView({
     (facility: DetourFacility) => {
       if (editingDisabled || !stages.length || facility.unavailable) return;
       mapRef.current?.closePopup();
+      setEditorScope(null);
       setDetourRoutes(null);
       setDetour({ scope: detourScope, facility });
     },
@@ -248,8 +278,16 @@ export default function MapView({
     onSelectPoint,
     onMovePoint,
     onCycleFocus,
+    routeEditing,
   });
-  handlers.current = { editingDisabled, canAddWaypoint, onSelectPoint, onMovePoint, onCycleFocus };
+  handlers.current = {
+    editingDisabled,
+    canAddWaypoint,
+    onSelectPoint,
+    onMovePoint,
+    onCycleFocus,
+    routeEditing,
+  };
   const [showStops, setShowStops] = useState(true);
   const [showParking, setShowParking] = useState(false);
   const [showWater, setShowWater] = useState(false);
@@ -521,7 +559,7 @@ export default function MapView({
     layerRef.current = L.layerGroup().addTo(map);
     focusLayerRef.current = L.layerGroup().addTo(map);
     const choosePoint = (point: L.LatLng) => {
-      if (handlers.current.editingDisabled) return;
+      if (handlers.current.editingDisabled || handlers.current.routeEditing) return;
       const content = popup("Choose this location", [
         `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`,
       ]);
@@ -599,7 +637,7 @@ export default function MapView({
         title: `${title}: ${place.label}`,
         alt: `${title}: ${place.label}`,
         zIndexOffset: 1000,
-        draggable: !editingDisabled,
+        draggable: !editingDisabled && !routeEditing,
         autoPan: true,
       });
       marker.bindTooltip(textNode(`${title} · ${place.label}`)).addTo(layer);
@@ -651,6 +689,7 @@ export default function MapView({
       if (active) {
         coordinates.forEach((p) => bounds.extend(p));
         const inspect = (event: L.LeafletMouseEvent) => {
+          if (handlers.current.routeEditing) return;
           const position = map.latLngToLayerPoint(event.latlng),
             stride = Math.max(1, Math.ceil(route.points.length / 1500));
           let best = 0,
@@ -679,7 +718,11 @@ export default function MapView({
           handlers.current.onCycleFocus(route.id, route.points[best].distanceM);
         };
         line.on("mousemove", inspect);
-        line.on("click", inspect);
+        line.on("click", (event: L.LeafletMouseEvent) => {
+          if (handlers.current.routeEditing)
+            map.fire("cycling-editor-point", { latlng: event.latlng });
+          else inspect(event);
+        });
         for (const steep of route.steep) {
           const a = pointAlong(route.points, steep.startM)!,
             b = pointAlong(route.points, steep.endM)!;
@@ -888,6 +931,7 @@ export default function MapView({
     destination,
     waypoints,
     editingDisabled,
+    routeEditing,
     stops,
     selectedJourney,
     cycling,
@@ -938,6 +982,40 @@ export default function MapView({
 
   return (
     <>
+      {!!stages.length && editContext && (
+        <div className="cycling-edit-toolbar">
+          <button
+            type="button"
+            disabled={editingDisabled}
+            aria-pressed={routeEditing}
+            onClick={() => {
+              setDetour(null);
+              setDetourRoutes(null);
+              setEditorScope(routeEditing ? null : detourScope);
+            }}
+          >
+            {routeEditing ? "Close cycling editor" : "Edit cycling path"}
+          </button>
+          {onRestoreCycling && (
+            <button type="button" disabled={editingDisabled} onClick={onRestoreCycling}>
+              Restore original route
+            </button>
+          )}
+        </div>
+      )}
+      {routeEditing && editContext && (
+        <CyclingEditor
+          key={detourScope}
+          map={mapRef.current}
+          stages={stages}
+          context={editContext}
+          onApply={(edit) => {
+            onApplyCycling(edit);
+            setEditorScope(null);
+          }}
+          onClose={() => setEditorScope(null)}
+        />
+      )}
       <details className="map-filter-menu">
         <summary>
           <svg
@@ -1214,6 +1292,7 @@ export default function MapView({
           stages={stages}
           pace={cyclingPace}
           preference={routePreference}
+          hills={hills}
           onRoutes={setDetourRoutes}
           onClose={() => {
             setDetour(null);

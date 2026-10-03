@@ -1,3 +1,4 @@
+import { DEFAULT_HILLS, routeClimb, type HillPreferences } from "./hills.ts";
 import type { CyclingRoute } from "./cycling.ts";
 export const ROUTE_PREFERENCES = ["fastest", "simplest", "lower-stress"] as const;
 export type RoutePreference = typeof ROUTE_PREFERENCES[number];
@@ -21,20 +22,26 @@ function routeStress(route: CyclingRoute) {
   return score;
 }
 const allowedDetourMinutes = (fastestMinutes: number) => Math.min(15, Math.max(5, fastestMinutes * .2));
-export function chooseCyclingRoute(candidates: CyclingRoute[], preference: RoutePreference): CyclingRoute | null {
+export function chooseCyclingRoute(candidates: CyclingRoute[], preference: RoutePreference, hills: HillPreferences = DEFAULT_HILLS): CyclingRoute | null {
   const usable = candidates.filter(r => !r.blocked && Number.isFinite(r.minutes)).sort((a, b) => a.minutes - b.minutes);
   if (!usable.length) return null;
-  const fastest = usable[0], limit = fastest.minutes + allowedDetourMinutes(fastest.minutes);
+  const fastest = usable[0], limit = fastest.minutes + (hills.mode === "none" ? allowedDetourMinutes(fastest.minutes) : hills.extraMinutes);
   // Stairs are a soft preference: a reasonable riding detour wins for every objective.
   const stairsFree = usable.filter(r => r.minutes <= limit && !r.sections.some(s => s.tags.highway === "steps"
     || ["900", "1200"].includes(s.tags["swisstopo:kunstbaute"])));
-  const pool = (stairsFree.length ? stairsFree : usable).filter(r => preference === "fastest" || r.minutes <= limit);
+  const pool = (stairsFree.length ? stairsFree : usable).filter(r => (hills.mode === "none" && preference === "fastest") || r.minutes <= limit);
   const rank = (r: CyclingRoute) => preference === "lower-stress" ? routeStress(r)
     : preference === "simplest" ? r.turnCount ?? Infinity : r.minutes;
-  const selected = [...pool].sort((a, b) => rank(a) - rank(b) || a.minutes - b.minutes)[0];
+  const compareHills = (a: CyclingRoute, b: CyclingRoute) => {
+    if (hills.mode === "none") return 0;
+    const aa = routeClimb(a, a.minutes, hills.maxUphillPercent), bb = routeClimb(b, b.minutes, hills.maxUphillPercent);
+    return aa.unknown - bb.unknown || (hills.mode === "gentler" ? aa.excessM - bb.excessM || aa.steepM - bb.steepM : 0)
+      || aa.ascent - bb.ascent;
+  };
+  const selected = [...pool].sort((a, b) => compareHills(a, b) || rank(a) - rank(b) || a.minutes - b.minutes)[0];
   const unique = new Set(usable.map(r => r.points.map(p => p.lon.toFixed(5) + "," + p.lat.toFixed(5)).join(";"))).size;
   return { ...selected, preference, alternativesChecked: unique,
-    preferenceNote: unique < 2 ? "Only one usable path was returned; alternatives could not be compared."
+    preferenceNote: (hills.mode !== "none" ? (hills.mode === "gentler" ? `Prefer uphill slopes below ${hills.maxUphillPercent}%. ` : "Prefer less cycling ascent. ") + "This is a preference, not a guaranteed gradient limit. " : "") + (unique < 2 ? "Only one usable path was returned; alternatives could not be compared."
       : preference === "simplest" && selected.turnCount === undefined ? "Turn instructions were unavailable; the quickest checked path is shown."
-        : "Selected from " + unique + " checked paths; extra time " + Math.max(0, selected.minutes - fastest.minutes) + " min compared with the quickest candidate." };
+        : "Selected from " + unique + " checked paths; extra time " + Math.max(0, selected.minutes - fastest.minutes) + " min compared with the quickest candidate.") };
 }

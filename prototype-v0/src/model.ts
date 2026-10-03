@@ -1,3 +1,4 @@
+import { addClimb, climbVector, hillSearch, journeyClimb, routeClimb, validateHills, type Climb, type HillPreferences } from "./hills.ts";
 import { validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { ROUTE_PREFERENCES, type RoutePreference } from "./cyclingPreferences.ts";
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
@@ -9,6 +10,8 @@ export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
 export type CyclingPosition = "anywhere" | "start-only" | "end-only";
 export type Options = {
+  hills?: HillPreferences;
+  climbOptimization?: boolean;
   cyclingPosition?: CyclingPosition;
   maxCyclingTransfers?: number;
   maxBikeMinutes: number;
@@ -61,6 +64,8 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 };
 
 export function validateOptions(o: Options) {
+  if (o.hills) validateHills(o.hills);
+  if (o.climbOptimization !== undefined && typeof o.climbOptimization !== "boolean") throw new Error("Invalid climbing optimization.");
   if (o.cyclingPosition !== undefined && !["anywhere", "start-only", "end-only"].includes(o.cyclingPosition)) throw new Error("Invalid cycling position.");
   if (o.maxCyclingTransfers !== undefined && (!Number.isInteger(o.maxCyclingTransfers) || o.maxCyclingTransfers < 0 || o.maxCyclingTransfers > 2)) throw new Error("Cycling connections must be a whole number from 0 to 2.");
   if (o.cyclingRoutePreference !== undefined && !ROUTE_PREFERENCES.includes(o.cyclingRoutePreference)) throw new Error("Invalid cycling route preference.");
@@ -81,7 +86,8 @@ export function validateOptions(o: Options) {
   if (o.bicycleScope !== undefined && !BICYCLE_SCOPES.includes(o.bicycleScope)) throw new Error("Invalid bicycle permission scope.");
 }
 
-export function metrics(j: Journey) {
+export function metrics(j: Journey, threshold = 6) {
+  const climb = journeyClimb(j, threshold);
   const duration = (l: TransitLeg) => l.departure && l.arrival
     ? Math.max(0, (l.arrival.getTime() - l.departure.getTime()) / 60_000) : 0;
   const boardings = j.transitLegs.filter(l => l.mode === "transit").length;
@@ -91,16 +97,17 @@ export function metrics(j: Journey) {
   const biking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "bike").reduce((sum, l) => sum + duration(l), 0);
   const middle = biking(j.transitLegs.slice(first + 1, last));
   const walk = walking(j.transitLegs), bike = j.originStation.bikeMinutes + biking(j.transitLegs) + j.destinationStation.bikeMinutes;
-  return { time: j.totalMinutes, bike, walk, active: bike + walk,
+  return { ascent: climb.unknown ? Infinity : climb.ascent, steepM: climb.unknown ? Infinity : climb.steepM,
+    excessM: climb.unknown ? Infinity : climb.excessM, time: j.totalMinutes, bike, walk, active: bike + walk,
     start: j.originStation.bikeMinutes, end: j.destinationStation.bikeMinutes, middle, boardings,
     activeStart: j.originStation.bikeMinutes + walking(j.transitLegs.slice(0, Math.max(0, first))) + biking(j.transitLegs.slice(0, Math.max(0, first))),
     activeEnd: j.destinationStation.bikeMinutes + walking(j.transitLegs.slice(last + 1)) + biking(j.transitLegs.slice(last + 1)) };
 }
 export const dominates = (a: number[], b: number[]) => a.every((v, i) => v <= b[i]) && a.some((v, i) => v < b[i]);
-export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none"): Journey[] {
+export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none", options?: Options): Journey[] {
   const vector = (j: Journey) => {
     const m = metrics(j);
-    return [m.time, m.active, m.boardings, ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
+    return [m.time, m.active, m.boardings, ...(options && hillSearch(options) ? climbVector(journeyClimb(j, options.hills?.maxUphillPercent), options.hills?.mode === "gentler") : []), ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
   };
   const unique = [...new Map(journeys.map(j => [j.id, j])).values()];
   const vectors = unique.map(vector);
@@ -112,12 +119,12 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
   const mixed = journeys.filter(j => metrics(j).boardings >= 1);
   if (!mixed.length) return [];
   const compare = (keys: (keyof ReturnType<typeof metrics>)[]) => (a: Journey, b: Journey) => {
-    const am = metrics(a), bm = metrics(b);
+    const am = metrics(a, o.hills?.maxUphillPercent), bm = metrics(b, o.hills?.maxUphillPercent);
     for (const key of keys) if (am[key] !== bm[key]) return am[key] - bm[key];
     return a.id.localeCompare(b.id);
   };
   const fastest = [...mixed].sort(compare(["time", "active", "boardings"]))[0];
-  const frontier = pareto(mixed.filter(j => j.totalMinutes <= fastest.totalMinutes + o.extraTimeMinutes), o.endpointPreference);
+  const frontier = pareto(mixed.filter(j => j.totalMinutes <= fastest.totalMinutes + o.extraTimeMinutes), o.endpointPreference, o);
   const definitions: [string, (keyof ReturnType<typeof metrics>)[]][] = [
     ["Fastest", ["time", "active", "boardings"]],
     ["Fewest boardings", ["boardings", "time", "active"]],
@@ -127,9 +134,14 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
     o.endpointPreference === "start" ? "Least cycling or walking at start" : "Least cycling or walking at arrival",
     [o.endpointPreference === "start" ? "activeStart" : "activeEnd", "time", "active", "boardings"],
   ]);
+  if (o.climbOptimization || o.hills?.mode === "less-climbing") definitions.push(["Least cycling ascent", ["ascent", "time", "active", "boardings"]]);
+  if (o.hills?.mode === "gentler") definitions.push(["Gentlest cycling", ["excessM", "steepM", "ascent", "time"]]);
   const proposals = new Map<string, Proposal>();
   for (const [category, keys] of definitions) {
-    const winner = [...frontier].sort(compare(keys))[0];
+    const eligible = category === "Least cycling ascent" || category === "Gentlest cycling"
+      ? frontier.filter(j => !journeyClimb(j, o.hills?.maxUphillPercent).unknown) : frontier;
+    const winner = [...eligible].sort(compare(keys))[0];
+    if (!winner) continue;
     const existing = proposals.get(winner.id);
     if (existing) existing.categories.push(category);
     else proposals.set(winner.id, { journey: winner, categories: [category],
@@ -142,7 +154,7 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
 
 type Label = {
   stop: string; time: number; bike: number; walk: number; accessActive: number; egressWalk: number; boardings: number; middle: number;
-  needsTransit: boolean; access: Station; legs: TransitLeg[]; alive: boolean;
+  climb: Climb; needsTransit: boolean; access: Station; legs: TransitLeg[]; alive: boolean;
 };
 export type Solution = { journeys: Journey[]; reachable: Label[]; explored: number; retained: number; limited: boolean };
 
@@ -176,7 +188,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     // Keep cycling as a resource as well as total active travel as an objective.
     // A lower active total can use more cycling and leave less budget for later.
     // Endpoint attributes must also survive pruning for optional categories.
-    const vector = (l: Label) => [l.time, l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk];
+    const vector = (l: Label) => [l.time, l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk, ...(hillSearch(o) ? climbVector(l.climb, o.hills?.mode === "gentler") : [])];
     const v = vector(label);
     if (bucket.some(l => vector(l).every((x, i) => x <= v[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -189,7 +201,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     if (access.bikeMinutes <= endpointCyclingLimit(o, "access")) add({ stop: stop.id,
       time: start.getTime() + access.bikeMinutes * 60_000, bike: access.bikeMinutes,
       walk: 0, accessActive: access.bikeMinutes, egressWalk: 0,
-      boardings: 0, middle: 0, needsTransit: true, access, legs: [], alive: true });
+      boardings: 0, middle: 0, climb: routeClimb(access.cyclingRoute, access.bikeMinutes, o.hills?.maxUphillPercent), needsTransit: true, access, legs: [], alive: true });
   }
   let explored = 0;
   for (let index = 0; index < queue.length; index++) {
@@ -223,6 +235,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
         service: "Cycle between stops", serviceName: null, direction: null,
         fromId: from.id, toId: stop.id, fromPoint: from, toPoint: stop, cyclingRoute: route, geometry: route?.points };
       add({ ...current, stop: stop.id, time: arrival, bike: current.bike + minutes,
+        climb: addClimb(current.climb, routeClimb(route, minutes, o.hills?.maxUphillPercent)),
         middle: current.middle + 1, needsTransit: true, legs: [...current.legs, leg], alive: true });
     }
   }

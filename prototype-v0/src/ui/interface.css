@@ -174,3 +174,23 @@ button:disabled { cursor: default; opacity: .55; }
 .profile-done { min-height: 48px; width: 100%; margin-top: 20px; padding: 10px 18px; border: 0; border-radius: 8px; background: var(--green-dark); color: white; font-weight: 650; cursor: pointer; }
 @media (max-width: 900px) { .profile-panel { top: 72px; right: 16px; max-height: calc(100dvh - 88px); } }
 @media (max-width: 420px) { .profile-panel { top: 12px; right: 12px; width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 18px; } }
+
+.hill-preferences { margin: 18px 0 0; padding: 12px 0 0; min-width: 0; border: 0; border-top: 1px solid var(--line); }
+.hill-preferences > legend { width: 100%; }
+.hill-preferences > label:not(.check-row) { display: grid; gap: 6px; margin: 10px 0; }
+.hill-preferences select, .hill-preferences input[type=number] { width: 100%; min-width: 0; min-height: 44px; padding: 10px; font: inherit; border: 1px solid var(--line); border-radius: 7px; background: white; }
+.hill-preferences small { font-size: .875rem; line-height: 1.4; color: var(--muted); }
+
+.cycling-edit-toolbar, .cycling-editor-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.cycling-edit-toolbar button, .cycling-editor button { min-height: 44px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 7px; background: white; cursor: pointer; font-size: .875rem; }
+.cycling-editor { margin-bottom: 12px; padding: 14px; border: 1px solid #a18aae; border-radius: 9px; background: #faf7fc; }
+.cycling-editor h3 { margin: 0; font-size: 1rem; }
+.cycling-editor p, .cycling-editor label, .cycling-editor summary { font-size: .875rem; line-height: 1.45; }
+.cycling-editor select { width: 100%; min-width: 0; min-height: 44px; font: inherit; margin-top: 5px; }
+.cycling-editor ol { list-style: none; margin: 8px 0; padding: 0; max-height: 180px; overflow: auto; }
+.cycling-editor li { display: flex; gap: 6px; align-items: center; margin-bottom: 5px; font-size: .875rem; }
+.cycling-editor li span { flex: 1; }
+.cycling-editor button.apply-cycling { background: var(--green); color: white; }
+.cycling-editor button:disabled { opacity: .5; cursor: default; }
+.cycling-edit-point { display: grid; place-items: center; border: 3px solid white; border-radius: 50%; background: #76558e; color: white; font-weight: 700; box-shadow: 0 1px 5px #0008; }
+.editing-cycling { cursor: crosshair; }

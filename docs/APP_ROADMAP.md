@@ -20,26 +20,21 @@ The owner authorised the revised interface and local profiles on `feature/novice
 
 The header profile/compact route follow-up now provides independent UI components and central layout settings; see the [editing guide](INTERFACE_EDITING.md). An owner-only visual layout preview/editor is a possible separate follow-up, not implemented. Next: complete desktop/phone and keyboard acceptance, review the branch, then merge. Continue facility precision afterwards. Past-date entry and real next-departure search are implemented on 3 October ([evidence](SEARCH_RELIABILITY_2026-10-03.md)); historical timetable completeness, additional SBB fare products and GPS navigation remain separate work; do not add cosmetic buttons or change the current endpoint category into a bicycle-availability constraint. Cross-device profile accounts remain optional future work.
 
-## Route editing and climbing — proposed, 3 October
+<a id="route-editing-and-climbing--proposed-3-october"></a>
+## Route editing and climbing — implemented, 3 October
 
-The owner requested discussion of editable cycling paths, avoiding steep slopes, reducing ascent and using public transport to bypass climbs. These are **proposals, not implemented options or a replacement for the agreed milestone order**. The small help-placement change is separate: **What does Extended add?** opens from the question mark beside **Journey options**.
+The owner subsequently approved implementation, requested a better cycling editor and a user-selectable uphill percentage, and explicitly asked for transit-assisted climbing optimization. The previous proposal is now delivered on `feature/novice-interface-profiles`:
 
-| Proposed option | Intended behaviour | Important distinction |
+| Option | Delivered behaviour | Remaining limit |
 |---|---|---|
-| Edit this cycling section | Add, move or remove ordered map points; recalculate that bike section between its fixed endpoints | These shaping points do not split or replace the whole public-transport itinerary |
-| Less climbing | Prefer lower cumulative positive elevation gain across the cycling sections | Net start-to-finish height difference is not the amount climbed |
-| Gentler slopes | Prefer less distance and fewer sustained uphill sections above a chosen grade | A longer, gentler route can still have more total ascent |
-| Use public transport to bypass climbs | Compare feasible bicycle-carrying services that replace a demanding uphill ride | Keep waiting time, fare, service changes and carriage conditions visible |
+| Edit cycling path | Ordered clickable/draggable points, section selection, automatic preview, Apply, Undo/reset and Restore | Keep selected services; reject missed connections or budget violations; no persistent saved route or facility visit duration |
+| Less climbing | Generate a penalized cycling alternative, retain ascent in search/pruning and prefer cumulative positive gain | Bounded candidates and sampled elevation; no global optimum |
+| Gentler slopes | User-set 1–20% preference, default 6%, with 0–60 extra minutes per cycling section | Soft preference; short steep ramps may be missed and routes can still exceed it |
+| Use public transport to reduce climbing | Separate Least cycling ascent category, lower-climb station-pair/exit acquisition, original three categories retained | Within 60 extra journey minutes and the same bicycle-access/cycling constraints; unknown elevation cannot win |
 
-**Implementation basis:** the current cycling model already retains sampled/smoothed elevation, ascent, descent and steep sections, and adjusts estimated riding time for slope. Facility detour previews already reroute one bike section and check whether the next service can still be reached. Apply/save of a changed section is not delivered. BRouter supports elevation costs and waypoints; its [profile developer guide](https://brouter.de/brouter/profile_developers_guide.txt) describes elevation parameters, and [BRouter-Web](https://github.com/nrenner/brouter-web/issues/285) provides a route-editing reference (reviewed 3 October 2026).
+**343 regression cases pass.** A real Zürich HB–Zoo test found 3 m of cycling ascent with tram 6 versus 207 m cycling-only. The gentler 5% route still contained sampled grades around 10.2%, illustrating why the percentage is not a hard guarantee. [Controls, architecture, live evidence and remaining work](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).
 
-**Recommended first release:** retain the existing three main categories; add optional Less climbing/Gentler slopes preferences under Personalized, with understandable extra-time limits and a comparison of ascent and sustained grades. Start with a preference rather than a promise of zero steep sections. Missing elevation stays unknown; do not rank it as zero climb or claim a verified maximum gradient from today's approximately 100 m samples. Validate short steep ramps, missing samples, bridges/tunnels and the distinction between total ascent and gradient.
-
-This requires generating useful cycling alternatives and retaining ascent/grade information during journey search and pruning, not just sorting the final cards. Existing bounded discovery is not an exhaustive search. A later transit-aware pass should deliberately seek useful uphill boarding/alighting pairs, respect the user's bike-access scope and never infer carriage permission from transport mode. Baseline can already contain an uphill transit leg; Extended's extra cycling connections are needed only for more complex combinations. Count climbing on cycling sections separately from height gained aboard transit; label a claimed saving against an explicit comparable route.
-
-**Editing interaction:** start with tap/click **Route via here**, ordered removable points, Undo and Reset; dragging can follow for desktop. Update distance, ascent, duration and the onward-connection check. Keep the selected services fixed while editing. If a connection would be missed, show the conflict and let the traveller undo or explicitly request different services. Reuse the existing station buffer and include walking access; retain unknown timing as unknown. Apply/save must update the itinerary and geometry consistently, invalidating fares only when their underlying transit itinerary changes.
-
-**Proposed sequence within this new work:** (1) validate elevation metrics and add hill preferences; (2) compare transit alternatives that avoid climbs; (3) extend the existing detour preview into an editable, applicable cycling section. Confirm priority before implementing these larger capabilities.
+Next: desktop/phone/keyboard acceptance of point editing, then a small fixed hilly-route pilot. Facility-stop Apply with visit duration, saved journeys and finer slope validation remain separate. The **What does Extended add?** question mark remains beside **Journey options**.
 
 ## Agreed ordering and proposed milestones
 

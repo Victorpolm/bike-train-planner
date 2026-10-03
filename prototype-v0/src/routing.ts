@@ -46,6 +46,8 @@ export type Journey = {
 };
 
 export type TransitLeg = {
+  cyclingSectionId?: string;
+  cyclingSectionLimit?: number;
   mode: "transit" | "walk" | "unknown" | "bike";
   from: string | null;
   to: string | null;

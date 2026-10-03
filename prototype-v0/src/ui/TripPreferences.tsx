@@ -1,3 +1,4 @@
+import type { HillPreferences } from "../hills";
 import InlineHelp from "./InlineHelp";
 import {
   BICYCLE_SCOPES,
@@ -30,6 +31,10 @@ export default function TripPreferences({
   onCycling,
   onEndpoint,
   onPosition,
+  hills,
+  climbOptimization,
+  onHills,
+  onClimbOptimization,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,6 +52,10 @@ export default function TripPreferences({
   onCycling: (cycling: CyclingPreference) => void;
   onEndpoint: (endpoint: EndpointPreference) => void;
   onPosition: (position: CyclingPosition) => void;
+  hills: HillPreferences;
+  climbOptimization: boolean;
+  onHills: (hills: HillPreferences) => void;
+  onClimbOptimization: (enabled: boolean) => void;
 }) {
   return (
     <details
@@ -195,6 +204,93 @@ export default function TripPreferences({
           </select>
         </label>
       </div>
+      <fieldset className="hill-preferences" disabled={disabled}>
+        <legend className="preference-heading">
+          Climbing
+          <InlineHelp
+            label="About climbing preferences"
+            text="Less climbing reduces cumulative ascent. Gentler slopes favours paths with less uphill travel above your chosen percentage. These are preferences within your time limits, not guaranteed gradient limits. Elevation is sampled and may miss short ramps; missing data stays unknown."
+          />
+        </legend>
+        <label>
+          <span>Cycling hills</span>
+          <select
+            value={hills.mode}
+            onChange={(e) =>
+              onHills({
+                ...hills,
+                mode: e.target.value as HillPreferences["mode"],
+                maxUphillPercent:
+                  Number.isFinite(hills.maxUphillPercent) &&
+                  hills.maxUphillPercent >= 1 &&
+                  hills.maxUphillPercent <= 20
+                    ? hills.maxUphillPercent
+                    : 6,
+                extraMinutes:
+                  Number.isInteger(hills.extraMinutes) &&
+                  hills.extraMinutes >= 0 &&
+                  hills.extraMinutes <= 60
+                    ? hills.extraMinutes
+                    : 15,
+              })
+            }
+          >
+            <option value="none">No hill preference</option>
+            <option value="less-climbing">Less climbing</option>
+            <option value="gentler">Gentler slopes</option>
+          </select>
+        </label>
+        {hills.mode === "gentler" && (
+          <label>
+            <span>Prefer to avoid uphill slopes above (%)</span>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              step="0.5"
+              required
+              value={Number.isFinite(hills.maxUphillPercent) ? hills.maxUphillPercent : ""}
+              onChange={(e) => onHills({ ...hills, maxUphillPercent: e.target.valueAsNumber })}
+            />
+            <small>
+              6% means climbing 6 metres over about 100 metres. A preference, not a hard limit.
+            </small>
+          </label>
+        )}
+        {hills.mode !== "none" && (
+          <label>
+            <span>Extra minutes allowed per cycling section</span>
+            <input
+              type="number"
+              min="0"
+              max="60"
+              step="1"
+              required
+              value={Number.isFinite(hills.extraMinutes) ? hills.extraMinutes : ""}
+              onChange={(e) => onHills({ ...hills, extraMinutes: e.target.valueAsNumber })}
+            />
+            <small>
+              Compared with the quickest checked cycling path. Your total cycling limit still
+              applies.
+            </small>
+          </label>
+        )}
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={climbOptimization}
+            onChange={(e) => onClimbOptimization(e.target.checked)}
+          />
+          <span>Use public transport to reduce climbing</span>
+        </label>
+        {climbOptimization && (
+          <p>
+            Adds a <b>Least cycling ascent</b> recommendation. Compares the climbing you do on the
+            bike, within 60 extra journey minutes. Bicycle access and fares still apply; public
+            transport does not have to be uphill itself.
+          </p>
+        )}
+      </fieldset>
     </details>
   );
 }

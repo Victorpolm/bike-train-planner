@@ -1,3 +1,4 @@
+import type { HillPreferences } from "./hills";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CyclingClient } from "./cyclingClient";
 import {
@@ -26,6 +27,7 @@ type Props = {
   stages: DetourStage[];
   pace?: CyclingPace;
   preference?: RoutePreference;
+  hills?: HillPreferences;
   onRoutes: (routes: DetourRoutes | null) => void;
   onClose: () => void;
 };
@@ -35,6 +37,7 @@ export default function DetourPanel({
   stages,
   pace,
   preference,
+  hills,
   onRoutes,
   onClose,
 }: Props) {
@@ -60,7 +63,17 @@ export default function DetourPanel({
     const abort = new AbortController();
     controller.current = abort;
     const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(60_000)]);
-    const client = new CyclingClient(signal, fetch, 500, true, fetch, pace, preference);
+    const client = new CyclingClient(
+      signal,
+      fetch,
+      500,
+      true,
+      fetch,
+      pace,
+      preference,
+      undefined,
+      hills,
+    );
     setResult(null);
     onRoutes(null);
     setBusy(true);
@@ -90,7 +103,7 @@ export default function DetourPanel({
       abort.abort();
       onRoutes(null);
     };
-  }, [stage, facility, pace, preference, attempt, onRoutes]);
+  }, [stage, facility, pace, preference, hills, attempt, onRoutes]);
   const visitMinutes = Number(visit);
   const validVisit =
     visit.trim() !== "" &&
