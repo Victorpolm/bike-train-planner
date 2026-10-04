@@ -8,6 +8,7 @@ import { TimetableClient } from "./timetableClient.ts";
 import { fareQuery } from "./onlineFare.ts";
 import { DEFAULT_FARE_PROFILE } from "./fares.ts";
 import { haversineKm, type Place, type Point } from "./routing.ts";
+import { preferenceOptions } from "./preferences.ts";
 
 // Synthetic services at Swiss coordinates; no live timetable or fare claims.
 const start = new Date("2026-10-03T08:00:00+02:00");
@@ -37,6 +38,55 @@ function fixture(alternatives = false) {
   return n;
 }
 const fastest = (journeys: { totalMinutes: number }[]) => Math.min(...journeys.map(j => j.totalMinutes));
+
+it("Less cycling shares its 40 minutes freely between the two ends", () => {
+  const from = { label: "Home", lat: 46, lon: 5.99 }, to = { label: "Work", lat: 46.9, lon: 8.02 };
+  const o = preferenceOptions("less", "none");
+  for (const [access, egress] of [[30, 5], [5, 30], [35, 5], [5, 35], [36, 5], [5, 36]]) {
+    const n = fixture(); n.edges.clear(); n.cycling!.clear(); ride(n, 0, 5, 60, 100);
+    bike(n, from, stops[0], access); bike(n, stops[5], to, egress);
+    for (const mode of ["baseline", "extended"] as const) {
+      const journeys = solve(n, from, to, start, o, mode).journeys;
+      assert.equal(journeys.length > 0, access + egress <= 40, `${mode}: ${access} + ${egress}`);
+      for (const journey of journeys) assert.equal(metrics(journey).bike, access + egress);
+    }
+  }
+});
+
+it("Less cycling allows a longer Extended connection within the shared 40 minutes", () => {
+  const from = { label: "Home", lat: 46, lon: 5.99 }, to = { label: "Work", lat: 46.9, lon: 8.02 };
+  const o = preferenceOptions("less", "none");
+  for (const middle of [25, 26]) {
+    const n = fixture(); n.edges.clear(); n.cycling!.clear();
+    ride(n, 0, 1, 10, 25); ride(n, 2, 5, 65, 85);
+    bike(n, from, stops[0], 5); bike(n, stops[1], stops[2], middle); bike(n, stops[5], to, 10);
+    assert.equal(solve(n, from, to, start, o, "baseline").journeys.length, 0);
+    const journeys = solve(n, from, to, start, o, "extended").journeys;
+    assert.equal(journeys.length > 0, middle === 25);
+    for (const journey of journeys) {
+      assert.equal(metrics(journey).middle, 25);
+      assert.equal(metrics(journey).bike, 40);
+    }
+  }
+});
+
+it("Less cycling keeps one total budget across ordered stops", () => {
+  const from = { label: "Home", lat: 46, lon: 5.99 }, to = { label: "Work", lat: 46.9, lon: 8.02 };
+  const o = preferenceOptions("less", "none");
+  for (const egress of [5, 10, 11]) {
+    const n = fixture(); n.edges.clear(); n.cycling!.clear();
+    ride(n, 0, 3, 40, 60); ride(n, 3, 5, 70, 90);
+    bike(n, from, stops[0], 30); bike(n, stops[5], to, egress);
+    for (const mode of ["baseline", "extended"] as const) {
+      const journeys = solveWaypoints(n, [from, place(3), to], start, o, mode).journeys;
+      assert.equal(journeys.length > 0, egress <= 10, `${mode}: 30 + ${egress}`);
+      for (const journey of journeys) {
+        assert.equal(metrics(journey).bike, 30 + egress);
+        assert.equal(journey.waypoints?.[0].place.stopId, stops[3].id);
+      }
+    }
+  }
+});
 
 it("finds the two-transfer winner and preserves useful zero/one-transfer alternatives", () => {
   const n = fixture(true), from = place(0), to = place(5);

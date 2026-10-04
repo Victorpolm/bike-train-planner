@@ -1,12 +1,14 @@
 # Project state
 
-**Research follow-up, 3 October:** Official national transfer sources are located and actual Zürich HB/Bern platform rules verified from the publisher's accessible 30 September database (1,112,959 transfer rows). Its copy omits transfer validity and legacy-ID fields; a lossless production import is still pending. Grouping gentle slopes with Extra categories is proposed, including a separate candidate set so ordinary results stay intact. [Verified sources and integration plan](STATION_TRANSFER_DATA_2026-10-03.md). Version 50 remains live.
+**Latest implementation, 4 October:** Less cycling uses one shared 40-minute total. A longer ride at either end or between services is allowed when the complete journey fits that limit. The former hidden 20/20/10-minute section limits are removed; the selected preference explains the shared budget. **363 regressions and production builds pass.** [Cases and boundaries](EXPERIMENTS.md#2026-10-04--less-cycling-shares-one-total-time-budget).
 
-**Latest implementation, 3 October:** Optional **Reduce climbing** is a separate result category; **Cycling hills** has adjacent help and only No hill preference/Gentler slopes. OJP platform access and scoped station transfers are enforced in both solvers, editing and detour timing, with labelled defaults/estimates where evidence is absent. **360 regressions** and two dated production queries pass. [Sources, exact evidence and limits](STATION_TIMES_2026-10-03.md).
+**Research follow-up, 3 October:** Official national transfer sources are located and actual Zürich HB/Bern platform rules verified from the publisher's accessible 30 September database (1,112,959 transfer rows). Its copy omits transfer validity and legacy-ID fields; a lossless production import is still pending. Grouping gentle slopes with Extra categories is proposed, including a separate candidate set so ordinary results stay intact. [Verified sources and integration plan](STATION_TRANSFER_DATA_2026-10-03.md). That research-only follow-up left version 50 live; the 4 October publication is recorded below.
+
+**Earlier implementation, 3 October:** Optional **Reduce climbing** is a separate result category; **Cycling hills** has adjacent help and only No hill preference/Gentler slopes. OJP platform access and scoped station transfers are enforced in both solvers, editing and detour timing, with labelled defaults/estimates where evidence is absent. **360 regressions** and two dated production queries pass. [Sources, exact evidence and limits](STATION_TIMES_2026-10-03.md).
 
 **Earlier branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).
 
-_Last consolidated: 2026-10-03. This is the current summary; dated reports and Git history preserve earlier states._
+_Last consolidated: 2026-10-04. This is the current summary; dated reports and Git history preserve earlier states._
 
 ## Objective and current scope
 
@@ -52,9 +54,11 @@ _Last consolidated: 2026-10-03. This is the current summary; dated reports and G
 
 ## Last verified publication and tests
 
-**Fact:** Owner-private **version 50** published on **3 October 2026 at 16:40:52 UTC**, environment revision **3**, Site source `f3ae94634aacdf402bed6f17c641540adb5815f6`. All **208 current application files** match `feature/novice-interface-profiles`, which remains unmerged. **360 regressions**, React formatting, Knip and TypeScript/frontend/Worker builds pass. Two dated production OJP checks succeeded; browser interaction QA remains pending. Runtime keys and audience are unchanged. GitHub CI and Site publication are separate.
+**Fact:** Owner-private **version 51** published on **4 October 2026 at 08:54:26 UTC**, environment revision **3**, Site source `4abecf29a21d8815bf01b53ecad5e72507e2553e`. All **208 current application files** match `feature/novice-interface-profiles`, which remains unmerged. **363 regressions** and TypeScript/frontend/Worker builds pass. Less cycling now shares its 40-minute total across all cycling sections, without the former 20-minute endpoint and 10-minute intermediate limits. Browser interaction QA remains pending. Runtime keys and audience are unchanged. GitHub CI and Site publication are separate.
 
-**Version 50 gate:** `npm test` passes all 41 test files; 360 cases in 11 suites pass with non-isolated reporting. React formatting, Knip and TypeScript/frontend/Worker builds pass. The 17 new cases and two production OJP checks are recorded in [STATION_TIMES_2026-10-03.md](STATION_TIMES_2026-10-03.md). Browser interaction/visual QA remains pending.
+**Version 51 gate:** `npm test` passes 363 cases in 11 suites across 41 files; TypeScript/frontend/Worker builds pass. Three new routed regressions cover asymmetric endpoints, longer Extended connections, and one total budget across ordered visits. [Evidence](EXPERIMENTS.md#2026-10-04--less-cycling-shares-one-total-time-budget). Browser interaction/visual QA remains pending.
+
+**Earlier version 50 gate:** `npm test` passes all 41 test files; 360 cases in 11 suites pass with non-isolated reporting. React formatting, Knip and TypeScript/frontend/Worker builds pass. The 17 new cases and two production OJP checks are recorded in [STATION_TIMES_2026-10-03.md](STATION_TIMES_2026-10-03.md). Browser interaction/visual QA remains pending.
 
 **Earlier version 47 routing/fare evidence:** **327 application tests in 11 suites**, React formatting/Knip and TypeScript/frontend/Worker builds pass. Both GitHub push and pull-request Test and build runs passed for application commit `bdb49e28e38a0fd9f80057500b0b87a01489e351`. Live Extended and More searches passed for Zürich–Laax; all three Kunsthaus–Zoo recommendation categories returned ZVV prices, and ZVV/Libero full/Half Fare checks succeeded. One independent cycling-only BRouter request failed without blocking transit results. Browser interaction/visual QA remains pending. [Current release evidence](SEARCH_RELIABILITY_2026-10-03.md).
 

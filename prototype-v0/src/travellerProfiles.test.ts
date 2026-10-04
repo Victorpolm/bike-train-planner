@@ -96,7 +96,7 @@ it("trip presets retain personal values and the original model options", () => {
   assert.equal(TRIP_PRESETS.bikepacking.bicycleScope, "confirmed");
   assert.equal(preferenceOptions("unrestricted", "none").maxBikeMinutes, DEFAULT_OPTIONS.horizonMinutes);
   assert.equal(preferenceOptions("less", "start").maxBikeMinutes, 40);
-  assert.equal(preferenceOptions("less", "start").maxAccessMinutes, 20);
+  assert.equal(preferenceOptions("less", "start").maxAccessMinutes, 40);
   assert.equal(preferenceOptions("balanced", "end").maxBikeMinutes, 90);
   assert.equal(preferenceOptions("more", "none").maxBikeMinutes, 150);
 });

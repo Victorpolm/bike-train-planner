@@ -8,7 +8,8 @@ export type CyclingPreference = "less" | "commuter" | "balanced" | "more" | "unr
 export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown", bicycleScope?: BicycleScope, cyclingPace: CyclingPace = DEFAULT_CYCLING_PACE, cyclingRoutePreference: RoutePreference = "fastest", cyclingPosition: CyclingPosition = "anywhere", hills: HillPreferences = DEFAULT_HILLS, climbOptimization = false): Options {
   const budgets = {
     commuter: { maxBikeMinutes: 45, maxAccessMinutes: 45, maxEgressMinutes: 45, maxIntermediateMinutes: 45 },
-    less: { maxBikeMinutes: 40, maxAccessMinutes: 20, maxEgressMinutes: 20, maxIntermediateMinutes: 10 },
+    // Share the displayed total across sections without hidden, tighter leg caps.
+    less: { maxBikeMinutes: 40, maxAccessMinutes: 40, maxEgressMinutes: 40, maxIntermediateMinutes: 40 },
     balanced: { maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60, maxIntermediateMinutes: 20 },
     more: { maxBikeMinutes: 150, maxAccessMinutes: 90, maxEgressMinutes: 90, maxIntermediateMinutes: 30 },
     // The overall journey window remains binding; no extra cycling cap applies.

@@ -763,3 +763,20 @@ Live 5 October departures checked on 3 October: Zürich–Laax Extended complete
 **Result:** 360 cases/11 suites, all 41 test files, formatting, Knip and production builds pass. Two live version-50 requests for 5 October 08:00 Swiss time returned access/interchange evidence and 6/4 feasible journeys: Rapperswil SG–Lausanne and Zürich Oerlikon–Bern. Actual platform times varied by connection; recombined unmatched pairs still used the labelled two-minute default. These checks establish parsing/application of available evidence, not complete station coverage or real-world bicycle accessibility. [Dated report](STATION_TIMES_2026-10-03.md) and [sanitized output](experiments/station-times-2026-10-03.json).
 
 **Next:** desktop/phone familiar-station acceptance; import maintained platform-specific transfer rules before claiming exhaustive station timing.
+
+
+## 2026-10-04 — Less cycling shares one total time budget
+
+**Problem:** The UI promised up to 40 minutes total, but the preset also imposed 20 minutes per endpoint and 10 minutes per automatic cycling connection, excluding trips comfortably within the total.
+
+**Method:** Three deterministic regressions in `prototype-v0/src/multipleCycling.test.ts` use synthetic services at Swiss coordinates and cached cycling paths. They run through the real preset and routing solvers. All three failed before the fix.
+
+- Ordinary Baseline and Extended accept 30 + 5, 5 + 30, 35 + 5 and 5 + 35 minutes; reject 36 + 5 and 5 + 36.
+- Extended accepts 5 minutes at the start, 25 between services and 10 at the end, but rejects a 26-minute middle ride because the total becomes 41. Baseline still excludes automatic cycling connections.
+- Ordered-stop searches in both modes accept 30 + 5 and 30 + 10 across the visit, but reject 30 + 11. The total cannot reset at a requested stop.
+
+**Result:** `npm test` passes 363 cases in 11 suites across 41 files. TypeScript, frontend and Worker production builds pass. The changed React component was formatted with the repository formatter. This focused change updates the Less preset and its inline explanation; existing budget enforcement and category ranking stay in place.
+
+**Publication:** Owner-private **version 51** published on **4 October 2026 at 08:54:26 UTC**, environment revision **3**, Site source `4abecf29a21d8815bf01b53ecad5e72507e2553e`. All **208 current application files** match `feature/novice-interface-profiles`, which remains unmerged. **363 regressions** and TypeScript/frontend/Worker builds pass. Less cycling now shares its 40-minute total across all cycling sections, without the former 20-minute endpoint and 10-minute intermediate limits. Browser interaction QA remains pending.
+
+**Limit / next step:** These are deterministic routing checks, not new live-provider coverage tests. Browser QA was unavailable. Try a familiar journey with an uneven cycling split under Personalized → Preferences → How much cycling → Less. Nationwide station-transfer coverage still awaits the separate lossless GTFS integration.

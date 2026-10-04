@@ -605,3 +605,10 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Research:** The publisher's dated GTFS SQLite copy is publicly readable with HTTP ranges and contains actual platform-pair rules. Its schema drops the Swiss transfer service-validity field and the stop DIDOK column. Do not treat the research copy as a complete lossless production import. Prefer a pinned original GTFS feed, explicit SLOID/platform mapping and scoped calendar-aware resolution. [Evidence and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
 
 **Proposed interface:** Group Reduce climbing and Gentler slopes under Extra categories, retaining ordinary cycling candidates separately. The owner asked whether the controls could be merged; this update records the recommendation and does not change runtime behaviour.
+
+
+## 2026-10-04 — Share the Less cycling budget across sections
+
+**User feedback:** Reduce/Less cycling is too restrictive. **Decision:** keep the displayed 40-minute total and remove its hidden 20-minute access/egress and 10-minute intermediate caps. Use the same shared budget in candidate discovery, ordinary/ordered-stop routing and existing edit validation. Explain the split in Preferences. This is a change to the Less preset, not the Least cycling or walking ranking or Reduce climbing proposition. Other presets, cycling position, transport permission and transfer timing keep their existing meanings.
+
+**Evidence:** Three routed regressions fail before the fix and pass afterwards; the full 363-case suite and production builds pass. Forty minutes remains accepted and 41 rejected, including journeys with requested stops. [Experiment](EXPERIMENTS.md#2026-10-04--less-cycling-shares-one-total-time-budget). National transfer-data integration remains separate and awaits a lossless original feed; no new data source or key was added.

@@ -204,6 +204,12 @@ export default function TripPreferences({
           </select>
         </label>
       </div>
+      {cycling === "less" && (
+        <p className="preference-note">
+          Share up to 40 minutes across all cycling sections—for example, 30 minutes at the start
+          and 5 at the end.
+        </p>
+      )}
       <label className="check-row">
         <input
           type="checkbox"
