@@ -1,10 +1,12 @@
-import { haversineKm, STATION_BUFFER_MINUTES, type CyclingComparison, type Journey, type Place, type Point } from "./routing.ts";
+import { boardingCheck } from "./transferTimes.ts";
+import { haversineKm, STATION_BUFFER_MINUTES, type CyclingComparison, type Journey, type Place, type Point, type TransitLeg } from "./routing.ts";
 import { journeySteps, type JourneyStep } from "./itinerary.ts";
 import type { CyclingRoute } from "./cycling.ts";
 import { amenityRestricted, amenityStyle, AMENITY_STYLES, type Amenity, type AmenityCategory } from "./osmAmenities.ts";
 
 export type DetourFacility = Point & { id: string; name: string; category: AmenityCategory | "parking"; note?: string; unavailable?: string };
 export type DetourStage = {
+  preceding?: JourneyStep[];
   id: string; label: string; from: Place; to: Place; route: CyclingRoute;
   departure: Date; originalMinutes: number; following: JourneyStep[]; originalArrival: Date;
 };
@@ -36,7 +38,7 @@ export function detourStages(journey: Journey | null, cycling: CyclingComparison
       if (!Number.isFinite(originalMinutes) || originalMinutes < 0) return [];
       return [{ id: `${index}:${step.cyclingRoute.id}`, label: `${step.from ?? "Cycling start"} → ${step.to ?? "Cycling finish"}`,
         from: at(step.cyclingRoute, "from", step.from), to: at(step.cyclingRoute, "to", step.to), route: step.cyclingRoute,
-        departure: step.departure, originalMinutes, following: steps.slice(index + 1), originalArrival }];
+        preceding: steps.slice(0, index), departure: step.departure, originalMinutes, following: steps.slice(index + 1), originalArrival }];
     });
   }
   let departure = start;
@@ -90,17 +92,25 @@ export function detourTiming(stage: DetourStage, routes: DetourRoutes, visitMinu
     facilityArrival: new Date(stage.departure.getTime() + routes[0].minutes * 60_000),
     facilityGapM: Math.max(routes[0].endGapM, routes[1].startGapM) };
   let cursor = stage.departure.getTime() + (ridingMinutes + visitMinutes) * 60_000;
+  const prefix: TransitLeg[] = (stage.preceding ?? []).flatMap(s => s.leg ? [s.leg] : []);
+  prefix.push({ mode: "bike", from: stage.from.label, to: stage.to.label, fromPoint: stage.from, toPoint: stage.to,
+    departure: stage.departure, arrival: new Date(cursor), departurePlatform: null, arrivalPlatform: null,
+    service: "Edited cycling section", serviceName: null, direction: null });
   for (const step of stage.following) {
     if (step.mode === "wait") continue;
     if (step.mode === "unknown" || !step.departure || !step.arrival) return { ...base, status: "unknown" as const };
     if (step.mode === "transit") {
-      const marginMinutes = (step.departure.getTime() - cursor) / 60_000 - STATION_BUFFER_MINUTES;
+      const boarding = boardingCheck(prefix, step.leg ?? { mode: "transit", from: step.from, to: step.to, departure: step.departure,
+        arrival: step.arrival, departurePlatform: null, arrivalPlatform: null, service: step.title, serviceName: null, direction: null }, cursor, STATION_BUFFER_MINUTES);
+      if (!Number.isFinite(boarding.readyAt)) return { ...base, status: "unknown" as const };
+      const marginMinutes = (step.departure.getTime() - boarding.readyAt) / 60_000;
       return { ...base, status: marginMinutes >= 0 ? "kept" as const : "missed" as const, marginMinutes,
-        nextService: step.title, nextDeparture: step.departure,
+        nextService: step.title, nextDeparture: step.departure, boardingNote: boarding.note,
         arrival: marginMinutes >= 0 ? stage.originalArrival : undefined };
     }
     const duration = minutesBetween(step.departure, step.arrival);
     if (!Number.isFinite(duration) || duration < 0) return { ...base, status: "unknown" as const };
+    if (step.leg) prefix.push({ ...step.leg, departure: new Date(cursor), arrival: new Date(cursor + duration * 60_000) });
     cursor += duration * 60_000;
   }
   return { ...base, status: "no-connection" as const, arrival: new Date(stage.originalArrival.getTime() + addedMinutes * 60_000) };

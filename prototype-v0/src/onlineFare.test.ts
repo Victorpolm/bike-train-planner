@@ -6,6 +6,7 @@ import { fareRequest, fareTripRequest, fareTrips, matchingFareTrip, parseFare } 
 import { createFareHandler } from "../server/fareHandler.ts";
 import { fareQuery, type FareQuery } from "./onlineFare.ts";
 import { DEFAULT_FARE_PROFILE, fareSummary, fareCardSummary } from "./fares.ts";
+import { zeroCycling } from "./cycling.ts";
 import type { TransitLeg } from "./routing.ts";
 
 const fixture = (n: string, kind: string) => readFileSync(new URL(`./fixtures/fares-2026-09-27/${n}-${kind}.xml`, import.meta.url), "utf8");
@@ -140,4 +141,16 @@ it("keeps fare requests small and stable when graph stops carry cycling geometry
   assert.ok(before.length < 1000); assert.ok(!before.includes("cyclingRoute"));
   station.cyclingRoute.fetchedAt++;
   assert.equal(JSON.stringify(fareQuery([leg], DEFAULT_FARE_PROFILE)), before);
+});
+
+it("does not mistake a verified stationary waypoint connector for a fare-breaking cycling trip", () => {
+  const stop={id:"8503000",lat:47.378,lon:8.54}, at=new Date("2026-10-05T08:00:00Z");
+  const leg: TransitLeg={mode:"transit",from:"Zürich HB",to:"Zürich HB",fromId:stop.id,toId:stop.id,
+    fromPoint:stop,toPoint:stop,departure:at,arrival:at,departurePlatform:null,arrivalPlatform:null,service:"S",serviceName:null,direction:null};
+  const connector: TransitLeg={...leg,mode:"bike",cyclingRoute:zeroCycling(stop,stop)};
+  assert.ok(fareQuery([leg,connector,leg],DEFAULT_FARE_PROFILE));
+  for(const modified of [{...connector,arrival:new Date(+at+60000)}, {...connector,cyclingRoute:undefined},
+    {...connector,cyclingRoute:{...connector.cyclingRoute!,distanceKm:0.2}},
+    {...connector,fromId:"other",fromPoint:{lat:47.38,lon:8.55}}])
+    assert.equal(fareQuery([leg,modified,leg],DEFAULT_FARE_PROFILE),null);
 });

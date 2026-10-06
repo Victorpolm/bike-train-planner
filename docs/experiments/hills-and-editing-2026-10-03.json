@@ -1,0 +1,446 @@
+{
+  "checkedAt": "2026-10-03T14:43:26.645Z",
+  "paths": [
+    {
+      "mode": "none",
+      "threshold": 5,
+      "km": 4.403,
+      "minutes": 45,
+      "climb": {
+        "ascent": 207,
+        "steepM": 2003,
+        "excessM": 72.62441166518838,
+        "maxGrade": 14.205498806288006,
+        "unknown": 0
+      },
+      "candidates": 2,
+      "source": "BRouter",
+      "note": "Selected from 2 checked paths; extra time 0 min compared with the quickest candidate.",
+      "warnings": []
+    },
+    {
+      "mode": "less-climbing",
+      "threshold": 5,
+      "km": 4.403,
+      "minutes": 45,
+      "climb": {
+        "ascent": 207,
+        "steepM": 2003,
+        "excessM": 72.62441166518838,
+        "maxGrade": 14.205498806288006,
+        "unknown": 0
+      },
+      "candidates": 2,
+      "source": "BRouter",
+      "note": "Prefer less cycling ascent. This is a preference, not a guaranteed gradient limit. Selected from 2 checked paths; extra time 0 min compared with the quickest candidate.",
+      "warnings": []
+    },
+    {
+      "mode": "gentler",
+      "threshold": 5,
+      "km": 5.137,
+      "minutes": 46,
+      "climb": {
+        "ascent": 207,
+        "steepM": 2037,
+        "excessM": 39.45225734951563,
+        "maxGrade": 10.161467584980926,
+        "unknown": 0
+      },
+      "candidates": 2,
+      "source": "BRouter",
+      "note": "Prefer uphill slopes below 5%. This is a preference, not a guaranteed gradient limit. Selected from 2 checked paths; extra time 1 min compared with the quickest candidate.",
+      "warnings": []
+    }
+  ],
+  "journeys": [
+    {
+      "case": "Zürich HB–Zoo",
+      "start": "2026-10-05T06:00:00.000Z",
+      "count": 3,
+      "incomplete": false,
+      "requests": 14,
+      "cyclingRequests": 26,
+      "proposals": [
+        {
+          "categories": [
+            "Fastest",
+            "Fewest boardings",
+            "Least cycling or walking",
+            "Least cycling ascent"
+          ],
+          "minutes": 26,
+          "climb": {
+            "ascent": 3,
+            "steepM": 0,
+            "excessM": 0,
+            "unknown": 0,
+            "maxGrade": 1.6859722648025581
+          },
+          "services": [
+            "Tram 6"
+          ]
+        }
+      ],
+      "warnings": []
+    }
+  ],
+  "edits": [
+    {
+      "section": "Zürich HB → Zürich, Bahnhofplatz/HB",
+      "parts": 2,
+      "applied": true,
+      "originalMinutes": 26,
+      "editedMinutes": 26,
+      "sameTransitObjects": true,
+      "sameFareQuery": true
+    }
+  ],
+  "calls": [
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 1048
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 368
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 2375
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 290
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 781
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 642
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 327
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 332
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1453
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1150
+    },
+    {
+      "source": "/api/ojp/status",
+      "status": 200,
+      "ms": 1001
+    },
+    {
+      "source": "/api/timetable/status",
+      "status": 200,
+      "ms": 944
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 346
+    },
+    {
+      "source": "transport.opendata.ch",
+      "status": 200,
+      "ms": 650
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 624
+    },
+    {
+      "source": "transport.opendata.ch",
+      "status": 200,
+      "ms": 467
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 449
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 648
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 146
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1038
+    },
+    {
+      "source": "/api/ojp/connections",
+      "status": 200,
+      "ms": 3016
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 240
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 205
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1486
+    },
+    {
+      "source": "transport.opendata.ch",
+      "status": 200,
+      "ms": 542
+    },
+    {
+      "source": "transport.opendata.ch",
+      "status": 200,
+      "ms": 536
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 184
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 213
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1037
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 180
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 215
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1434
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 221
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 218
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1935
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 509
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1279
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 795
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 389
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1224
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 609
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1823
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 729
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1186
+    },
+    {
+      "source": "transport.opendata.ch",
+      "status": 200,
+      "ms": 529
+    },
+    {
+      "source": "transport.opendata.ch",
+      "status": 200,
+      "ms": 526
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 146
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1409
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 258
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1423
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 380
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 1609
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 390
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 512
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 576
+    },
+    {
+      "source": "/api/ojp/connections",
+      "status": 200,
+      "ms": 2795
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 295
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 142
+    },
+    {
+      "source": "/api/ojp/connections",
+      "status": 200,
+      "ms": 2432
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 267
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 191
+    },
+    {
+      "source": "/api/ojp/connections",
+      "status": 200,
+      "ms": 2738
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 209
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 177
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 212
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 917
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 163
+    },
+    {
+      "source": "/api/terrain",
+      "status": 200,
+      "ms": 613
+    },
+    {
+      "source": "brouter.de",
+      "status": 200,
+      "ms": 177
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import type { HillPreferences } from "./hills";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CyclingClient } from "./cyclingClient";
 import {
@@ -26,6 +27,7 @@ type Props = {
   stages: DetourStage[];
   pace?: CyclingPace;
   preference?: RoutePreference;
+  hills?: HillPreferences;
   onRoutes: (routes: DetourRoutes | null) => void;
   onClose: () => void;
 };
@@ -35,6 +37,7 @@ export default function DetourPanel({
   stages,
   pace,
   preference,
+  hills,
   onRoutes,
   onClose,
 }: Props) {
@@ -60,7 +63,17 @@ export default function DetourPanel({
     const abort = new AbortController();
     controller.current = abort;
     const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(60_000)]);
-    const client = new CyclingClient(signal, fetch, 500, true, fetch, pace, preference);
+    const client = new CyclingClient(
+      signal,
+      fetch,
+      500,
+      true,
+      fetch,
+      pace,
+      preference,
+      undefined,
+      hills,
+    );
     setResult(null);
     onRoutes(null);
     setBusy(true);
@@ -90,7 +103,7 @@ export default function DetourPanel({
       abort.abort();
       onRoutes(null);
     };
-  }, [stage, facility, pace, preference, attempt, onRoutes]);
+  }, [stage, facility, pace, preference, hills, attempt, onRoutes]);
   const visitMinutes = Number(visit);
   const validVisit =
     visit.trim() !== "" &&
@@ -193,18 +206,17 @@ export default function DetourPanel({
                   The same {timing.nextService} at {clock.format(timing.nextDeparture)} still fits
                   the estimate.
                 </b>{" "}
-                About {Math.floor(timing.marginMinutes)} min remain after the{" "}
-                {STATION_BUFFER_MINUTES}-minute boarding buffer. Destination arrival stays{" "}
-                {clock.format(timing.arrival!)}.
+                About {Math.floor(timing.marginMinutes)} min remain after the transfer and boarding
+                check. Destination arrival stays {clock.format(timing.arrival!)}.
               </p>
             )}
             {timing.status === "missed" && (
               <p>
                 <b>This detour does not fit the selected connection.</b> You need about{" "}
                 {Math.ceil(-timing.marginMinutes)} more minutes to catch {timing.nextService} at{" "}
-                {clock.format(timing.nextDeparture)} with the {STATION_BUFFER_MINUTES}-minute
-                boarding buffer. Shorten the stop or choose another facility. No replacement service
-                has been searched.
+                {clock.format(timing.nextDeparture)} after allowing for transfer and boarding time.
+                Shorten the stop or choose another facility. No replacement service has been
+                searched.
               </p>
             )}
             {timing.status === "unknown" && (
@@ -212,6 +224,9 @@ export default function DetourPanel({
                 <b>Connection timing cannot be checked.</b> Some onward leg details are missing. Do
                 not assume this detour fits the selected service.
               </p>
+            )}
+            {(timing.status === "kept" || timing.status === "missed") && (
+              <p className="detour-note">{timing.boardingNote}</p>
             )}
             {timing.status === "no-connection" && (
               <p>

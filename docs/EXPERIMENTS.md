@@ -721,3 +721,62 @@ Other checks preserve exact transit objects and original journey JSON, select a 
 **Local engine comparison:** MOTIS 2.11.3 and the current solver share a synthetic three-service fixture. Strict allowed and unrestricted prohibited winners agree; an unknown-permission winner disappears from MOTIS's unrestricted Pareto result, so postfiltering cannot implement our middle scope. One transit-stop via passes. Other migration criteria remain untested. [Raw result](experiments/motis-permission-pilot-2026-09-30.json) · [reproduction and limitations](REVIEW_IMPLEMENTATION_2026-09-30.md). No public routing API requests or Swiss live-provider retests were made.
 
 **Publication confirmed:** Owner-private version 42 succeeded at 21:58:44 UTC, environment revision 3, Site source `c5ed6f1a3cdf392c727ad64492a6e43368eae4e6`. All 182 application files match GitHub `a97c872`; [automatic CI](https://github.com/Victorpolm/bike-train-planner/actions/runs/36782578264) passed. Browser QA remains outstanding.
+
+
+## 2026-10-02 — Preset/profile compatibility and the Commuter boundary
+
+Golden offline fixture in `prototype-v0/src/travellerProfiles.test.ts`: one routed bicycle access leg followed by a timed service. Both Baseline and Extended admit 45 minutes of access and reject 46 under the new Commuter total budget. The original 40/90/150 presets retain their limits; Bikepacking preserves the 24-hour horizon and confirmed scope. Multiple profiles roundtrip, trip edits do not mutate a saved profile, invalid data/storage errors are surfaced, and age does not imply fare discounts.
+
+**Result:** 309 cases in 11 suites pass using `node --test --test-isolation=none src/*.test.ts` (sandbox child-process reporting returned file-level results under ordinary `npm test`). Build, format and unused-code gates pass. These are deterministic regressions, not 250 new live route queries. [UI manual checks and limits](INTERFACE_PROFILES_2026-10-02.md).
+
+## 2026-10-02 — Two automatic cycling connections and placement constraints
+
+**Authorised change:** Baseline 0 / Extended up to 2, plus beginning-only and end-only cycling. Tests in `prototype-v0/src/multipleCycling.test.ts` use synthetic services at Swiss coordinates and directed parsed road-route fixtures; they are not real timetable or price observations.
+
+**Golden route:** service A–B, 5-minute cycle B–C, service C–D, 5-minute cycle D–E, service E–F. With a common 08:00 departure, zero transfers arrives after 130 minutes, at most one after 110, and two after 70. The complete chain uses 3 boardings and 10 cycling minutes. Baseline and one-transfer alternatives remain in the paired Extended result. A third transfer is rejected in both solvers. The second boarding after cycling accepts readiness exactly at 53 minutes and rejects a departure one second earlier. Cycling, per-leg, boarding and horizon budgets remain binding.
+
+**Discovery regression:** the first onward through-journey query returns empty. A departure-board query at its cycling target discovers the middle ride, then a second round discovers the final transfer and service. This passes both without requested stops and with a stop at D; repeated Extended selection performs no extra requests and each case remains within 18 timetable calls. Separate tests cover all three permission scopes on all three rides, hard start/end restrictions independently of the ranking category, waypoint bypass attempts, walking at the restricted end and walking after final cycling without another boarding. A two-gap fare query is explicitly refused rather than quoting an unrelated transit trip.
+
+**Verification:** 322 offline tests in 11 suites pass (`node --test --test-isolation=none src/*.test.ts`), with formatting, Knip and TypeScript checks. Existing one-transfer expectations and exhaustive-enumeration counts are updated to the new two-transfer model. Production build/publication evidence is recorded in [MULTIPLE_CYCLING_TRANSFERS.md](MULTIPLE_CYCLING_TRANSFERS.md). Browser interaction QA and live national performance/coverage tests remain pending; no performance multiplier, comprehensive coverage or live fare success is claimed.
+
+
+## 2026-10-03 — Extended request recovery, later departures and city tariffs
+
+**327 tests in 11 suites pass.** `searchReliability.test.ts` sends large enriched station geometry through the real OJP HTTP boundary: minimal stop serialization stays under 512 bytes and retains fare sources. A synthetic sparse-area case rejects the first four road paths over the five-minute budget, finds a fifth two-minute access path in the expanded pool and returns Extended transit. A timetable with departures +10/+40/+70/+100 verifies two More pages advance to +40/+70 without replacing earlier results or changing constraints. A separate prefix case includes five cycling plus two walking minutes and the boarding buffer exactly once. The existing two-transfer discovery case succeeds even after Baseline has consumed 18 calls; the new explicit action remains capped at 18. Stationary-connector fare tests accept only proven zero time/distance at the same stop and retain all positive/unknown-gap rejections.
+
+Live 5 October departures checked on 3 October: Zürich–Laax Extended completed, More advanced 10:38→11:02 Swiss time, and all three Kunsthaus–Zoo category itineraries received ZVV quotes. ZVV full/Half Fare and a selected Libero bus segment also returned prices. One independent long cycling-only BRouter request failed; transit results survived. [Sanitized evidence](experiments/ui-routing-city-fares-2026-10-03.json) and [diagnosis/limits](SEARCH_RELIABILITY_2026-10-03.md). Exact user empty-stop input was not supplied; that specific case remains unconfirmed.
+
+## 2026-10-03 — Hill-aware pruning, transit ascent optimization and applicable cycling edits
+
+**Hypothesis:** carrying elevation resources through acquisition and label pruning retains useful lower-climb/gentler journeys; fixed-service cycling edits can be applied safely without another timetable query.
+
+**Deterministic regressions:** slower low-ascent and gentler-but-higher-total-ascent paths survive a common-stop dominance test in both ordinary and ordered-waypoint solvers; a complete-elevation winner is selected without relaxing bicycle permission. Unknown terrain cannot masquerade as zero climb. Threshold-specific BRouter parameters/cache keys and a reserved low-ascent station query are verified. Editor cases preserve original transit object/fare-query identity and original route immutability; reject missed trains including walking/buffer, disconnected/stale routes, repeated split-section budget evasion and forbidden cycling ends; preserve ordered/repeated waypoint visits and cancel stale requests.
+
+**Live golden journey:** Zürich HB (47.378177, 8.540192) → Zoo entrance (47.3841, 8.5738), 5 October 2026 at 08:00 Europe/Zurich, checked 3 October. Cycling-only: 45 min / 207 m ascent. Gentle 5%: 46 min / 207 m ascent, sampled maximum reduced about 14.2%→10.2%; still above the threshold. Least cycling ascent: tram 6, 26 min / 3 m ascent, three feasible journeys in the completed search. A real access-path edit applied in two pieces with unchanged transit object/fare identity and the same 26 min total. All 69 HTTP calls succeeded.
+
+**Result:** 343 regression cases in 11 suites pass; `npm test` passes 40 test files. This bounded live case demonstrates functionality, not nationwide completeness or a hard slope limit. Browser drag/touch/keyboard acceptance remains pending. [Full report](HILLS_AND_CYCLING_EDITOR_2026-10-03.md) · [sanitized evidence](experiments/hills-and-editing-2026-10-03.json).
+
+## 2026-10-03 — Station transfers and independent climbing propositions
+
+**Golden regressions:** preserve the three main category winners when Reduce climbing is toggled for a fixed candidate set. A seven-minute sourced interchange accepts an onward departure after seven minutes, rejects six, and does not add three more. A later incoming service with a five-minute platform change survives pruning against an earlier service needing ten minutes. Exact operating-day/platform/time/coordinate scope, unknown durations, existing walks, first boarding, cycling editing and unchanged fare evidence are covered. OJP acquisition uses station arrival while fallback requests keep their buffer.
+
+**Result:** 360 cases/11 suites, all 41 test files, formatting, Knip and production builds pass. Two live version-50 requests for 5 October 08:00 Swiss time returned access/interchange evidence and 6/4 feasible journeys: Rapperswil SG–Lausanne and Zürich Oerlikon–Bern. Actual platform times varied by connection; recombined unmatched pairs still used the labelled two-minute default. These checks establish parsing/application of available evidence, not complete station coverage or real-world bicycle accessibility. [Dated report](STATION_TIMES_2026-10-03.md) and [sanitized output](experiments/station-times-2026-10-03.json).
+
+**Next:** desktop/phone familiar-station acceptance; import maintained platform-specific transfer rules before claiming exhaustive station timing.
+
+
+## 2026-10-04 — Less cycling shares one total time budget
+
+**Problem:** The UI promised up to 40 minutes total, but the preset also imposed 20 minutes per endpoint and 10 minutes per automatic cycling connection, excluding trips comfortably within the total.
+
+**Method:** Three deterministic regressions in `prototype-v0/src/multipleCycling.test.ts` use synthetic services at Swiss coordinates and cached cycling paths. They run through the real preset and routing solvers. All three failed before the fix.
+
+- Ordinary Baseline and Extended accept 30 + 5, 5 + 30, 35 + 5 and 5 + 35 minutes; reject 36 + 5 and 5 + 36.
+- Extended accepts 5 minutes at the start, 25 between services and 10 at the end, but rejects a 26-minute middle ride because the total becomes 41. Baseline still excludes automatic cycling connections.
+- Ordered-stop searches in both modes accept 30 + 5 and 30 + 10 across the visit, but reject 30 + 11. The total cannot reset at a requested stop.
+
+**Result:** `npm test` passes 363 cases in 11 suites across 41 files. TypeScript, frontend and Worker production builds pass. The changed React component was formatted with the repository formatter. This focused change updates the Less preset and its inline explanation; existing budget enforcement and category ranking stay in place.
+
+**Publication:** Owner-private **version 51** published on **4 October 2026 at 08:54:26 UTC**, environment revision **3**, Site source `4abecf29a21d8815bf01b53ecad5e72507e2553e`. All **208 current application files** match `feature/novice-interface-profiles`, which remains unmerged. **363 regressions** and TypeScript/frontend/Worker builds pass. Less cycling now shares its 40-minute total across all cycling sections, without the former 20-minute endpoint and 10-minute intermediate limits. Browser interaction QA remains pending.
+
+**Limit / next step:** These are deterministic routing checks, not new live-provider coverage tests. Browser QA was unavailable. Try a familiar journey with an uneven cycling split under Personalized → Preferences → How much cycling → Less. Nationwide station-transfer coverage still awaits the separate lossless GTFS integration.

@@ -538,3 +538,77 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Cleanup boundary:** Remove only demonstrated dead code/unused exports. Keep the boarding buffer, BLS/RhB/regional rules, fare tables, journey IDs and search label cap. No identity-only cache or claimed 27× full-search speedup.
 
 **Engine decision:** The local MOTIS 2.11.3 pilot preserves strict/unrestricted winners but cannot recover the middle-scope winner by postfiltering an unrestricted result. Keep the deployed engine and require pre-routing three-state handling, coordinate-waypoint/intermediate-cycling and category tests before any migration. 300 tests/builds pass; browser QA remains unavailable. [Implementation, reproducible pilot and caveats](REVIEW_IMPLEMENTATION_2026-09-30.md).
+
+
+## 2026-10-02 — Novice interface and optional local traveller profiles
+
+**Authorisation:** Implement the revised proposal on a new GitHub branch. Branch `feature/novice-interface-profiles` starts at main `5f17985`; do not merge as part of the redesign.
+
+**Decision:** Simplify presentation while preserving options and routing semantics. Separate named personal settings from trip presets and per-trip overrides. Store profiles only in this browser, keep Guest, require explicit Save to profile, preserve legacy fare selections and show storage failures. Age is optional metadata, not a fare entitlement. Presets retain current personal fare/pace; new Guest pace is Relaxed 20 km/h. Add a 45-minute total cycling choice without replacing existing limits. Bikepacking uses no separate cap within the existing overall horizon.
+
+**Preservation:** Baseline/Extended stay independent; endpoint preferences remain extra categories. Phone views hide rather than unmount. Map filter changes and view switches do not start journey search. Permission/reservation requirements remain visible; explanatory sources use accessible persistent disclosures. No functional More/Start controls until their separate capabilities exist.
+
+**Evidence:** 309 offline tests in 11 suites, including profile isolation/storage and 45/46-minute routed boundary cases, plus formatting/Knip and production builds. Browser QA remains pending. [Full mapping and remaining work](INTERFACE_PROFILES_2026-10-02.md).
+
+**Publication:** Owner-private version 43 succeeded on 2 October at 19:34:27 UTC, environment revision 3, Site source `79394f5eb992779f1d48048fb5d4f1abf9ec3bf4`; all 188 current application files match the feature branch.
+
+
+## 2026-10-02 — Compact header profile and modular presentation
+
+**User request:** place profile behind a circular person icon at the header's right, reduce reverse/To spacing, explain Extended and make the editing interface more modular.
+
+**Delivery:** consolidate the existing personal controls in a native modal; keep device-local storage and explicit Save to profile. Place the reversal action beside the field boundary without consuming a grid row. Extract independent presentation components and named layout/style settings, with [an editing guide](INTERFACE_EDITING.md). Preserve the existing planning state, model constraints, fares and facilities. Personalized opens trip preferences; personal settings are always accessible from the header. Extended remains at most one extra automatic cycling transfer across the complete journey.
+
+**Boundary:** this is a modular code structure and configuration, not a delivered visual drag-and-drop editor. A possible owner-only preview/editor is documented separately. 309 regressions pass; browser interaction QA remains pending.
+
+## 2026-10-02 — Saved profiles visible in Your trip
+
+**User request:** represent created profiles among the Your trip choices, and explain the limitation on more than one optional cycling connection between services.
+
+**Delivery:** saved profiles have selectable cards with name, pace, fare and selected/modified status. Cards and the header manager share profile state and persistence, including creation, rename, deletion and storage errors. Profiles apply personal settings while trip-style and route preferences remain independent. Saves remain explicit; schema and device-only scope are unchanged. 312 offline tests pass, including three new persistence regressions; browser QA is pending.
+
+**Routing finding/proposal:** the single automatic-transfer limit is hard-coded in both solvers and reflected in one-round timetable discovery; no provider restriction is established. A bounded 0/1/2 experiment with shared budgets, measured discovery/runtime and permission/fare regressions is proposed, not implemented. [Details](MULTIPLE_CYCLING_TRANSFERS.md).
+
+## 2026-10-02 — Baseline 0, Extended up to 2, and cycling position
+
+**User authorisation:** implement zero automatic cycling connections in Baseline, up to two in Extended and choices to ride only at the beginning or only at the end.
+
+**Decision/delivery:** count automatic transfers in both solvers and expand the sampled network in two bounded discovery rounds, including a departure-board seed after the first cycling link. Keep the original total request/deadline/cycling/boarding budgets and independent permission scopes. Preserve zero/one-transfer solutions in the larger comparison. Explicit waypoint-stage cycling remains separate, but beginning/end-only constraints apply to the entire journey and cannot reset at a visit.
+
+**Position semantics:** a hard restriction on riding, distinct from ranking a less-active endpoint. Choosing one end selects Baseline and disables intermediate cycling. The other endpoint must match a transport stop; existing timed walking links remain usable. No new pedestrian router, parking/retrieval or bike rental. Bike custody and saved-profile fields are unchanged. The cycling-only card is labelled as an outside-preference reference and cannot automatically win.
+
+**Evidence/boundary:** 322 offline regressions pass; new golden/acquisition cases are recorded in [EXPERIMENTS.md](EXPERIMENTS.md). Through quotes across cycling gaps remain unsupported; no price substitution. Live nationwide coverage/performance and browser interaction QA remain unmeasured. [Implementation and publication](MULTIPLE_CYCLING_TRANSFERS.md).
+
+
+## 2026-10-03 — Bound each explicit search action and preserve exact fare evidence
+
+**Authorisation:** Fix Extended and city fares, add the missing More time options and replace two help paragraphs with question-mark controls. **Delivery:** Minimal OJP stop payloads; expanded road-checked endpoint recovery; transfer discovery before ordinary alternatives; a fresh bounded allowance for an explicit Extended/More action, retaining checked paths and prior results. No budget reset inside a round. Functional later-departure pages preserve trip constraints and category ranking for their new start time. Allow past-date entry while keeping online fares future-only. A verified stationary connector does not interrupt fare lookup; real cycling gaps still do. Live city quotes succeeded without key or tariff-table changes. 327 regressions pass; browser QA remains pending. [Detailed evidence and caveats](SEARCH_RELIABILITY_2026-10-03.md). SBB prefilled handoff is the next discussion, not a delivered booking capability.
+
+## 2026-10-03 — Soft hill preferences, transit climbing category and applicable section edits
+
+**Authorisation:** implement the discussed hill options and improved path editing, including adjustable steepness and an independent transit-assisted climb optimization.
+
+**Delivery:** preserve the three main recommendation categories and add optional Least cycling ascent/Gentlest cycling. Carry positive cycling ascent and chosen-grade resources through both solvers and waypoint stages; reserve lower-climb acquisition candidates. Prefer less excess uphill rise, then distance above the user-selected 1–20% threshold; do not claim a hard gradient cap from sampled elevation. Unknown elevation is ineligible for a climbing-category win. Hill preferences retain ordinary bike-access rules and shared budgets.
+
+**Editing decision:** recalculate one cycling section through ordered map points; preserve exact public-transport objects and fare evidence. Apply must revalidate walking/boarding timing, section/total cycling limits, required visits and the horizon. Label custom results as edited journeys and retain the original proposal; support Restore. Do not falsely assign an optimization badge to a manual edit. Facility visit-duration insertion and persistent saved routes remain separate.
+
+**Evidence:** 343 regressions pass, including 16 new cases. A dated Zürich HB–Zoo check returned tram 6 with 3 m cycling ascent versus 207 m cycling-only; live section application preserved transit/fare identity. Gentle 5% still exceeded 5%, confirming the soft-preference wording. [Evidence and pending browser QA](HILLS_AND_CYCLING_EDITOR_2026-10-03.md).
+
+## 2026-10-03 — Separate climbing propositions and retain station-time evidence
+
+**Decision:** Reduce climbing is an optional recommendation category, not a global cycling-route preference. Keep Gentler slopes and its editable percentage, remove the Climbing heading, and place help beside Cycling hills.
+
+**Decision:** Use exact dated OJP interchange and point-to-platform access evidence before the documented Swiss stop default or app estimate. Keep passenger timing distinct from bicycle accessibility. Preserve incoming service/platform context during pruning; do not add the app buffer twice. A complete static transfer-table import remains pending (the official bulk endpoint returned HTTP 403 in this session). Source keys and hosting audience are unchanged. [Implementation and evidence](STATION_TIMES_2026-10-03.md).
+
+## 2026-10-03 — National transfer sources and extra-category follow-up
+
+**Research:** The publisher's dated GTFS SQLite copy is publicly readable with HTTP ranges and contains actual platform-pair rules. Its schema drops the Swiss transfer service-validity field and the stop DIDOK column. Do not treat the research copy as a complete lossless production import. Prefer a pinned original GTFS feed, explicit SLOID/platform mapping and scoped calendar-aware resolution. [Evidence and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
+
+**Proposed interface:** Group Reduce climbing and Gentler slopes under Extra categories, retaining ordinary cycling candidates separately. The owner asked whether the controls could be merged; this update records the recommendation and does not change runtime behaviour.
+
+
+## 2026-10-04 — Share the Less cycling budget across sections
+
+**User feedback:** Reduce/Less cycling is too restrictive. **Decision:** keep the displayed 40-minute total and remove its hidden 20-minute access/egress and 10-minute intermediate caps. Use the same shared budget in candidate discovery, ordinary/ordered-stop routing and existing edit validation. Explain the split in Preferences. This is a change to the Less preset, not the Least cycling or walking ranking or Reduce climbing proposition. Other presets, cycling position, transport permission and transfer timing keep their existing meanings.
+
+**Evidence:** Three routed regressions fail before the fix and pass afterwards; the full 363-case suite and production builds pass. Forty minutes remains accepted and 41 rejected, including journeys with requested stops. [Experiment](EXPERIMENTS.md#2026-10-04--less-cycling-shares-one-total-time-budget). National transfer-data integration remains separate and awaits a lossless original feed; no new data source or key was added.

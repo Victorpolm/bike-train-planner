@@ -97,7 +97,7 @@ it("visits multiple stops in order even when the same place is requested again",
   assert.equal(result.journeys[0].totalMinutes, 50);
 });
 
-it("allows one automatic cycling transfer across the whole ordered journey, not one per stage", () => {
+it("shares the two-transfer allowance across the whole ordered journey", () => {
   const n = network(); n.edges.clear();
   const extra = [
     { id: "X", name: "First exit", lat: 45.5, lon: 6.5 },
@@ -111,8 +111,9 @@ it("allows one automatic cycling transfer across the whole ordered journey, not 
   const options = { ...limits, maxBikeMinutes: 20, maxIntermediateMinutes: 10 };
   assert.equal(solveWaypoints(n, places, start, options, "baseline").journeys.length, 0);
   const result = solveWaypoints(n, places, start, options, "extended");
-  assert.equal(Math.min(...result.journeys.map(j => j.totalMinutes)), 90);
-  assert.ok(result.journeys.every(j => j.transitLegs.filter(l => l.service === "Cycle between stops").length === 1));
+  assert.equal(Math.min(...result.journeys.map(j => j.totalMinutes)), 65);
+  assert.ok(result.journeys.every(j => j.transitLegs.filter(l => l.service === "Cycle between stops").length <= 2));
+  assert.equal(Math.min(...solveWaypoints(n, places, start, { ...options, maxCyclingTransfers: 1 }, "extended").journeys.map(j => j.totalMinutes)), 90);
 });
 
 it("samples the onward timetable from the reached waypoint time using one request budget", async () => {
