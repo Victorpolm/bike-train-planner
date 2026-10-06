@@ -1,0 +1,78 @@
+{
+  "checkedAt": "2026-10-06",
+  "gitBlobSha1": "61372cb23aa04f7ca33ffdf8ce1bb2ee7a9c5f15",
+  "stopRows": 104297,
+  "transferRows": 1112959,
+  "stopFields": [
+    "stop_id",
+    "stop_name",
+    "stop_lat",
+    "stop_lon",
+    "location_type",
+    "parent_station",
+    "platform_code",
+    "original_stop_id",
+    "didok"
+  ],
+  "transferFields": [
+    "from_stop_id",
+    "to_stop_id",
+    "from_route_id",
+    "to_route_id",
+    "from_trip_id",
+    "to_trip_id",
+    "transfer_type",
+    "min_transfer_time",
+    "service_id"
+  ],
+  "transferTypes": {
+    "1": 292,
+    "2": 811608,
+    "4": 301059
+  },
+  "scopes": {
+    "unrestricted": 109116,
+    "from_route_id,to_route_id,from_trip_id,to_trip_id,service_id": 301059,
+    "from_route_id,to_route_id,from_trip_id,to_trip_id": 702784
+  },
+  "uniqueServiceIds": 12633,
+  "uniqueRouteIds": 1338,
+  "uniqueTripIds": 569670,
+  "missingStopReferences": 0,
+  "invalidType2Minimum": 0,
+  "samplePlatformRules": [
+    {
+      "from_stop_id": "ch:1:sloid:3000:502:42",
+      "to_stop_id": "ch:1:sloid:3000:10:18",
+      "from_route_id": "",
+      "to_route_id": "",
+      "from_trip_id": "",
+      "to_trip_id": "",
+      "transfer_type": "2",
+      "min_transfer_time": "420",
+      "service_id": ""
+    },
+    {
+      "from_stop_id": "ch:1:sloid:3000:502:42",
+      "to_stop_id": "ch:1:sloid:3000:500:32",
+      "from_route_id": "",
+      "to_route_id": "",
+      "from_trip_id": "",
+      "to_trip_id": "",
+      "transfer_type": "2",
+      "min_transfer_time": "420",
+      "service_id": ""
+    },
+    {
+      "from_stop_id": "ch:1:sloid:7000:6:32",
+      "to_stop_id": "ch:1:sloid:7000:1:1",
+      "from_route_id": "",
+      "to_route_id": "",
+      "from_trip_id": "",
+      "to_trip_id": "",
+      "transfer_type": "2",
+      "min_transfer_time": "360",
+      "service_id": ""
+    }
+  ]
+}
