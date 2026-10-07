@@ -1,5 +1,7 @@
 # Station-transfer ZIP intake and branch consolidation — 6 October 2026
 
+**Status update, 7 October:** The owner subsequently authorized both merges. PR #1 merged at 20:44:44 UTC and PR #2 at 20:45:09 UTC on 6 October. General-rule runtime integration was published in versions 52/53 and is now synchronized to main. [Implementation and verification](STATION_TRANSFER_RUNTIME_2026-10-06.md). The intake and pre-authorization snapshot below is retained as history.
+
 The owner supplied `Transfer in station.zip` both in the conversation and on the existing `Time-transfer` branch. The attachment and repository object are identical: Git blob SHA-1 `61372cb23aa04f7ca33ffdf8ce1bb2ee7a9c5f15`; ZIP SHA-256 `170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22`.
 
 ## Data received and checked
@@ -47,3 +49,4 @@ Recommended order: merge PR #1 into main, then PR #2; verify the resulting tree 
 Automatic approval review blocked the immediate merge into main because the owner's message asked for a recommendation without explicitly approving that exact merge. Main remains unchanged pending explicit confirmation. No alternate merge mechanism was used.
 
 [Machine-readable intake audit](experiments/uploaded-transfer-audit-2026-10-06.json).
+

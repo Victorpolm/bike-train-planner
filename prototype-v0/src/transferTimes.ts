@@ -1,3 +1,4 @@
+import { staticTransfer } from "./staticTransfers.ts";
 import { haversineKm, type Point, type TransitLeg } from "./routing.ts";
 
 const TRANSFER_SOURCE = "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/";
@@ -31,7 +32,7 @@ export function transferContextKey(legs: readonly TransitLeg[]): string {
     previous.arrival, previous.toId, previous.arrivalPlatform, previous.service, previous.operator]);
 }
 export type BoardingCheck = {
-  readyAt: number; minutes: number; source: "ojp" | "ojp-access" | "swiss-default" | "estimate" | "unknown";
+  readyAt: number; minutes: number; source: "ojp" | "ojp-access" | "gtfs" | "swiss-default" | "estimate" | "unknown";
   note: string; url?: string; checked?: string; transferLeg?: TransitLeg;
 };
 export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, readyAt: number, fallbackMinutes: number, accessPoint?: Point): BoardingCheck {
@@ -86,11 +87,27 @@ export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, rea
         checked: matched.find(r => r.checked)?.checked, note: `OJP station access: ${seconds / 60} min, already included in the platform-access step. Bicycle accessibility remains unverified.` };
     }
   }
+  const imported = incoming ? staticTransfer(incoming, next) : undefined;
+  if (imported?.seconds !== undefined && incoming?.arrival && previous) {
+    const seconds = imported.seconds;
+    const covered = legs.slice(previous.index + 1).filter(l => l.mode === "walk").reduce((sum, l) =>
+      sum + (l.arrival && l.departure ? Math.max(0, (+l.arrival - +l.departure) / 1000) : 0), 0);
+    const remaining = Math.max(0, seconds - covered);
+    const transferLeg: TransitLeg | undefined = remaining > 0 ? { mode: "walk", from: next.from, to: next.from,
+      fromId: next.fromId, toId: next.fromId, fromPoint: next.fromPoint, toPoint: next.fromPoint,
+      departure: new Date(readyAt), arrival: new Date(readyAt + remaining * 1000),
+      departurePlatform: incoming.arrivalPlatform, arrivalPlatform: next.departurePlatform,
+      service: "Station transfer", serviceName: null, direction: null, stationTransfer: true } : undefined;
+    return { readyAt: Math.max(readyAt + remaining * 1000, +incoming.arrival + seconds * 1000), minutes: seconds / 60,
+      source: "gtfs", transferLeg, url: imported.feed!.source,
+      note: `SBB GTFS station transfer: ${seconds / 60} min for these mapped stops/platforms. Feed ${imported.feed!.version}, valid ${imported.feed!.validFrom} to ${imported.feed!.validThrough}. This is a general passenger minimum; service-specific exceptions, lifts, steps and bicycle accessibility remain unverified.` };
+  }
+  const coverage = imported ? ` ${imported.reason}` : "";
   const swiss = [incoming?.ojp?.toRef, next.ojp?.fromRef, incoming?.toId, next.fromId].some(id => id && (/^ch:/.test(id) || /^85\d{5}$/.test(id)));
   if (incoming?.arrival && incoming.toId && incoming.toId === next.fromId && swiss) {
     return { readyAt: Math.max(readyAt, +incoming.arrival + 120_000), minutes: 2, source: "swiss-default", url: SWISS_TRANSFER_SOURCE,
-      note: "Swiss timetable default: 2 min within a stop. No connection-specific transfer time was supplied; this does not verify platform access with a bicycle." };
+      note: "Swiss timetable default: 2 min within a stop. No matching transfer time was supplied; this does not verify platform access with a bicycle." + coverage };
   }
   return { readyAt: readyAt + fallbackMinutes * 60_000, minutes: fallbackMinutes, source: "estimate",
-    note: `${fallbackMinutes} min boarding allowance is an app estimate. Entrance-to-platform time and bicycle access are unverified.` };
+    note: `${fallbackMinutes} min boarding allowance is an app estimate. Entrance-to-platform time and bicycle access are unverified.${coverage}` };
 }

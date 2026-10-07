@@ -1,6 +1,10 @@
 # Routing and optimization
 
-## Latest routing update — 2026-10-02
+## Current station timing — 2026-10-06, synchronized 2026-10-07
+
+Exact dated OJP access/interchange evidence takes priority. Otherwise, uniquely matched platform pairs can use the pinned SBB ZIP general minimum within feed validity; incomplete or unavailable evidence retains labelled fallbacks. Both solvers preserve incoming service/platform context during dominance pruning when static records are present. The shared boarding check counts existing walking once and also governs cycling edits and facility detours. Objectives, cycling budgets and bicycle-permission scopes are unchanged. [Data, state, feasibility and regressions](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+
+## Previous routing update — 2026-10-02
 
 Baseline allows 0 automatic cycling connections between services; Extended allows up to 2, discovered in bounded rounds. Beginning-only and end-only cycling are hard journey constraints, separate from endpoint ranking. They disable intermediate cycling and require a transport-stop match at the non-cycling end; existing timed walking transfers remain usable. [Implementation, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md). The dated architectural snapshot below is historical; [PROJECT_STATE.md](PROJECT_STATE.md) describes current hosting/data integration.
 
@@ -252,3 +256,4 @@ Maintain representative journeys in `EXPERIMENTS.md` covering:
 - difficult transfer
 
 These should become regression tests for routing quality, not only software correctness.
+

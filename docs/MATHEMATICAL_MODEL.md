@@ -1,5 +1,7 @@
 # Implemented baseline and extended model
 
+**Current station timing (6 October; synchronized 7 October):** The shared boarding check now applies exact OJP evidence, then the original-ZIP general platform minimum when identity/date checks pass, then a labelled fallback. Imported arrival/departure records activate transfer-sensitive dominance in both solvers. [Exact integration, limits and regression journeys](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+
 _Status: implemented on 2026-09-05; active-travel objectives and map/comparison presentation updated on 2026-09-18; road cycling and a limited bus-policy filter added on 2026-09-20. Experimental, bounded live search; departure-level bicycle capacity and train/tram carriage remain unverified._
 
 **2 October 2026 update:** Baseline 0 / Extended up to 2 automatic cycling connections, with independent beginning-only/end-only cycling restrictions. [Release and exact scope](MULTIPLE_CYCLING_TRANSFERS.md).
@@ -173,7 +175,7 @@ Map selection creates an exact coordinate, then asks GeoAdmin for nearby feature
 | `src/CyclingDetails.tsx` | Map-linked elevation and road-attribute summaries |
 | `src/mapData.ts` | Distinct explored stops and ordered boarding/alighting events for map pins |
 
-Cycling lines follow the provider road network; short endpoint gaps are explicitly unverified walking connectors. Route estimates do not provide turn-by-turn navigation or validate every access restriction. Walking transfers are only the observed timed edges. Stops are station-level rather than a platform/infrastructure graph; the three-minute buffer does not certify real-world transfer feasibility. Departure times can become stale while a long search runs. No bike permission, route-safety or national optimality claims are made.
+Cycling lines follow the provider road network; short endpoint gaps are explicitly unverified walking connectors. Route estimates do not provide turn-by-turn navigation or validate every access restriction. Walking transfers are only the observed timed edges. Stops remain grouped at station level, with platform/service context retained for exact OJP and imported general transfer checks. The network is not a connected platform/infrastructure graph; passenger minimums and fallback buffers do not certify access with a bicycle. Departure times can become stale while a long search runs. No bike permission, route-safety or national optimality claims are made.
 
 OpenTripPlanner remains the production-engine candidate. Its documented access/egress limits, stop caps, transit transfer controls and itinerary filters confirm that bounded discovery and result filtering are existing-engine concerns. The next technical comparison should run fixed Swiss cases against an OTP deployment with complete timetable/street data, and check whether its state and objective support can reproduce this zero-versus-one-intermediate-leg experiment. No OTP instance has been installed or benchmarked here.
 
@@ -206,3 +208,4 @@ The live feed supplies no positive service confirmation, so strict results norma
 Ordinary endpoint acquisition uses a zero cycling limit on the non-cycling side. Select a matching public-transport stop there. Existing timetable walking edges remain eligible; there is no new general pedestrian router or invented straight-line walk from an address. The bicycle remains with the traveller; this does not implement parking/retrieval or rentals. Waypoint dominance includes the end-cycling phase so a state that can no longer board cannot discard one that still can.
 
 The cycling-only card remains an explicitly labelled reference outside a beginning/end-only restriction and cannot be automatically selected as the fastest eligible choice. Through-fare quoting across positive cycling gaps remains unsupported; no alternative all-transit itinerary or overlapping ticket sum is substituted.
+

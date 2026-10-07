@@ -1,6 +1,7 @@
 import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
 import { SEARCH_LIMITS } from "./searchLimits.ts";
 import type { NationalTimetableClient } from "./nationalTimetableClient.ts";
+import type { StationTransferClient } from "./stationTransferClient.ts";
 import type { OjpClient } from "./ojpClient.ts";
 
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
@@ -19,6 +20,7 @@ export function swissDateParts(date: Date) {
 const timetableCache = new Map<string, { expires: number; data: unknown }>();
 let timetableCooldown = 0;
 export class TimetableClient {
+  stationTransfers?: StationTransferClient;
   national: NationalTimetableClient | null = null;
   ojp?: OjpClient | null;
   publicTimetable = false;
@@ -50,6 +52,7 @@ export class TimetableClient {
   fork(signal: AbortSignal) {
     const next = new TimetableClient(signal, this.gapMs, this.fetcher, this.budget);
     next.publicTimetable = this.publicTimetable;
+    next.stationTransfers = this.stationTransfers?.fork();
     next.ojp = this.ojp?.fork(signal);
     next.national = this.national;
     if (next.national) next.national.signal = signal;

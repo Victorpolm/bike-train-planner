@@ -1,6 +1,8 @@
 # Data sources and data risks
 
-**3 October source investigation:** The primary national GTFS/HRDF sources contain station/platform transfer rules. An accessible official SQLite snapshot allowed verification of actual records; its schema omits fields required for some date-specific exceptions and legacy-ID mappings. Production import remains pending. [Exact URLs, source counts, sampled records and integration contract](STATION_TRANSFER_DATA_2026-10-03.md).
+**7 October production status:** The original owner-supplied ZIP is integrated as a compact server-side lookup of 109,116 general minimum-time rules. Feed 20260930 is valid 14 December 2025–12 December 2026; 1,003,843 scoped rows remain excluded from general lookup. [Runtime import, identifiers, validity and limits](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+
+**3 October source investigation:** The primary national GTFS/HRDF sources contain station/platform transfer rules. An accessible official SQLite snapshot allowed verification of actual records; its schema omits fields required for some date-specific exceptions and legacy-ID mappings. Production import was pending on 3 October; the later original-ZIP general-rule integration is recorded above. [Exact URLs, source counts, sampled records and integration contract](STATION_TRANSFER_DATA_2026-10-03.md).
 
 _Consolidated 2026-09-29. Current integrations are separated from source options and historical experiments._
 
@@ -12,7 +14,7 @@ _Consolidated 2026-09-29. Current integrations are separated from source options
 | Terrain and official path information | On-demand Swiss GeoAdmin/swisstopo checks described in [terrain implementation](SWISSTOPO_AND_FARES_2026-09-27.md) | Partial/ambiguous feature matching remains explicit; not a complete imported swissTLM3D network |
 | Places and addresses | GeoAdmin, Swiss Transport API, local known places and Photon/OSM venue search | Place relevance/entrance identity may need confirmation; see [PLACE_SEARCH.md](PLACE_SEARCH.md) |
 | Timetables and bicycle evidence | Active server-side OJP 2.0, paired bicycle-filtered/unfiltered searches, dated TripInfo; public search.ch and Transport API fallbacks; scoped reviewed operator rules | Exact service/segment evidence and operator policy are different; unknown permission, disruptions and capacity remain separate |
-| Station access/interchange | OJP 2.0 dated transfer durations and coordinate-bound foot access; documented Swiss two-minute same-stop default; [implementation](STATION_TIMES_2026-10-03.md) | Missing platform-pair rules use a labelled default/estimate; no nationwide static transfer import or bicycle-accessibility guarantee |
+| Station access/interchange | Exact dated OJP access/transfers, then the original SBB ZIP general-rule lookup; [runtime implementation](STATION_TRANSFER_RUNTIME_2026-10-06.md) | Feed validity and unique platform mapping required; scoped exceptions excluded; gaps use labelled defaults/estimates; no bicycle-accessibility guarantee |
 | Passenger/bicycle prices | OJP Fare test endpoint using a separate server key, with retained/assembled exact itineraries; scoped published fallbacks | Test estimates, complete-coverage checks and unknown products; no purchase/booking guarantee; [fare release](OJP_EXACT_TRIP_FARES_2026-09-28.md) |
 | Bicycle parking | [Official bicycle/car feed](https://opentransportdata.swiss/en/cookbook/road-traffic-cookbook/bike-and-car-parking/), filtering BIKE records for the map toggle and closest-to-start trial | Straight-line distance to facility points; station/partner coverage including border areas; no bicycle occupancy; richer hours/prices/entrances not yet normalised |
 | Local bicycle parking | [Swiss OSM Overpass](https://overpass.osm.ch/), `amenity=bicycle_parking` nodes/ways/relations; shared map and closest-to-start search | Point/area centres, incomplete coverage, mapped access/fee/hours rather than verified entry or availability; [implementation](PARKING_OSM_2026-09-29.md) |
@@ -78,3 +80,4 @@ Use bounded, cached requests with independent failure handling. Parking/repair r
 - [Parking feed audit — 29 September](experiments/bike-parking-source-audit-2026-09-29.json)
 
 Earlier descriptions of schematic cycling, inactive OJP keys or unimported national files are historical; consult these dated reports and Git history for their original context. [PROJECT_STATE.md](PROJECT_STATE.md) and [APP_ROADMAP.md](APP_ROADMAP.md) define the current implementation and priorities.
+

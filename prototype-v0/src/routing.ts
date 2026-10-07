@@ -46,6 +46,8 @@ export type Journey = {
 };
 
 export type TransitLeg = {
+  stationArrival?: import("./staticTransfers.ts").StaticTransferEndpoint;
+  stationDeparture?: import("./staticTransfers.ts").StaticTransferEndpoint;
   transferRules?: import("./transferTimes.ts").StationTransferRule[];
   stationTransfer?: boolean;
   stationAccess?: boolean;

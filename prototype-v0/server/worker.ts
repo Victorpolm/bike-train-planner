@@ -1,3 +1,4 @@
+import { handleStationTransfers } from "./stationTransferHandler.ts";
 import { handleParking } from "./parkingHandler.ts";
 import { handleAmenities, handleServices } from "./amenityHandler.ts";
 import { handleFacilities } from "./facilityHandler.ts";
@@ -10,6 +11,7 @@ import { handleFare, type FareEnvironment } from "./fareHandler.ts";
 export default {
   async fetch(request: Request, env: OjpEnvironment & TimetableEnvironment & FareEnvironment): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if (path === "/api/station-transfers/v1") return handleStationTransfers(request);
     if (path === "/api/amenities/v1") return handleAmenities(request);
     if (path.startsWith("/api/facilities/")) return handleFacilities(request);
     if (path.startsWith("/api/services/")) return handleServices(request);

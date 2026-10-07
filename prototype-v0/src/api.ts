@@ -1,3 +1,4 @@
+import { StationTransferClient } from "./stationTransferClient.ts";
 import { hillSearch, routeClimb } from "./hills.ts";
 import { SearchDeadline, SEARCH_DEADLINE_MS, TERRAIN_SEARCH_DEADLINE_MS } from "./searchDeadline.ts";
 import { NationalTimetableClient } from "./nationalTimetableClient.ts";
@@ -109,7 +110,7 @@ export async function findCandidateStations(point: Place, maxMinutes: number, cl
   return selectStations(stops, point, maxMinutes, expand ? SEARCH_LIMITS.stopsPerSide * 2 : SEARCH_LIMITS.stopsPerSide);
 }
 
-async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number) {
+async function acquireConnections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number) {
   if (from.id === to.id) return;
   if (client.national) await client.timed(() => client.national!.add(network, from, to, ready));
   if (client.ojp) {
@@ -136,6 +137,11 @@ async function connections(network: Network, client: TimetableClient, from: Stop
   for (const connection of data?.connections ?? []) client.rejectedSections += addSections(network, connection.sections);
 }
 
+async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number) {
+  await acquireConnections(network, client, from, to, ready, boardingMinutes);
+  await client.stationTransfers?.hydrate(network, client.signal);
+}
+
 export type SearchSession = {
   requestSignal?: AbortSignal;
   searchElapsedMs?: number;
@@ -155,7 +161,7 @@ export type SearchSession = {
   cyclingCandidatePools?: Map<string, Station[]>;
 };
 export function searchWarnings(session: SearchSession): string[] {
-  const warnings = [...session.client.warnings, ...session.client.national?.warnings ?? [], ...session.client.ojp?.warnings ?? [], ...session.cyclingClient?.warnings ?? [],
+  const warnings = [...session.client.warnings, ...session.client.stationTransfers?.warnings ?? [], ...session.client.national?.warnings ?? [], ...session.client.ojp?.warnings ?? [], ...session.cyclingClient?.warnings ?? [],
     ...[...session.comparisonClient?.warnings ?? []].map(w => `Cycling-only comparison — ${w}`)];
   if (session.client.rejectedSections) warnings.push("Some sections lacked usable stops or times and were excluded.");
   if ([session, session.confirmed, session.allTransit].some(s => s?.baseline.limited || s?.extended?.limited)) warnings.push("The routing search reached its label limit; some alternatives may be missing.");
@@ -357,7 +363,7 @@ export function updateBicycleEvidence(session: SearchSession, leg: TransitLeg, e
 
 async function planInternal(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
-  dependencies: { fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[];
+  dependencies: { stationTransferFetcher?: typeof fetch; fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[];
     cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch; ojpClient?: OjpClient | null; nationalClient?: NationalTimetableClient | null; publicTimetable?: boolean;
     previous?: SearchSession } = {}): Promise<SearchSession> {
   validateOptions(options);
@@ -368,6 +374,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   const [origin, destination, ...waypoints] = await Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]);
   signal.throwIfAborted();
   const client = dependencies.previous?.client.fork(signal) ?? new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
+  if (!dependencies.previous && (!dependencies.fetcher || dependencies.stationTransferFetcher)) client.stationTransfers = new StationTransferClient(dependencies.stationTransferFetcher);
   client.publicTimetable = dependencies.previous?.client.publicTimetable ?? dependencies.publicTimetable ?? !dependencies.fetcher;
   if (!dependencies.previous) client.ojp = dependencies.ojpClient !== undefined ? dependencies.ojpClient
     : dependencies.fetcher ? null : await OjpClient.connect(signal);
@@ -472,6 +479,7 @@ async function seedDepartures(session: SearchSession, station: Stop, ready: Date
     id: station.id, datetime: `${dt.date} ${dt.time}`, limit: "6",
   }));
   session.client.rejectedSections += addStationboard(session.network, data?.stationboard ?? []);
+  await session.client.stationTransfers?.hydrate(session.network, session.client.signal);
 }
 
 async function extendInternal(session: SearchSession, progress: Progress, publish: SearchUpdate = () => {}): Promise<SearchSession> {

@@ -169,7 +169,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   const horizon = start.getTime() + o.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(o, mode);
   const outgoing = new Map<string, Edge[]>();
-  const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length);
+  const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length || e.leg.stationArrival?.id || e.leg.stationDeparture?.id);
   for (const edge of network.edges.values()) {
     const l = edge.leg;
     if (!l.departure || !l.arrival || !Number.isFinite(l.departure.getTime()) ||

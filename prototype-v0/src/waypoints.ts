@@ -25,7 +25,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   const horizon = start.getTime() + options.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(options, mode);
   const outgoing = new Map<string, Edge[]>();
-  const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length);
+  const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length || e.leg.stationArrival?.id || e.leg.stationDeparture?.id);
   for (const edge of network.edges.values()) {
     const leg = edge.leg;
     if (!leg.departure || !leg.arrival || !Number.isFinite(leg.departure.getTime()) || !Number.isFinite(leg.arrival.getTime())

@@ -1,5 +1,7 @@
 # Data for wider station-transfer coverage
 
+**Status update, 7 October:** The original ZIP was supplied, both branches merged, and its general-rule runtime lookup is deployed in version 53 and synchronized to main. Scoped exceptions remain pending. [Implementation, source provenance and checks](STATION_TRANSFER_RUNTIME_2026-10-06.md). The dated research findings below are historical.
+
 _Research and verified data access, 3 October 2026. No application release in this update; version 50 remains live._
 
 ## Finding
@@ -47,7 +49,7 @@ First acceptance case: the recorded Rapperswil–Lausanne search contains a reco
 
 This source addresses **public-transport interchanges**. It does not fill all entrance-to-platform or exit-path gaps, nor verify lifts, stairs or bicycle passage. Continue using scoped OJP access durations for those queries; indoor pathway evidence is separate work.
 
-**Current status:** source located and actual records verified; national production lookup is not yet implemented. The original archive download and lossless schema/validity validation remain the next input gate. A supported fresh archive or an original-schema extract is sufficient; users should not paste API secrets into chat.
+**Status on 3 October:** source located and actual records verified; national production lookup is not yet implemented. The original archive download and lossless schema/validity validation remain the next input gate. A supported fresh archive or an original-schema extract is sufficient; users should not paste API secrets into chat.
 
 ## Extra categories: proposed simplification
 
@@ -56,3 +58,4 @@ The owner's suggestion is sound: put **Reduce climbing** and **Gentler slopes** 
 This needs a behaviour change as well as rearranging labels. Version 50's Gentler slopes currently selects cycling paths globally. To make it a true extra category, retain ordinary paths and a separate gentler candidate set, and apply the hill ranking to that additional proposal. Do not quietly change all ordinary category paths merely because an extra category is enabled. Preserve existing cycling limits, bicycle-access choices and optional endpoint category.
 
 **Proposal, not yet implemented in this research update.**
+

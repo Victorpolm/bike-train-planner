@@ -1,8 +1,10 @@
 # App roadmap: bicycle + public transport
 
+**7 October consolidation completed:** Interface/profile and ZIP branches merged on 6 October; version-53 application source is now synchronized to main. The general station-transfer lookup is delivered. Next: familiar-station desktop/phone acceptance, then scoped route/trip/calendar matching and a maintained feed refresh before 12 December 2026. [Evidence and remaining boundaries](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+
 **6 October clarification and proposal:** Add a multi-select Extra categories group with independent hill proposals and Discover compromises; retain current cycling presets and add Personalized minimum/maximum minutes. Investigate food loading with compact geographic batches. The controlled ranking omission and slow successful nationwide food response are documented; the owner’s exact phone/route failures are not yet reproduced. [Audit and implementation order](RESULTS_REVIEW_2026-10-06.md).
 
-**3 October follow-up, proposed:** Merge Reduce climbing and Gentler slopes into Extra categories. Gentle slope settings should affect the additional proposal, with ordinary cycling candidates retained. National station-transfer data has been found and sampled; implement a lossless, dated platform-pair lookup to improve recombined connections before claiming complete coverage. [Data and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
+**3 October follow-up, proposed:** Merge Reduce climbing and Gentler slopes into Extra categories. Gentle slope settings should affect the additional proposal, with ordinary cycling candidates retained. The subsequent original-ZIP general-rule lookup is now delivered; complete route/trip/calendar-specific matching and maintain feed freshness before claiming complete coverage. [Data and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
 
 _Updated 2026-10-03. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
 
@@ -18,7 +20,7 @@ _Updated 2026-10-03. The user's latest order supersedes the delivery orders reco
 
 **Review follow-up, implemented 30 September:** automatic detour framing and keyboard map selection simplify the controls. Permission cache/alias fixes, timetable extraction, conservative cleanup and automated offline verification are delivered. [Accepted/rejected review items and MOTIS pilot](REVIEW_IMPLEMENTATION_2026-09-30.md). Next: check the interaction on desktop/mobile, then resume facility precision. The engine pilot is not a migration.
 
-## Interface milestone — branch implementation, 2 October
+## Interface milestone — implemented 2 October, merged 6 October
 
 The owner authorised the revised interface and local profiles on `feature/novice-interface-profiles`. Profiles are independent of trip presets; all existing model/access/pace/fare/category choices remain accessible. Phone views keep the same mounted map and planner. Single-total cards and persistent ? explanations simplify inspection without hiding required bicycle conditions. [Implemented controls, evidence and manual acceptance](INTERFACE_PROFILES_2026-10-02.md).
 
@@ -151,7 +153,7 @@ Baseline/Extended remain available for the current mathematical experiment. Movi
 
 ## Technical work retained after these priorities
 
-- **Two automatic cycling transfers — implemented on the UI branch:** Baseline 0 / Extended up to 2, two-round discovery, and beginning-only/end-only hard constraints now share the existing budgets. Next measure live route quality, runtime and truncation with a small fixed Swiss pilot; address walking access and per-block fare aggregation remain separate work. [Scope, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md).
+- **Two automatic cycling transfers — implemented and merged:** Baseline 0 / Extended up to 2, two-round discovery, and beginning-only/end-only hard constraints now share the existing budgets. Next measure live route quality, runtime and truncation with a small fixed Swiss pilot; address walking access and per-block fare aggregation remain separate work. [Scope, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md).
 
 - **Later road safety:** investigate crossings/signals, turning manoeuvres, physical separation, documented lower speed limits and pedestrian access. Review official injury-crash data with exposure, age and geometry limitations. Existing lower-traffic-stress summaries remain heuristics; no “every turn is dangerous” rule or guaranteed-safe route. See [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md).
 
@@ -178,3 +180,4 @@ Cargo/trailer suitability, battery-aware e-bike planning, navigation export, int
 ## How to keep delivery manageable
 
 For each bounded piece, state the expected behaviour and failure cases, implement it, verify those cases, record the result and next open item, then move to the next piece. Keep documentation and implementation in the same reviewed change when coding starts. Save long experiments incrementally and report partial results honestly; do not let a large random test run become the only release gate.
+

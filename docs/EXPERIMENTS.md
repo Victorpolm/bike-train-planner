@@ -780,3 +780,20 @@ Live 5 October departures checked on 3 October: Zürich–Laax Extended complete
 **Publication:** Owner-private **version 51** published on **4 October 2026 at 08:54:26 UTC**, environment revision **3**, Site source `4abecf29a21d8815bf01b53ecad5e72507e2553e`. All **208 current application files** match `feature/novice-interface-profiles`, which remains unmerged. **363 regressions** and TypeScript/frontend/Worker builds pass. Less cycling now shares its 40-minute total across all cycling sections, without the former 20-minute endpoint and 10-minute intermediate limits. Browser interaction QA remains pending.
 
 **Limit / next step:** These are deterministic routing checks, not new live-provider coverage tests. Browser QA was unavailable. Try a familiar journey with an uneven cycling split under Personalized → Preferences → How much cycling → Less. Nationwide station-transfer coverage still awaits the separate lossless GTFS integration.
+
+
+## 2026-10-07 — Verify the deployed station-transfer integration before synchronizing main
+
+**Question:** Does the source deployed in version 53 preserve the approved UI and enforce imported platform minimums when exact OJP evidence is absent, and can it be copied back without unrelated changes?
+
+**Source comparison:** All 208 existing application paths are present in Site commit `619bc7bb6814d69054e582b632a152a437adeba4`; nine are modified and six application files are added, yielding 214. Fifteen changed files are synchronized exactly. Site-only historical documentation snapshots and `SOURCE.md` are excluded. Base GitHub main is `ef18c8571cedfc67de272dfaf6c2c1688b9c0ea1`.
+
+**Golden transfer regression:** In the deterministic A → Zürich HB → D graph, arrival at platform 41/42 at 08:10 Swiss time on 6 October and departure from platform 18 at 08:16 is rejected. Departure at 08:17 is accepted in both ordinary and waypoint solvers, with exactly seven walking minutes and unchanged fare identity. The shipped data resolves the exact Zürich pair to 420 seconds and the checked Bern 32 → 1 pair to 360 seconds. A later-arriving service with a shorter platform change survives dominance and catches an onward ride that the earlier arrival cannot.
+
+**Additional retained regressions:** generated platform sectors and unknown/contradictory IDs; scoped importer exclusions and repeatability; walking counted once; exact OJP priority and unknown-duration rejection; context reset after cycling; Swiss-date expiry and changed-platform rejection; batches of at most 24 endpoints, cached successes and retry on a later action; hydration of the asynchronous planner before transit proposals are published. These nine cases are in `prototype-v0/src/staticTransfers.test.ts`.
+
+**Verification on 7 October:** `npm test` passes **372 tests in 11 suites** across 42 test files (0 failed/skipped/cancelled). `npm run format:check`, `npm run check:unused` and `npm run build` pass. The build includes TypeScript and frontend/Worker production bundles. Vite reports its existing >500 kB frontend chunk advisory; it is not a build failure. No new browser interaction or live-provider route check is claimed.
+
+**Deployment evidence:** Sites reports version 52 succeeded on 6 October at 21:00:13 UTC and version 53 at 21:04:31 UTC, environment revision 3. The synchronized app is the exact already deployed version-53 source; no new publication is needed. [Identifiers, data contract and limits](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+
+**Next:** complete the familiar-station desktop/phone acceptance pass, then resolve scoped service exceptions and maintain the dated feed. Offline passenger-minimum checks do not verify station pathways with a bicycle.

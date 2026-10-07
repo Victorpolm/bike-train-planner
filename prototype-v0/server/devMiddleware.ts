@@ -1,3 +1,4 @@
+import { handleStationTransfers } from "./stationTransferHandler.ts";
 import { handleParking } from "./parkingHandler.ts";
 import { handleAmenities, handleServices } from "./amenityHandler.ts";
 import { handleFacilities } from "./facilityHandler.ts";
@@ -11,11 +12,12 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
   return { name: "server-only-ojp", configureServer(server) {
     server.middlewares.use(async (incoming, outgoing, next) => {
       const path = new URL(incoming.url ?? "/", "http://localhost").pathname;
+      const stationTransfers = path === "/api/station-transfers/v1";
       const parking = path === "/api/parking" || path.startsWith("/api/parking/v3/");
       const amenities = path === "/api/amenities/v1";
       const services = path.startsWith("/api/services/");
       const facilities = path.startsWith("/api/facilities/");
-      if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && !parking && !amenities && !services && !facilities && incoming.url !== "/api/terrain") return next();
+      if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && !stationTransfers && !parking && !amenities && !services && !facilities && incoming.url !== "/api/terrain") return next();
       try {
         const chunks: Buffer[] = []; let size = 0;
         for await (const chunk of incoming) {
@@ -30,6 +32,7 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
           body: ["GET", "HEAD"].includes(incoming.method ?? "GET") ? undefined : Buffer.concat(chunks),
         });
         const response = incoming.url === "/api/terrain" ? await handleSwisstopo(request)
+          : stationTransfers ? await handleStationTransfers(request)
           : amenities ? await handleAmenities(request)
           : facilities ? await handleFacilities(request)
           : services ? await handleServices(request)
