@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**7 October walking and fares:** “Only at the beginning” now cycles to transit and walks to the destination; “Only at the end” starts on foot and cycles after transit. A bicycle-on-transit checkbox controls both service eligibility and bicycle charges. Pedestrian routes have a separate 30-minute allowance per section, adjustable from 0 to 60. Available city passenger prices stay visible when bicycle prices are incomplete. **409 regressions**, formatting, Knip and production builds pass. [Behaviour, live checks and limits](docs/WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
+
 **7 October follow-up:** Compact departure/arrival controls keep a clock reset beside the time. Historical searches in both directions are regression-tested. Simplest now compares a road-oriented bicycle candidate and counts actual turning decisions: the checked ETH HG–Stadelhofen example uses Rämistrasse and improves from 1.774 km / 16 turns to 1.551 km / 11 turns. [Implementation, fixtures and limits](docs/SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
 
 **7 October implementation:** **Arrive at** finds the latest checked feasible departure, including final cycling and platform allowances. **Reduce climbing** now requires worthwhile absolute and relative ascent savings within a limited time cost; near-flat gains do not create an extra suggestion. **388 regressions**, formatting, Knip and production builds pass. [Behaviour, pilot defaults and limits](docs/ARRIVAL_AND_CLIMBING_2026-10-07.md).
@@ -12,7 +14,7 @@
 
 **3 October reliability update:** Compact OJP requests fix rejected searches and preserve exact city-fare evidence. Extended gets bounded transfer-discovery work; endpoint checks retry a larger candidate pool. Clickable ? help and functional **More · later departures** are delivered, with past-date entry restored. **327 regressions pass** and live ZVV/Libero fares and Extended/later-departure checks succeeded. [Changes, evidence and limits](docs/SEARCH_RELIABILITY_2026-10-03.md).
 
-A Switzerland-first planner for travelling with your bicycle, combining road-routed cycling and public transport. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
+A Switzerland-first planner combining cycling, walking and public transport, with an explicit choice to take the bicycle on board or leave it at a station. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
 
 ## Current state — 7 October 2026
 

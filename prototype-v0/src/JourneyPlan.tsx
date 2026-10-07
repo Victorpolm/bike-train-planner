@@ -38,6 +38,8 @@ export default function JourneyPlan({
   onEvidence,
   fareProfile = DEFAULT_FARE_PROFILE,
   boardingMinutes = 3,
+  takeBikeOnTransit = true,
+  cyclingPosition = "anywhere",
 }: {
   id: string;
   journey: Journey;
@@ -45,6 +47,8 @@ export default function JourneyPlan({
   destination: Place;
   fareProfile?: FareProfile;
   boardingMinutes?: number;
+  takeBikeOnTransit?: boolean;
+  cyclingPosition?: import("./model").CyclingPosition;
   onEvidence?: EvidenceUpdate;
 }) {
   const stopNumbers = new Map(journeyStops(journey).map((stop) => [stop.id, stop.number]));
@@ -53,6 +57,14 @@ export default function JourneyPlan({
       <div className="plan-heading">
         <h3 id={`${id}-heading`}>Your travel plan</h3>
         <p>{day.format(journey.startTime)} · Swiss local time</p>
+        {!takeBikeOnTransit && (
+          <p>
+            {cyclingPosition === "start-only"
+              ? `Leave your bicycle at ${journey.originStation.name}; continue by public transport and on foot.`
+              : `Walk to public transport, then use the bicycle you have at ${journey.destinationStation.name}.`}{" "}
+            Parking availability and the path from a rack to the platform are not verified.
+          </p>
+        )}
         {!!journey.waypoints?.length && (
           <p>
             Intermediate stops:{" "}
@@ -140,6 +152,47 @@ export default function JourneyPlan({
                   </p>
                 </InfoDisclosure>
               )}
+              {leg?.walkingRoute && (
+                <InfoDisclosure label="Walking path and time estimate">
+                  <p className="plan-note">
+                    {leg.walkingRoute.distanceKm.toFixed(2)} km on a pedestrian route. Walking uses
+                    at most 4.5 km/h, or the provider's slower estimate; cycling speed does not
+                    affect it. Terrain and step-free access are not verified.
+                  </p>
+                  {leg.walkingRoute.startGapM + leg.walkingRoute.endGapM > 10 && (
+                    <p className="plan-note">
+                      Includes about{" "}
+                      {Math.round(leg.walkingRoute.startGapM + leg.walkingRoute.endGapM)} m of
+                      estimated access between your selected points and the mapped path.
+                    </p>
+                  )}
+                  <p className="plan-note">
+                    <a
+                      href="https://routing.openstreetmap.de/about.html"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      OSRM · FOSSGIS
+                    </a>
+                    {" · "}
+                    <a
+                      href="https://www.openstreetmap.org/copyright"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      © OpenStreetMap contributors
+                    </a>
+                    {" · "}
+                    <a
+                      href="https://www.openstreetmap.org/fixthemap"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Fix the map
+                    </a>
+                  </p>
+                </InfoDisclosure>
+              )}
               {transfer && (
                 <InfoDisclosure label="Station transfer and boarding time">
                   <p className="plan-note">
@@ -161,7 +214,7 @@ export default function JourneyPlan({
                   </p>
                 </InfoDisclosure>
               )}
-              {leg?.mode === "transit" && (
+              {leg?.mode === "transit" && takeBikeOnTransit && (
                 <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />
               )}
               {step.mode === "bike" && step.cyclingRoute && (
@@ -178,7 +231,7 @@ export default function JourneyPlan({
           );
         })}
       </ol>
-      <FareDetails journey={journey} profile={fareProfile} />
+      <FareDetails journey={journey} profile={fareProfile} takeBikeOnTransit={takeBikeOnTransit} />
       <InfoDisclosure label="Journey guidance">
         <p className="plan-caution">
           Bicycle guidance covers a standard, unfolded bicycle. Check uncertain departures with the

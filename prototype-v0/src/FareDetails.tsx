@@ -5,25 +5,29 @@ import { useOnlineFare } from "./useOnlineFare";
 export default function FareDetails({
   journey,
   profile,
+  takeBikeOnTransit = true,
 }: {
   journey: Journey;
   profile: FareProfile;
+  takeBikeOnTransit?: boolean;
 }) {
-  const online = useOnlineFare(journey.transitLegs, profile);
-  const { fare, rows } = fareRows(journey.transitLegs, profile, online.quote);
-  if (fare.prohibited)
-    return (
-      <section className="fare-details">
-        <h4>Tickets and price</h4>
-        <p>
-          This comparison includes prohibited bicycle carriage. Buying a ticket does not make that
-          carriage possible.
-        </p>
-      </section>
-    );
+  const online = useOnlineFare(journey.transitLegs, profile, takeBikeOnTransit);
+  const { fare, rows } = fareRows(journey.transitLegs, profile, online.quote, takeBikeOnTransit);
   return (
     <section className="fare-details">
       <h4>Tickets and price</h4>
+      {fare.prohibited && (
+        <p>
+          This comparison includes a bicycle ban. The passenger price can still be checked; buying a
+          ticket does not make bicycle carriage possible.
+        </p>
+      )}
+      {!takeBikeOnTransit && (
+        <p>
+          Your bicycle stays off public transport. No bicycle ticket or bicycle reservation is
+          included.
+        </p>
+      )}
       <dl>
         {rows.map((row) => (
           <div key={row.label}>
@@ -43,9 +47,11 @@ export default function FareDetails({
           .{" "}
           {fare.online
             ? "Includes OJP test fare data; confirm the purchase price with the operator."
-            : fare.minimumVerified
-              ? "Lowest of the reviewed standard bicycle ticket and day-pass options."
-              : "Day-pass option; a bicycle route ticket may cost less."}
+            : !takeBikeOnTransit
+              ? "Passenger fare only."
+              : fare.minimumVerified
+                ? "Lowest of the reviewed standard bicycle ticket and day-pass options."
+                : "Day-pass option; a bicycle route ticket may cost less."}
         </p>
       )}
       {fare.online ? (
@@ -76,7 +82,7 @@ export default function FareDetails({
       ) : (
         <p>
           {fare.passenger} This route is outside the reviewed local fare tables; request the current
-          passenger and reduced bicycle fare from the operator.
+          passenger {takeBikeOnTransit ? "and reduced bicycle fare" : "fare"} from the operator.
         </p>
       )}
       {!fare.online && online.message && <p>{online.message}</p>}
@@ -86,26 +92,31 @@ export default function FareDetails({
           connecting trains together. This app does not reserve a place.
         </p>
       )}
-      {!fare.singleDayPass && !profile.annualBikePass && (
+      {takeBikeOnTransit && !fare.singleDayPass && !profile.annualBikePass && (
         <p>Check pass validity if your transit continues beyond 05:00 the next day.</p>
       )}
-      <p>
-        One adult with one standard unfolded bicycle · 2nd class. An adult GA or Halbtax does not
-        replace the bicycle ticket. A Bike Day Pass is valid for its calendar day until 05:00 the
-        next day.
-      </p>
-      <p className="carriage-source">
-        <a href={BIKE_DAY_SOURCE.url} target="_blank" rel="noreferrer">
-          Bike ticket options
-        </a>{" "}
-        ·{" "}
-        <a href={RESERVATION_PRICE_SOURCE.url} target="_blank" rel="noreferrer">
-          Reservation instructions and prices
-        </a>{" "}
-        · reviewed {BIKE_DAY_SOURCE.checked}
-      </p>
+      {takeBikeOnTransit && (
+        <p>
+          One adult with one standard unfolded bicycle · 2nd class. An adult GA or Halbtax does not
+          replace the bicycle ticket. A Bike Day Pass is valid for its calendar day until 05:00 the
+          next day.
+        </p>
+      )}
+      {takeBikeOnTransit && (
+        <p className="carriage-source">
+          <a href={BIKE_DAY_SOURCE.url} target="_blank" rel="noreferrer">
+            Bike ticket options
+          </a>{" "}
+          ·{" "}
+          <a href={RESERVATION_PRICE_SOURCE.url} target="_blank" rel="noreferrer">
+            Reservation instructions and prices
+          </a>{" "}
+          · reviewed {BIKE_DAY_SOURCE.checked}
+        </p>
+      )}
       <a href="https://www.sbb.ch/en" target="_blank" rel="noreferrer">
-        Get the current passenger and bicycle ticket offer at SBB ↗
+        Get the current {takeBikeOnTransit ? "passenger and bicycle" : "passenger"} ticket offer at
+        SBB ↗
       </a>
     </section>
   );

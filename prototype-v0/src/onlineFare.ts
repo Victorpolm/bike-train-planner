@@ -1,5 +1,6 @@
 import type { TransitLeg } from "./routing.ts";
 import type { FareProfile } from "./fares.ts";
+import { bicyclePermission } from "./bicyclePermission.ts";
 
 export type FareSegment = { from: string; to: string; departure: string; arrival: string; journeyRef?: string;
   fromName?: string; toName?: string; fromPoint?: { lat: number; lon: number }; toPoint?: { lat: number; lon: number } };
@@ -31,7 +32,7 @@ function selectedSources(transit: TransitLeg[], walks: TransitLeg[]): RetainedFa
   return selected.length <= 8 ? selected : undefined;
 }
 
-export function fareQuery(legs: TransitLeg[], profile: FareProfile): FareQuery | null {
+export function fareQuery(legs: TransitLeg[], profile: FareProfile, takeBikeOnTransit = true): FareQuery | null {
   const first = legs.findIndex(l => l.mode === "transit");
   const last = legs.reduce((n, l, i) => l.mode === "transit" ? i : n, -1);
   // A cycle between trains interrupts the fare journey. Do not silently quote
@@ -51,5 +52,6 @@ export function fareQuery(legs: TransitLeg[], profile: FareProfile): FareQuery |
   return { segments: transit.map(l => ({ from: l.fromId!, to: l.toId!, departure: l.departure!.toISOString(),
     arrival: l.arrival!.toISOString(), fromName: l.from ?? undefined, toName: l.to ?? undefined,
     fromPoint: point(l.fromPoint), toPoint: point(l.toPoint), ...(l.ojp ? { journeyRef: l.ojp.journeyRef } : {}) })),
-    passenger: profile.passenger, bicycle: !profile.annualBikePass, ...(sources ? { sources } : {}) };
+    passenger: profile.passenger, bicycle: takeBikeOnTransit && !profile.annualBikePass
+      && !transit.some(l => bicyclePermission(l) === "prohibited"), ...(sources ? { sources } : {}) };
 }

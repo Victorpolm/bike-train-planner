@@ -1,0 +1,73 @@
+{
+  "cases": [
+    {
+      "requestedFrom": {
+        "id": "8591239",
+        "name": "Zürich, Kunsthaus",
+        "lat": 47.370438,
+        "lon": 8.549141
+      },
+      "requestedTo": {
+        "id": "8591442",
+        "name": "Zürich, Zoo",
+        "lat": 47.38157,
+        "lon": 8.571554
+      },
+      "pricedLeg": {
+        "from": "Zürich, Platte",
+        "to": "Zürich, Zoo",
+        "service": "Tram 6",
+        "category": "Tram",
+        "departure": "2026-10-08T08:15:00.000Z",
+        "arrival": "2026-10-08T08:24:00.000Z"
+      },
+      "quote": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 4.7,
+          "productId": "52509",
+          "product": "ZVV Einzelbillett"
+        },
+        "bicycle": null,
+        "checked": "2026-10-07T11:49:15.348Z",
+        "environment": "test",
+        "itinerarySource": "retained"
+      }
+    },
+    {
+      "requestedFrom": {
+        "id": "8576990",
+        "name": "Bern, Guisanplatz Expo",
+        "lat": 46.959598,
+        "lon": 7.464057
+      },
+      "requestedTo": {
+        "id": "8571359",
+        "name": "Bern, Länggasse",
+        "lat": 46.955975,
+        "lon": 7.426175
+      },
+      "pricedLeg": {
+        "from": "Bern, Markuskirche",
+        "to": "Bern, Länggasse",
+        "service": "B 20",
+        "category": "B",
+        "departure": "2026-10-08T08:10:00.000Z",
+        "arrival": "2026-10-08T08:26:00.000Z"
+      },
+      "quote": {
+        "status": "quoted",
+        "passenger": {
+          "chf": 5.2,
+          "productId": "10972",
+          "product": "Libero Einzelbillett"
+        },
+        "bicycle": null,
+        "checked": "2026-10-07T11:49:41.660Z",
+        "environment": "test",
+        "itinerarySource": "retained"
+      }
+    }
+  ],
+  "note": "Public city service and passenger-only OJP test fare observations. No credentials, headers or retained signed payloads."
+}

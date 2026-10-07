@@ -821,3 +821,13 @@ Live 5 October departures checked on 3 October: Zürich–Laax Extended complete
 **Interpretation:** Candidate diversity fixes the reported corridor; the ordinary path remains a fallback. Historical date entry already worked and is now explicitly covered in both directions. Browser QA is still pending. [Full evidence, source references and release](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
 
 **Next:** verify the compact controls on a phone and inspect the selected Rämistrasse/pushing/station-access sections in the owner's browser.
+
+## 2026-10-07 — Walking endpoints and independent city passenger fares
+
+**Golden journey:** Cycle 5 minutes to A, board at minute 10, alight at B at minute 30, walk 12 minutes to an address: arrival 42, cycling 5, walking 12. A five-minute cycling budget remains valid. Arrive-by 42 permits latest start 2 with the boarding allowance; arrive-by 41 rejects it. The reverse placement walks 6 minutes to A, then cycles 5 after transit and arrives at 35; latest origin start is 1. A bicycle-prohibited tram is eligible only when the bicycle stays off or the user explicitly requests the comparison scope.
+
+**Ordered case:** After transit, walk 4 minutes to a requested visit, 3 minutes to another stop, take the next service, then walk 5 minutes to the destination. The actual query uses the walking state's reached time. A tempting one-minute bike link after leaving the bicycle is rejected. End-only walking prefixes and arrival seeds also retain ordered visits.
+
+**Observed:** OJP test quotes independently returned CHF 4.70 for Zürich Platte–Zoo on Tram 6 and CHF 5.20 for Bern Markuskirche–Länggasse on B 20 for 8 October. Both retained exact selected-leg evidence and omitted a bicycle product. The 661.1 m Stadelhofen pedestrian fixture produces a ten-minute application estimate including connectors. See [exact services, timestamps, source links and limitations](WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
+
+**Verification:** 409 tests in 11 suites pass, including 14 new cases. TypeScript/frontend/Worker builds, Knip and React formatting pass. Browser QA is pending. Next manually check both placement modes, bicycle checkbox, address walking and arrival deadline on a phone, then inspect the actual station parking/access.

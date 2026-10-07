@@ -5,7 +5,7 @@ import { DEFAULT_OPTIONS, type CyclingPosition, type EndpointPreference, type Op
 import type { BicycleScope } from "./bicyclePermission.ts";
 import type { BusPreference } from "./busCarriage.ts";
 export type CyclingPreference = "less" | "commuter" | "balanced" | "more" | "unrestricted";
-export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown", bicycleScope?: BicycleScope, cyclingPace: CyclingPace = DEFAULT_CYCLING_PACE, cyclingRoutePreference: RoutePreference = "fastest", cyclingPosition: CyclingPosition = "anywhere", hills: HillPreferences = DEFAULT_HILLS, climbOptimization = false): Options {
+export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown", bicycleScope?: BicycleScope, cyclingPace: CyclingPace = DEFAULT_CYCLING_PACE, cyclingRoutePreference: RoutePreference = "fastest", cyclingPosition: CyclingPosition = "anywhere", hills: HillPreferences = DEFAULT_HILLS, climbOptimization = false, takeBikeOnTransit = true, maxWalkingMinutes = 30): Options {
   const budgets = {
     commuter: { maxBikeMinutes: 45, maxAccessMinutes: 45, maxEgressMinutes: 45, maxIntermediateMinutes: 45 },
     // Share the displayed total across sections without hidden, tighter leg caps.
@@ -16,5 +16,7 @@ export function preferenceOptions(cycling: CyclingPreference, endpointPreference
     unrestricted: { maxBikeMinutes: DEFAULT_OPTIONS.horizonMinutes, maxAccessMinutes: DEFAULT_OPTIONS.horizonMinutes,
       maxEgressMinutes: DEFAULT_OPTIONS.horizonMinutes, maxIntermediateMinutes: DEFAULT_OPTIONS.horizonMinutes },
   };
-  return { ...DEFAULT_OPTIONS, hills: { ...hills }, climbOptimization, ...budgets[cycling], cyclingPosition, cyclingPace: { ...cyclingPace }, cyclingRoutePreference, endpointPreference, busPreference, ...(bicycleScope ? { bicycleScope } : {}) };
+  return { ...DEFAULT_OPTIONS, hills: { ...hills }, climbOptimization, ...budgets[cycling], cyclingPosition, takeBikeOnTransit, maxWalkingMinutes,
+    cyclingPace: { ...cyclingPace }, cyclingRoutePreference, endpointPreference, busPreference,
+    ...(bicycleScope ? { bicycleScope } : {}), ...(!takeBikeOnTransit ? { bicycleScope: "all-transit" as const } : {}) };
 }

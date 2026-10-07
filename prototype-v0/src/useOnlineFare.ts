@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { fareQuery, type OnlineFare } from "./onlineFare.ts";
 import type { TransitLeg } from "./routing.ts";
-import { fareSummary, type FareProfile } from "./fares.ts";
+import type { FareProfile } from "./fares.ts";
 import { fetchJson, HttpError } from "./http.ts";
 
 type State = { quote?: OnlineFare; message: string };
 const cache = new Map<string, { expires: number; promise: Promise<State> }>();
 let queue: Promise<unknown> = Promise.resolve();
-export function useOnlineFare(legs: TransitLeg[], profile: FareProfile): State {
-  const query = fareQuery(legs, profile), prohibited = fareSummary(legs, profile).prohibited;
+export function useOnlineFare(legs: TransitLeg[], profile: FareProfile, takeBikeOnTransit = true): State {
+  const query = fareQuery(legs, profile, takeBikeOnTransit);
   const past = !!query && query.segments.some(segment => Date.parse(segment.departure) <= Date.now());
-  const key = query && !past && !prohibited && !(profile.passenger === "ga" && profile.annualBikePass) ? JSON.stringify(query) : "";
+  const key = query && !past && !(profile.passenger === "ga" && !query.bicycle) ? JSON.stringify(query) : "";
   const [state, setState] = useState<State & { key: string }>({ key: "", message: "" });
   useEffect(() => {
     if (!key) return;

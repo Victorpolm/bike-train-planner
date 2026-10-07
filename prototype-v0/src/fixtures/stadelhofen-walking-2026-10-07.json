@@ -1,0 +1,1288 @@
+{
+  "from": {
+    "lat": 47.36661115,
+    "lon": 8.54848502
+  },
+  "to": {
+    "lat": 47.370241,
+    "lon": 8.545982
+  },
+  "checked": "2026-10-07",
+  "source": "https://routing.openstreetmap.de/routed-foot/route/v1/driving/8.54848502,47.36661115;8.545982,47.370241?overview=full&geometries=geojson&steps=true",
+  "attribution": "Map data © OpenStreetMap contributors, ODbL; routing OSRM / FOSSGIS. Public illustrative endpoints; not entrance verification.",
+  "data": {
+    "code": "Ok",
+    "routes": [
+      {
+        "legs": [
+          {
+            "steps": [
+              {
+                "intersections": [
+                  {
+                    "out": 0,
+                    "entry": [
+                      true
+                    ],
+                    "bearings": [
+                      229
+                    ],
+                    "location": [
+                      8.548482,
+                      47.366613
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      48,
+                      48,
+                      226
+                    ],
+                    "location": [
+                      8.548442,
+                      47.366589
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      135,
+                      225,
+                      315
+                    ],
+                    "location": [
+                      8.54833,
+                      47.366516
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.548482,
+                      47.366613
+                    ],
+                    [
+                      8.548442,
+                      47.366589
+                    ],
+                    [
+                      8.548344,
+                      47.366524
+                    ],
+                    [
+                      8.54833,
+                      47.366516
+                    ],
+                    [
+                      8.548295,
+                      47.366496
+                    ],
+                    [
+                      8.548249,
+                      47.366469
+                    ],
+                    [
+                      8.54821,
+                      47.366447
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 229,
+                  "bearing_before": 0,
+                  "location": [
+                    8.548482,
+                    47.366613
+                  ],
+                  "type": "depart"
+                },
+                "name": "",
+                "mode": "walking",
+                "weight": 2.33,
+                "duration": 22.3,
+                "distance": 27.6
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      120,
+                      285
+                    ],
+                    "location": [
+                      8.54821,
+                      47.366447
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      15,
+                      105,
+                      255
+                    ],
+                    "location": [
+                      8.548011,
+                      47.366498
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.54821,
+                      47.366447
+                    ],
+                    [
+                      8.548094,
+                      47.366474
+                    ],
+                    [
+                      8.548011,
+                      47.366498
+                    ],
+                    [
+                      8.547972,
+                      47.366496
+                    ],
+                    [
+                      8.547924,
+                      47.366492
+                    ],
+                    [
+                      8.547851,
+                      47.36648
+                    ],
+                    [
+                      8.547798,
+                      47.366468
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 288,
+                  "bearing_before": 229,
+                  "location": [
+                    8.54821,
+                    47.366447
+                  ],
+                  "modifier": "right",
+                  "type": "end of road"
+                },
+                "name": "",
+                "mode": "walking",
+                "weight": 2.71,
+                "duration": 26.1,
+                "distance": 32.6
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 3,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      75,
+                      120,
+                      240,
+                      315
+                    ],
+                    "location": [
+                      8.547798,
+                      47.366468
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      135,
+                      315
+                    ],
+                    "location": [
+                      8.547547,
+                      47.366634
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      150,
+                      225,
+                      315
+                    ],
+                    "location": [
+                      8.546706,
+                      47.36741
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      135,
+                      240,
+                      315
+                    ],
+                    "location": [
+                      8.546454,
+                      47.367615
+                    ]
+                  },
+                  {
+                    "out": 3,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      60,
+                      150,
+                      240,
+                      345
+                    ],
+                    "location": [
+                      8.546175,
+                      47.367879
+                    ]
+                  },
+                  {
+                    "out": 3,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      60,
+                      165,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.546143,
+                      47.36796
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.547798,
+                      47.366468
+                    ],
+                    [
+                      8.547778,
+                      47.366479
+                    ],
+                    [
+                      8.547547,
+                      47.366634
+                    ],
+                    [
+                      8.547495,
+                      47.366675
+                    ],
+                    [
+                      8.547341,
+                      47.366799
+                    ],
+                    [
+                      8.54714,
+                      47.366994
+                    ],
+                    [
+                      8.547049,
+                      47.367082
+                    ],
+                    [
+                      8.546858,
+                      47.367267
+                    ],
+                    [
+                      8.546706,
+                      47.36741
+                    ],
+                    [
+                      8.546454,
+                      47.367615
+                    ],
+                    [
+                      8.546391,
+                      47.367668
+                    ],
+                    [
+                      8.546259,
+                      47.36779
+                    ],
+                    [
+                      8.54622,
+                      47.367827
+                    ],
+                    [
+                      8.546192,
+                      47.36786
+                    ],
+                    [
+                      8.546175,
+                      47.367879
+                    ],
+                    [
+                      8.546159,
+                      47.367921
+                    ],
+                    [
+                      8.546143,
+                      47.36796
+                    ],
+                    [
+                      8.546114,
+                      47.367999
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 313,
+                  "bearing_before": 253,
+                  "location": [
+                    8.547798,
+                    47.366468
+                  ],
+                  "modifier": "right",
+                  "type": "turn"
+                },
+                "name": "Stadelhoferstrasse",
+                "mode": "walking",
+                "weight": 19.56,
+                "duration": 173.2,
+                "distance": 213.7
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 2,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      60,
+                      150,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.546114,
+                      47.367999
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.546114,
+                      47.367999
+                    ],
+                    [
+                      8.546092,
+                      47.36799
+                    ],
+                    [
+                      8.546073,
+                      47.367982
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 237,
+                  "bearing_before": 331,
+                  "location": [
+                    8.546114,
+                    47.367999
+                  ],
+                  "modifier": "left",
+                  "type": "turn"
+                },
+                "name": "",
+                "mode": "walking",
+                "weight": 0.3,
+                "duration": 3,
+                "distance": 3.6
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      60,
+                      225,
+                      330
+                    ],
+                    "location": [
+                      8.546073,
+                      47.367982
+                    ]
+                  },
+                  {
+                    "out": 4,
+                    "in": 2,
+                    "entry": [
+                      true,
+                      true,
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      60,
+                      120,
+                      150,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.545909,
+                      47.368197
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      150,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.54575,
+                      47.368451
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      150,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.545596,
+                      47.368632
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      135,
+                      315
+                    ],
+                    "location": [
+                      8.545393,
+                      47.368821
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 0,
+                    "entry": [
+                      false,
+                      true,
+                      true
+                    ],
+                    "bearings": [
+                      135,
+                      225,
+                      315
+                    ],
+                    "location": [
+                      8.545295,
+                      47.368893
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      135,
+                      315
+                    ],
+                    "location": [
+                      8.545157,
+                      47.368991
+                    ]
+                  },
+                  {
+                    "out": 2,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      135,
+                      315
+                    ],
+                    "location": [
+                      8.544965,
+                      47.369123
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.546073,
+                      47.367982
+                    ],
+                    [
+                      8.545909,
+                      47.368197
+                    ],
+                    [
+                      8.54575,
+                      47.368451
+                    ],
+                    [
+                      8.545596,
+                      47.368632
+                    ],
+                    [
+                      8.545484,
+                      47.368744
+                    ],
+                    [
+                      8.545393,
+                      47.368821
+                    ],
+                    [
+                      8.545295,
+                      47.368893
+                    ],
+                    [
+                      8.545157,
+                      47.368991
+                    ],
+                    [
+                      8.544965,
+                      47.369123
+                    ],
+                    [
+                      8.544957,
+                      47.369129
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 331,
+                  "bearing_before": 237,
+                  "location": [
+                    8.546073,
+                    47.367982
+                  ],
+                  "modifier": "right",
+                  "type": "turn"
+                },
+                "name": "Oberdorfstrasse",
+                "mode": "walking",
+                "weight": 12.87,
+                "duration": 123.4,
+                "distance": 154.4
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 0,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      45,
+                      135,
+                      315
+                    ],
+                    "location": [
+                      8.544957,
+                      47.369129
+                    ]
+                  },
+                  {
+                    "out": 0,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      150,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.54562,
+                      47.36948
+                    ]
+                  },
+                  {
+                    "out": 0,
+                    "in": 2,
+                    "entry": [
+                      true,
+                      true,
+                      false
+                    ],
+                    "bearings": [
+                      60,
+                      240,
+                      330
+                    ],
+                    "location": [
+                      8.545629,
+                      47.369472
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.544957,
+                      47.369129
+                    ],
+                    [
+                      8.54523,
+                      47.369282
+                    ],
+                    [
+                      8.54562,
+                      47.36948
+                    ],
+                    [
+                      8.545629,
+                      47.369472
+                    ],
+                    [
+                      8.54643,
+                      47.369837
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 49,
+                  "bearing_before": 317,
+                  "location": [
+                    8.544957,
+                    47.369129
+                  ],
+                  "modifier": "right",
+                  "type": "turn"
+                },
+                "name": "Trittligasse",
+                "mode": "walking",
+                "weight": 11.45,
+                "duration": 110,
+                "distance": 137.5
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 0,
+                    "in": 1,
+                    "entry": [
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      120,
+                      240,
+                      315
+                    ],
+                    "location": [
+                      8.54643,
+                      47.369837
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.54643,
+                      47.369837
+                    ],
+                    [
+                      8.546479,
+                      47.369817
+                    ],
+                    [
+                      8.546537,
+                      47.369792
+                    ],
+                    [
+                      8.546613,
+                      47.369782
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 119,
+                  "bearing_before": 54,
+                  "location": [
+                    8.54643,
+                    47.369837
+                  ],
+                  "modifier": "right",
+                  "type": "end of road"
+                },
+                "name": "Trittligasse",
+                "mode": "walking",
+                "weight": 1.28,
+                "duration": 12.4,
+                "distance": 15.4
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 0,
+                    "in": 2,
+                    "entry": [
+                      true,
+                      true,
+                      false
+                    ],
+                    "bearings": [
+                      15,
+                      75,
+                      285
+                    ],
+                    "location": [
+                      8.546613,
+                      47.369782
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.546613,
+                      47.369782
+                    ],
+                    [
+                      8.54662,
+                      47.369814
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 8,
+                  "bearing_before": 109,
+                  "location": [
+                    8.546613,
+                    47.369782
+                  ],
+                  "modifier": "left",
+                  "type": "turn"
+                },
+                "name": "",
+                "mode": "walking",
+                "weight": 0.51,
+                "duration": 3.7,
+                "distance": 3.6
+              },
+              {
+                "intersections": [
+                  {
+                    "out": 3,
+                    "in": 2,
+                    "entry": [
+                      true,
+                      true,
+                      false,
+                      true
+                    ],
+                    "bearings": [
+                      0,
+                      75,
+                      195,
+                      285
+                    ],
+                    "location": [
+                      8.54662,
+                      47.369814
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.54662,
+                      47.369814
+                    ],
+                    [
+                      8.546604,
+                      47.369816
+                    ],
+                    [
+                      8.546559,
+                      47.369822
+                    ],
+                    [
+                      8.546516,
+                      47.369831
+                    ],
+                    [
+                      8.546474,
+                      47.369844
+                    ],
+                    [
+                      8.546431,
+                      47.36986
+                    ],
+                    [
+                      8.546506,
+                      47.369887
+                    ],
+                    [
+                      8.546246,
+                      47.370305
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 279,
+                  "bearing_before": 8,
+                  "location": [
+                    8.54662,
+                    47.369814
+                  ],
+                  "modifier": "left",
+                  "type": "turn"
+                },
+                "name": "Garten der Villa Tobler",
+                "mode": "walking",
+                "weight": 7.28,
+                "duration": 58.3,
+                "distance": 72.7
+              },
+              {
+                "intersections": [
+                  {
+                    "in": 0,
+                    "entry": [
+                      true
+                    ],
+                    "bearings": [
+                      157
+                    ],
+                    "location": [
+                      8.546243,
+                      47.37031
+                    ]
+                  }
+                ],
+                "driving_side": "right",
+                "geometry": {
+                  "coordinates": [
+                    [
+                      8.546246,
+                      47.370305
+                    ],
+                    [
+                      8.546246,
+                      47.370305
+                    ]
+                  ],
+                  "type": "LineString"
+                },
+                "maneuver": {
+                  "bearing_after": 0,
+                  "bearing_before": 337,
+                  "location": [
+                    8.546243,
+                    47.37031
+                  ],
+                  "modifier": "left",
+                  "type": "arrive"
+                },
+                "name": "Garten der Villa Tobler",
+                "mode": "walking",
+                "weight": 0,
+                "duration": 0,
+                "distance": 0
+              }
+            ],
+            "weight": 58.29,
+            "summary": "Stadelhoferstrasse, Trittligasse",
+            "duration": 532.4,
+            "distance": 661.1
+          }
+        ],
+        "weight_name": "routability",
+        "geometry": {
+          "coordinates": [
+            [
+              8.548482,
+              47.366613
+            ],
+            [
+              8.548442,
+              47.366589
+            ],
+            [
+              8.548344,
+              47.366524
+            ],
+            [
+              8.54833,
+              47.366516
+            ],
+            [
+              8.548295,
+              47.366496
+            ],
+            [
+              8.548249,
+              47.366469
+            ],
+            [
+              8.54821,
+              47.366447
+            ],
+            [
+              8.548094,
+              47.366474
+            ],
+            [
+              8.548011,
+              47.366498
+            ],
+            [
+              8.547972,
+              47.366496
+            ],
+            [
+              8.547924,
+              47.366492
+            ],
+            [
+              8.547851,
+              47.36648
+            ],
+            [
+              8.547798,
+              47.366468
+            ],
+            [
+              8.547778,
+              47.366479
+            ],
+            [
+              8.547547,
+              47.366634
+            ],
+            [
+              8.547495,
+              47.366675
+            ],
+            [
+              8.547341,
+              47.366799
+            ],
+            [
+              8.54714,
+              47.366994
+            ],
+            [
+              8.547049,
+              47.367082
+            ],
+            [
+              8.546858,
+              47.367267
+            ],
+            [
+              8.546706,
+              47.36741
+            ],
+            [
+              8.546454,
+              47.367615
+            ],
+            [
+              8.546391,
+              47.367668
+            ],
+            [
+              8.546259,
+              47.36779
+            ],
+            [
+              8.54622,
+              47.367827
+            ],
+            [
+              8.546192,
+              47.36786
+            ],
+            [
+              8.546175,
+              47.367879
+            ],
+            [
+              8.546159,
+              47.367921
+            ],
+            [
+              8.546143,
+              47.36796
+            ],
+            [
+              8.546114,
+              47.367999
+            ],
+            [
+              8.546092,
+              47.36799
+            ],
+            [
+              8.546073,
+              47.367982
+            ],
+            [
+              8.545909,
+              47.368197
+            ],
+            [
+              8.54575,
+              47.368451
+            ],
+            [
+              8.545596,
+              47.368632
+            ],
+            [
+              8.545484,
+              47.368744
+            ],
+            [
+              8.545393,
+              47.368821
+            ],
+            [
+              8.545295,
+              47.368893
+            ],
+            [
+              8.545157,
+              47.368991
+            ],
+            [
+              8.544965,
+              47.369123
+            ],
+            [
+              8.544957,
+              47.369129
+            ],
+            [
+              8.54523,
+              47.369282
+            ],
+            [
+              8.54562,
+              47.36948
+            ],
+            [
+              8.545629,
+              47.369472
+            ],
+            [
+              8.54643,
+              47.369837
+            ],
+            [
+              8.546479,
+              47.369817
+            ],
+            [
+              8.546537,
+              47.369792
+            ],
+            [
+              8.546613,
+              47.369782
+            ],
+            [
+              8.54662,
+              47.369814
+            ],
+            [
+              8.546604,
+              47.369816
+            ],
+            [
+              8.546559,
+              47.369822
+            ],
+            [
+              8.546516,
+              47.369831
+            ],
+            [
+              8.546474,
+              47.369844
+            ],
+            [
+              8.546431,
+              47.36986
+            ],
+            [
+              8.546506,
+              47.369887
+            ],
+            [
+              8.546246,
+              47.370305
+            ]
+          ],
+          "type": "LineString"
+        },
+        "weight": 58.29,
+        "duration": 532.4,
+        "distance": 661.1
+      }
+    ],
+    "waypoints": [
+      {
+        "hint": "cGiggyX1xY0hAAAAIgAAAAAAAAAAAAAAj1p-QGb6gEAAAAAAAAAAAB8AAAAhAAAAAAAAAAAAAAB_AAAAgnCCANXB0gKFcIIA08HSAgAATw4AAAAA",
+        "location": [
+          8.548482,
+          47.366613
+        ],
+        "name": "",
+        "distance": 0.3174504331
+      },
+      {
+        "hint": "_ZAlkQORJZETAAAABgAAABoGAACjAgAAnL_zP4ysGT9uLhxDHuWGQg8AAAAFAAAA4QQAABwCAAB_AAAAw2eCAEbQ0gK-ZoIAAdDSAi4A7wkAAAAA",
+        "location": [
+          8.546243,
+          47.37031
+        ],
+        "name": "Garten der Villa Tobler",
+        "distance": 21.15145497
+      }
+    ]
+  }
+}

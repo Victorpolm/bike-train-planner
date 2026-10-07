@@ -215,12 +215,12 @@ it("discovers a second cycling connection even when the first onward query has n
   }
 });
 
-it("restricted placement avoids intermediate discovery and explains an unsupported address endpoint", async () => {
+it("restricted placement avoids intermediate discovery and explains a missing walking connection", async () => {
   const n = fixture(), client = new TimetableClient(new AbortController().signal, 0, async () => { throw new Error("Unexpected discovery"); });
   const o = { ...options, cyclingPosition: "start-only" as const };
   const session: SearchSession = { origin: place(0), destination: place(5), network: n, client, start, options: o,
     originStations: [], destinationStations: [], baseline: solve(n, place(0), place(5), start, o, "baseline"), extended: null };
   await extend(session, () => {}); assert.equal(client.requests, 0);
   await assert.rejects(plan(place(0), { label: "Off-stop address", lat: 46.9, lon: 8.04 }, "baseline", o,
-    new AbortController().signal, () => {}, () => {}, { start, cyclingClient: null, gapMs: 0, fetcher: async () => new Response(JSON.stringify({ stations: [] })) }), /public-transport stop as your destination/);
+    new AbortController().signal, () => {}, () => {}, { start, cyclingClient: null, gapMs: 0, fetcher: async () => new Response(JSON.stringify({ stations: [] })) }), /No checked walking path/);
 });

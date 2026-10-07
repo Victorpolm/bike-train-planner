@@ -26,6 +26,8 @@ export type Station = Point & {
   bikeMinutes: number;
   kind?: string;
   cyclingRoute?: CyclingRoute;
+  walkMinutes?: number;
+  walkingRoute?: import("./walking.ts").WalkingRoute;
 };
 
 export type Journey = {
@@ -83,6 +85,7 @@ export type TransitLeg = {
   // Timetable geometry defaults to stop-to-stop lines, not a street path.
   geometryKind?: "path" | "stops";
   cyclingRoute?: CyclingRoute;
+  walkingRoute?: import("./walking.ts").WalkingRoute;
 };
 
 export function haversineKm(a: Point, b: Point): number {

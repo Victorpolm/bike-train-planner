@@ -160,6 +160,7 @@ function JourneyCard({
   planId,
   comparison,
   fareProfile,
+  takeBikeOnTransit = true,
   extraTimeMinutes,
   hills,
   arriveBy,
@@ -171,6 +172,7 @@ function JourneyCard({
   planId: string;
   comparison: CyclingComparison | null;
   fareProfile: FareProfile;
+  takeBikeOnTransit?: boolean;
   extraTimeMinutes: number;
   hills?: HillPreferences;
   arriveBy?: string;
@@ -185,9 +187,9 @@ function JourneyCard({
         win.extraMinutes === wins[0].extraMinutes &&
         win.climbingSaved === wins[0].climbingSaved,
     );
-  const prohibited = j.transitLegs.some(
-    (leg) => leg.mode === "transit" && bicyclePermission(leg) === "prohibited",
-  );
+  const prohibited =
+    takeBikeOnTransit &&
+    j.transitLegs.some((leg) => leg.mode === "transit" && bicyclePermission(leg) === "prohibited");
   const m = metrics(j),
     finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
   const busSummary = bicycleJourneySummary(j.transitLegs);
@@ -231,7 +233,7 @@ function JourneyCard({
           )}
         </span>
       ))}
-      {busSummary && (
+      {takeBikeOnTransit && busSummary && (
         <span
           className={`journey-permission permission-${prohibited ? "prohibited" : verified ? "confirmed" : "uncertain"}`}
         >
@@ -251,7 +253,11 @@ function JourneyCard({
           {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}
         </span>
       </span>
-      <JourneyPrice legs={j.transitLegs} profile={fareProfile} />
+      <JourneyPrice
+        legs={j.transitLegs}
+        profile={fareProfile}
+        takeBikeOnTransit={takeBikeOnTransit}
+      />
       <span className="arrival-summary">
         {arriveBy && (
           <>
@@ -410,6 +416,8 @@ export default function App() {
   }
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
   const [cyclingPosition, setCyclingPosition] = useState<CyclingPosition>("anywhere");
+  const [takeBikeOnTransit, setTakeBikeOnTransit] = useState(true);
+  const [maxWalkingMinutes, setMaxWalkingMinutes] = useState(30);
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled" | "arrival">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
@@ -425,6 +433,8 @@ export default function App() {
         cyclingPosition,
         hills,
         climbOptimization,
+        takeBikeOnTransit,
+        maxWalkingMinutes,
       ),
     [
       cycling,
@@ -435,6 +445,8 @@ export default function App() {
       cyclingPosition,
       hills,
       climbOptimization,
+      takeBikeOnTransit,
+      maxWalkingMinutes,
     ],
   );
   const [session, setSession] = useState<SearchSession | null>(null);
@@ -974,6 +986,18 @@ export default function App() {
                   cycling={cycling}
                   endpoint={endpoint}
                   cyclingPosition={cyclingPosition}
+                  takeBikeOnTransit={takeBikeOnTransit}
+                  maxWalkingMinutes={maxWalkingMinutes}
+                  onBikeOnTransit={(enabled) => {
+                    invalidate();
+                    setTakeBikeOnTransit(enabled);
+                    setTripPreset("personalized");
+                  }}
+                  onWalkingMinutes={(minutes) => {
+                    invalidate();
+                    setMaxWalkingMinutes(minutes);
+                    setTripPreset("personalized");
+                  }}
                   hills={hills}
                   climbOptimization={climbOptimization}
                   onHills={(next) => {
@@ -989,6 +1013,7 @@ export default function App() {
                   onPosition={(position) => {
                     invalidate();
                     setCyclingPosition(position);
+                    setTakeBikeOnTransit(position === "anywhere");
                     if (position !== "anywhere") setMode("baseline");
                     setTripPreset("personalized");
                   }}
@@ -1202,13 +1227,25 @@ export default function App() {
                 <div className="permission-summary">
                   {recommendation.groups.map((group) => (
                     <div key={group.scope} className={`permission-group scope-${group.scope}`}>
-                      <h3>Search filter: {bicycleScopeOptions[group.scope]}</h3>
-                      {group.scope === "all-transit" && (
+                      <h3>
+                        Search filter:{" "}
+                        {session.options.takeBikeOnTransit === false
+                          ? "Passenger-only public transport"
+                          : bicycleScopeOptions[group.scope]}
+                      </h3>
+                      {session.options.takeBikeOnTransit === false && (
                         <p>
-                          Bicycle restrictions are ignored in this comparison. It can include
-                          services that prohibit bicycles; these are labelled on the journey.
+                          Your bicycle stays off public transport. Bicycle access restrictions do
+                          not apply.
                         </p>
                       )}
+                      {session.options.takeBikeOnTransit !== false &&
+                        group.scope === "all-transit" && (
+                          <p>
+                            Bicycle restrictions are ignored in this comparison. It can include
+                            services that prohibit bicycles; these are labelled on the journey.
+                          </p>
+                        )}
                       {group.proposals.length ? (
                         <p>
                           {group.proposals.length} recommendation
@@ -1228,12 +1265,14 @@ export default function App() {
                       )}
                     </div>
                   ))}
-                  <p className="comparison-caution">
-                    Verified access means bicycles are permitted on every transit leg, based on
-                    service data or applicable published operator rules. Open a journey for ticket
-                    and reservation requirements. Unknown ticket or reservation details do not
-                    change verified permission. Permission does not reserve a place.
-                  </p>
+                  {session.options.takeBikeOnTransit !== false && (
+                    <p className="comparison-caution">
+                      Verified access means bicycles are permitted on every transit leg, based on
+                      service data or applicable published operator rules. Open a journey for ticket
+                      and reservation requirements. Unknown ticket or reservation details do not
+                      change verified permission. Permission does not reserve a place.
+                    </p>
+                  )}
                 </div>
                 {session.extended &&
                   Number.isFinite(extendedFastest) &&
@@ -1252,9 +1291,12 @@ export default function App() {
                   )}
                 {proposals.length > 0 && (
                   <p className="result-explanation">
-                    Results use your bicycle-access choice for{" "}
-                    {session.options.arriveBy ? "latest departure" : "fastest"}, fewest boardings
-                    and least cycling or walking. Boardings include the first vehicle.{" "}
+                    Results use your{" "}
+                    {session.options.takeBikeOnTransit === false
+                      ? "passenger-only transit choice"
+                      : "bicycle-access choice"}{" "}
+                    for {session.options.arriveBy ? "latest departure" : "fastest"}, fewest
+                    boardings and least cycling or walking. Boardings include the first vehicle.{" "}
                     {session.options.arriveBy
                       ? `All transit journeys meet your arrival deadline. Alternatives leave at most ${session.options.extraTimeMinutes} minutes before the latest eligible departure.`
                       : `Alternatives arrive at most ${session.options.extraTimeMinutes} minutes after the fastest eligible transit journey.`}{" "}
@@ -1323,6 +1365,7 @@ export default function App() {
                         planId={planId}
                         comparison={cyclingReference}
                         fareProfile={fareProfile}
+                        takeBikeOnTransit={source.options.takeBikeOnTransit !== false}
                         onSelect={() => {
                           setSelectedId(j.id);
                           setExpandedId(expanded ? null : j.id);
@@ -1333,6 +1376,8 @@ export default function App() {
                         <JourneyPlan
                           boardingMinutes={source.options.boardingMinutes}
                           fareProfile={fareProfile}
+                          takeBikeOnTransit={source.options.takeBikeOnTransit !== false}
+                          cyclingPosition={source.options.cyclingPosition}
                           id={planId}
                           journey={j}
                           origin={source.origin}
@@ -1415,7 +1460,11 @@ export default function App() {
                         {(list as SearchSession["originStations"]).map((s) => (
                           <small key={s.id}>
                             {s.name}
-                            <b>{s.bikeMinutes} min</b>
+                            <b>
+                              {s.walkMinutes !== undefined
+                                ? `${s.walkMinutes} min walk`
+                                : `${s.bikeMinutes} min cycle`}
+                            </b>
                           </small>
                         ))}
                       </div>

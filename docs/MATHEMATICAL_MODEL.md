@@ -212,3 +212,11 @@ Ordinary endpoint acquisition uses a zero cycling limit on the non-cycling side.
 The cycling-only card remains an explicitly labelled reference outside a beginning/end-only restriction and cannot be automatically selected as the fastest eligible choice. Through-fare quoting across positive cycling gaps remains unsupported; no alternative all-transit itinerary or overlapping ticket sum is substituted.
 
 
+
+## Pedestrian endpoints and bicycle custody (7 October 2026)
+
+This supersedes the zero-access/matching-stop requirement and always-carried-bicycle assumption in the 2 October section. `takeBikeOnTransit=false` is supported with start-only/end-only placement. It changes the transit feasibility predicate to passenger travel (while preserving explicit bus avoidance) and removes bicycle tariff/reservation components. It does not alter or erase the source bicycle-permission evidence.
+
+Let a directed endpoint street link have cycling duration b and walking duration w, with only one positive. Its readiness contribution is b+w; only b consumes the total cycling resource, while each pedestrian street section must satisfy the separate walking allowance (default 30 minutes). Missing checked pedestrian links have infinite cost; they are never straight-line fallbacks. Walking uses an independent speed estimate. Final feasibility and arrival deadlines include w, and the objective uses cycling plus walking. Explicit endpoint legs avoid double-counting in itinerary metrics and map rendering.
+
+For start-only, the post-first-boarding phase uses pedestrian links; for end-only, the pre-first-boarding phase uses pedestrian links, and positive cycling still forbids a subsequent boarding. This phase persists through required visits. Stage acquisition retains separate earliest walking and cycling readiness and queries at most two station pairs per available mode, within the shared provider/time budget. Walkers may board again after a requested visit. Directional path caching and a 20-request pedestrian allowance keep acquisition bounded. This does not add unrestricted interstation pedestrian transfer discovery or certify station/parking entrances. [Implementation and evidence](WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).

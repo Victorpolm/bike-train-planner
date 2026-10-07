@@ -25,12 +25,16 @@ export default function TripPreferences({
   cycling,
   endpoint,
   cyclingPosition,
+  takeBikeOnTransit,
+  maxWalkingMinutes,
   onMode,
   onScope,
   onRoute,
   onCycling,
   onEndpoint,
   onPosition,
+  onBikeOnTransit,
+  onWalkingMinutes,
   hills,
   climbOptimization,
   onHills,
@@ -46,12 +50,16 @@ export default function TripPreferences({
   cycling: CyclingPreference;
   endpoint: EndpointPreference;
   cyclingPosition: CyclingPosition;
+  takeBikeOnTransit: boolean;
+  maxWalkingMinutes: number;
   onMode: (mode: ModelMode) => void;
   onScope: (scope: BicycleScope) => void;
   onRoute: (route: RoutePreference) => void;
   onCycling: (cycling: CyclingPreference) => void;
   onEndpoint: (endpoint: EndpointPreference) => void;
   onPosition: (position: CyclingPosition) => void;
+  onBikeOnTransit: (enabled: boolean) => void;
+  onWalkingMinutes: (minutes: number) => void;
   hills: HillPreferences;
   climbOptimization: boolean;
   onHills: (hills: HillPreferences) => void;
@@ -109,14 +117,16 @@ export default function TripPreferences({
           label="About where you can cycle"
           text={
             (cyclingPosition === "start-only"
-              ? "Ride before your first service only. Choose a public-transport stop as your destination."
+              ? "Ride before your first service, then walk from public transport to your destination."
               : cyclingPosition === "end-only"
-                ? "Ride after your last service only. Choose a public-transport stop as your starting point."
+                ? "Walk from your starting point to public transport, then ride after your last service."
                 : "Baseline allows cycling at either end. Extended also explores cycling between services.") +
             (cyclingPosition !== "anywhere"
-              ? " Cycling between services is disabled. Existing walking transfers remain possible; walking routes to or from an address are not yet supported."
+              ? " Cycling between services is disabled. Walking uses pedestrian paths and its own time allowance."
               : "") +
-            " Your bicycle travels with you on public transport."
+            (takeBikeOnTransit
+              ? " Your bicycle travels with you on public transport."
+              : " Bicycle access restrictions and bicycle charges do not apply to your transit journey.")
           }
         />
       </div>
@@ -130,32 +140,68 @@ export default function TripPreferences({
         <option value="start-only">Only at the beginning</option>
         <option value="end-only">Only at the end</option>
       </select>
-      <fieldset className="bicycle-access" disabled={disabled}>
-        <legend className="preference-heading">
-          Public transport with my bicycle
-          <InlineHelp
-            label="About bicycle access on public transport"
-            text={
-              bicycleScopeHelp[bicycleScope] +
-              " Applies to trains, buses, trams, boats and other public transport."
-            }
-          />
-        </legend>
-        {BICYCLE_SCOPES.map((scope) => (
-          <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
+      {cyclingPosition !== "anywhere" && (
+        <>
+          <label className="check-row">
             <input
-              type="radio"
-              name="bicycle-access"
-              value={scope}
-              checked={bicycleScope === scope}
-              onChange={() => {
-                onScope(scope);
-              }}
+              type="checkbox"
+              disabled={disabled}
+              checked={takeBikeOnTransit}
+              onChange={(e) => onBikeOnTransit(e.target.checked)}
             />
-            <span>{bicycleScopeOptions[scope]}</span>
+            <span>Take my bicycle on public transport</span>
           </label>
-        ))}
-      </fieldset>
+          <p className="preference-note">
+            {takeBikeOnTransit
+              ? "Walk with your bicycle on the walking sections. Bicycle tickets and carriage rules apply."
+              : cyclingPosition === "start-only"
+                ? "Leave the bicycle at your departure station. Continue by public transport and on foot."
+                : "Start on foot. Use a bicycle already waiting at your arrival station."}
+          </p>
+          <label>
+            <span>Walk to/from public transport · up to (min)</span>
+            <input
+              type="number"
+              min="0"
+              max="60"
+              step="1"
+              required
+              disabled={disabled}
+              value={Number.isFinite(maxWalkingMinutes) ? maxWalkingMinutes : ""}
+              onChange={(e) => onWalkingMinutes(e.target.valueAsNumber)}
+            />
+            <small>Per walking section. Separate from your cycling allowance.</small>
+          </label>
+        </>
+      )}
+      {takeBikeOnTransit && (
+        <fieldset className="bicycle-access" disabled={disabled}>
+          <legend className="preference-heading">
+            Public transport with my bicycle
+            <InlineHelp
+              label="About bicycle access on public transport"
+              text={
+                bicycleScopeHelp[bicycleScope] +
+                " Applies to trains, buses, trams, boats and other public transport."
+              }
+            />
+          </legend>
+          {BICYCLE_SCOPES.map((scope) => (
+            <label key={scope} className={bicycleScope === scope ? "selected" : ""}>
+              <input
+                type="radio"
+                name="bicycle-access"
+                value={scope}
+                checked={bicycleScope === scope}
+                onChange={() => {
+                  onScope(scope);
+                }}
+              />
+              <span>{bicycleScopeOptions[scope]}</span>
+            </label>
+          ))}
+        </fieldset>
+      )}
       <div className="preference-grid">
         <label>
           <span>Cycling path</span>

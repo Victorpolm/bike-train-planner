@@ -1,9 +1,9 @@
 import { boardingCheck, transferContextKey } from "./transferTimes.ts";
 import { addClimb, climbVector, emptyClimb, hillSearch, routeClimb, type Climb } from "./hills.ts";
-import { arrivalDepartureSeeds, atEndpoint, cyclingLink, cyclingTransferLimit, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
+import { arrivalDepartureSeeds, atEndpoint, cyclingLink, cyclingTransferLimit, dominates, journeyLegAllowed, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
-import { bicycleLegAllowed } from "./bicyclePermission.ts";
 import { samePlace } from "./cycling.ts";
+import { cachedWalking, DEFAULT_WALKING_MINUTES, walkingLeg } from "./walking.ts";
 
 type State = {
   startedAt: number;
@@ -13,7 +13,8 @@ type State = {
   accessActive: number; egressActive: number; legs: TransitLeg[];
   visits: { place: Place; arrival: Date }[]; alive: boolean;
 };
-export type WaypointSolution = Solution & { stageArrivals: number[]; transferExits: { stop: string; stage: number; time: number; bike: number; boardings: number; middle: number }[] };
+export type WaypointSolution = Solution & { stageArrivals: number[]; stageArrivalsByMode: { bike: number; walk: number }[];
+  transferExits: { stop: string; stage: number; time: number; bike: number; boardings: number; middle: number }[] };
 const pointId = (index: number) => `requested-point:${index}`;
 
 // Ordered stopovers are separate stages, but time, cycling and boarding budgets
@@ -30,7 +31,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   for (const edge of network.edges.values()) {
     const leg = edge.leg;
     if (!leg.departure || !leg.arrival || !Number.isFinite(leg.departure.getTime()) || !Number.isFinite(leg.arrival.getTime())
-      || leg.arrival < leg.departure || !["transit", "walk"].includes(leg.mode) || !bicycleLegAllowed(leg, options.busPreference, options.bicycleScope)
+      || leg.arrival < leg.departure || !["transit", "walk"].includes(leg.mode) || !journeyLegAllowed(leg, options)
       || !network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
     outgoing.set(edge.from, [...outgoing.get(edge.from) ?? [], edge]);
   }
@@ -38,6 +39,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   const accessStops = [...network.stops.values()].filter(stop => outgoing.has(stop.id));
   const buckets = new Map<string, State[]>(), queue: State[] = [];
   const stageArrivals = points.map(() => Infinity);
+  const stageArrivalsByMode = points.map(() => ({ bike: Infinity, walk: Infinity }));
   let limited = false, explored = 0;
   const add = (state: State) => {
     if (state.time > horizon || state.bike > options.maxBikeMinutes || state.boardings > options.maxBoardings) return;
@@ -49,11 +51,27 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     if (queue.length >= labelLimit) { limited = true; return; }
     for (const previous of bucket) if (dominates(values, vector(previous))) previous.alive = false;
     buckets.set(key, [...bucket.filter(s => s.alive), state]); queue.push(state);
-    if (state.stop === pointId(state.stage)) stageArrivals[state.stage] = Math.min(stageArrivals[state.stage], state.time);
+    if (state.stop === pointId(state.stage)) {
+      stageArrivals[state.stage] = Math.min(stageArrivals[state.stage], state.time);
+      const mode = walking(state) ? "walk" : "bike";
+      stageArrivalsByMode[state.stage][mode] = Math.min(stageArrivalsByMode[state.stage][mode], state.time);
+    }
   };
+  const walking = (state: State) => options.cyclingPosition === "start-only" && state.boardings > 0
+    || options.cyclingPosition === "end-only" && state.boardings === 0;
+  const linkMinutes = (state: State, from: Place | Stop, to: Place | Stop) => walking(state)
+    ? cachedWalking(network.walking, from, to)?.minutes ?? Infinity : cyclingLink(network, from, to).minutes;
   const cycle = (state: State, from: Place | Stop, to: Place | Stop, id: string, minutes: number, service: string): State | null => {
-    if (!Number.isFinite(minutes) || minutes > 0 && (options.cyclingPosition === "start-only" && state.boardings > 0
-      || options.cyclingPosition === "end-only" && state.boardings === 0)) return null;
+    if (!Number.isFinite(minutes)) return null;
+    if (walking(state)) {
+      const route = cachedWalking(network.walking, from, to);
+      if (!route || minutes > (options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES)) return null;
+      const leg = { ...walkingLeg(route, state.time, from, to), fromId: state.stop, toId: id,
+        service: service.replace(/^Cycle/, "Walk") };
+      return { ...state, stop: id, time: +leg.arrival!, walk: state.walk + minutes,
+        accessActive: state.accessActive + (state.boardings === 0 ? minutes : 0), egressActive: state.egressActive + minutes,
+        legs: [...state.legs, leg], alive: true };
+    }
     const arrival = state.time + minutes * 60_000;
     const name = (place: Place | Stop) => "label" in place ? place.label : place.name;
     const leg: TransitLeg = { mode: "bike", from: name(from), to: name(to), fromId: state.stop, toId: id,
@@ -68,8 +86,8 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   };
   const visitNext = (state: State, from: Place | Stop, maxMinutes: number) => {
     const next = points[state.stage + 1];
-    const minutes = cyclingLink(network, from, next).minutes;
-    if (minutes > maxMinutes) return;
+    const minutes = linkMinutes(state, from, next);
+    if (minutes > (walking(state) ? options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : maxMinutes)) return;
     const stage = state.stage + 1;
     const advanced = cycle(state, from, next, pointId(stage), minutes,
       stage === points.length - 1 ? "Cycle to your destination" : `Cycle to intermediate stop ${stage}`);
@@ -89,15 +107,15 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
       const from = points[current.stage];
       visitNext(current, from, Math.max(options.maxAccessMinutes, options.maxEgressMinutes));
       for (const stop of accessStops) {
-        const access = atEndpoint(stop, from, network);
-        if (access.bikeMinutes <= options.maxAccessMinutes) {
-          const next = cycle(current, from, stop, stop.id, access.bikeMinutes, "Cycle to the station");
+        const accessMinutes = linkMinutes(current, from, stop);
+        if (accessMinutes <= (walking(current) ? options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : options.maxAccessMinutes)) {
+          const next = cycle(current, from, stop, stop.id, accessMinutes, "Cycle to the station");
           if (next) add({ ...next,
-            needsTransit: current.needsTransit || !next.endCycling && (access.bikeMinutes > 0 || current.boardings === 0) });
+            needsTransit: current.needsTransit || !walking(current) && !next.endCycling && (accessMinutes > 0 || current.boardings === 0) });
         } else if (current.boardings > 0 && !current.needsTransit && current.extraTransfers < transferLimit
-          && current.boardings < options.maxBoardings && access.bikeMinutes > 0 && access.bikeMinutes <= options.maxIntermediateMinutes
+          && current.boardings < options.maxBoardings && accessMinutes > 0 && accessMinutes <= options.maxIntermediateMinutes
           && outgoing.get(stop.id)?.some(edge => edge.leg.mode === "transit")) {
-          const next = cycle(current, from, stop, stop.id, access.bikeMinutes, "Cycle between stops");
+          const next = cycle(current, from, stop, stop.id, accessMinutes, "Cycle between stops");
           if (next) add({ ...next, extraTransfers: current.extraTransfers + 1, needsTransit: true });
         }
       }
@@ -145,5 +163,5 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
         ? [...network.stops.values()].find(stop => samePlace(stop, points[s.stage])) : undefined);
       return stop ? [{ stop: stop.id, stage: s.stage, time: s.time, bike: s.bike, boardings: s.boardings, middle: s.extraTransfers }] : [];
     });
-  return { journeys, reachable: [], stageArrivals, transferExits, explored, retained: alive.length, limited };
+  return { journeys, reachable: [], stageArrivals, stageArrivalsByMode, transferExits, explored, retained: alive.length, limited };
 }

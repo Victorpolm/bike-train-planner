@@ -640,3 +640,11 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Decision:** For Simplest, retain the ordinary cycling candidate and compare a road-oriented bicycle profile with the same feasibility, terrain and detour checks. Count actual turning decisions rather than all voice instructions; unknown instructions stay unknown. Permit up to 15 seconds for the bounded alternative. Do not hard-code Rämistrasse or claim a global optimum.
 
 **Clarification:** The existing beginning/end-only control plus explicit inclusion of prohibited-bicycle services can expose useful passenger-only comparisons. It does not yet reconcile bicycle fares, bike custody or rack-to-platform access. Reuse the existing controls when those states are implemented; no extra selector is added now. [Evidence and remaining checks](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
+
+## 2026-10-07 — Walking opposite the cycling end and passenger-only transit
+
+**Decision:** Beginning/end-only placement now supports a pedestrian endpoint and an explicit take-bike-on-transit checkbox. Off is the default for these placements; it represents leaving the bike at the departure station or using one already at the arrival station. No extra placement selector is introduced. It changes both service eligibility and bicycle ticket/reservation costs, not only price. Carrying a bicycle still enforces the selected bicycle scope; bus avoidance remains independent.
+
+**Implementation:** Directed pedestrian routes replace the former matching-stop requirement on the non-cycling end. Independent walking time/limits, phases across requested visits, arrival queries and active-travel metrics are enforced. Known passenger quotes remain visible even when bicycle permission or pricing is incomplete; no missing price is invented. This supersedes the 2 October endpoint restriction and the bicycle-custody boundary in the earlier 7 October entries.
+
+**Boundary:** A specific parking facility, parking/collection duration, availability and rack/platform access are not verified. No step-free/bicycle-pushing guarantee or exhaustive routing claim. [Contract and live evidence](WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
