@@ -193,8 +193,14 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
   if (!sections.length) sections.push(unknown(0, distanceM));
   const terrain = elevationProfile(points);
   const hints = properties.voicehints;
-  const turnCount = Array.isArray(hints) ? new Set(hints.filter(h => Array.isArray(h)
-    && Number(h[0]) > 0 && Number(h[0]) < points.length - 1).map(h => (h as unknown[])[0])).size : undefined;
+  // BRouter VoiceHint codes: continue (1) is not a turn. Count turns,
+  // forks/keeps and roundabouts, excluding endpoint/off-route/beeline notices.
+  // Missing or malformed instructions must not look like a zero-turn path.
+  const validHints = Array.isArray(hints) && hints.every(h => Array.isArray(h)
+    && Number.isInteger(h[0]) && h[0] >= 0 && h[0] < points.length
+    && Number.isInteger(h[1]) && (h[1] >= 1 && h[1] <= 18 || h[1] === 100));
+  const turnCount = validHints ? new Set((hints as number[][]).filter(h => h[0] > 0 && h[0] < points.length - 1
+    && h[1] !== 1 && h[1] !== 12 && h[1] !== 16 && h[1] !== 100).map(h => h[0])).size : undefined;
   const ridingSeconds = Math.max(pace ? pacedRidingSeconds(terrain.elevation, distanceM / 1000, pace) : seconds,
     distanceM / 1000 / maxCyclingSpeed(pace) * 3600);
   return analyseCyclingTerrain({ id: cyclingKey(from, to), from, to, points, distanceKm: distanceM / 1000, ridingSeconds,

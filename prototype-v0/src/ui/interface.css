@@ -43,9 +43,14 @@ button:disabled { cursor: default; opacity: .55; }
 .reverse-route svg { width: 22px; height: 22px; }
 .location-actions { margin-top: 0; gap: 6px 16px; }
 .location-actions button, .location-actions a { min-height: 44px; display: inline-flex; align-items: center; font-size: .875rem; }
-.departure-controls { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
-.departure-controls input { min-width: 0; width: 100%; }
-.leave-now { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 12px; border-radius: 9px; border: 1px solid #aebfb6; background: #fff; cursor: pointer; font-size: .875rem; }
+.departure-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+.departure-mode { flex: 0 0 116px; }
+.departure-controls select { min-height: 44px; height: 44px; padding: 8px; }
+.departure-time-field { flex: 1 1 250px; min-width: 0; display: grid; gap: 7px; }
+.departure-time-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; align-items: center; }
+.departure-controls input { min-width: 0; width: 100%; height: 44px; padding-inline: 8px; }
+.leave-now { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border-radius: 9px; border: 1px solid #aebfb6; background: #fff; cursor: pointer; }
+.leave-now:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .leave-now[aria-pressed=true] { color: #104934; background: #edf7f0; border-color: #559471; }
 .leave-now svg { width: 21px; height: 21px; flex: 0 0 21px; }
 .trip-presets { margin: 4px 0 0; padding: 0; border: 0; min-width: 0; }
@@ -142,8 +147,6 @@ button:disabled { cursor: default; opacity: .55; }
   .trip-presets > div { gap: 5px; }
   .trip-presets button { padding-inline: 4px; }
   .trip-presets strong { font-size: .875rem; }
-  .departure-controls { grid-template-columns: minmax(0, 1fr); }
-  .leave-now { justify-self: end; min-height: 44px; }
   .preference-grid { grid-template-columns: minmax(0, 1fr); }
 }
 .model-note > summary { min-height: 44px; cursor: pointer; padding-block: 10px; font-weight: 600; }

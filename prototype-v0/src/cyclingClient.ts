@@ -117,7 +117,7 @@ export class CyclingClient {
     const equivalent = cachedCycling(this.routes, a, b);
     if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
-    const cacheKey = "terrain-hills-v2|" + JSON.stringify(this.hills) + "|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    const cacheKey = "terrain-simple-v3|" + JSON.stringify(this.hills) + "|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
     if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }
     const task = this.queue.then(async () => {
@@ -186,13 +186,26 @@ export class CyclingClient {
                 const alternative = new URLSearchParams(params);
                 const stairs = route.sections.some(s => s.tags.highway === "steps");
                 uphillParameters(alternative, this.hills);
-                if (stairs || route.blocked) {
+                if (this.routePreference === "simplest") {
+                  // A second trekking route can repeat the same cycle-route
+                  // bias. Compare a road-oriented bicycle route instead, then
+                  // rank actual instructions with the same terrain/time checks.
+                  alternative.set("profile", "fastbike");
+                  alternative.set("profile:allow_steps", "0");
+                  alternative.set("profile:allow_motorways", "0");
+                  alternative.set("profile:considerTurnRestrictions", "1");
+                  alternative.delete("profile:ignore_cycleroutes");
+                  alternative.delete("profile:avoid_unsafe");
+                } else if (stairs || route.blocked) {
                   alternative.set("profile:allow_steps", "0");
                   alternative.set("profile:avoid_unsafe", "1");
                 } else if (this.hills.mode === "none") alternative.set("alternativeidx", "1");
                 try {
                   await waitFor(this.gapMs, this.signal); this.lastRequest = Date.now(); this.requests++; this.alternativeRequests++;
-                  const timeout = this.hills.mode !== "none" ? 10000 : !stairs && !route.blocked && this.routes.size < 2 ? 2500 : 10000;
+                  // Live city alternatives can take 9–12 s. The old 2.5 s
+                  // first-link timeout often prevented Simplest comparing any.
+                  const timeout = this.routePreference === "simplest" ? 15000
+                    : this.hills.mode !== "none" ? 10000 : !stairs && !route.blocked && this.routes.size < 2 ? 2500 : 10000;
                   const alternate = await fetchJson<unknown>("https://brouter.de/brouter?" + alternative, this.signal,
                     Math.min(timeout, remaining()), this.fetcher);
                   return parseCyclingRoute(alternate, a, b, Date.now(), this.pace);

@@ -1,6 +1,6 @@
 # Website access and development
 
-**Current publication:** Owner-private **version 54** published on **7 October 2026 at 09:25:15 UTC** (11:25:15 Europe/Zurich), environment revision **3**, Site source `4646573e346a5b734366b0264441384f1fa0cbd1`. Adds Arrive at and worthwhile climbing alternatives. **388 regressions** in 11 suites, formatting, Knip and TypeScript/frontend/Worker production builds pass. Browser interaction and a new live-provider route check remain pending. Runtime keys and audience are unchanged. [Implementation and release evidence](ARRIVAL_AND_CLIMBING_2026-10-07.md).
+**Current publication:** Owner-private **version 55** published on **7 October 2026 at 10:52:25 UTC** (12:52:25 Europe/Zurich), environment revision **3**, Site source `68c182b244670c385f26b561538038f49f6c1044`. Compact time controls, historical-date regressions and a road-oriented Simplest candidate are delivered. **395 regressions** in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass. The live ETH HG–Stadelhofen reproduction improves from 1.774 km / 16 turns to 1.551 km / 11 turns and uses Rämistrasse. Browser interaction/visual QA remains pending. Runtime keys and audience are unchanged. [Implementation and release evidence](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
 
 Open **Map filters** and enable Water, Toilets or Food to load the additional sources. In the Water panel, optionally select **Show topographic fountains and springs (drinkability unknown)**. Select a journey to filter by its paths; adjust the route distance or disable Along selected journey to explore more widely. Click overlapping markers at detailed zoom to inspect separate floors/sources. Closest remains straight-line from A. Once a journey is selected, click a facility and choose **Preview cycling detour**; adjust the section and stop duration, the dashed purple preview draws and frames automatically. Original cards and fares stay unchanged. Entrances, indoor paths and opening at arrival are not verified.
 
@@ -21,7 +21,7 @@ Install Git and Node.js 24, the version used for verification. The source reposi
 ```bash
 git clone https://github.com/Victorpolm/bike-train-planner.git
 cd bike-train-planner
-git switch feature/novice-interface-profiles
+git switch main
 cd prototype-v0
 npm ci
 npm run dev

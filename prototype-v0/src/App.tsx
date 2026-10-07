@@ -1074,8 +1074,8 @@ export default function App() {
             </p>
 
             <p>
-              You can choose a past departure when timetable data is available. Online fares can
-              only be requested for future departures.
+              You can choose a past departure or arrival when timetable data is available. Online
+              fares can only be requested for future departures.
             </p>
             <div className="assumptions">
               <span>

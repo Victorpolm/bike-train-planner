@@ -15,7 +15,7 @@ export default function DepartureControls({
 }) {
   return (
     <div className="departure-controls">
-      <label>
+      <label className="departure-mode">
         <span>Plan by</span>
         <select
           disabled={disabled}
@@ -26,35 +26,41 @@ export default function DepartureControls({
           <option value="arrival">Arrive at</option>
         </select>
       </label>
-      <label>
-        <span>{mode === "arrival" ? "Arrive at" : "Depart at"} · Swiss time</span>
-        <input
-          type="datetime-local"
-          required
-          disabled={disabled}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      </label>
-      <button
-        type="button"
-        className="leave-now"
-        disabled={disabled}
-        aria-pressed={mode === "now"}
-        onClick={onNow}
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          aria-hidden="true"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 6v6l4 2" />
-        </svg>
-        Leave now
-      </button>
+      <div className="departure-time-field">
+        <label htmlFor="journey-time">
+          <span>{mode === "arrival" ? "Arrive at" : "Depart at"} · Swiss time</span>
+        </label>
+        <div className="departure-time-row">
+          <input
+            id="journey-time"
+            type="datetime-local"
+            required
+            disabled={disabled}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <button
+            type="button"
+            className="leave-now"
+            disabled={disabled}
+            aria-pressed={mode === "now"}
+            aria-label="Leave now"
+            title="Leave now"
+            onClick={onNow}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

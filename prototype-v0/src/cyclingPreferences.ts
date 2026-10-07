@@ -43,5 +43,6 @@ export function chooseCyclingRoute(candidates: CyclingRoute[], preference: Route
   return { ...selected, preference, alternativesChecked: unique,
     preferenceNote: (hills.mode !== "none" ? `Prefer uphill slopes below ${hills.maxUphillPercent}%. ` + "This is a preference, not a guaranteed gradient limit. " : "") + (unique < 2 ? "Only one usable path was returned; alternatives could not be compared."
       : preference === "simplest" && selected.turnCount === undefined ? "Turn instructions were unavailable; the quickest checked path is shown."
-        : "Selected from " + unique + " checked paths; extra time " + Math.max(0, selected.minutes - fastest.minutes) + " min compared with the quickest candidate.") };
+        : "Selected from " + unique + " checked paths; extra time " + Math.max(0, selected.minutes - fastest.minutes) + " min compared with the quickest candidate.")
+      + (preference === "simplest" ? " Fewer turns can mean busier roads." : "") };
 }

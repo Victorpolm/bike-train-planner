@@ -808,3 +808,16 @@ Live 5 October departures checked on 3 October: Zürich–Laax Extended complete
 **Golden climbing case:** A = 120 min / 600 m, B = 130 min / 300 m, C = 149 min / 0 m. A retains Fastest and B wins Reduce climbing: scores are -5 and -1 minutes for B/C. A 30 → 10 m saving cannot create the category. Absolute, percentage, time, score-tie and unknown-elevation boundaries are covered.
 
 **Other regressions:** exact platform seconds; final-cycle deadline; first-bike prefix through a waypoint; earliest departure/horizon/placement/boarding caps; OJP Destination time and direction-separated caches; both public fallback parameters; reverse stage acquisition; Swiss rounding; cycling-only reference timing; cycling edits rejected when late. The received provider graph is still bounded and sampled. [Complete contract and remaining limits](ARRIVAL_AND_CLIMBING_2026-10-07.md).
+
+
+## 2026-10-07 — ETH HG–Stadelhofen simplicity and historical time controls
+
+**Hypothesis:** Comparing two similarly biased trekking routes and counting continue-straight notices makes Simplest miss an obvious street route.
+
+**Live method/result:** BRouter 1.7.10, representative ETH HG building point → existing Stadelhofen anchor, production query settings. Both old client requests return the same 1,774 m geometry with 16 actual turn/fork decisions and a mapped stair segment. The new road-oriented bicycle candidate is 1,551 m with 11 decisions and no mapped stairs; both estimate eight minutes at a 15 km/h flat-ground pace. The actual selector chooses it. A bounded OSM map read matches about 334 m to named Rämistrasse road ways. This is a corridor reproduction, not the user's exact entrance pin or a globally optimal route.
+
+**Regression evidence:** 395 cases in 11 suites pass, including seven added cases. Fixtures preserve raw responses and request parameters. Tests distinguish turns from continue/off-route/endpoints, keep bad hints unknown, check restricted-road flags, allow a 12-second candidate, and preserve the primary on failure or a worse alternative. With the clock frozen on 7 October, both departure and arrival searches for 5 October return the historical journey and retain the selected time. The arrival test omits an injected earliest start, exercising the real historical lookback.
+
+**Interpretation:** Candidate diversity fixes the reported corridor; the ordinary path remains a fallback. Historical date entry already worked and is now explicitly covered in both directions. Browser QA is still pending. [Full evidence, source references and release](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
+
+**Next:** verify the compact controls on a phone and inspect the selected Rämistrasse/pushing/station-access sections in the owner's browser.

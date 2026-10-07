@@ -6,6 +6,7 @@ import { OjpClient } from "./ojpClient.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import { cyclingKey, zeroCycling } from "./cycling.ts";
 import { swissDateParts } from "./timetableClient.ts";
+import { parseSwissDateTime } from "./departure.ts";
 
 const start = new Date("2026-10-05T06:00:00Z"), at = (m: number) => new Date(+start + m * 60_000);
 const a = { id: "A", name: "A", label: "A", stopId: "A", lat: 47, lon: 8 };
@@ -15,6 +16,30 @@ const options = { ...DEFAULT_OPTIONS, maxBikeMinutes: 0, maxAccessMinutes: 0, ma
 const leg = (from: typeof a, to: typeof a, depart: number, arrive: number) => ({ from, to, mode: "transit", departure: at(depart).toISOString(),
   arrival: at(arrive).toISOString(), service: `${from.id}-${to.id}`, serviceName: null, direction: null, departurePlatform: null, arrivalPlatform: null });
 const response = (legs: unknown[]) => Response.json({ legs, checked: start.toISOString(), warnings: [] });
+
+it("finds historical departures and arrivals without resetting the selected date to now", async t => {
+  t.mock.timers.enable({ apis: ["Date"], now: new Date("2026-10-07T12:00:00Z") });
+  for (const arrival of [false, true]) {
+    const chosen = parseSwissDateTime(arrival ? "2026-10-05T09:40" : "2026-10-05T08:00");
+    const signal = new AbortController().signal, bodies: any[] = [];
+    const ojpClient = new OjpClient(signal, async (_url, init) => {
+      bodies.push(JSON.parse(String(init!.body)));
+      return response([leg(a, d, 60, 100)]);
+    });
+    const session = await plan(a, d, "baseline", options, signal, () => {}, () => {}, {
+      ...(arrival ? { arriveBy: chosen } : { start: chosen }),
+      cyclingClient: null, ojpClient, gapMs: 0, fetcher: async () => Response.json({ stations: [] }),
+    });
+    assert.ok(bodies.length);
+    assert.ok(bodies.every(b => b.departure === chosen.toISOString()));
+    assert.ok(bodies.every(b => !!b.arriveBy === arrival));
+    assert.equal(+session.start, +chosen - (arrival ? options.horizonMinutes * 60_000 : 0));
+    assert.equal(session.baseline.journeys.length, 1);
+    const journey = session.baseline.journeys[0];
+    assert.ok(+journey.startTime < Date.now());
+    assert.equal(+journey.startTime + journey.totalMinutes * 60_000, +at(100));
+  }
+});
 
 it("rounds an arrival down, while departure queries round up across midnight and DST offsets", () => {
   assert.deepEqual(swissDateParts(new Date("2026-10-05T23:59:40+02:00"), true), { date: "2026-10-05", time: "23:59" });

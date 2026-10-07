@@ -1,0 +1,78 @@
+{
+  "current-primary": {
+    "url": "https://brouter.de/brouter?lonlats=8.548112%2C47.376427%7C8.54848502%2C47.36661115&profile=trekking&alternativeidx=0&format=geojson&profile%3AprocessUnusedTags=1&profile%3Aallow_steps=1&profile%3Aallow_ferries=0&profile%3AmaxSpeed=45&profile%3AwaypointCatchingRange=250&timode=2&profile%3AturnInstructionMode=2&profile%3Aignore_cycleroutes=0&profile%3Aavoid_unsafe=0",
+    "parameters": {
+      "lonlats": "8.548112,47.376427|8.54848502,47.36661115",
+      "profile": "trekking",
+      "alternativeidx": "0",
+      "format": "geojson",
+      "profile:processUnusedTags": "1",
+      "profile:allow_steps": "1",
+      "profile:allow_ferries": "0",
+      "profile:maxSpeed": "45",
+      "profile:waypointCatchingRange": "250",
+      "timode": "2",
+      "profile:turnInstructionMode": "2",
+      "profile:ignore_cycleroutes": "0",
+      "profile:avoid_unsafe": "0"
+    },
+    "retrievedAt": "2026-10-07"
+  },
+  "legacy-alternative": {
+    "url": "https://brouter.de/brouter?lonlats=8.548112%2C47.376427%7C8.54848502%2C47.36661115&profile=trekking&alternativeidx=0&format=geojson&profile%3AprocessUnusedTags=1&profile%3Aallow_steps=0&profile%3Aallow_ferries=0&profile%3AmaxSpeed=45&profile%3AwaypointCatchingRange=250&timode=2&profile%3AturnInstructionMode=2&profile%3Aignore_cycleroutes=0&profile%3Aavoid_unsafe=1",
+    "parameters": {
+      "lonlats": "8.548112,47.376427|8.54848502,47.36661115",
+      "profile": "trekking",
+      "alternativeidx": "0",
+      "format": "geojson",
+      "profile:processUnusedTags": "1",
+      "profile:allow_steps": "0",
+      "profile:allow_ferries": "0",
+      "profile:maxSpeed": "45",
+      "profile:waypointCatchingRange": "250",
+      "timode": "2",
+      "profile:turnInstructionMode": "2",
+      "profile:ignore_cycleroutes": "0",
+      "profile:avoid_unsafe": "1"
+    },
+    "retrievedAt": "2026-10-07"
+  },
+  "road-candidate": {
+    "url": "https://brouter.de/brouter?lonlats=8.548112%2C47.376427%7C8.54848502%2C47.36661115&profile=fastbike&alternativeidx=0&format=geojson&profile%3AprocessUnusedTags=1&profile%3Aallow_steps=0&profile%3Aallow_ferries=0&profile%3AmaxSpeed=45&profile%3AwaypointCatchingRange=250&timode=2&profile%3AturnInstructionMode=2&profile%3Aallow_motorways=0&profile%3AconsiderTurnRestrictions=1",
+    "parameters": {
+      "lonlats": "8.548112,47.376427|8.54848502,47.36661115",
+      "profile": "fastbike",
+      "alternativeidx": "0",
+      "format": "geojson",
+      "profile:processUnusedTags": "1",
+      "profile:allow_steps": "0",
+      "profile:allow_ferries": "0",
+      "profile:maxSpeed": "45",
+      "profile:waypointCatchingRange": "250",
+      "timode": "2",
+      "profile:turnInstructionMode": "2",
+      "profile:allow_motorways": "0",
+      "profile:considerTurnRestrictions": "1"
+    },
+    "retrievedAt": "2026-10-07"
+  },
+  "current-alternative": {
+    "parameters": {
+      "lonlats": "8.548112,47.376427|8.54848502,47.36661115",
+      "profile": "trekking",
+      "alternativeidx": "1",
+      "format": "geojson",
+      "profile:processUnusedTags": "1",
+      "profile:allow_steps": "1",
+      "profile:allow_ferries": "0",
+      "profile:maxSpeed": "25",
+      "profile:waypointCatchingRange": "100",
+      "timode": "2",
+      "profile:turnInstructionMode": "2",
+      "profile:ignore_cycleroutes": "0",
+      "profile:avoid_unsafe": "0"
+    },
+    "retrievedAt": "2026-10-07",
+    "note": "Exploratory alternate trekking path, not the old client request in this stairs case."
+  }
+}

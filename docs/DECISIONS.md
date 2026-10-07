@@ -631,3 +631,12 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Decision:** Reduce climbing uses a pilot minimum saving of 50 m and 25%, an extra-time cap of 30 minutes and 25% of reference duration, and a five-minute value per 100 m saved. Apply these tolerances only to category selection; retain raw ascent and strict Pareto resources. Unknown elevation cannot qualify. Do not add a card when its score ties the ordinary reference.
 
 **Boundary:** Beginning/end-only currently keeps the bike through transit. Reuse that control when parking/collection routing is implemented, but do not imply parking markers alone supply that behaviour. Full Extra categories regrouping and Discover/boarding trade-offs remain proposals. [Details and evidence](ARRIVAL_AND_CLIMBING_2026-10-07.md).
+
+
+## 2026-10-07 — Compact time controls and genuinely different Simplest candidates
+
+**Decision:** Keep Depart at / Arrive at in one compact selector and place the accessible Leave now clock beside the date/time. Preserve historical dates, subject to provider coverage. Confirm the existing behaviour with a frozen-clock end-to-end regression instead of imposing a today-only restriction.
+
+**Decision:** For Simplest, retain the ordinary cycling candidate and compare a road-oriented bicycle profile with the same feasibility, terrain and detour checks. Count actual turning decisions rather than all voice instructions; unknown instructions stay unknown. Permit up to 15 seconds for the bounded alternative. Do not hard-code Rämistrasse or claim a global optimum.
+
+**Clarification:** The existing beginning/end-only control plus explicit inclusion of prohibited-bicycle services can expose useful passenger-only comparisons. It does not yet reconcile bicycle fares, bike custody or rack-to-platform access. Reuse the existing controls when those states are implemented; no extra selector is added now. [Evidence and remaining checks](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
