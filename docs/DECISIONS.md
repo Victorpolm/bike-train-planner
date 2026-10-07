@@ -623,3 +623,11 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Consolidation:** Copy the already deployed version-53 application's 214 files exactly, including nine existing transfer regressions and the 12-second lookup timeout. Preserve unrelated GitHub work and historical decisions. Site-only archived project-documentation snapshots and source metadata are not copied into the authoritative repository. GitHub remains the durable source of truth; publication is separate, and this synchronization needs no duplicate deployment.
 
 **Verification / limits:** 372 tests in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass on 7 October. Source equality with Site commit `619bc7bb6814d69054e582b632a152a437adeba4` was checked file by file. General rules do not resolve service-specific exceptions, entrances, lifts/stairs or bicycle accessibility. Refresh the feed before its 12 December 2026 validity boundary. [Detailed implementation and release evidence](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+
+## 2026-10-07 — Arrival deadlines and worthwhile climbing compromises
+
+**Decision:** Implement Arrive at as a destination deadline with latest-origin-departure ranking. Preserve forward directed routing and exact boarding checks; retain departure in dominance. Provider acquisition respects the deadline and ordered-stage suffixes. Ordinary Depart at behaviour remains available.
+
+**Decision:** Reduce climbing uses a pilot minimum saving of 50 m and 25%, an extra-time cap of 30 minutes and 25% of reference duration, and a five-minute value per 100 m saved. Apply these tolerances only to category selection; retain raw ascent and strict Pareto resources. Unknown elevation cannot qualify. Do not add a card when its score ties the ordinary reference.
+
+**Boundary:** Beginning/end-only currently keeps the bike through transit. Reuse that control when parking/collection routing is implemented, but do not imply parking markers alone supply that behaviour. Full Extra categories regrouping and Discover/boarding trade-offs remain proposals. [Details and evidence](ARRIVAL_AND_CLIMBING_2026-10-07.md).

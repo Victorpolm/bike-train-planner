@@ -4,7 +4,7 @@ import { interpretBicycleAttributes, type BicycleAttribute, type CarriageRule } 
 import type { TransitLeg } from "./routing.ts";
 
 export type OjpStop = { id: string; name: string; lat: number; lon: number };
-export type OjpQuery = { from: OjpStop; to: OjpStop; departure: string };
+export type OjpQuery = { from: OjpStop; to: OjpStop; departure: string; arriveBy?: boolean };
 export type OjpReference = NonNullable<TransitLeg["ojp"]>;
 export type OjpLeg = {
   transferRules?: StationTransferRule[];
@@ -184,7 +184,7 @@ function envelope(kind: string, content: string, now: string) {
   return `<?xml version="1.0" encoding="UTF-8"?><OJP xmlns="http://www.vdv.de/ojp" xmlns:siri="http://www.siri.org.uk/siri" version="2.0"><OJPRequest><siri:ServiceRequest><siri:RequestTimestamp>${escape(now)}</siri:RequestTimestamp><siri:RequestorRef>bike-train-planner</siri:RequestorRef><${kind}><siri:RequestTimestamp>${escape(now)}</siri:RequestTimestamp><siri:MessageIdentifier>bike-app-${escape(now)}</siri:MessageIdentifier>${content}</${kind}></siri:ServiceRequest></OJPRequest></OJP>`;
 }
 export function ojpTripRequest(query: OjpQuery, filtered: boolean, now: string) {
-  const endpoint = (name: string, stop: OjpStop) => `<${name}><PlaceRef><GeoPosition><siri:Longitude>${stop.lon}</siri:Longitude><siri:Latitude>${stop.lat}</siri:Latitude></GeoPosition><Name><Text>${escape(stop.name)}</Text></Name></PlaceRef>${name === "Origin" ? `<DepArrTime>${escape(query.departure)}</DepArrTime>` : ""}</${name}>`;
+  const endpoint = (name: string, stop: OjpStop) => `<${name}><PlaceRef><GeoPosition><siri:Longitude>${stop.lon}</siri:Longitude><siri:Latitude>${stop.lat}</siri:Latitude></GeoPosition><Name><Text>${escape(stop.name)}</Text></Name></PlaceRef>${name === (query.arriveBy ? "Destination" : "Origin") ? `<DepArrTime>${escape(query.departure)}</DepArrTime>` : ""}</${name}>`;
   return envelope("OJPTripRequest", endpoint("Origin", query.from) + endpoint("Destination", query.to)
     + `<Params><NumberOfResults>4</NumberOfResults><UseRealtimeData>none</UseRealtimeData><IncludeIntermediateStops>true</IncludeIntermediateStops><BikeTransport>${filtered}</BikeTransport></Params>`, now);
 }

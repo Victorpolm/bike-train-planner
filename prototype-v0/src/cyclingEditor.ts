@@ -27,7 +27,8 @@ export async function requestEditedCycling(stage: DetourStage, via: readonly Pla
 /** Rebuild only active travel times; public-transport legs retain their exact objects and fare evidence. */
 export function applyCyclingEdit(context: EditContext, stage: DetourStage, routes: readonly CyclingRoute[]): AppliedCyclingEdit {
   validateOptions(context.options);
-  const { journey, cycling, origin, destination, start, options } = context;
+  const { journey, cycling, origin, destination, options } = context;
+  const start = journey?.startTime ?? cycling?.departure ?? context.start;
   const current = detourStages(journey, cycling, origin, destination, start).find(s => s.id === stage.id && s.route === stage.route);
   if (!current) throw new Error("The selected journey changed. Reopen the cycling editor.");
   if (!routes.length || routes.length > MAX_SHAPING_POINTS + 1 || routes.some(r => r.blocked || !Number.isFinite(r.minutes) || r.minutes < 0))
@@ -42,8 +43,10 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     const updated = [...cycling.routes.slice(0, index), ...routes, ...cycling.routes.slice(index + 1)];
     const minutes = updated.reduce((sum, route) => sum + route.minutes, 0);
     if (minutes > options.horizonMinutes) throw new Error("This edited ride exceeds the journey time window.");
+    const departure = options.arriveBy ? new Date(Date.parse(options.arriveBy) - minutes * 60_000) : start;
+    if (+departure < +context.start) throw new Error("This edited ride would require leaving before the search time window. Choose a later arrival or a shorter ride.");
     return { journey: null, cycling: { routes: updated, minutes, distanceKm: updated.reduce((sum, r) => sum + r.distanceKm, 0),
-      arrival: new Date(+start + minutes * 60_000) } };
+      departure, arrival: new Date(+departure + minutes * 60_000), outsideTimeWindow: false } };
   }
 
   const steps = journeySteps(journey, origin, destination);
@@ -120,5 +123,6 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     }) };
   if (metrics(result).bike > options.maxBikeMinutes) throw new Error(`This edit exceeds your ${options.maxBikeMinutes}-minute total cycling limit.`);
   if (result.totalMinutes > options.horizonMinutes) throw new Error("This edit exceeds the journey time window.");
+  if (options.arriveBy && cursor > Date.parse(options.arriveBy)) throw new Error("This edit would arrive after your chosen arrival time. Shorten the ride or search for different services.");
   return { journey: result, cycling: null };
 }

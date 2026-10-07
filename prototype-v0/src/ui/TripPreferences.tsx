@@ -221,8 +221,12 @@ export default function TripPreferences({
       </label>
       {climbOptimization && (
         <p className="preference-note">
-          Adds a journey suggestion alongside Fastest and Fewest boardings, within 60 extra minutes.
-          Your cycling-path preference stays selected.
+          Offers an alternative only when it saves at least 50 m and 25% of the climbing, with a
+          limited time cost.
+          <InlineHelp
+            label="How climbing alternatives are chosen"
+            text="Compared with the fastest journey (or latest departure for Arrive at), allow at most 30 extra minutes and 25% of its duration, within your overall alternative allowance. A saving of 100 m is worth up to 5 minutes in this initial compromise. Routes with incomplete elevation cannot qualify. Your cycling-path preference stays selected."
+          />
         </p>
       )}
       <fieldset className="hill-preferences" disabled={disabled} aria-label="Cycling hills">

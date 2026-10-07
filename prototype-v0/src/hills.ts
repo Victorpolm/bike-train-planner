@@ -3,6 +3,27 @@ import type { Journey } from "./routing.ts";
 
 export type HillPreferences = { mode: "none" | "gentler"; maxUphillPercent: number; extraMinutes: number };
 export const DEFAULT_HILLS: HillPreferences = { mode: "none", maxUphillPercent: 6, extraMinutes: 15 };
+// Pilot recommendation policy, not physiological thresholds. Keep raw ascent
+// and exact Pareto resources; apply these tolerances only to the extra card.
+const CLIMBING_TRADEOFF = {
+  minimumMetres: 50, minimumFraction: .25,
+  maximumExtraMinutes: 30, maximumExtraFraction: .25,
+  minutesPer100Metres: 5,
+} as const;
+export function climbingTradeoff(reference: Journey, candidate: Journey, extraTimeLimit: number, arriveBy = false) {
+  const baseline = journeyClimb(reference), alternative = journeyClimb(candidate);
+  if (baseline.unknown || alternative.unknown) return null;
+  const savedMetres = baseline.ascent - alternative.ascent;
+  if (savedMetres < Math.max(CLIMBING_TRADEOFF.minimumMetres, baseline.ascent * CLIMBING_TRADEOFF.minimumFraction)) return null;
+  const extraMinutes = arriveBy ? (+reference.startTime - +candidate.startTime) / 60_000
+    : candidate.totalMinutes - reference.totalMinutes;
+  const allowance = Math.min(extraTimeLimit, CLIMBING_TRADEOFF.maximumExtraMinutes,
+    reference.totalMinutes * CLIMBING_TRADEOFF.maximumExtraFraction);
+  const score = extraMinutes - savedMetres / 100 * CLIMBING_TRADEOFF.minutesPer100Metres;
+  // A tie favours the ordinary reference, avoiding an extra card for no gain.
+  if (extraMinutes > allowance || score >= 0) return null;
+  return { savedMetres, extraMinutes, score };
+}
 export function validateHills(hills: HillPreferences) {
   if (!["none", "gentler"].includes(hills.mode)
     || !Number.isFinite(hills.maxUphillPercent) || hills.maxUphillPercent < 1 || hills.maxUphillPercent > 20

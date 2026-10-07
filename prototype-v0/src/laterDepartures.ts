@@ -19,6 +19,7 @@ export function laterDepartureStart(journey: Journey, boardingMinutes: number): 
 /** Keep earlier results in the UI; this page has its own departure and budget. */
 export async function laterDepartures(session: SearchSession, journey: Journey, mode: ModelMode,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {}) {
+  if (session.options.arriveBy) throw new Error("Choose a later arrival time to search for later journeys.");
   const after = +firstBoarding(journey)!;
   const filter = (next: SearchSession) => {
     for (const group of [next, next.confirmed, next.allTransit]) for (const solution of [group?.baseline, group?.extended])

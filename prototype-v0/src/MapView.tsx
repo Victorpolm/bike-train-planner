@@ -1293,6 +1293,7 @@ export default function MapView({
           pace={cyclingPace}
           preference={routePreference}
           hills={hills}
+          arriveBy={editOptions?.arriveBy}
           onRoutes={setDetourRoutes}
           onClose={() => {
             setDetour(null);

@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**7 October implementation:** **Arrive at** finds the latest checked feasible departure, including final cycling and platform allowances. **Reduce climbing** now requires worthwhile absolute and relative ascent savings within a limited time cost; near-flat gains do not create an extra suggestion. **388 regressions**, formatting, Knip and production builds pass. [Behaviour, pilot defaults and limits](docs/ARRIVAL_AND_CLIMBING_2026-10-07.md).
+
 **7 October consolidation:** Both branches are merged into `main`, and the deployed station-transfer implementation is now included here. The planner uses 109,116 general platform-transfer minimums from the supplied SBB ZIP, behind exact dated OJP evidence. [Implementation, provenance and checks](docs/STATION_TRANSFER_RUNTIME_2026-10-06.md).
 
 **4 October cycling preference fix:** **Less · up to 40 min total** now lets you share those minutes freely between cycling sections, for example 30 at the start and 5 at the end. The total remains binding, including ordered stops. **363 regressions pass.** [Behaviour and checks](docs/EXPERIMENTS.md#2026-10-04--less-cycling-shares-one-total-time-budget).
@@ -28,7 +30,7 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** Owner-private **version 53** published on **6 October 2026 at 21:04:31 UTC** (23:04:31 Europe/Zurich), environment revision **3**, Site source `619bc7bb6814d69054e582b632a152a437adeba4`. The **214 application files** in `prototype-v0/` match that deployed source. The interface/profile and ZIP branches were merged into `main` on 6 October; the following runtime integration is synchronized to `main` in this 7 October update. **372 regressions** in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass on 7 October. Browser interaction QA remains pending. This synchronization requires no new Site publication. [Release and regression evidence](docs/STATION_TRANSFER_RUNTIME_2026-10-06.md).
+**Last verified release:** Owner-private **version 54** published on **7 October 2026 at 09:25:15 UTC** (11:25:15 Europe/Zurich), environment revision **3**, Site source `4646573e346a5b734366b0264441384f1fa0cbd1`. Adds Arrive at and worthwhile climbing alternatives. **388 regressions** in 11 suites, formatting, Knip and TypeScript/frontend/Worker production builds pass. Browser interaction and a new live-provider route check remain pending. Runtime keys and audience are unchanged. [Implementation and release evidence](docs/ARRIVAL_AND_CLIMBING_2026-10-07.md).
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 

@@ -1,11 +1,12 @@
 import { boardingCheck, transferContextKey } from "./transferTimes.ts";
 import { addClimb, climbVector, emptyClimb, hillSearch, routeClimb, type Climb } from "./hills.ts";
-import { atEndpoint, cyclingLink, cyclingTransferLimit, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
+import { arrivalDepartureSeeds, atEndpoint, cyclingLink, cyclingTransferLimit, dominates, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
 import { bicycleLegAllowed } from "./bicyclePermission.ts";
 import { samePlace } from "./cycling.ts";
 
 type State = {
+  startedAt: number;
   climb: Climb;
   stop: string; stage: number; time: number; bike: number; walk: number; boardings: number;
   extraTransfers: number; stageHasTransit: boolean; needsTransit: boolean; endCycling: boolean;
@@ -22,7 +23,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   mode: ModelMode, labelLimit = 50_000): WaypointSolution {
   validateOptions(options);
   if (points.length < 2 || !Number.isFinite(start.getTime())) throw new Error("A route needs a start, finish and valid departure time.");
-  const horizon = start.getTime() + options.horizonMinutes * 60_000;
+  const horizon = options.arriveBy ? Date.parse(options.arriveBy) : start.getTime() + options.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(options, mode);
   const outgoing = new Map<string, Edge[]>();
   const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length || e.leg.stationArrival?.id || e.leg.stationDeparture?.id);
@@ -42,7 +43,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     if (state.time > horizon || state.bike > options.maxBikeMinutes || state.boardings > options.maxBoardings) return;
     const key = `${state.stop}|${state.stage}|${state.extraTransfers}|${state.stageHasTransit}|${state.needsTransit}|${state.boardings > 0}|${state.endCycling}|${transferSensitive ? transferContextKey(state.legs) : ""}`;
     const bucket = buckets.get(key) ?? [];
-    const vector = (s: State) => [s.time, s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive, ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
+    const vector = (s: State) => [s.time, ...(options.arriveBy ? [-s.startedAt] : []), s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive, ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
     const values = vector(state);
     if (bucket.some(s => vector(s).every((v, i) => v <= values[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -76,7 +77,8 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     add({ ...advanced, stage, stageHasTransit: false, needsTransit: false,
       visits: stage === points.length - 1 ? state.visits : [...state.visits, { place: next, arrival: new Date(advanced.time) }] });
   };
-  add({ climb: emptyClimb(), stop: pointId(0), stage: 0, time: start.getTime(), bike: 0, walk: 0, boardings: 0,
+  for (const startedAt of options.arriveBy ? arrivalDepartureSeeds(network, points, start, options) : [+start])
+    add({ startedAt, climb: emptyClimb(), stop: pointId(0), stage: 0, time: startedAt, bike: 0, walk: 0, boardings: 0,
     extraTransfers: 0, stageHasTransit: false, needsTransit: false, endCycling: false, accessActive: 0, egressActive: 0,
     legs: [], visits: [], alive: true });
   for (let index = 0; index < queue.length; index++) {
@@ -129,11 +131,11 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     const originStation = { ...atEndpoint(network.stops.get(first.fromId!)!, points[0]), bikeMinutes: 0, distanceKm: 0 };
     const destinationStation = { ...atEndpoint(network.stops.get(last.toId!)!, points.at(-1)!), bikeMinutes: 0, distanceKm: 0 };
     return { id: JSON.stringify([points.map(p => [p.lat, p.lon]), state.legs.map(l => [l.mode, l.fromId, l.toId, l.departure, l.arrival, l.service, l.operator, l.category])]),
-      startTime: start, originStation, destinationStation, departure: state.legs[0].departure!, arrival: new Date(state.time),
+      startTime: new Date(state.startedAt), originStation, destinationStation, departure: state.legs[0].departure!, arrival: new Date(state.time),
       trainMinutes: (last.arrival!.getTime() - first.departure!.getTime()) / 60_000,
       waitMinutes: state.legs.reduce((sum, leg, index) => sum + Math.max(0,
-        (leg.departure!.getTime() - (state.legs[index - 1]?.arrival?.getTime() ?? start.getTime())) / 60_000), 0),
-      totalMinutes: (state.time - start.getTime()) / 60_000, changes: state.boardings - 1,
+        (leg.departure!.getTime() - (state.legs[index - 1]?.arrival?.getTime() ?? state.startedAt)) / 60_000), 0),
+      totalMinutes: (state.time - state.startedAt) / 60_000, changes: state.boardings - 1,
       services: [...new Set(rides.map(leg => leg.service))], transitLegs: state.legs,
       legsIncludeEndpoints: true, waypoints: state.visits };
   });

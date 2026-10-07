@@ -78,6 +78,7 @@ function CyclingCard({
   start,
   maxBikeMinutes,
   fastest,
+  arriveBy,
   cyclingPosition,
   onSelect,
 }: {
@@ -86,6 +87,7 @@ function CyclingCard({
   start: Date;
   maxBikeMinutes: number;
   fastest: boolean;
+  arriveBy?: string;
   cyclingPosition: CyclingPosition;
   onSelect: () => void;
 }) {
@@ -98,7 +100,9 @@ function CyclingCard({
     >
       <span className="category-badges">
         <span>Cycling only · routed</span>
-        {fastest && <span>Fastest in this search</span>}
+        {fastest && (
+          <span>{arriveBy ? "Leave latest in this search" : "Fastest in this search"}</span>
+        )}
       </span>
       <span className="journey-topline">
         <strong>≈ {formatMinutes(comparison.minutes)}</strong>
@@ -109,10 +113,21 @@ function CyclingCard({
         <small>No public transport tickets needed.</small>
       </span>
       <span className="arrival-summary">
+        {arriveBy && comparison.departure && (
+          <>
+            Leave <b>{clock.format(comparison.departure)}</b> · {day.format(comparison.departure)}{" "}
+            ·{" "}
+          </>
+        )}
         Estimated arrival <b>{clock.format(comparison.arrival)}</b>
         {day.format(comparison.arrival) !== day.format(start) &&
           ` · ${day.format(comparison.arrival)}`}
       </span>
+      {comparison.outsideTimeWindow && (
+        <span className="comparison-caution">
+          Reference only: this ride falls outside the search time window.
+        </span>
+      )}
       <span className="cycling-summary">
         {comparison.distanceKm.toFixed(1)} km along roads and paths
       </span>
@@ -147,6 +162,7 @@ function JourneyCard({
   fareProfile,
   extraTimeMinutes,
   hills,
+  arriveBy,
   onSelect,
 }: {
   proposal: ScopedProposal;
@@ -157,6 +173,7 @@ function JourneyCard({
   fareProfile: FareProfile;
   extraTimeMinutes: number;
   hills?: HillPreferences;
+  arriveBy?: string;
   onSelect: () => void;
 }) {
   const { journey: j, wins } = proposal;
@@ -165,7 +182,8 @@ function JourneyCard({
     wins.every(
       (win) =>
         JSON.stringify(win.categories) === JSON.stringify(wins[0].categories) &&
-        win.extraMinutes === wins[0].extraMinutes,
+        win.extraMinutes === wins[0].extraMinutes &&
+        win.climbingSaved === wins[0].climbingSaved,
     );
   const prohibited = j.transitLegs.some(
     (leg) => leg.mode === "transit" && bicyclePermission(leg) === "prohibited",
@@ -193,12 +211,22 @@ function JourneyCard({
           </span>
           {win.categories.some((c) => c.startsWith("Least cycling or walking")) && (
             <span className="comparison-caution">
-              Among journeys up to {extraTimeMinutes} minutes longer than the fastest in this group.
+              {arriveBy
+                ? `Among journeys leaving up to ${extraTimeMinutes} minutes before the latest departure in this group.`
+                : `Among journeys up to ${extraTimeMinutes} minutes longer than the fastest in this group.`}
             </span>
           )}
           {win.extraMinutes > 0 && (
             <span className="tradeoff">
-              {formatMinutes(win.extraMinutes)} longer than the fastest in this group
+              {arriveBy
+                ? `Leave ${formatMinutes(win.extraMinutes)} earlier than the latest departure in this group`
+                : `${formatMinutes(win.extraMinutes)} longer than the fastest in this group`}
+            </span>
+          )}
+          {win.climbingSaved !== undefined && (
+            <span className="tradeoff">
+              ≈ {Math.round(win.climbingSaved)} m less climbing than the{" "}
+              {arriveBy ? "latest-departing" : "fastest"} journey in this group
             </span>
           )}
         </span>
@@ -225,6 +253,11 @@ function JourneyCard({
       </span>
       <JourneyPrice legs={j.transitLegs} profile={fareProfile} />
       <span className="arrival-summary">
+        {arriveBy && (
+          <>
+            Leave <b>{clock.format(j.startTime)}</b> · {day.format(j.startTime)} ·{" "}
+          </>
+        )}
         Arrive at your destination at <b>{clock.format(finalArrival)}</b>
         {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}
       </span>
@@ -378,7 +411,7 @@ export default function App() {
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
   const [cyclingPosition, setCyclingPosition] = useState<CyclingPosition>("anywhere");
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
-  const [departureMode, setDepartureMode] = useState<"now" | "scheduled">("now");
+  const [departureMode, setDepartureMode] = useState<"now" | "scheduled" | "arrival">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
   const options = useMemo(
     () =>
@@ -516,8 +549,13 @@ export default function App() {
     (session?.options.cyclingPosition ?? "anywhere") === "anywhere" &&
     !!session &&
     !!cyclingReference &&
+    !cyclingReference.outsideTimeWindow &&
     cyclingReference.minutes <= session.options.maxBikeMinutes &&
-    proposals.every((p) => cyclingReference.minutes <= p.journey.totalMinutes);
+    proposals.every((p) =>
+      session.options.arriveBy
+        ? !!cyclingReference.departure && +cyclingReference.departure >= +p.journey.startTime
+        : cyclingReference.minutes <= p.journey.totalMinutes,
+    );
   const selected =
     selectedId === BIKE_ONLY_ID || (selectedId === null && cyclingFastest)
       ? null
@@ -706,7 +744,7 @@ export default function App() {
           if (id === runId.current) setSession(result);
         },
         {
-          start,
+          ...(departureMode === "arrival" ? { arriveBy: start } : { start }),
           waypoints: viaInputs.map((input) => input.value.place ?? input.value.text.trim()),
         },
       );
@@ -898,7 +936,11 @@ export default function App() {
                   onChange={(value) => {
                     invalidate();
                     setDepartureInput(value);
-                    setDepartureMode("scheduled");
+                    if (departureMode !== "arrival") setDepartureMode("scheduled");
+                  }}
+                  onMode={(value) => {
+                    invalidate();
+                    setDepartureMode(value);
                   }}
                   onNow={() => {
                     invalidate();
@@ -1046,16 +1088,25 @@ export default function App() {
               <span>
                 <b>
                   {session
-                    ? `${day.format(session.start)}, ${clock.format(session.start)}`
+                    ? session.options.arriveBy
+                      ? `Arrive by ${day.format(new Date(session.options.arriveBy))}, ${clock.format(new Date(session.options.arriveBy))}`
+                      : `${day.format(session.start)}, ${clock.format(session.start)}`
                     : departureMode === "now"
                       ? "Leave now"
-                      : "Chosen departure"}
+                      : departureMode === "arrival"
+                        ? "Chosen arrival"
+                        : "Chosen departure"}
                 </b>{" "}
                 · Swiss time
               </span>
               <span>
-                Arrival within <b>{options.horizonMinutes / 60} hours</b> · includes overnight
-                waiting
+                {session?.options.arriveBy || departureMode === "arrival"
+                  ? "Search up to "
+                  : "Arrival within "}
+                <b>{options.horizonMinutes / 60} hours</b>
+                {session?.options.arriveBy || departureMode === "arrival"
+                  ? " before arrival"
+                  : " · includes overnight waiting"}
               </span>
             </div>
           </details>
@@ -1184,25 +1235,30 @@ export default function App() {
                     change verified permission. Permission does not reserve a place.
                   </p>
                 </div>
-                {session.extended && Number.isFinite(extendedFastest) && (
-                  <p className="comparison-note">
-                    <strong>
-                      {scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}:{" "}
-                    </strong>
-                    {!Number.isFinite(baselineFastest)
-                      ? "Extended found a journey where Baseline found none in this search."
-                      : extendedFastest < baselineFastest
-                        ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
-                        : "Both models have the same fastest arrival in this search."}{" "}
-                    Same departure time and limits.
-                  </p>
-                )}
+                {session.extended &&
+                  Number.isFinite(extendedFastest) &&
+                  !session.options.arriveBy && (
+                    <p className="comparison-note">
+                      <strong>
+                        {scopeLabels[session.options.bicycleScope ?? "allow-uncertain"]}:{" "}
+                      </strong>
+                      {!Number.isFinite(baselineFastest)
+                        ? "Extended found a journey where Baseline found none in this search."
+                        : extendedFastest < baselineFastest
+                          ? `Extended arrives ${formatMinutes(baselineFastest - extendedFastest)} earlier than Baseline in this search.`
+                          : "Both models have the same fastest arrival in this search."}{" "}
+                      Same departure time and limits.
+                    </p>
+                  )}
                 {proposals.length > 0 && (
                   <p className="result-explanation">
-                    Results use your bicycle-access choice for fastest, fewest boardings and least
-                    cycling or walking. Boardings include the first vehicle. Alternatives arrive at
-                    most {session.options.extraTimeMinutes} minutes after the fastest eligible
-                    transit journey. Cycling only remains a separate comparison.
+                    Results use your bicycle-access choice for{" "}
+                    {session.options.arriveBy ? "latest departure" : "fastest"}, fewest boardings
+                    and least cycling or walking. Boardings include the first vehicle.{" "}
+                    {session.options.arriveBy
+                      ? `All transit journeys meet your arrival deadline. Alternatives leave at most ${session.options.extraTimeMinutes} minutes before the latest eligible departure.`
+                      : `Alternatives arrive at most ${session.options.extraTimeMinutes} minutes after the fastest eligible transit journey.`}{" "}
+                    Cycling only remains a separate comparison.
                   </p>
                 )}
               </InfoDisclosure>
@@ -1215,15 +1271,16 @@ export default function App() {
                       p.categories.includes("Gentlest cycling"),
                   ) && (
                     <p className="notice">
-                      Elevation is incomplete for the checked journeys. A climbing recommendation
-                      could not be verified; other journey categories remain available.
+                      No worthwhile climbing reduction was verified within the time allowance.
+                      Routes with incomplete elevation cannot qualify.
                     </p>
                   )}
                 {cyclingReference ? (
                   <CyclingCard
                     comparison={cyclingReference}
                     selected={bikeOnlySelected}
-                    start={session.start}
+                    start={cyclingReference.departure ?? session.start}
+                    arriveBy={session.options.arriveBy}
                     maxBikeMinutes={session.options.maxBikeMinutes}
                     fastest={cyclingFastest}
                     cyclingPosition={session.options.cyclingPosition ?? "anywhere"}
@@ -1261,6 +1318,7 @@ export default function App() {
                         selected={selected?.id === j.id}
                         extraTimeMinutes={source.options.extraTimeMinutes}
                         hills={source.options.hills}
+                        arriveBy={source.options.arriveBy}
                         expanded={expanded}
                         planId={planId}
                         comparison={cyclingReference}
@@ -1315,7 +1373,7 @@ export default function App() {
                           }}
                         />
                       )}
-                      {batch !== "custom" && (
+                      {batch !== "custom" && !source.options.arriveBy && (
                         <button
                           type="button"
                           className="more-departures"

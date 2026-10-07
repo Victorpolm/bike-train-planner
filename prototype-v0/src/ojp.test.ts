@@ -123,6 +123,18 @@ describe("recorded Swiss OJP bicycle evidence", () => {
 });
 
 describe("server-only OJP boundary", () => {
+  it("puts the arrival deadline on Destination and separates server caches by query direction", async () => {
+    let calls = 0;
+    const handler = createOjpHandler(async (_url, init) => {
+      const xml = String(init?.body), arrival = calls >= 2; calls++;
+      const origin = xml.match(/<Origin>([\s\S]*?)<\/Origin>/)![1], destination = xml.match(/<Destination>([\s\S]*?)<\/Destination>/)![1];
+      assert.equal(origin.includes("DepArrTime"), !arrival); assert.equal(destination.includes("DepArrTime"), arrival);
+      return new Response(fixture("rail-off"));
+    }, 0);
+    for (const arriveBy of [false, true, true, false]) assert.equal((await handler(request("connections", { ...body, arriveBy }), { OJP_API_KEY: "test-key" })).status, 200);
+    assert.equal(calls, 4);
+    assert.equal((await handler(request("connections", { ...body, arriveBy: "true" }), { OJP_API_KEY: "test-key" })).status, 400);
+  });
   it("uses the host-supported redirect mode for authenticated OJP requests", async () => {
     const originalFetch = globalThis.fetch; let calls = 0;
     let handler: ReturnType<typeof createOjpHandler>;

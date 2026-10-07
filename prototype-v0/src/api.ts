@@ -9,7 +9,7 @@ import { cyclingKey, MAX_ENDPOINT_GAP_METRES, samePlace } from "./cycling.ts";
 import { MAJOR_STATIONS } from "./majorStations.ts";
 import { type TransportSection } from "./itinerary.ts";
 import { addSections, addStationboard, readStop, type BoardJourney } from "./timetable.ts";
-import { atEndpoint, compareModels, cyclingTransferLimit, endpointCyclingLimit, emptyNetwork, solve, validateOptions,
+import { atEndpoint, compareModels, cyclingLink, cyclingTransferLimit, endpointCyclingLimit, emptyNetwork, solve, validateOptions,
   type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
 
 import { TimetableClient, swissDateParts } from "./timetableClient.ts";
@@ -110,22 +110,24 @@ export async function findCandidateStations(point: Place, maxMinutes: number, cl
   return selectStations(stops, point, maxMinutes, expand ? SEARCH_LIMITS.stopsPerSide * 2 : SEARCH_LIMITS.stopsPerSide);
 }
 
-async function acquireConnections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number) {
+async function acquireConnections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number, arriveBy = false) {
   if (from.id === to.id) return;
-  if (client.national) await client.timed(() => client.national!.add(network, from, to, ready));
+  // The optional national feed currently implements departure queries only.
+  if (client.national && !arriveBy) await client.timed(() => client.national!.add(network, from, to, ready));
   if (client.ojp) {
     // OJP adds point-to-platform access itself. Query from arrival at the station,
     // then enforce its allowance (or our fallback) in the solver, exactly once.
-    const stationArrival = new Date(+ready - boardingMinutes * 60_000);
-    const result = await client.timed(() => client.ojp!.connections(from, to, stationArrival, calls => client.claimRequests(calls)));
+    const stationArrival = new Date(+ready - (arriveBy ? 0 : boardingMinutes * 60_000));
+    const result = await client.timed(() => client.ojp!.connections(from, to, stationArrival, calls => client.claimRequests(calls), arriveBy));
     if (result) { addOjpConnections(network, result); return; }
   }
-  const dt = swissDateParts(ready);
+  const dt = swissDateParts(ready, arriveBy);
   if (client.publicTimetable) {
     const [year, month, day] = dt.date.split("-");
     const data = await client.get<SearchTimetableResponse>("route", new URLSearchParams({
       from: from.id, to: to.id, date: `${month}/${day}/${year}`, time: dt.time,
       num: String(SEARCH_LIMITS.connectionsPerPair), show_attributes: "1", show_coordinates: "1",
+      ...(arriveBy ? { time_type: "arrival" } : {}),
     }));
     if (data) for (const sections of searchSections(data)) client.rejectedSections += addSections(network, sections);
     return;
@@ -133,12 +135,13 @@ async function acquireConnections(network: Network, client: TimetableClient, fro
   // Omitting transportations allows the provider's train, bus, tram and other PT modes in BOTH models.
   const data = await client.get<ConnectionResponse>("connections", new URLSearchParams({
     from: from.id, to: to.id, date: dt.date, time: dt.time, limit: String(SEARCH_LIMITS.connectionsPerPair),
+    ...(arriveBy ? { isArrivalTime: "1" } : {}),
   }));
   for (const connection of data?.connections ?? []) client.rejectedSections += addSections(network, connection.sections);
 }
 
-async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number) {
-  await acquireConnections(network, client, from, to, ready, boardingMinutes);
+async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number, arriveBy = false) {
+  await acquireConnections(network, client, from, to, ready, boardingMinutes, arriveBy);
   await client.stationTransfers?.hydrate(network, client.signal);
 }
 
@@ -321,13 +324,18 @@ function startCyclingComparison(session: SearchSession, publish: SearchUpdate, f
       const route = await client.route(points[i - 1], points[i]);
       if (route) { routes.push(route); session.network.cycling!.set(cyclingKey(points[i - 1], points[i]), route); }
     }
-    session.cyclingComparison = routes.length === points.length - 1 ? {
+    session.cyclingComparison = routes.length === points.length - 1 ? timeCyclingComparison(session, {
       distanceKm: routes.reduce((sum, r) => sum + r.distanceKm, 0), minutes: routes.reduce((sum, r) => sum + r.minutes, 0),
       arrival: new Date(session.start.getTime() + routes.reduce((sum, r) => sum + r.minutes, 0) * 60_000), routes,
-    } : null;
+    }) : null;
     session.cyclingStatus = session.cyclingComparison ? "ready" : "unavailable";
     if (!session.client.signal.aborted) publish({ ...session });
   })().catch(() => { session.cyclingStatus = "unavailable"; });
+}
+function timeCyclingComparison(session: SearchSession, cycling: CyclingComparison): CyclingComparison {
+  const departure = session.options.arriveBy ? new Date(Date.parse(session.options.arriveBy) - cycling.minutes * 60_000) : session.start;
+  return { ...cycling, departure, arrival: new Date(+departure + cycling.minutes * 60_000),
+    outsideTimeWindow: +departure < +session.start || cycling.minutes > session.options.horizonMinutes };
 }
 function refresh(session: SearchSession, extended: boolean, publish: SearchUpdate) {
   const run = (options: Options) => {
@@ -363,12 +371,17 @@ export function updateBicycleEvidence(session: SearchSession, leg: TransitLeg, e
 
 async function planInternal(from: string | Place, to: string | Place, mode: ModelMode, options: Options,
   signal: AbortSignal, progress: Progress, publish: SearchUpdate = () => {},
-  dependencies: { stationTransferFetcher?: typeof fetch; fetcher?: typeof fetch; start?: Date; gapMs?: number; waypoints?: (string | Place)[];
+  dependencies: { stationTransferFetcher?: typeof fetch; fetcher?: typeof fetch; start?: Date; arriveBy?: Date; gapMs?: number; waypoints?: (string | Place)[];
     cyclingClient?: CyclingClient | null; cyclingFetcher?: typeof fetch; ojpClient?: OjpClient | null; nationalClient?: NationalTimetableClient | null; publicTimetable?: boolean;
     previous?: SearchSession } = {}): Promise<SearchSession> {
+  if (dependencies.arriveBy) options = { ...options, arriveBy: dependencies.arriveBy.toISOString() };
   validateOptions(options);
   if ((dependencies.waypoints?.length ?? 0) > MAX_WAYPOINTS) throw new Error(`Choose up to ${MAX_WAYPOINTS} intermediate stops.`);
-  const start = dependencies.start ?? new Date();
+  const now = Date.now(), deadline = options.arriveBy ? Date.parse(options.arriveBy) : undefined;
+  // Historical searches remain possible. Future searches cannot require leaving
+  // before now. An injected start is the earliest allowed origin departure.
+  const start = dependencies.start ?? new Date(deadline === undefined ? now
+    : Math.max(deadline - options.horizonMinutes * 60_000, deadline >= now ? now : -Infinity));
   progress("Finding both places…");
   const resolve = (value: string | Place) => typeof value === "string" ? geocode(value, signal, dependencies.fetcher) : value;
   const [origin, destination, ...waypoints] = await Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]);
@@ -391,8 +404,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   // while stop/timetable requests are pending or ultimately fail.
   publish({ ...session });
   if (dependencies.previous?.cyclingComparison) {
-    session.cyclingComparison = { ...dependencies.previous.cyclingComparison,
-      arrival: new Date(+start + dependencies.previous.cyclingComparison.minutes * 60_000) };
+    session.cyclingComparison = timeCyclingComparison(session, dependencies.previous.cyclingComparison);
     session.cyclingStatus = "ready";
   } else startCyclingComparison(session, publish, dependencies.cyclingFetcher, dependencies.gapMs);
   if (waypoints.length) return planWaypointStages(session, mode, progress, publish);
@@ -423,16 +435,21 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
       progress(session.baseline.journeys.length ? "Your first options are ready. Checking a few alternatives…" : `Finding connections from ${a.name} to ${b.name}…`);
       queried.add(`${a.id}:${b.id}`);
       normalPairs++;
-      await connections(network, client, a, b, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes);
+      const queryTime = deadline === undefined ? +start + (a.bikeMinutes + options.boardingMinutes) * 60_000 : deadline - b.bikeMinutes * 60_000;
+      await connections(network, client, a, b, new Date(queryTime), options.boardingMinutes, !!options.arriveBy);
       signal.throwIfAborted();
       refresh(session, mode === "extended", publish);
       if (!railExitsChecked && mode !== "extended") {
         railExitsChecked = true;
         const exits = railExitCandidates(session).filter(s => !queried.has(`${a.id}:${s.id}`)).slice(0, SEARCH_LIMITS.railExitQueries);
         for (const exit of exits) {
-          progress(`Checking earlier trains to ${exit.name} for a cycling finish…`);
+          progress(`Checking trains to ${exit.name} for a cycling finish…`);
           queried.add(`${a.id}:${exit.id}`);
-          await connections(network, client, a, exit, new Date(start.getTime() + (a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes);
+          if (deadline !== undefined && cyclingClient) await cyclingClient.route(exit, destination);
+          const finish = atEndpoint(exit, destination, network, "egress");
+          if (deadline !== undefined && (!Number.isFinite(finish.bikeMinutes) || finish.bikeMinutes > endpointCyclingLimit(options, "egress"))) continue;
+          await connections(network, client, a, exit, new Date(deadline === undefined
+            ? +start + (a.bikeMinutes + options.boardingMinutes) * 60_000 : deadline - finish.bikeMinutes * 60_000), options.boardingMinutes, !!options.arriveBy);
           if (cyclingClient) {
             progress(`Checking the cycling finish from ${exit.name}…`);
             await cyclingClient.route(network.stops.get(exit.id) ?? exit, destination);
@@ -536,7 +553,12 @@ async function extendInternal(session: SearchSession, progress: Progress, publis
           for (const end of ends.slice(0, 1)) {
             if (queries >= SEARCH_LIMITS.suffixQueries) break;
             queries++;
-            await connections(network, client, neighbor, end, ready, o.boardingMinutes);
+            const bounds = o.arriveBy ? waypointArrivalBounds(session, exit.stage + 1, "extended") : [+ready];
+            for (const bound of bounds.slice(0, 1)) {
+              const egress = atEndpoint(end, goal, network, "egress").bikeMinutes;
+              if (o.arriveBy && !Number.isFinite(egress)) continue;
+              await connections(network, client, neighbor, end, new Date(bound - (o.arriveBy ? egress * 60_000 : 0)), o.boardingMinutes, !!o.arriveBy);
+            }
           }
           // A second cycling transfer can be essential: the first onward query
           // may return nothing. Seed the next ride instead of stopping there.
@@ -586,23 +608,46 @@ async function queryWaypointStages(session: SearchSession, mode: ModelMode, prog
   // Two station pairs per stage share the SAME request/time budget. Query an
   // onward stage from an actually reachable waypoint time, never from the
   // original departure or an independently optimized route.
-  for (let stage = 0; stage < points.length - 1; stage++) {
+  const stages = Array.from({ length: points.length - 1 }, (_, i) => i);
+  if (options.arriveBy) stages.reverse();
+  for (const stage of stages) {
     const from = (candidates[stage] ?? []).map(s => atEndpoint(s, points[stage], network)).filter(s => s.bikeMinutes <= endpointCyclingLimit(options, "access"));
     const to = (candidates[stage + 1] ?? []).map(s => atEndpoint(s, points[stage + 1], network, "egress")).filter(s => s.bikeMinutes <= endpointCyclingLimit(options, "egress"));
     const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2, hillSearch(options));
     for (const [a, b] of pairs) {
       // Preserve independently reachable stage times. An earlier prohibited ride
       // must neither block the comparison nor replace later bicycle-aware queries.
-      const arrivals = [...new Set(BICYCLE_SCOPES.map(bicycleScope =>
-        solveWaypoints(network, points, start, { ...options, bicycleScope }, mode).stageArrivals[stage]).filter(Number.isFinite))];
+      const arrivals = options.arriveBy ? waypointArrivalBounds(session, stage + 1, mode)
+        : [...new Set(BICYCLE_SCOPES.map(bicycleScope =>
+          solveWaypoints(network, points, start, { ...options, bicycleScope }, mode).stageArrivals[stage]).filter(Number.isFinite))];
       for (const reachable of arrivals) {
         progress(`Checking stage ${stage + 1} of ${points.length - 1}: ${points[stage].label} → ${points[stage + 1].label}…`);
-        await connections(network, client, a, b, new Date(reachable + (a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes);
+        await connections(network, client, a, b, new Date(reachable + (options.arriveBy
+          ? -b.bikeMinutes : a.bikeMinutes + options.boardingMinutes) * 60_000), options.boardingMinutes, !!options.arriveBy);
         client.signal.throwIfAborted();
         await refreshRoads(session, mode === "extended", publish, progress);
       }
     }
   }
+}
+
+// Acquire suffixes first for arrive-by, then connect preceding stages to their
+// actual departure times. The final forward search rechecks all shared budgets,
+// permissions and transfer rules across the whole ordered journey.
+function waypointArrivalBounds(session: SearchSession, next: number, mode: ModelMode): number[] {
+  const { network, options, start } = session;
+  const points = [session.origin, ...session.waypoints ?? [], session.destination].slice(next);
+  const deadline = Date.parse(options.arriveBy!);
+  if (points.length === 1) return [deadline];
+  const bounds = BICYCLE_SCOPES.flatMap(bicycleScope => {
+    const journeys = solveWaypoints(network, points, start, { ...options, bicycleScope }, mode).journeys;
+    return journeys.length ? [Math.max(...journeys.map(j => +j.startTime))] : [];
+  });
+  const cycling = points.slice(1).map((point, i) => cyclingLink(network, points[i], point).minutes);
+  const total = cycling.reduce((sum, minutes) => sum + minutes, 0);
+  if (options.cyclingPosition !== "start-only" && cycling.every(m => m <= Math.max(options.maxAccessMinutes, options.maxEgressMinutes))
+    && total <= options.maxBikeMinutes && deadline - total * 60_000 >= +start) bounds.push(deadline - total * 60_000);
+  return [...new Set(bounds.filter(Number.isFinite))];
 }
 
 export type PlanDependencies = NonNullable<Parameters<typeof planInternal>[7]> & { deadlineMs?: number };

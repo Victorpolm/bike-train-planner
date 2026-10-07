@@ -6,9 +6,9 @@ import type { OjpClient } from "./ojpClient.ts";
 
 const TRANSPORT_URL = "https://transport.opendata.ch/v1";
 
-export function swissDateParts(date: Date) {
-  // The provider accepts minutes. Round UP so the first returned service is catchable.
-  const rounded = new Date(Math.ceil(date.getTime() / 60_000) * 60_000);
+export function swissDateParts(date: Date, arriveBy = false) {
+  // Minute-only providers: round departure readiness up, arrival deadlines down.
+  const rounded = new Date((arriveBy ? Math.floor : Math.ceil)(date.getTime() / 60_000) * 60_000);
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit",
     day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(rounded);
   const v = (type: Intl.DateTimeFormatPartTypes) => parts.find(p => p.type === type)?.value ?? "";

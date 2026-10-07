@@ -14,7 +14,7 @@ const iso = (v: unknown): v is string => string(v, 40) && /T.*(?:Z|[+-]\d\d:\d\d
 function validQuery(v: any): v is OjpQuery {
   const stop = (s: any) => s && string(s.id) && string(s.name, 200) && Number.isFinite(s.lat) && Number.isFinite(s.lon)
     && s.lat >= 45 && s.lat <= 49 && s.lon >= 5 && s.lon <= 11;
-  return v && stop(v.from) && stop(v.to) && iso(v.departure);
+  return v && stop(v.from) && stop(v.to) && iso(v.departure) && (v.arriveBy === undefined || typeof v.arriveBy === "boolean");
 }
 function validRef(v: any): v is OjpReference {
   return v && string(v.journeyRef) && string(v.operatingDay, 10) && /^\d{4}-\d{2}-\d{2}$/.test(v.operatingDay)
@@ -92,7 +92,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
     const isConnections = path.endsWith("connections");
     if (!(isConnections ? validQuery(body) : validRef(body))) return json({ error: "Invalid journey references" }, 400);
     const cacheKey = path + JSON.stringify(isConnections
-      ? [body.from.lat, body.from.lon, body.to.lat, body.to.lon, body.departure]
+      ? [body.from.lat, body.from.lon, body.to.lat, body.to.lon, body.departure, !!body.arriveBy]
       : [body.journeyRef, body.operatingDay, body.fromRef, body.toRef, body.departure, body.arrival]);
     const cached = cache.get(cacheKey);
     if (cached && cached.expires > Date.now()) return json(cached.data);

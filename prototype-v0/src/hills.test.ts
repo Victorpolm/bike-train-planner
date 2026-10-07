@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
-import { DEFAULT_HILLS, journeyClimb, routeClimb, uphillParameters, validateHills } from "./hills.ts";
+import { climbingTradeoff, DEFAULT_HILLS, journeyClimb, routeClimb, uphillParameters, validateHills } from "./hills.ts";
 import { chooseCyclingRoute } from "./cyclingPreferences.ts";
 import { cyclingKey, zeroCycling, type CyclingRoute } from "./cycling.ts";
 import { categorize, DEFAULT_OPTIONS, emptyNetwork, solve, type Options } from "./model.ts";
@@ -92,7 +92,7 @@ it("keeps a gentler option even when it has more total ascent", () => {
   for (const found of [solve(n, origin, destination, start, o, "baseline"), solveWaypoints(n, [origin, destination], start, o, "baseline")]) {
     const proposals = categorize(found.journeys, o);
     assert.ok(proposals.find(p => p.categories.includes("Gentlest cycling"))!.journey.transitLegs.some(l => l.fromId === "B"));
-    assert.ok(proposals.find(p => p.categories.includes("Reduce climbing"))!.journey.transitLegs.some(l => l.fromId === "A"));
+    assert.ok(!proposals.some(p => p.categories.includes("Reduce climbing")), "The fastest is already the lowest climb; it has no ascent saving over itself.");
   }
 });
 it("reserves a timetable query for the road-checked low-ascent pair", () => {
@@ -130,4 +130,27 @@ it("offers Reduce climbing only as a separate category without changing the main
   for (const name of ["Fastest", "Fewest boardings", "Least cycling or walking"])
     assert.equal(extra.find(p => p.categories.includes(name))!.journey.id, normal.find(p => p.categories.includes(name))!.journey.id);
   assert.equal(options.hills!.mode, "none");
+});
+
+it("rejects small, proportionally tiny, overlong and poor-value climbing detours", () => {
+  const base = solve(network(), origin, destination, start, options, "baseline").journeys[0];
+  const candidate = (id: string, minutes: number, ascent: number) => ({ ...base, id, totalMinutes: minutes,
+    originStation: { ...base.originStation, cyclingRoute: route(origin, base.originStation, 5, [400, 400 + ascent], 10_000) } });
+  assert.equal(climbingTradeoff(candidate("a", 120, 30), candidate("b", 121, 10), 60), null);
+  assert.equal(climbingTradeoff(candidate("a", 120, 1000), candidate("b", 121, 950), 60), null);
+  assert.equal(climbingTradeoff(candidate("a", 120, 600), candidate("b", 151, 0), 60), null);
+  assert.equal(climbingTradeoff(candidate("a", 40, 600), candidate("b", 51, 0), 60), null);
+  assert.equal(climbingTradeoff(candidate("a", 120, 600), candidate("b", 136, 300), 60), null);
+  assert.equal(climbingTradeoff(candidate("a", 120, 600), candidate("b", 135, 300), 60), null, "A score tie does not add a card.");
+  assert.equal(climbingTradeoff(candidate("a", 120, 600), candidate("b", 130, 300), 5), null);
+  assert.equal(climbingTradeoff(candidate("a", 120, 600), candidate("b", 130, 300), 60)!.savedMetres, 300);
+  const a = candidate("a", 120, 600), b = candidate("b", 130, 300), c = candidate("c", 149, 0);
+  const proposals = categorize([a, b, c], { ...options, extraTimeMinutes: 60 });
+  const winner = proposals.find(p => p.categories.includes("Reduce climbing"))!;
+  assert.equal(winner.journey.id, "b", "A useful compromise wins over the absolute flattest route.");
+  assert.equal(winner.climbingSaved, 300);
+  assert.equal(proposals.find(p => p.categories.includes("Fastest"))!.journey.id, "a");
+  assert.equal(journeyClimb(c).ascent, 0, "Raw ascent is not altered by recommendation tolerances.");
+  assert.equal(climbingTradeoff({ ...a, startTime: at(40) }, { ...b, startTime: at(10) }, 60, true), null,
+    "Arrive-by counts how much earlier the alternative requires leaving.");
 });

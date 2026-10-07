@@ -797,3 +797,14 @@ Live 5 October departures checked on 3 October: Zürich–Laax Extended complete
 **Deployment evidence:** Sites reports version 52 succeeded on 6 October at 21:00:13 UTC and version 53 at 21:04:31 UTC, environment revision 3. The synchronized app is the exact already deployed version-53 source; no new publication is needed. [Identifiers, data contract and limits](STATION_TRANSFER_RUNTIME_2026-10-06.md).
 
 **Next:** complete the familiar-station desktop/phone acceptance pass, then resolve scoped service exceptions and maintain the dated feed. Offline passenger-minimum checks do not verify station pathways with a bicycle.
+
+
+## 2026-10-07 — Arrive at and worthwhile climbing alternatives
+
+**Implemented and verified offline:** 388 tests in 11 suites pass, including 16 new cases; React formatting, Knip and TypeScript/frontend/Worker production builds pass. Browser interaction and a new live-provider route check remain pending.
+
+**Golden arrival case:** On 5 October, A → X → D → destination leaves A at 08:40, reaches X at 09:00, leaves X at 09:10, reaches D at 09:30, then cycles ten minutes. Latest origin departure is 08:37 and destination arrival is exactly 09:40 Europe/Zurich. An alternative reaching D at 09:31 is too late. Both ordinary and ordered-visit solvers retain the later-origin state at X. Exhaustive forward searches at every minute agree across Baseline/Extended, with/without a required visit, and three cycling budgets.
+
+**Golden climbing case:** A = 120 min / 600 m, B = 130 min / 300 m, C = 149 min / 0 m. A retains Fastest and B wins Reduce climbing: scores are -5 and -1 minutes for B/C. A 30 → 10 m saving cannot create the category. Absolute, percentage, time, score-tie and unknown-elevation boundaries are covered.
+
+**Other regressions:** exact platform seconds; final-cycle deadline; first-bike prefix through a waypoint; earliest departure/horizon/placement/boarding caps; OJP Destination time and direction-separated caches; both public fallback parameters; reverse stage acquisition; Swiss rounding; cycling-only reference timing; cycling edits rejected when late. The received provider graph is still bounded and sampled. [Complete contract and remaining limits](ARRIVAL_AND_CLIMBING_2026-10-07.md).

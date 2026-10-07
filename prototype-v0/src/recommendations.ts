@@ -6,7 +6,7 @@ export const scopeLabels: Record<BicycleScope, string> = {
   confirmed: "Confirmed permission only", "allow-uncertain": "Allow uncertain permission",
   "all-transit": "All public transport · comparison only",
 };
-export type ScopedProposal = Proposal & { wins: { scope: BicycleScope; categories: string[]; extraMinutes: number }[] };
+export type ScopedProposal = Proposal & { wins: { scope: BicycleScope; categories: string[]; extraMinutes: number; climbingSaved?: number }[] };
 export function recommend(confirmed: Journey[], possible: Journey[], allTransit: Journey[], options: Options) {
   // Optimize first, then merge: filtering the permissive winners would lose
   // slower confirmed journeys that were pruned by an uncertain alternative.
@@ -16,7 +16,7 @@ export function recommend(confirmed: Journey[], possible: Journey[], allTransit:
     .map(({ scope, journeys }) => ({ scope, proposals: categorize(journeys, options) }));
   const merged = new Map<string, ScopedProposal>();
   for (const { scope, proposals } of groups) for (const proposal of proposals) {
-    const win = { scope, categories: proposal.categories, extraMinutes: proposal.extraMinutes };
+    const win = { scope, categories: proposal.categories, extraMinutes: proposal.extraMinutes, climbingSaved: proposal.climbingSaved };
     const previous = merged.get(proposal.journey.id);
     if (previous) previous.wins.push(win);
     else merged.set(proposal.journey.id, { ...proposal, wins: [win] });

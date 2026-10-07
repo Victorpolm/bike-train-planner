@@ -4,17 +4,30 @@ export default function DepartureControls({
   disabled,
   onChange,
   onNow,
+  onMode,
 }: {
-  mode: "now" | "scheduled";
+  mode: "now" | "scheduled" | "arrival";
   value: string;
   disabled: boolean;
   onChange: (value: string) => void;
   onNow: () => void;
+  onMode: (mode: "scheduled" | "arrival") => void;
 }) {
   return (
     <div className="departure-controls">
       <label>
-        <span>Departure · Swiss time</span>
+        <span>Plan by</span>
+        <select
+          disabled={disabled}
+          value={mode === "arrival" ? "arrival" : "scheduled"}
+          onChange={(e) => onMode(e.target.value as "scheduled" | "arrival")}
+        >
+          <option value="scheduled">Depart at</option>
+          <option value="arrival">Arrive at</option>
+        </select>
+      </label>
+      <label>
+        <span>{mode === "arrival" ? "Arrive at" : "Depart at"} · Swiss time</span>
         <input
           type="datetime-local"
           required

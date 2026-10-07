@@ -69,11 +69,11 @@ export class OjpClient {
     } catch { signal.throwIfAborted(); }
     return null;
   }
-  connections(from: Stop, to: Stop, departure: Date, claim: (calls: number) => boolean) {
+  connections(from: Stop, to: Stop, departure: Date, claim: (calls: number) => boolean, arriveBy = false) {
     // Graph stations also carry road geometry and terrain details. They are not
     // part of an OJP stop reference and can exceed the backend's 8 KiB limit.
     const stop = ({ id, name, lat, lon }: Stop): OjpStop => ({ id, name, lat, lon });
-    const body = { from: stop(from), to: stop(to), departure: departure.toISOString() }, key = JSON.stringify([from.id, to.id, body.departure]);
+    const body = { from: stop(from), to: stop(to), departure: departure.toISOString(), ...(arriveBy ? { arriveBy: true } : {}) }, key = JSON.stringify([from.id, to.id, body.departure, arriveBy]);
     if (this.cache.has(key)) return this.cache.get(key)!;
     if (this.unavailable || !claim(2)) return Promise.resolve(null);
     const task = (async () => {

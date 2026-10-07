@@ -157,3 +157,15 @@ it("keeps platform-access evidence when merging repeated OJP results", () => {
   addOjpConnections(n, { legs: [{ ...found, accessRules: undefined }], checked: "2026-10-03", warnings: [] });
   assert.ok([...n.edges.values()][0].leg.accessRules?.length);
 });
+it("arrive-by preserves exact platform access seconds and connection-specific transfer rules", () => {
+  const incoming = leg("Arrive-by first", a, x, 10, 20), next = leg("Arrive-by next", x, d, 27, 40);
+  incoming.accessRules = [{ point: a, toRef: incoming.ojp!.fromRef, departure: incoming.departure!.toISOString(), operatingDay: day, seconds: 241 }];
+  next.transferRules = [rule(incoming, next, 420)];
+  for (const found of both([incoming, next], { ...options, arriveBy: at(40).toISOString() })) {
+    assert.equal(found.journeys.length, 1);
+    assert.equal(+found.journeys[0].startTime, +at(10) - 241_000);
+    assert.equal(metrics(found.journeys[0]).walk, 7 + 241 / 60);
+  }
+  next.transferRules = [rule(incoming, next, 421)];
+  both([incoming, next], { ...options, arriveBy: at(40).toISOString() }).forEach(s => assert.equal(s.journeys.length, 0));
+});

@@ -105,7 +105,9 @@ export function cyclingMinutes(distanceKm: number): number {
 export type CyclingComparison = {
   distanceKm: number;
   minutes: number;
+  departure?: Date;
   arrival: Date;
+  outsideTimeWindow?: boolean;
   routes?: CyclingRoute[];
 };
 

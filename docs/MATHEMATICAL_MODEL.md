@@ -1,5 +1,7 @@
 # Implemented baseline and extended model
 
+**7 October implementation:** **Arrive at** finds the latest checked feasible departure, including final cycling and platform allowances. **Reduce climbing** now requires worthwhile absolute and relative ascent savings within a limited time cost; near-flat gains do not create an extra suggestion. **388 regressions**, formatting, Knip and production builds pass. [Behaviour, pilot defaults and limits](ARRIVAL_AND_CLIMBING_2026-10-07.md).
+
 **Current station timing (6 October; synchronized 7 October):** The shared boarding check now applies exact OJP evidence, then the original-ZIP general platform minimum when identity/date checks pass, then a labelled fallback. Imported arrival/departure records activate transfer-sensitive dominance in both solvers. [Exact integration, limits and regression journeys](STATION_TRANSFER_RUNTIME_2026-10-06.md).
 
 _Status: implemented on 2026-09-05; active-travel objectives and map/comparison presentation updated on 2026-09-18; road cycling and a limited bus-policy filter added on 2026-09-20. Experimental, bounded live search; departure-level bicycle capacity and train/tram carriage remain unverified._
@@ -208,4 +210,5 @@ The live feed supplies no positive service confirmation, so strict results norma
 Ordinary endpoint acquisition uses a zero cycling limit on the non-cycling side. Select a matching public-transport stop there. Existing timetable walking edges remain eligible; there is no new general pedestrian router or invented straight-line walk from an address. The bicycle remains with the traveller; this does not implement parking/retrieval or rentals. Waypoint dominance includes the end-cycling phase so a state that can no longer board cannot discard one that still can.
 
 The cycling-only card remains an explicitly labelled reference outside a beginning/end-only restriction and cannot be automatically selected as the fastest eligible choice. Through-fare quoting across positive cycling gaps remains unsupported; no alternative all-transit itinerary or overlapping ticket sum is substituted.
+
 

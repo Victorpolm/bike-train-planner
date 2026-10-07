@@ -67,6 +67,17 @@ it("changes final arrival after the last service and rejects stale or disconnect
   assert.throws(() => applyCyclingEdit(c, { ...stage, route: { ...stage.route } }, [route(b, destination, 20)]), /changed/);
   assert.throws(() => applyCyclingEdit({ ...c, options: { ...c.options, horizonMinutes: 75 } }, stage, [route(b, destination, 20)]), /time window/);
 });
+it("uses the actual arrival-search departure when editing and enforces the destination deadline", () => {
+  const c = context(); c.start = time(-120); c.options.arriveBy = time(75).toISOString();
+  const changed = applyCyclingEdit(c, stages(c)[1], [route(b, destination, 15)]).journey!;
+  assert.equal(changed.totalMinutes, 75); assert.equal(+changed.startTime, +start);
+  assert.throws(() => applyCyclingEdit(c, stages(c)[1], [route(b, destination, 16)]), /arrival time/);
+  c.journey = null; c.cycling = { minutes: 30, distanceKm: 1, departure: time(45), arrival: time(75), routes: [route(origin, destination, 30)] };
+  assert.equal(+stages(c)[0].departure, +time(45));
+  const ride = applyCyclingEdit(c, stages(c)[0], [route(origin, destination, 40)]).cycling!;
+  assert.equal(+ride.departure!, +time(35)); assert.equal(+ride.arrival, +time(75));
+  assert.throws(() => applyCyclingEdit({ ...c, start: time(40) }, stages(c)[0], [route(origin, destination, 40)]), /before the search time/);
+});
 it("edits cycling-only routes without losing other sections or required waypoint boundaries", () => {
   const c = context(), first = route(origin, a, 10), second = route(a, destination, 20);
   c.journey = null; c.cycling = { minutes: 30, distanceKm: 2, arrival: time(30), routes: [first, second] };

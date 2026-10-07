@@ -1,5 +1,5 @@
 import { boardingCheck, transferContextKey } from "./transferTimes.ts";
-import { addClimb, climbVector, hillSearch, journeyClimb, routeClimb, validateHills, type Climb, type HillPreferences } from "./hills.ts";
+import { addClimb, climbingTradeoff, climbVector, hillSearch, journeyClimb, routeClimb, validateHills, type Climb, type HillPreferences } from "./hills.ts";
 import { validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { ROUTE_PREFERENCES, type RoutePreference } from "./cyclingPreferences.ts";
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
@@ -11,6 +11,8 @@ export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
 export type CyclingPosition = "anywhere" | "start-only" | "end-only";
 export type Options = {
+  /** Destination deadline, including the final cycling/walking sections. */
+  arriveBy?: string;
   hills?: HillPreferences;
   climbOptimization?: boolean;
   cyclingPosition?: CyclingPosition;
@@ -65,6 +67,8 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 };
 
 export function validateOptions(o: Options) {
+  if (o.arriveBy !== undefined && (typeof o.arriveBy !== "string" || !/T.*(?:Z|[+-]\d\d:\d\d)$/.test(o.arriveBy) || !Number.isFinite(Date.parse(o.arriveBy))))
+    throw new Error("Choose a valid arrival date and time.");
   if (o.hills) validateHills(o.hills);
   if (o.climbOptimization !== undefined && typeof o.climbOptimization !== "boolean") throw new Error("Invalid climbing optimization.");
   if (o.cyclingPosition !== undefined && !["anywhere", "start-only", "end-only"].includes(o.cyclingPosition)) throw new Error("Invalid cycling position.");
@@ -99,7 +103,7 @@ export function metrics(j: Journey, threshold = 6) {
   const middle = biking(j.transitLegs.slice(first + 1, last));
   const walk = walking(j.transitLegs), bike = j.originStation.bikeMinutes + biking(j.transitLegs) + j.destinationStation.bikeMinutes;
   return { ascent: climb.unknown ? Infinity : climb.ascent, steepM: climb.unknown ? Infinity : climb.steepM,
-    excessM: climb.unknown ? Infinity : climb.excessM, time: j.totalMinutes, bike, walk, active: bike + walk,
+    excessM: climb.unknown ? Infinity : climb.excessM, time: j.totalMinutes, leave: -j.startTime.getTime(), bike, walk, active: bike + walk,
     start: j.originStation.bikeMinutes, end: j.destinationStation.bikeMinutes, middle, boardings,
     activeStart: j.originStation.bikeMinutes + walking(j.transitLegs.slice(0, Math.max(0, first))) + biking(j.transitLegs.slice(0, Math.max(0, first))),
     activeEnd: j.destinationStation.bikeMinutes + walking(j.transitLegs.slice(last + 1)) + biking(j.transitLegs.slice(last + 1)) };
@@ -108,26 +112,28 @@ export const dominates = (a: number[], b: number[]) => a.every((v, i) => v <= b[
 export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none", options?: Options): Journey[] {
   const vector = (j: Journey) => {
     const m = metrics(j);
-    return [m.time, m.active, m.boardings, ...(options && hillSearch(options) ? climbVector(journeyClimb(j, options.hills?.maxUphillPercent), options.hills?.mode === "gentler") : []), ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
+    return [m.time, m.active, m.boardings, ...(options?.arriveBy ? [m.leave] : []), ...(options && hillSearch(options) ? climbVector(journeyClimb(j, options.hills?.maxUphillPercent), options.hills?.mode === "gentler") : []), ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
   };
   const unique = [...new Map(journeys.map(j => [j.id, j])).values()];
   const vectors = unique.map(vector);
   return unique.filter((_, i) => !vectors.some((v, k) => k !== i && dominates(v, vectors[i])));
 }
-export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number; activeSaved: number };
+export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number; activeSaved: number; climbingSaved?: number };
 export function categorize(journeys: Journey[], o: Options): Proposal[] {
   // Pure cycling never competes for the mixed-journey categories.
-  const mixed = journeys.filter(j => metrics(j).boardings >= 1);
+  const mixed = journeys.filter(j => metrics(j).boardings >= 1
+    && (!o.arriveBy || +j.startTime + j.totalMinutes * 60_000 <= Date.parse(o.arriveBy)));
   if (!mixed.length) return [];
   const compare = (keys: (keyof ReturnType<typeof metrics>)[]) => (a: Journey, b: Journey) => {
     const am = metrics(a, o.hills?.maxUphillPercent), bm = metrics(b, o.hills?.maxUphillPercent);
     for (const key of keys) if (am[key] !== bm[key]) return am[key] - bm[key];
     return a.id.localeCompare(b.id);
   };
-  const fastest = [...mixed].sort(compare(["time", "active", "boardings"]))[0];
-  const frontier = pareto(mixed.filter(j => j.totalMinutes <= fastest.totalMinutes + o.extraTimeMinutes), o.endpointPreference, o);
+  const fastest = [...mixed].sort(compare(o.arriveBy ? ["leave", "time", "active", "boardings"] : ["time", "active", "boardings"]))[0];
+  const extraTime = (j: Journey) => o.arriveBy ? (+fastest.startTime - +j.startTime) / 60_000 : j.totalMinutes - fastest.totalMinutes;
+  const frontier = pareto(mixed.filter(j => extraTime(j) <= o.extraTimeMinutes), o.endpointPreference, o);
   const definitions: [string, (keyof ReturnType<typeof metrics>)[]][] = [
-    ["Fastest", ["time", "active", "boardings"]],
+    [o.arriveBy ? "Leave latest" : "Fastest", o.arriveBy ? ["leave", "time", "active", "boardings"] : ["time", "active", "boardings"]],
     ["Fewest boardings", ["boardings", "time", "active"]],
     ["Least cycling or walking", ["active", "time", "boardings"]],
   ];
@@ -135,29 +141,84 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
     o.endpointPreference === "start" ? "Least cycling or walking at start" : "Least cycling or walking at arrival",
     [o.endpointPreference === "start" ? "activeStart" : "activeEnd", "time", "active", "boardings"],
   ]);
-  if (o.climbOptimization) definitions.push(["Reduce climbing", ["ascent", "time", "active", "boardings"]]);
   if (o.hills?.mode === "gentler") definitions.push(["Gentlest cycling", ["excessM", "steepM", "ascent", "time"]]);
   const proposals = new Map<string, Proposal>();
   for (const [category, keys] of definitions) {
-    const eligible = category === "Reduce climbing" || category === "Gentlest cycling"
+    const eligible = category === "Gentlest cycling"
       ? frontier.filter(j => !journeyClimb(j, o.hills?.maxUphillPercent).unknown) : frontier;
     const winner = [...eligible].sort(compare(keys))[0];
     if (!winner) continue;
     const existing = proposals.get(winner.id);
     if (existing) existing.categories.push(category);
     else proposals.set(winner.id, { journey: winner, categories: [category],
-      extraMinutes: winner.totalMinutes - fastest.totalMinutes,
+      extraMinutes: extraTime(winner),
       cyclingSaved: metrics(fastest).bike - metrics(winner).bike,
       activeSaved: metrics(fastest).active - metrics(winner).active });
+  }
+  if (o.climbOptimization) {
+    const alternatives = frontier.flatMap(journey => {
+      const tradeoff = climbingTradeoff(fastest, journey, o.extraTimeMinutes, !!o.arriveBy);
+      return tradeoff ? [{ journey, ...tradeoff }] : [];
+    }).sort((a, b) => a.score - b.score || extraTime(a.journey) - extraTime(b.journey)
+      || compare(["time", "active", "boardings"])(a.journey, b.journey));
+    const winner = alternatives[0];
+    if (winner) {
+      const existing = proposals.get(winner.journey.id);
+      if (existing) { existing.categories.push("Reduce climbing"); existing.climbingSaved = winner.savedMetres; }
+      else proposals.set(winner.journey.id, { journey: winner.journey, categories: ["Reduce climbing"],
+        extraMinutes: extraTime(winner.journey), climbingSaved: winner.savedMetres,
+        cyclingSaved: metrics(fastest).bike - metrics(winner.journey).bike,
+        activeSaved: metrics(fastest).active - metrics(winner.journey).active });
+    }
   }
   return [...proposals.values()];
 }
 
 type Label = {
+  startedAt: number;
   stop: string; time: number; bike: number; walk: number; accessActive: number; egressWalk: number; boardings: number; middle: number;
   climb: Climb; needsTransit: boolean; access: Station; legs: TransitLeg[]; alive: boolean;
 };
 export type Solution = { journeys: Journey[]; reachable: Label[]; explored: number; retained: number; limited: boolean };
+
+/** Latest origin departure for each possible first timed edge. This retains the
+ * existing forward, connection-specific boarding checks rather than reversing
+ * directed paths or transferring platform rules to the wrong service. */
+function accessDepartureTimes(edges: readonly Edge[], stop: Stop, cyclingMinutes: number, earliest: Date, o: Options): number[] {
+  const deadline = Date.parse(o.arriveBy!);
+  const lower = Math.max(+earliest, deadline - o.horizonMinutes * 60_000);
+  return [...new Set(edges.flatMap(({ leg }) => {
+    if (!leg.departure || !leg.arrival || +leg.arrival > deadline) return [];
+    const allowance = leg.mode === "transit" ? boardingCheck([], leg, +leg.departure, o.boardingMinutes, stop).minutes : 0;
+    const time = +leg.departure - (cyclingMinutes + allowance) * 60_000;
+    return Number.isFinite(time) && time >= lower && time <= deadline ? [time] : [];
+  }))].sort((a, b) => b - a);
+}
+
+/** Ordered visits may precede the first boarding. Generate seeds for every
+ * checked cycling prefix; all complete paths still undergo the usual solver. */
+export function arrivalDepartureSeeds(network: Network, points: Place[], earliest: Date, o: Options): number[] {
+  const times = new Set<number>();
+  let prefix = 0;
+  for (let stage = 0; stage < points.length - 1; stage++) {
+    if (stage) {
+      const minutes = cyclingLink(network, points[stage - 1], points[stage]).minutes;
+      if (minutes > Math.max(o.maxAccessMinutes, o.maxEgressMinutes)) break;
+      prefix += minutes;
+    }
+    if (!Number.isFinite(prefix) || prefix > o.maxBikeMinutes) break;
+    for (const stop of network.stops.values()) {
+      const access = atEndpoint(stop, points[stage], network).bikeMinutes;
+      if (access > endpointCyclingLimit(o, "access") || prefix + access > o.maxBikeMinutes
+        || o.cyclingPosition === "end-only" && prefix + access > 0) continue;
+      const edges = [...network.edges.values()].filter(e => e.from === stop.id && e.leg.departure && e.leg.arrival
+        && e.leg.arrival >= e.leg.departure && ["transit", "walk"].includes(e.leg.mode)
+        && bicycleLegAllowed(e.leg, o.busPreference, o.bicycleScope));
+      for (const time of accessDepartureTimes(edges, stop, prefix + access, earliest, o)) times.add(time);
+    }
+  }
+  return [...times].sort((a, b) => b - a);
+}
 
 // Multi-label time-dependent search over the supplied finite timetable graph.
 // Each transit edge is one complete boarding-to-alighting ride, so onboard
@@ -166,7 +227,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   o: Options, mode: ModelMode, labelLimit = 50_000): Solution {
   validateOptions(o);
   if (!Number.isFinite(start.getTime())) throw new Error("Invalid departure time.");
-  const horizon = start.getTime() + o.horizonMinutes * 60_000;
+  const horizon = o.arriveBy ? Date.parse(o.arriveBy) : start.getTime() + o.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(o, mode);
   const outgoing = new Map<string, Edge[]>();
   const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length || e.leg.stationArrival?.id || e.leg.stationDeparture?.id);
@@ -190,7 +251,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     // Keep cycling as a resource as well as total active travel as an objective.
     // A lower active total can use more cycling and leave less budget for later.
     // Endpoint attributes must also survive pruning for optional categories.
-    const vector = (l: Label) => [l.time, l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk, ...(hillSearch(o) ? climbVector(l.climb, o.hills?.mode === "gentler") : [])];
+    const vector = (l: Label) => [l.time, ...(o.arriveBy ? [-l.startedAt] : []), l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk, ...(hillSearch(o) ? climbVector(l.climb, o.hills?.mode === "gentler") : [])];
     const v = vector(label);
     if (bucket.some(l => vector(l).every((x, i) => x <= v[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -200,8 +261,9 @@ export function solve(network: Network, origin: Place, destination: Place, start
   for (const stop of network.stops.values()) {
     if (!outgoing.has(stop.id)) continue;
     const access = atEndpoint(stop, origin, network);
-    if (access.bikeMinutes <= endpointCyclingLimit(o, "access")) add({ stop: stop.id,
-      time: start.getTime() + access.bikeMinutes * 60_000, bike: access.bikeMinutes,
+    if (access.bikeMinutes <= endpointCyclingLimit(o, "access")) for (const startedAt of o.arriveBy
+      ? accessDepartureTimes(outgoing.get(stop.id)!, stop, access.bikeMinutes, start, o) : [+start]) add({ stop: stop.id, startedAt,
+      time: startedAt + access.bikeMinutes * 60_000, bike: access.bikeMinutes,
       walk: 0, accessActive: access.bikeMinutes, egressWalk: 0,
       boardings: 0, middle: 0, climb: routeClimb(access.cyclingRoute, access.bikeMinutes, o.hills?.maxUphillPercent), needsTransit: true, access, legs: [], alive: true });
   }
@@ -252,10 +314,10 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const departure = label.legs[0].departure!, arrival = new Date(label.time);
     journeys.push({ id: JSON.stringify([label.access.id, ...label.legs.map(l =>
       [l.mode, l.fromId, l.toId, l.serviceName, l.service, l.operator, l.category, l.departure!.getTime(), l.arrival!.getTime()]), egress.id]),
-      startTime: start, originStation: label.access, destinationStation: egress, departure, arrival,
+      startTime: new Date(label.startedAt), originStation: label.access, destinationStation: egress, departure, arrival,
       trainMinutes: (arrival.getTime() - departure.getTime()) / 60_000,
-      waitMinutes: (departure.getTime() - start.getTime()) / 60_000 - label.access.bikeMinutes,
-      totalMinutes: (label.time - start.getTime()) / 60_000 + egress.bikeMinutes,
+      waitMinutes: (departure.getTime() - label.startedAt) / 60_000 - label.access.bikeMinutes,
+      totalMinutes: (label.time - label.startedAt) / 60_000 + egress.bikeMinutes,
       changes: label.boardings - 1, services: [...new Set(label.legs.filter(l => l.mode === "transit").map(l => l.service))],
       transitLegs: label.legs });
   }

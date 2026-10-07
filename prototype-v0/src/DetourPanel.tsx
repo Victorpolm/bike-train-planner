@@ -28,6 +28,7 @@ type Props = {
   pace?: CyclingPace;
   preference?: RoutePreference;
   hills?: HillPreferences;
+  arriveBy?: string;
   onRoutes: (routes: DetourRoutes | null) => void;
   onClose: () => void;
 };
@@ -38,6 +39,7 @@ export default function DetourPanel({
   pace,
   preference,
   hills,
+  arriveBy,
   onRoutes,
   onClose,
 }: Props) {
@@ -199,6 +201,15 @@ export default function DetourPanel({
             about {formatMinutes(timing.ridingMinutes)} travelling plus {visitMinutes} min at the
             stop.
           </p>
+          {arriveBy &&
+            "arrival" in timing &&
+            timing.arrival &&
+            +timing.arrival > Date.parse(arriveBy) && (
+              <p className="permission-warning">
+                This detour would arrive after your chosen arrival time of{" "}
+                {clock.format(new Date(arriveBy))}.
+              </p>
+            )}
           <div className={`detour-connection detour-${timing.status}`} aria-live="polite">
             {timing.status === "kept" && (
               <p>

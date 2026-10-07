@@ -41,7 +41,7 @@ export function detourStages(journey: Journey | null, cycling: CyclingComparison
         preceding: steps.slice(0, index), departure: step.departure, originalMinutes, following: steps.slice(index + 1), originalArrival }];
     });
   }
-  let departure = start;
+  let departure = cycling?.departure ?? start;
   return (cycling?.routes ?? []).map((route, index) => {
     const from = at(route, "from", index === 0 ? origin.label : `Intermediate stop ${index}`);
     const to = at(route, "to", index === cycling!.routes!.length - 1 ? destination.label : `Intermediate stop ${index + 1}`);
