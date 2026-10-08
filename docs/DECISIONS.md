@@ -682,3 +682,13 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Implementation consequence:** Remove the fixed cap and evaluate this objective before the unrelated general 60-minute alternative window can exclude long-trip compromises. Other objectives, fare acquisition, sampled discovery and hard feasibility constraints retain their existing limits. For a five-hour reference, 30/60/75-minute ceilings apply to one/two/three avoided boardings. A separate card is not forced at an equal score.
 
 **Evidence:** Four new regressions plus revised boundary coverage; all 441 tests in 11 suites, production builds, formatting and Knip pass. Owner-private version 59 is published. No fresh live-provider or browser/phone verification is claimed. [Current contract and release evidence](JOURNEY_OBJECTIVES_2026-10-08.md).
+
+## 2026-10-09 — Consolidate GitHub status and the remaining plan
+
+**Authorization:** Update everything on GitHub and recall the next steps previously planned.
+
+**Audit fact:** All 237 application files on main match owner-private version 59 / Site source `f3c22542a5b46eb75487d2a1e9b8b7aca499360b`. The local application checkout is clean. GitHub's [Test and build run](https://github.com/Victorpolm/bike-train-planner/actions/runs/37849560615) succeeded for implementation commit `c0027316213d2f7932f38ec3177566dfbd10be24`; the release's existing 441-test/build gate is retained. There is no missing application patch to republish.
+
+**Documentation decision:** Add [NEXT_STEPS.md](NEXT_STEPS.md) as the current checklist, link it from README/state/roadmap, and correct stale descriptions of branch merges, walking endpoints and completed interface/preset work. Preserve historical evidence and the latest instruction to retain existing Preferences. Immediate release acceptance and reproduced blockers precede optional extensions; the earlier parking → useful stops → broader interface milestone order is retained with its completed portions marked.
+
+**Boundary:** Discover, custom cycling minimum/maximum, scenic places, independent hill regrouping and further workflows remain separately scoped design items. This synchronization does not authorize their implementation, schedule maintenance, change hosting/access, or claim new live-provider/browser tests. Switzerland-first, owner-private operation and approval before new hosting costs remain in force.

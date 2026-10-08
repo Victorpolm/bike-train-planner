@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**9 October synchronization:** GitHub contains all 237 application files from published version 59, and the [implementation CI run](https://github.com/Victorpolm/bike-train-planner/actions/runs/37849560615) passed. The [current next-steps checklist](docs/NEXT_STEPS.md) separates pending acceptance, remaining milestones and design proposals. This is a documentation consolidation; the application remains version 59.
+
 **8 October objective implementation:** Commuter compares earliest arrival/latest departure, fewer boardings and least cycling. Bikepacking replaces least cycling with less mapped traffic exposure. Personalized can select these plus fewer mandatory bicycle reservations and lowest complete checked price. Existing controls remain Preferences; cycling only remains a separate reference. After the owner's follow-up, the boarding compromise uses 30 minutes per avoided boarding within 25% of the reference time, without a fixed 30-minute cap. **441 regressions** and production builds pass. [Behaviour, verification and limitations](docs/JOURNEY_OBJECTIVES_2026-10-08.md).
 
 **8 October Journey view and timing:** Phones now have **Plan / Map / Journey**; desktop keeps results beside a **Map / Journey** switch. Bicycle requirements and full prices live in Journey, with mandatory actions, permission, prices and CFF/SBB links still visible on cards. Cards distinguish a checked later origin departure, journey duration and time before leaving. Earliest-arrival ranking is preserved. **418 regressions** and production builds pass; browser/phone QA remains pending. [Implementation and timing contract](docs/JOURNEY_VIEW_AND_TIMING_2026-10-08.md). At that earlier release, the objective redesign was [brainstorming](docs/PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md); the subsequently authorized subset is delivered in the objective update above. Scenic routing remains a proposal.
@@ -44,9 +46,11 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 ## Next priorities
 
+**Immediate checks:** finish phone/desktop acceptance of the delivered interface and objectives, reproduce the reported route and food-loading failures, and fix demonstrated blockers. See the [current checklist and status](docs/NEXT_STEPS.md). The remaining product milestones retain the order below.
+
 1. **Bike parking:** try the delivered colours, adjustable journey filter and closest-to-start action, then improve coverage and entrance/access information. Destination/station recommendations and an explicit GPS option remain later additions.
 2. **Bike services and useful stops:** prioritise rural refill precision: access/seasonality evidence, distance along the ride to the next supported refill point, checked entrances/detours, then opening at arrival. Use the new timed detour preview; an explicit Apply/save action still needs search-budget checks before updating the journey. [Audited gaps and acceptance checks](docs/FACILITY_SOURCES_2026-09-30.md#what-the-roadmap-still-promises-but-the-app-does-not-yet-implement).
-3. **User interface:** simplify search, comparison and map/details after the first two features, while including each feature's essential usability from the start.
+3. **User interface:** the requested redesign and objective controls are delivered. Complete their phone/desktop acceptance, then refine parking and useful-stop interactions from observed problems.
 
 [Roadmap and completion criteria](docs/APP_ROADMAP.md) · [Concrete bike-parking proposal](docs/BIKE_PARKING.md) · [Useful stops: brainstorming and data plan](docs/CYCLING_AMENITIES.md)
 
@@ -60,7 +64,7 @@ The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle o
 
 Sign in with the ChatGPT account that owns the Site. The website remains owner-private; this GitHub repository is public. GitHub source updates and website publication are separate. Personal GPX data and secrets are not committed. New hosting spend requires the owner's approval.
 
-The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Specific parking racks, availability, parking duration/cost and later retrieval are not verified or planned.
+The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Specific parking racks, availability, parking duration/cost and later retrieval remain unimplemented; their requirements are tracked in the roadmap.
 
 ## Repository as project memory
 

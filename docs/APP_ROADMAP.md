@@ -1,5 +1,7 @@
 # App roadmap: bicycle + public transport
 
+**9 October consolidation:** the [current next-steps checklist](NEXT_STEPS.md) distinguishes delivered version-59 features, immediate acceptance/reliability checks, remaining parking/useful-stop milestones and proposals. The agreed product order below is historical context; later owner instructions brought the implemented interface and objectives forward. The interface and transfer-ZIP branches are already merged.
+
 **8 October objectives delivered:** version 58 implements the Commuter/Bikepacking objective sets, Personalized multi-select, fewer mandatory reservations, complete checked-price ranking and the boarding compromise. The subsequent version-59 adjustment uses 30 minutes per avoided boarding with a 25% overall ceiling and no fixed 30-minute cap. All pre-existing route, hill, endpoint and budget controls remain Preferences as requested. [Contract and current 441-test gate](JOURNEY_OBJECTIVES_2026-10-08.md). Earlier ideas for Discover, scenic/interesting-place routing, independent hill regrouping and custom cycling minimum/maximum remain separate proposals. Next validate the new choices on familiar trips; do not equate mapped traffic exposure with live traffic or scenic quality.
 
 **7 October consolidation completed:** Interface/profile and ZIP branches merged on 6 October; version-53 application source is now synchronized to main. The general station-transfer lookup is delivered. Next: familiar-station desktop/phone acceptance, then scoped route/trip/calendar matching and a maintained feed refresh before 12 December 2026. [Evidence and remaining boundaries](STATION_TRANSFER_RUNTIME_2026-10-06.md).
@@ -8,7 +10,7 @@
 
 **3 October follow-up, proposed:** Merge Reduce climbing and Gentler slopes into Extra categories. Gentle slope settings should affect the additional proposal, with ordinary cycling candidates retained. The subsequent original-ZIP general-rule lookup is now delivered; complete route/trip/calendar-specific matching and maintain feed freshness before claiming complete coverage. [Data and acceptance plan](STATION_TRANSFER_DATA_2026-10-03.md).
 
-_Updated 2026-10-08. The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
+_Updated 2026-10-09 (Europe/Zurich). The user's latest order supersedes the delivery orders recorded on 21/25 September. Proposed work is distinguished from implemented behaviour._
 
 ## Product direction
 
@@ -26,7 +28,7 @@ _Updated 2026-10-08. The user's latest order supersedes the delivery orders reco
 
 The owner authorised the revised interface and local profiles on `feature/novice-interface-profiles`. Profiles are independent of trip presets; all existing model/access/pace/fare/category choices remain accessible. Phone views keep the same mounted map and planner. Single-total cards and persistent ? explanations simplify inspection without hiding required bicycle conditions. [Implemented controls, evidence and manual acceptance](INTERFACE_PROFILES_2026-10-02.md).
 
-The header profile/compact route follow-up now provides independent UI components and central layout settings; see the [editing guide](INTERFACE_EDITING.md). An owner-only visual layout preview/editor is a possible separate follow-up, not implemented. Next: complete desktop/phone and keyboard acceptance, review the branch, then merge. Continue facility precision afterwards. Past-date entry and real next-departure search are implemented on 3 October ([evidence](SEARCH_RELIABILITY_2026-10-03.md)); historical timetable completeness, additional SBB fare products and GPS navigation remain separate work; do not add cosmetic buttons or change the current endpoint category into a bicycle-availability constraint. Cross-device profile accounts remain optional future work.
+The header profile/compact route follow-up now provides independent UI components and central layout settings; see the [editing guide](INTERFACE_EDITING.md). An owner-only visual layout preview/editor is a possible separate follow-up, not implemented. The branch is merged. Next: complete desktop/phone and keyboard acceptance, then continue facility precision. Past-date entry and real next-departure search are implemented on 3 October ([evidence](SEARCH_RELIABILITY_2026-10-03.md)); historical timetable completeness, additional SBB fare products and GPS navigation remain separate work; do not add cosmetic buttons or change the current endpoint category into a bicycle-availability constraint. Cross-device profile accounts remain optional future work.
 
 <a id="route-editing-and-climbing--proposed-3-october"></a>
 ## Route editing and climbing — implemented, 3 October
@@ -67,7 +69,7 @@ The ordering below records the user's request. Scope, pilot locations, numerical
 
 The optional layer retains the official combined bicycle/car feed, filtering BIKE facilities. The 29 September audit confirms 1,608 official bicycle records and **no populated bicycle occupancy feed**; OSM adds 20,728 imported records in the dated check. Do not sum these into a verified distinct-facility total. A mapped location and nominal capacity do not establish a free space.
 
-**Proposed scope after the small trial:** Find appropriate parking where the user is going or near a station they select. Retain the bicycle on all current transit legs. Keep parking optional and the core search form short. The delivered closest-to-start action already works without running a route search.
+**Proposed scope after the small trial:** Find appropriate parking where the user is going or near a station they select. Respect the selected bicycle-on-transit setting; beginning/end-only passenger travel and its walking endpoint are already implemented. Keep parking optional and the core search form short. The delivered closest-to-start action already works without running a route search.
 
 Deliver in three bounded pieces:
 
@@ -77,7 +79,7 @@ Deliver in three bounded pieces:
 
 Detailed source rules, ranking, duration/retrieval handling and acceptance scenarios: [BIKE_PARKING.md](BIKE_PARKING.md).
 
-**Later, separate decision:** a bicycle-parking + passenger-only transit mode. It must model the stored bicycle, onboarding/locking/walking time, applicable fees, return/retrieval and a second bicycle/rental only when explicitly selected. Displaying parking near stations does not implement this mode.
+**Delivered boundary and later work:** beginning/end-only already supports passenger-only transit and walking on the opposite end. A full parking-facility workflow still needs an explicitly selected rack, locking/access time, applicable fees, return/retrieval and any explicitly chosen second bicycle/rental. Displaying parking near stations does not implement those requirements.
 
 ## 2. Bike services and useful stops
 
@@ -113,7 +115,7 @@ Current OSM raster basemap symbols cannot be individually hidden by our overlay 
 
 **Latest user request, delivered in version 41:** stable, scrollable facility details and a cycling-only detour preview through a clicked facility. The preview keeps section endpoints, required stops and chosen public transport fixed, includes an editable visit duration and checks the next connection with walking and the boarding buffer. Original cards and prices remain unchanged. [Behaviour and checks](FACILITY_DETOURS_2026-09-30.md).
 
-**Still missing:** along-route refill gaps, verified entrances, opening at arrival, an explicit Apply/save action with original-budget validation, multiple facility stops, a reviewed correction workflow, parking suitability/destination shortlists and GPS, then the broader UI. Ten-station feed integration does not complete field curation or indoor navigation. Wider SBB publication/redistribution terms remain a separate gate. The historical first steps below are retained for context.
+**Still missing:** along-route refill gaps, verified entrances, opening at arrival, an explicit Apply/save action with original-budget validation, multiple facility stops, a reviewed correction workflow, parking suitability/destination shortlists and GPS. The broader interface has since been implemented; its acceptance and facility-flow refinements remain pending. Ten-station feed integration does not complete field curation or indoor navigation. Wider SBB publication/redistribution terms remain a separate gate. The historical first steps below are retained for context.
 
 **Later 30 September priority refinement:** The owner prioritises precision over more records, especially dependable water where alternatives are scarce. Within useful-stop work, start with a small rural-water pilot, then improve floors/entrances in large buildings. Measure whether people can find and use the facility, not marker counts. [Research, successful SBB indoor API checks, rural source gaps and bounded next steps](FACILITY_PRECISION_2026-09-30.md). The eight-location rural source pilot and ten-station feeds are now implemented; further field review, wider search beyond the existing choices and along-route gap information remain proposals.
 
@@ -155,7 +157,7 @@ Baseline/Extended remain available for the current mathematical experiment. Movi
 
 ## Technical work retained after these priorities
 
-- **Two automatic cycling transfers — implemented and merged:** Baseline 0 / Extended up to 2, two-round discovery, and beginning-only/end-only hard constraints now share the existing budgets. Next measure live route quality, runtime and truncation with a small fixed Swiss pilot; address walking access and per-block fare aggregation remain separate work. [Scope, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md).
+- **Two automatic cycling transfers — implemented and merged:** Baseline 0 / Extended up to 2, two-round discovery, and beginning-only/end-only hard constraints now share the existing budgets. Next measure live route quality, runtime and truncation with a small fixed Swiss pilot; address walking access is delivered; per-block fare aggregation across cycling breaks remains separate work. [Scope, regressions and limits](MULTIPLE_CYCLING_TRANSFERS.md).
 
 - **Later road safety:** investigate crossings/signals, turning manoeuvres, physical separation, documented lower speed limits and pedestrian access. Review official injury-crash data with exposure, age and geometry limitations. Existing lower-traffic-stress summaries remain heuristics; no “every turn is dangerous” rule or guaranteed-safe route. See [CYCLING_SAFETY_RESEARCH.md](CYCLING_SAFETY_RESEARCH.md).
 
@@ -169,9 +171,9 @@ Baseline/Extended remain available for the current mathematical experiment. Movi
 
 | Option | Requirements before delivery |
 |---|---|
-| Commuting preset | Arrive-by, repeated trips, robust transfers and an understandable cycling/effort cap |
-| Bikepacking preset | Longer/daily budgets, surfaces, loaded-bike suitability, ordered stages, stopover duration and optional overnight stops |
-| Expert controls | Expose supported constraints/objectives on the same engine; define detour limits and distinguish hard requirements from preferences |
+| Further Commuter features | The preset, arrive-by and cycling cap are delivered; repeated trips and further transfer-reliability validation remain |
+| Further Bikepacking features | The preset and mapped traffic objective are delivered; daily budgets, loaded-bike suitability, timed stages and optional overnight stops remain |
+| Further Personalized controls | Objective selection is delivered; custom minimum/maximum cycling time and Discover remain design items |
 | Gentle final kilometres | Specify distance, gradient tolerance and positive ascent; net elevation alone can hide a climb |
 | Panoramic preference | Sourced definition, eligible services and an explicit detour allowance |
 | Rentals/park-and-ride | Explicit bicycle custody, pickup/return, availability/return rules and costs; a separate travel mode |

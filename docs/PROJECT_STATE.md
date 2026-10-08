@@ -1,5 +1,7 @@
 # Project state
 
+**9 October repository audit:** all 237 application files on `main` match published version 59; [GitHub Test and build](https://github.com/Victorpolm/bike-train-planner/actions/runs/37849560615) passed for implementation commit `c0027316213d2f7932f38ec3177566dfbd10be24`. Current documentation is synchronized. [Next steps and status](NEXT_STEPS.md) separates acceptance/reliability checks, remaining milestone work and proposals. No new application release or live/browser verification is claimed.
+
 **8 October objective implementation:** Commuter compares earliest arrival/latest departure, fewer boardings and least cycling. Bikepacking replaces least cycling with less mapped traffic exposure. Personalized can select these plus fewer mandatory bicycle reservations and lowest complete checked price. Existing controls remain Preferences; cycling only remains a separate reference. After the owner's follow-up, the boarding compromise uses 30 minutes per avoided boarding within 25% of the reference time, without a fixed 30-minute cap. **441 regressions** and production builds pass. [Current implementation and limits](JOURNEY_OBJECTIVES_2026-10-08.md).
 
 **8 October Journey view and timing:** Implemented **Plan / Map / Journey** on phones and a desktop **Map / Journey** panel switch. Cards retain critical bike conditions, price and CFF/SBB access; detailed rules, itinerary, terrain and fares live in Journey. Feasible later origin departures separate journey duration from time before leaving while retaining original arrival-ranking metrics. **418 regressions**, type checks and production builds pass; browser/phone QA is pending. [Contract and regressions](JOURNEY_VIEW_AND_TIMING_2026-10-08.md). At that earlier release these objective sets were [brainstorming](PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md); the later authorized subset is implemented above. Scenic routing remains proposed.
@@ -90,6 +92,8 @@ The 29 September public-feed audit found **1,608 BIKE facility records** and 1,2
 
 ## Next work and release discipline
 
+Use [NEXT_STEPS.md](NEXT_STEPS.md) as the consolidated checklist. The immediate next action is a familiar-journey phone/desktop acceptance pass, including the new objective sets, long-trip boarding trade-off, prices and a station transfer. Reproduce reported Z眉rich鈥揕aax/Baden鈥揥itikon route issues and phone food loading with exact inputs before assigning causes; demonstrated blockers take priority. The milestone items below remain tracked.
+
 1. **Parking:** try the colours and adjustable selected-journey filter on familiar trips, then review municipal coverage, unresolved duplicate identities and entrances. GPS is a later explicit permission-based action. Do not treat proximity or equipment colours as a completed suitability/entrance-routing milestone.
 2. **Bike services and useful stops:** validate all five filters against familiar places, especially DIY/repair ambiguity, broken pumps, food-machine access and hours. Validate the new timed detour preview, then add checked entrances and opening-at-visit evidence. Applying/saving a preview must revalidate original search limits before changing cards or fares.
 3. **Objectives acceptance:** compare familiar journeys in Commuter/Bikepacking, then Personalized with traffic, reservations and checked prices. Confirm the 30-minutes-per-avoided-boarding / 25% overall trade-off feels useful, and inspect missing-data explanations on phone and desktop. The 30-minute boarding penalty and traffic weights remain pilot settings.
@@ -108,6 +112,7 @@ Fix route/price/permission regressions when demonstrated; the unresolved Baden鈥
 
 ## Durable references
 
+- [Current next steps](NEXT_STEPS.md)
 - [Roadmap](APP_ROADMAP.md) 路 [Parking proposal](BIKE_PARKING.md) 路 [Product](PRODUCT.md)
 - [Useful stops and data treatment](CYCLING_AMENITIES.md) 路 [Later safety research](CYCLING_SAFETY_RESEARCH.md)
 - [Data sources](DATA_SOURCES.md) 路 [Decisions](DECISIONS.md) 路 [Experiments](EXPERIMENTS.md)

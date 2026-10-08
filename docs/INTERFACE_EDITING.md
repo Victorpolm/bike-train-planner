@@ -52,7 +52,7 @@ The reverse button sits beside the boundary between the location fields instead 
 - The same total cycling/time limits, bicycle-access scope and rider settings apply. Extended does not require extra cycling or select Bikepacking. Actual fares still depend on the services chosen.
 - Requested intermediate stops split a journey into stages; the two automatic cycling connections are shared across the entire journey. The UI explains this beside the model selector.
 
-**Where would you like to cycle?** adds hard beginning-only/end-only choices separately from the optional endpoint ranking category. They switch to Baseline and disable intermediate cycling. Select a transport stop at the non-cycling end; existing timed walking links remain usable. This constraint applies across requested stops and stays selected when a profile or trip style changes. [Two-round routing, exact semantics and remaining limits](MULTIPLE_CYCLING_TRANSFERS.md).
+**Where would you like to cycle?** adds hard beginning-only/end-only choices separately from the optional endpoint ranking category. They switch to Baseline and disable intermediate cycling. The non-cycling end now uses a directed pedestrian route to/from an address, with a separate walking allowance; the take-bike-on-transit checkbox controls bicycle eligibility and charges. This constraint applies across requested stops and stays selected when a profile or trip style changes. [Two-round routing, exact semantics and remaining limits](MULTIPLE_CYCLING_TRANSFERS.md).
 
 ## A possible visual editor
 
@@ -67,9 +67,11 @@ Browser interaction/visual QA is unavailable in this session. Check the header i
 For the new cards: create two profiles, close the header panel, select either card and reopen the panel to confirm selection. Rename/delete and confirm the list immediately changes; change only this trip and use its card to restore saved settings; verify trip style/model are preserved. Check long names, phone widths, keyboard selection, reload and blocked storage. These interaction checks are also pending.
 
 
-## Publication
+## Historical publication — 2 October
 
-Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, environment revision **3**, Site source `043d35340c35317a2c54b3f473e3bf0a85d30125`. All **198 current application files** match `feature/novice-interface-profiles`; the branch and [draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) remain unmerged. Sharing and runtime secrets are unchanged.
+The following records the original release. PR #1 and the transfer-ZIP PR were subsequently merged on 6 October; the current application is version 59. See [current state](PROJECT_STATE.md) and [remaining acceptance](NEXT_STEPS.md).
+
+Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, environment revision **3**, Site source `043d35340c35317a2c54b3f473e3bf0a85d30125`. All **198 current application files** match `feature/novice-interface-profiles`; at that release, the branch and [then-draft PR #1](https://github.com/Victorpolm/bike-train-planner/pull/1) were unmerged. Sharing and runtime secrets are unchanged.
 
 
 ## 3 October help and later-departure modules
