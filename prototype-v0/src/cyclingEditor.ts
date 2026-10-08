@@ -2,6 +2,7 @@ import { boardingCheck } from "./transferTimes.ts";
 import { detourStages, type DetourStage } from "./cyclingDetour.ts";
 import type { CyclingRoute } from "./cycling.ts";
 import { journeySteps } from "./itinerary.ts";
+import { earlierJourneyStart } from "./journeyTiming.ts";
 import { metrics, validateOptions, type Options } from "./model.ts";
 import { haversineKm, type CyclingComparison, type Journey, type Place, type TransitLeg } from "./routing.ts";
 
@@ -31,6 +32,18 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   const start = journey?.startTime ?? cycling?.departure ?? context.start;
   const current = detourStages(journey, cycling, origin, destination, start).find(s => s.id === stage.id && s.route === stage.route);
   if (!current) throw new Error("The selected journey changed. Reopen the cycling editor.");
+  // A suggested later departure must not discard time the user has available
+  // at the origin. Rebase only our flexible access prefix before editing; the
+  // presentation layer will calculate a new feasible departure afterwards.
+  if (journey && !options.arriveBy && +context.start < +journey.startTime) {
+    const earlier = earlierJourneyStart(journey, context.start);
+    if (earlier !== journey) {
+      const index = detourStages(journey, null, origin, destination, start).findIndex(s => s.id === stage.id);
+      const rebased = detourStages(earlier, null, origin, destination, context.start)[index];
+      if (!rebased || rebased.route !== stage.route) throw new Error("The selected cycling section changed. Reopen the editor.");
+      return applyCyclingEdit({ ...context, journey: earlier }, rebased, routes);
+    }
+  }
   if (!routes.length || routes.length > MAX_SHAPING_POINTS + 1 || routes.some(r => r.blocked || !Number.isFinite(r.minutes) || r.minutes < 0))
     throw new Error("A complete usable cycling path is required.");
   const equal = (a: Place | CyclingRoute["from"], b: Place | CyclingRoute["from"]) => haversineKm(a, b) < .001;

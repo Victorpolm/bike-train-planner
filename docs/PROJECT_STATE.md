@@ -1,5 +1,7 @@
 # Project state
 
+**8 October Journey view and timing:** Implemented **Plan / Map / Journey** on phones and a desktop **Map / Journey** panel switch. Cards retain critical bike conditions, price and CFF/SBB access; detailed rules, itinerary, terrain and fares live in Journey. Feasible later origin departures separate journey duration from time before leaving while retaining original arrival-ranking metrics. **418 regressions**, type checks and production builds pass; browser/phone QA is pending. [Contract and regressions](JOURNEY_VIEW_AND_TIMING_2026-10-08.md). The new preset/objective sets and scenic Bikepacking alternative remain [brainstorming](PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md).
+
 **7 October walking and fares:** “Only at the beginning” now cycles to transit and walks to the destination; “Only at the end” starts on foot and cycles after transit. A bicycle-on-transit checkbox controls both service eligibility and bicycle charges. Pedestrian routes have a separate 30-minute allowance per section, adjustable from 0 to 60. Available city passenger prices stay visible when bicycle prices are incomplete. **409 regressions**, formatting, Knip and production builds pass. [Behaviour, live checks and limits](WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
 
 **7 October follow-up:** Compact departure/arrival controls keep a clock reset beside the time. Historical searches in both directions are regression-tested. Simplest now compares a road-oriented bicycle candidate and counts actual turning decisions: the checked ETH HG–Stadelhofen example uses Rämistrasse and improves from 1.774 km / 16 turns to 1.551 km / 11 turns. [Implementation, fixtures and limits](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
@@ -18,7 +20,7 @@
 
 **Earlier branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).
 
-_Last consolidated: 2026-10-07. This is the current summary; dated reports and Git history preserve earlier states._
+_Last consolidated: 2026-10-08. This is the current summary; dated reports and Git history preserve earlier states._
 
 ## Objective and current scope
 
@@ -50,6 +52,7 @@ _Last consolidated: 2026-10-07. This is the current summary; dated reports and G
 |---|---|---|
 | Journey planning | Bounded multi-label Baseline/Extended search; road-routed access/egress; up to two automatic cycling connections in Extended; beginning/end-only hard constraints; ordered visits; category winners with identical results combined | Sampled acquisition can miss useful journeys; a timeout is not proof that no route exists |
 | Inputs and comparison | Swiss places/addresses/venues, map-selected/draggable endpoints, up to four ordered stops, Swiss departure or arrival date/time, rider/electric profiles, cycling-only comparison | Stopover duration and routing through a specific parking facility are not delivered |
+| Journey interface and time | Phone Plan / Map / Journey; desktop Map / Journey; bicycle requirements grouped by service; checked departure, arrival, journey duration and time before leaving | Browser/phone QA pending; provider-timed walks remain fixed; preset/objective redesign and scenic routing remain proposals |
 | Facility detour previews | Persistent readable popups; nearest cycling-section selection; two links through the facility; editable visit duration; added distance/time, map overlay and fixed-service timing | Preview only: no saved stop insertion, card/fare updates, original-budget revalidation or verified indoor/entrance access |
 | Cycling | BRouter geometry and terrain/profile summaries; Fastest/Simplest/Lower traffic stress preferences; riding/pushing/carrying distinctions and bounded official terrain checks | Partial data coverage; riding times are estimates; no claim of objective safety or fully verified station entrances |
 | Cycling hills and climbing alternative | Adjustable gentle-slope preference; optional Reduce climbing result category; three main ranking functions retained | Approximate elevation; chosen % is a preference, not a verified cap; bounded alternatives; unknown elevation cannot win |
@@ -65,7 +68,7 @@ _Last consolidated: 2026-10-07. This is the current summary; dated reports and G
 
 ## Last verified publication and tests
 
-**Fact:** Owner-private **version 55** published on **7 October 2026 at 10:52:25 UTC** (12:52:25 Europe/Zurich), environment revision **3**, Site source `68c182b244670c385f26b561538038f49f6c1044`. Compact time controls, historical-date regressions and a road-oriented Simplest candidate are delivered. **395 regressions** in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass. The live ETH HG–Stadelhofen reproduction improves from 1.774 km / 16 turns to 1.551 km / 11 turns and uses Rämistrasse. Browser interaction/visual QA remains pending. Runtime keys and audience are unchanged. [Implementation and release evidence](SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
+**Fact:** Owner-private **version 57** published successfully on **8 October 2026 at 15:18:35 UTC** (17:18:35 Europe/Zurich), environment revision **3**, from Site source `bef0e130cc796d22bf03b13869ef99b17394eb08`. Phone Plan / Map / Journey, the desktop Map / Journey switch, grouped bicycle requirements and checked departure-to-arrival time are delivered. **418 tests** in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass. Browser/phone interaction and visual QA remain pending because the required preview capability was unavailable. Runtime keys and owner-only audience are unchanged. [Implementation and release evidence](JOURNEY_VIEW_AND_TIMING_2026-10-08.md).
 
 **Earlier version 51 gate:** `npm test` passes 363 cases in 11 suites across 41 files; TypeScript/frontend/Worker builds pass. Three new routed regressions cover asymmetric endpoints, longer Extended connections, and one total budget across ordered visits. [Evidence](EXPERIMENTS.md#2026-10-04--less-cycling-shares-one-total-time-budget). Browser interaction/visual QA remains pending.
 
@@ -108,4 +111,3 @@ Fix route/price/permission regressions when demonstrated; the unresolved Baden�
 - [Swiss implementation/local pilots](SWISS_IMPLEMENTATION.md) · [Cycling](CYCLING_ROUTES.md) · [Bicycle permissions](BICYCLE_PERMISSION_AND_OJP.md)
 
 An uploaded PROJECT_STATE.md is a snapshot. The attached 5 September copy describes an earlier prototype and must not override this repository state. Keep this summary concise; put detailed observations in dated reports and explain changed decisions in DECISIONS.md.
-

@@ -181,3 +181,8 @@ Cargo/trailer suitability, battery-aware e-bike planning, navigation export, int
 
 For each bounded piece, state the expected behaviour and failure cases, implement it, verify those cases, record the result and next open item, then move to the next piece. Keep documentation and implementation in the same reviewed change when coding starts. Save long experiments incrementally and report partial results honestly; do not let a large random test run become the only release gate.
 
+## 8 October interface delivery and preset brainstorming
+
+**Delivered:** Plan / Map / Journey on phone; desktop Map / Journey switch; critical bicycle conditions and CFF/SBB links retained on cards; explicit departure-to-arrival duration and separate origin waiting. [Implementation and remaining browser acceptance checks](JOURNEY_VIEW_AND_TIMING_2026-10-08.md).
+
+**Proposed, not implemented:** Commuter keeps cycling only, fastest, a boarding/time compromise and least cycling; Bikepacking requests cycling only, fastest, a boarding/time compromise and an interesting-place/low-traffic-stress alternative; Personalized chooses the displayed objective alternatives. Keep the current presets until this proposal is validated. A scenic alternative needs reviewed place evidence and route generation through optional visits; the existing lower-stress path preference is not that capability. [Latest owner proposal, assumptions and experiment](PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md).

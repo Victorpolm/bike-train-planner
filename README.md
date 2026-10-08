@@ -1,5 +1,7 @@
 # Bike + Train Journey Planner
 
+**8 October Journey view and timing:** Phones now have **Plan / Map / Journey**; desktop keeps results beside a **Map / Journey** switch. Bicycle requirements and full prices live in Journey, with mandatory actions, permission, prices and CFF/SBB links still visible on cards. Cards distinguish a checked later origin departure, journey duration and time before leaving. Earliest-arrival ranking is preserved. **418 regressions** and production builds pass; browser/phone QA remains pending. [Implementation and timing contract](docs/JOURNEY_VIEW_AND_TIMING_2026-10-08.md). The proposed Commuter/Bikepacking/Personalized objective sets, boarding compromise and scenic alternative are [brainstorming, not implemented](docs/PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md).
+
 **7 October walking and fares:** “Only at the beginning” now cycles to transit and walks to the destination; “Only at the end” starts on foot and cycles after transit. A bicycle-on-transit checkbox controls both service eligibility and bicycle charges. Pedestrian routes have a separate 30-minute allowance per section, adjustable from 0 to 60. Available city passenger prices stay visible when bicycle prices are incomplete. **409 regressions**, formatting, Knip and production builds pass. [Behaviour, live checks and limits](docs/WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
 
 **7 October follow-up:** Compact departure/arrival controls keep a clock reset beside the time. Historical searches in both directions are regression-tested. Simplest now compares a road-oriented bicycle candidate and counts actual turning decisions: the checked ETH HG–Stadelhofen example uses Rämistrasse and improves from 1.774 km / 16 turns to 1.551 km / 11 turns. [Implementation, fixtures and limits](docs/SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
@@ -16,7 +18,7 @@
 
 A Switzerland-first planner combining cycling, walking and public transport, with an explicit choice to take the bicycle on board or leave it at a station. It compares a small set of useful journeys and makes bicycle conditions, effort, prices and uncertainty understandable.
 
-## Current state — 7 October 2026
+## Current state — 8 October 2026
 
 **Interface/profile implementation (merged 6 October):** `feature/novice-interface-profiles` adds optional device-local traveller profiles behind a compact header icon, modular interface sections, Commuter/Bikepacking/Personalized presets, a simpler desktop form, phone Planning / Map views, compact prices and expandable explanations. Baseline now allows 0 automatic cycling connections and Extended up to 2, with beginning-only/end-only restrictions in Preferences. [Routing changes and limits](docs/MULTIPLE_CYCLING_TRANSFERS.md). All existing planner choices remain accessible. **363 offline tests pass.** [Controls, verification, manual checks and remaining work](docs/INTERFACE_PROFILES_2026-10-02.md). [How to edit the modular interface](docs/INTERFACE_EDITING.md).
 
@@ -34,7 +36,7 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** Owner-private **version 55** published on **7 October 2026 at 10:52:25 UTC** (12:52:25 Europe/Zurich), environment revision **3**, Site source `68c182b244670c385f26b561538038f49f6c1044`. Compact time controls, historical-date regressions and a road-oriented Simplest candidate are delivered. **395 regressions** in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass. The live ETH HG–Stadelhofen reproduction improves from 1.774 km / 16 turns to 1.551 km / 11 turns and uses Rämistrasse. Browser interaction/visual QA remains pending. Runtime keys and audience are unchanged. [Implementation and release evidence](docs/SIMPLE_ROUTES_AND_TIME_CONTROLS_2026-10-07.md).
+**Last verified release:** Owner-private **version 57** published successfully on **8 October 2026 at 15:18:35 UTC** (17:18:35 Europe/Zurich), environment revision **3**, from Site source `bef0e130cc796d22bf03b13869ef99b17394eb08`. Phone Plan / Map / Journey, the desktop Map / Journey switch, grouped bicycle requirements and checked departure-to-arrival time are delivered. **418 tests** in 11 suites, formatting, Knip and TypeScript/frontend/Worker builds pass. Browser/phone interaction and visual QA remain pending because the required preview capability was unavailable. Runtime keys and owner-only audience are unchanged. [Implementation and release evidence](docs/JOURNEY_VIEW_AND_TIMING_2026-10-08.md).
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 
@@ -56,7 +58,7 @@ The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle o
 
 Sign in with the ChatGPT account that owns the Site. The website remains owner-private; this GitHub repository is public. GitHub source updates and website publication are separate. Personal GPX data and secrets are not committed. New hosting spend requires the owner's approval.
 
-The bicycle currently stays with the traveller on transit. A future **park the bicycle, then continue by public transport** option would be a separate routing mode with explicit retrieval and cost handling. It is a proposal, not current behaviour.
+The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Specific parking racks, availability, parking duration/cost and later retrieval are not verified or planned.
 
 ## Repository as project memory
 
@@ -113,4 +115,3 @@ Do not let repeated hypotheses silently become facts.
 ## Current strategic principle
 
 The immediate objective is not to build the perfect multimodal routing engine. It is to determine whether available Swiss data and existing routing infrastructure can produce genuinely useful bicycle + public-transport journeys for real users.
-

@@ -214,23 +214,43 @@ export default function JourneyPlan({
                   </p>
                 </InfoDisclosure>
               )}
-              {leg?.mode === "transit" && takeBikeOnTransit && (
-                <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />
-              )}
               {step.mode === "bike" && step.cyclingRoute && (
                 <CyclingTerrainSummary route={step.cyclingRoute} />
               )}
               {step.mode === "walk" && (
                 <p className="plan-note">
-                  Push your bicycle during this transfer. The total timetable transfer time is
-                  shown, including any provider buffer; a continuous route suitable for a bicycle,
-                  including lifts or steps, has not been verified.
+                  {takeBikeOnTransit ? "Push your bicycle while walking. " : "Continue on foot. "}
+                  {leg?.walkingRoute
+                    ? "The checked pedestrian route is shown; step-free access is not verified."
+                    : "The timetable allowance includes any provider buffer; the continuous path, lifts and steps are not verified."}
                 </p>
               )}
             </li>
           );
         })}
       </ol>
+      {takeBikeOnTransit && (
+        <section className="journey-bicycle-requirements" aria-labelledby={`${id}-bicycle-heading`}>
+          <h3 id={`${id}-bicycle-heading`}>Bicycle on public transport</h3>
+          <p>
+            Check each service below. Permission does not guarantee space or complete a reservation.
+          </p>
+          {journey.transitLegs
+            .filter((leg) => leg.mode === "transit")
+            .map((leg, index) => (
+              <section className="service-requirements" key={`${journey.id}:${index}`}>
+                <h4>
+                  {leg.service} · {leg.from} → {leg.to}
+                </h4>
+                <p>
+                  {leg.departure && clock.format(leg.departure)} ·{" "}
+                  {leg.operator ?? "Operator not supplied"}
+                </p>
+                <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />
+              </section>
+            ))}
+        </section>
+      )}
       <FareDetails journey={journey} profile={fareProfile} takeBikeOnTransit={takeBikeOnTransit} />
       <InfoDisclosure label="Journey guidance">
         <p className="plan-caution">

@@ -33,15 +33,11 @@ import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession
 import { firstBoarding, laterDepartures } from "./laterDepartures";
 import type { Journey } from "./routing";
 import { metrics, type ModelMode, type EndpointPreference, type CyclingPosition } from "./model";
-import {
-  recommend,
-  compareCycling,
-  waitingMinutes,
-  scopeLabels,
-  type ScopedProposal,
-} from "./recommendations";
+import { recommend, compareCycling, scopeLabels, type ScopedProposal } from "./recommendations";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
+import JourneyTimeSummary from "./ui/JourneyTimeSummary";
+import { journeyTiming } from "./journeyTiming";
 import JourneyPrice from "./JourneyPrice";
 import CyclingDetails, { type CycleFocus, type NamedCycleRoute } from "./CyclingDetails";
 import { formatMinutes, type CyclingComparison, type Point } from "./routing";
@@ -101,11 +97,13 @@ function CyclingCard({
       <span className="category-badges">
         <span>Cycling only · routed</span>
         {fastest && (
-          <span>{arriveBy ? "Leave latest in this search" : "Fastest in this search"}</span>
+          <span>
+            {arriveBy ? "Leave latest in this search" : "Earliest arrival in this search"}
+          </span>
         )}
       </span>
       <span className="journey-topline">
-        <strong>≈ {formatMinutes(comparison.minutes)}</strong>
+        <strong>≈ {formatMinutes(comparison.minutes)} journey</strong>
         <span>0 boardings</span>
       </span>
       <span className="journey-price">
@@ -113,13 +111,8 @@ function CyclingCard({
         <small>No public transport tickets needed.</small>
       </span>
       <span className="arrival-summary">
-        {arriveBy && comparison.departure && (
-          <>
-            Leave <b>{clock.format(comparison.departure)}</b> · {day.format(comparison.departure)}{" "}
-            ·{" "}
-          </>
-        )}
-        Estimated arrival <b>{clock.format(comparison.arrival)}</b>
+        Leave <b>{clock.format(comparison.departure ?? start)}</b> → Estimated arrival{" "}
+        <b>{clock.format(comparison.arrival)}</b>
         {day.format(comparison.arrival) !== day.format(start) &&
           ` · ${day.format(comparison.arrival)}`}
       </span>
@@ -146,9 +139,7 @@ function CyclingCard({
           {cyclingPosition === "start-only" ? "before" : "after"} public transport.
         </span>
       )}
-      <span className="journey-plan-toggle">
-        {selected ? "Shown on the map" : "Show cycling route on map"}
-      </span>
+      <span className="journey-plan-toggle">View cycling journey →</span>
     </button>
   );
 }
@@ -156,8 +147,8 @@ function CyclingCard({
 function JourneyCard({
   proposal,
   selected,
-  expanded,
-  planId,
+  requestedStart,
+  boardingMinutes,
   comparison,
   fareProfile,
   takeBikeOnTransit = true,
@@ -168,8 +159,8 @@ function JourneyCard({
 }: {
   proposal: ScopedProposal;
   selected: boolean;
-  expanded: boolean;
-  planId: string;
+  requestedStart: Date;
+  boardingMinutes: number;
   comparison: CyclingComparison | null;
   fareProfile: FareProfile;
   takeBikeOnTransit?: boolean;
@@ -190,8 +181,8 @@ function JourneyCard({
   const prohibited =
     takeBikeOnTransit &&
     j.transitLegs.some((leg) => leg.mode === "transit" && bicyclePermission(leg) === "prohibited");
-  const m = metrics(j),
-    finalArrival = new Date(j.arrival.getTime() + m.end * 60_000);
+  const m = metrics(j);
+  const timing = journeyTiming(j, boardingMinutes, requestedStart);
   const busSummary = bicycleJourneySummary(j.transitLegs);
   const verified = j.transitLegs
     .filter((l) => l.mode === "transit")
@@ -201,28 +192,28 @@ function JourneyCard({
       type="button"
       className={`journey-card${selected ? " selected" : ""}`}
       onClick={onSelect}
-      aria-expanded={expanded}
-      aria-controls={planId}
+      aria-pressed={selected}
+      aria-controls="journey-details"
     >
       {(sameWins ? wins.slice(0, 1) : wins).map((win) => (
         <span className={`scope-win scope-${win.scope}`} key={win.scope}>
           <span className="category-badges">
             {win.categories.map((c) => (
-              <span key={c}>{c === "Fastest" ? "Fastest with transit" : c}</span>
+              <span key={c}>{c === "Fastest" ? "Earliest arrival with transit" : c}</span>
             ))}
           </span>
           {win.categories.some((c) => c.startsWith("Least cycling or walking")) && (
             <span className="comparison-caution">
               {arriveBy
                 ? `Among journeys leaving up to ${extraTimeMinutes} minutes before the latest departure in this group.`
-                : `Among journeys up to ${extraTimeMinutes} minutes longer than the fastest in this group.`}
+                : `Among journeys arriving up to ${extraTimeMinutes} minutes after the earliest arrival in this group.`}
             </span>
           )}
           {win.extraMinutes > 0 && (
             <span className="tradeoff">
               {arriveBy
                 ? `Leave ${formatMinutes(win.extraMinutes)} earlier than the latest departure in this group`
-                : `${formatMinutes(win.extraMinutes)} longer than the fastest in this group`}
+                : `Arrives ${formatMinutes(win.extraMinutes)} later than the earliest arrival in this group`}
             </span>
           )}
           {win.climbingSaved !== undefined && (
@@ -247,7 +238,7 @@ function JourneyCard({
         </span>
       )}
       <span className="journey-topline">
-        <strong>{formatMinutes(j.totalMinutes)}</strong>
+        <JourneyTimeSummary timing={timing} requestedStart={requestedStart} arriveBy={arriveBy} />
         <span>
           {m.boardings} boarding{m.boardings === 1 ? "" : "s"} ·{" "}
           {j.changes === 0 ? "no changes" : `${j.changes} change${j.changes === 1 ? "" : "s"}`}
@@ -258,22 +249,7 @@ function JourneyCard({
         profile={fareProfile}
         takeBikeOnTransit={takeBikeOnTransit}
       />
-      <span className="arrival-summary">
-        {arriveBy && (
-          <>
-            Leave <b>{clock.format(j.startTime)}</b> · {day.format(j.startTime)} ·{" "}
-          </>
-        )}
-        Arrive at your destination at <b>{clock.format(finalArrival)}</b>
-        {day.format(finalArrival) !== day.format(j.startTime) && ` · ${day.format(finalArrival)}`}
-      </span>
-      {day.format(finalArrival) !== day.format(j.startTime) && (
-        <span className="comparison-caution">Next-day arrival. Total time includes waiting.</span>
-      )}
       <span className="route-services">{j.services.join(" → ")}</span>
-      <span className="comparison-caution">
-        Waiting and boarding: {formatMinutes(waitingMinutes(j))}
-      </span>
       <span className="cycling-summary">
         <b>{formatMinutes(m.active)} cycling or walking</b> · cycling ≈ {formatMinutes(m.bike)} ·
         walking {formatMinutes(m.walk)}
@@ -314,11 +290,12 @@ function JourneyCard({
         </span>
       )}
       {comparison && (
-        <span className="tradeoff cycling-tradeoff">{compareCycling(j, comparison)}</span>
+        <span className="tradeoff cycling-tradeoff">
+          From the requested time:{" "}
+          {compareCycling({ ...j, totalMinutes: timing.elapsedMinutes }, comparison)}
+        </span>
       )}
-      <span className="journey-plan-toggle">
-        {expanded ? "Hide travel plan −" : "View travel plan +"}
-      </span>
+      <span className="journey-plan-toggle">View journey and bicycle requirements →</span>
     </button>
   );
 }
@@ -356,9 +333,20 @@ export default function App() {
   const [tripPreset, setTripPreset] = useState<TripPreset>("commuter");
   const [profileOpen, setProfileOpen] = useState(false);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
-  const [mobileView, setMobileView] = useState<"planning" | "map">("planning");
-  const viewScroll = useRef({ planning: 0, map: 0 });
-  function showMobileView(view: "planning" | "map") {
+  const [mobileView, setMobileView] = useState<"planning" | "map" | "journey">("planning");
+  const [detailView, setDetailView] = useState<"map" | "journey">("map");
+  const [compactLayout, setCompactLayout] = useState(
+    () => window.matchMedia("(max-width: 900px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const update = () => setCompactLayout(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const viewScroll = useRef({ planning: 0, map: 0, journey: 0 });
+  function showMobileView(view: "planning" | "map" | "journey") {
+    if (view !== "planning") setDetailView(view);
     if (view === mobileView) return;
     if (window.matchMedia("(max-width: 900px)").matches) {
       viewScroll.current[mobileView] = window.scrollY;
@@ -460,7 +448,6 @@ export default function App() {
   const editSerial = useRef(0);
   const [laterNotices, setLaterNotices] = useState<Record<string, string>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
@@ -568,15 +555,67 @@ export default function App() {
         ? !!cyclingReference.departure && +cyclingReference.departure >= +p.journey.startTime
         : cyclingReference.minutes <= p.journey.totalMinutes,
     );
-  const selected =
+  const rawSelected =
     selectedId === BIKE_ONLY_ID || (selectedId === null && cyclingFastest)
       ? null
       : (proposals.find((p) => p.journey.id === selectedId)?.journey ??
         proposals[0]?.journey ??
         null);
-  const bikeOnlySelected = !!session && selected === null;
+  const bikeOnlySelected = !!session && rawSelected === null;
   const selectedSource =
-    proposalEntries.find((entry) => entry.proposal.journey.id === selected?.id)?.source ?? session;
+    proposalEntries.find((entry) => entry.proposal.journey.id === rawSelected?.id)?.source ??
+    session;
+  const selectedTiming = useMemo(
+    () =>
+      rawSelected && selectedSource
+        ? journeyTiming(rawSelected, selectedSource.options.boardingMinutes, selectedSource.start)
+        : null,
+    [rawSelected, selectedSource],
+  );
+  const selected = selectedTiming?.journey ?? null;
+  function openJourney(id: string) {
+    setSelectedId(id);
+    setCycleFocus(null);
+    viewScroll.current.journey = 0;
+    showMobileView("journey");
+    requestAnimationFrame(() => {
+      document.getElementById("journey-details")?.scrollTo({ top: 0 });
+      document.getElementById("journey-details-heading")?.focus({ preventScroll: true });
+    });
+  }
+  function updateSelectedEvidence(
+    leg: Parameters<typeof updateBicycleEvidence>[1],
+    evidence: Parameters<typeof updateBicycleEvidence>[2],
+  ) {
+    const entry = proposalEntries.find((item) => item.proposal.journey.id === selected?.id);
+    if (!entry) return;
+    const { source, batch, proposal } = entry;
+    if (batch === "custom") {
+      setCustomJourneys((current) =>
+        current.map((item) =>
+          item.journey.id === proposal.journey.id
+            ? {
+                ...item,
+                journey: {
+                  ...item.journey,
+                  transitLegs: item.journey.transitLegs.map((existing) =>
+                    existing === leg ? { ...existing, bicycleEvidence: evidence } : existing,
+                  ),
+                },
+              }
+            : item,
+        ),
+      );
+      return;
+    }
+    updateBicycleEvidence(source, leg, evidence, (next) => {
+      if (batch)
+        setLaterBatches((current) =>
+          current.map((item) => (item.key === batch ? { ...item, session: next } : item)),
+        );
+      else setSession((current) => (current?.network === source.network ? next : current));
+    });
+  }
   function applyCyclingChange(edit: AppliedCyclingEdit) {
     if (edit.journey && selected && selectedSource) {
       const baseId =
@@ -587,7 +626,6 @@ export default function App() {
         { journey, source: selectedSource, baseId },
       ]);
       setSelectedId(journey.id);
-      setExpandedId(journey.id);
     } else if (edit.cycling) {
       setCustomCycling(edit.cycling);
       setSelectedId(BIKE_ONLY_ID);
@@ -599,7 +637,6 @@ export default function App() {
     if (custom) {
       setCustomJourneys((current) => current.filter((entry) => entry !== custom));
       setSelectedId(custom.baseId);
-      setExpandedId(custom.baseId);
     } else setCustomCycling(null);
     setCycleFocus(null);
   }
@@ -645,7 +682,6 @@ export default function App() {
     setLaterBatches([]);
     setLaterNotices({});
     setSelectedId(null);
-    setExpandedId(null);
     setCycleFocus(null);
     setError("");
     setProgress("");
@@ -778,7 +814,6 @@ export default function App() {
     setCustomCycling(null);
     setLaterBatches([]);
     setLaterNotices({});
-    setExpandedId(null);
     setSelectedId(null);
     setError("");
     if (next === "extended" && session && !session.extendedComplete) {
@@ -881,7 +916,7 @@ export default function App() {
   const extendedFastest = session?.extended ? best(session.extended.journeys) : Infinity;
 
   return (
-    <div className="app-shell" data-mobile-view={mobileView}>
+    <div className="app-shell" data-mobile-view={mobileView} data-detail-view={detailView}>
       <AppHeader
         profile={
           <ProfilePanel
@@ -1326,11 +1361,7 @@ export default function App() {
                     maxBikeMinutes={session.options.maxBikeMinutes}
                     fastest={cyclingFastest}
                     cyclingPosition={session.options.cyclingPosition ?? "anywhere"}
-                    onSelect={() => {
-                      setSelectedId(BIKE_ONLY_ID);
-                      setExpandedId(null);
-                      setCycleFocus(null);
-                    }}
+                    onSelect={() => openJourney(BIKE_ONLY_ID)}
                   />
                 ) : (
                   <div className="cycling-unavailable" role="status">
@@ -1342,10 +1373,8 @@ export default function App() {
                     </p>
                   </div>
                 )}
-                {proposalEntries.map(({ proposal, source, batch }, index) => {
-                  const j = proposal.journey,
-                    expanded = expandedId === j.id,
-                    planId = `journey-plan-${index}`;
+                {proposalEntries.map(({ proposal, source, batch }) => {
+                  const j = proposal.journey;
                   return (
                     <div key={j.id} className="journey-option">
                       {batch && (
@@ -1361,63 +1390,28 @@ export default function App() {
                         extraTimeMinutes={source.options.extraTimeMinutes}
                         hills={source.options.hills}
                         arriveBy={source.options.arriveBy}
-                        expanded={expanded}
-                        planId={planId}
+                        requestedStart={source.start}
+                        boardingMinutes={source.options.boardingMinutes}
                         comparison={cyclingReference}
                         fareProfile={fareProfile}
                         takeBikeOnTransit={source.options.takeBikeOnTransit !== false}
-                        onSelect={() => {
-                          setSelectedId(j.id);
-                          setExpandedId(expanded ? null : j.id);
-                          setCycleFocus(null);
-                        }}
+                        onSelect={() => openJourney(j.id)}
                       />
-                      {expanded && (
-                        <JourneyPlan
-                          boardingMinutes={source.options.boardingMinutes}
-                          fareProfile={fareProfile}
-                          takeBikeOnTransit={source.options.takeBikeOnTransit !== false}
-                          cyclingPosition={source.options.cyclingPosition}
-                          id={planId}
-                          journey={j}
-                          origin={source.origin}
-                          destination={source.destination}
-                          onEvidence={(leg, evidence) => {
-                            if (batch === "custom") {
-                              setCustomJourneys((current) =>
-                                current.map((item) =>
-                                  item.journey.id === j.id
-                                    ? {
-                                        ...item,
-                                        journey: {
-                                          ...item.journey,
-                                          transitLegs: item.journey.transitLegs.map((existing) =>
-                                            existing === leg
-                                              ? { ...existing, bicycleEvidence: evidence }
-                                              : existing,
-                                          ),
-                                        },
-                                      }
-                                    : item,
-                                ),
-                              );
-                              return;
-                            }
-                            updateBicycleEvidence(source, leg, evidence, (next) => {
-                              if (batch)
-                                setLaterBatches((current) =>
-                                  current.map((item) =>
-                                    item.key === batch ? { ...item, session: next } : item,
-                                  ),
-                                );
-                              else
-                                setSession((current) =>
-                                  current?.network === source.network ? next : current,
-                                );
-                            });
+                      <div className="journey-card-actions">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedId(j.id);
+                            setCycleFocus(null);
+                            showMobileView("map");
                           }}
-                        />
-                      )}
+                        >
+                          View map
+                        </button>
+                        <a href="https://www.sbb.ch/en" target="_blank" rel="noreferrer">
+                          Tickets at CFF / SBB ↗
+                        </a>
+                      </div>
                       {batch !== "custom" && !source.options.arriveBy && (
                         <button
                           type="button"
@@ -1438,9 +1432,6 @@ export default function App() {
                   );
                 })}
               </div>
-              {!!cyclingRoutes.length && (
-                <CyclingDetails routes={cyclingRoutes} focus={cycleFocus} onFocus={setCycleFocus} />
-              )}
               <details className="search-coverage">
                 <summary>Stops explored ({stops.length})</summary>
                 <p>
@@ -1478,60 +1469,164 @@ export default function App() {
             </section>
           )}
         </section>
-        <aside className="map-panel" id="journey-map">
-          <MapView
-            visible={mobileView === "map"}
-            origin={fromInput.place ?? session?.origin ?? null}
-            destination={toInput.place ?? session?.destination ?? null}
-            stops={stops}
-            waypoints={mapWaypoints}
-            editingDisabled={loading}
-            canAddWaypoint={viaInputs.length < MAX_WAYPOINTS}
-            onSelectPoint={(target, point) =>
-              target === "via" ? addWaypoint(point) : setMapPoint(target, point)
-            }
-            onMovePoint={setMapPoint}
-            selectedJourney={selected}
-            cycling={cyclingReference}
-            bikeOnlySelected={bikeOnlySelected}
-            start={selectedSource?.start ?? null}
-            cyclingPace={selectedSource?.options.cyclingPace}
-            routePreference={selectedSource?.options.cyclingRoutePreference}
-            hills={selectedSource?.options.hills}
-            editOptions={selectedSource?.options}
-            onApplyCycling={applyCyclingChange}
-            onRestoreCycling={
-              (selected && customJourneys.some((entry) => entry.journey.id === selected.id)) ||
-              (bikeOnlySelected && customCycling)
-                ? restoreCyclingChange
-                : undefined
-            }
-            cycleFocus={
-              focusedRoute && cycleFocus
-                ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM }
-                : null
-            }
-            onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })}
-          />
-          <details className="model-note">
-            <summary>About the map and estimated times</summary>
-            <p>
-              Cycling follows mapped roads and paths. Transit lines remain schematic. Each
-              public-transport leg shows its bicycle-permission status. All-public-transport results
-              may prohibit bicycles. The map shows explored stops and routes, not the complete Swiss
-              network.
+        <aside className="journey-workspace" aria-label="Selected journey">
+          <nav className="desktop-view-switch" aria-label="Selected journey view">
+            <button
+              type="button"
+              aria-pressed={detailView === "map"}
+              aria-controls="journey-map"
+              onClick={() => showMobileView("map")}
+            >
+              Map
+            </button>
+            <button
+              type="button"
+              aria-pressed={detailView === "journey"}
+              aria-controls="journey-details"
+              onClick={() => showMobileView("journey")}
+            >
+              Journey
+            </button>
+          </nav>
+          <div className="map-panel" id="journey-map">
+            <MapView
+              visible={detailView === "map" && (!compactLayout || mobileView === "map")}
+              origin={fromInput.place ?? session?.origin ?? null}
+              destination={toInput.place ?? session?.destination ?? null}
+              stops={stops}
+              waypoints={mapWaypoints}
+              editingDisabled={loading}
+              canAddWaypoint={viaInputs.length < MAX_WAYPOINTS}
+              onSelectPoint={(target, point) =>
+                target === "via" ? addWaypoint(point) : setMapPoint(target, point)
+              }
+              onMovePoint={setMapPoint}
+              selectedJourney={selected}
+              cycling={cyclingReference}
+              bikeOnlySelected={bikeOnlySelected}
+              start={selectedSource?.start ?? null}
+              cyclingPace={selectedSource?.options.cyclingPace}
+              routePreference={selectedSource?.options.cyclingRoutePreference}
+              hills={selectedSource?.options.hills}
+              editOptions={selectedSource?.options}
+              onApplyCycling={applyCyclingChange}
+              onRestoreCycling={
+                (selected && customJourneys.some((entry) => entry.journey.id === selected.id)) ||
+                (bikeOnlySelected && customCycling)
+                  ? restoreCyclingChange
+                  : undefined
+              }
+              cycleFocus={
+                focusedRoute && cycleFocus
+                  ? { route: focusedRoute.route, distanceM: cycleFocus.distanceM }
+                  : null
+              }
+              onCycleFocus={(routeId, distanceM) => setCycleFocus({ routeId, distanceM })}
+            />
+            <details className="model-note">
+              <summary>About the map and estimated times</summary>
+              <p>
+                Cycling follows mapped roads and paths. Transit lines remain schematic. Each
+                public-transport leg shows its bicycle-permission status. All-public-transport
+                results may prohibit bicycles. The map shows explored stops and routes, not the
+                complete Swiss network.
+              </p>
+            </details>
+            <p className="timetable-attribution">
+              Timetables:{" "}
+              <a href="https://search.ch/timetable/" target="_blank" rel="noreferrer">
+                search.ch
+              </a>{" "}
+              ·{" "}
+              <a href="https://transport.opendata.ch/" target="_blank" rel="noreferrer">
+                Swiss Transport API
+              </a>
             </p>
-          </details>
-          <p className="timetable-attribution">
-            Timetables:{" "}
-            <a href="https://search.ch/timetable/" target="_blank" rel="noreferrer">
-              search.ch
-            </a>{" "}
-            ·{" "}
-            <a href="https://transport.opendata.ch/" target="_blank" rel="noreferrer">
-              Swiss Transport API
-            </a>
-          </p>
+          </div>
+          <section
+            className="journey-panel"
+            id="journey-details"
+            aria-labelledby="journey-details-heading"
+          >
+            <h2 id="journey-details-heading" tabIndex={-1}>
+              Your journey
+            </h2>
+            {selected && selectedSource && selectedTiming ? (
+              <>
+                <p>
+                  {selectedSource.origin.label} → {selectedSource.destination.label}
+                </p>
+                <JourneyTimeSummary
+                  timing={selectedTiming}
+                  requestedStart={selectedSource.start}
+                  arriveBy={selectedSource.options.arriveBy}
+                  details
+                />
+                <JourneyPlan
+                  id="selected-travel-plan"
+                  journey={selected}
+                  origin={selectedSource.origin}
+                  destination={selectedSource.destination}
+                  boardingMinutes={selectedSource.options.boardingMinutes}
+                  fareProfile={fareProfile}
+                  takeBikeOnTransit={selectedSource.options.takeBikeOnTransit !== false}
+                  cyclingPosition={selectedSource.options.cyclingPosition}
+                  onEvidence={updateSelectedEvidence}
+                />
+              </>
+            ) : bikeOnlySelected && cyclingReference && session ? (
+              <>
+                <p>
+                  {session.origin.label} → {session.destination.label}
+                </p>
+                <h3>Cycling only</h3>
+                <p>
+                  <strong>≈ {formatMinutes(cyclingReference.minutes)} journey</strong> ·{" "}
+                  {cyclingReference.distanceKm.toFixed(1)} km
+                </p>
+                <p>
+                  Leave {clock.format(cyclingReference.departure ?? session.start)} → arrive{" "}
+                  {clock.format(cyclingReference.arrival)} · {day.format(cyclingReference.arrival)}
+                </p>
+                <p>No public transport: no bicycle ticket or reservation is needed.</p>
+                {(cyclingReference.outsideTimeWindow ||
+                  cyclingReference.minutes > session.options.maxBikeMinutes ||
+                  session.options.cyclingPosition !== "anywhere") && (
+                  <p className="notice">
+                    Reference only: this ride may fall outside your selected time or cycling limits.
+                    Check its result card.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>
+                Find journeys in Plan, then select a result to see its itinerary, tickets and
+                bicycle requirements.
+              </p>
+            )}
+            {!!cyclingRoutes.length && (
+              <CyclingDetails
+                routes={cyclingRoutes}
+                focus={cycleFocus}
+                onFocus={(focus) => {
+                  setCycleFocus(focus);
+                  if (focus) showMobileView("map");
+                }}
+              />
+            )}
+            <div className="journey-card-actions">
+              <button
+                className="back-to-plan"
+                type="button"
+                onClick={() => showMobileView("planning")}
+              >
+                Back to Plan
+              </button>
+              <button type="button" onClick={() => showMobileView("map")}>
+                View map
+              </button>
+            </div>
+          </section>
         </aside>
       </main>
       <nav className="mobile-view-switch" aria-label="Planner view">
@@ -1541,7 +1636,7 @@ export default function App() {
           aria-controls="planning-panel"
           onClick={() => showMobileView("planning")}
         >
-          Planning
+          Plan
         </button>
         <button
           type="button"
@@ -1550,6 +1645,14 @@ export default function App() {
           onClick={() => showMobileView("map")}
         >
           Map
+        </button>
+        <button
+          type="button"
+          aria-pressed={mobileView === "journey"}
+          aria-controls="journey-details"
+          onClick={() => showMobileView("journey")}
+        >
+          Journey
         </button>
       </nav>
     </div>

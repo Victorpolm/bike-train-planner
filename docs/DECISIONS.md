@@ -648,3 +648,15 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Implementation:** Directed pedestrian routes replace the former matching-stop requirement on the non-cycling end. Independent walking time/limits, phases across requested visits, arrival queries and active-travel metrics are enforced. Known passenger quotes remain visible even when bicycle permission or pricing is incomplete; no missing price is invented. This supersedes the 2 October endpoint restriction and the bicycle-custody boundary in the earlier 7 October entries.
 
 **Boundary:** A specific parking facility, parking/collection duration, availability and rack/platform access are not verified. No step-free/bicycle-pushing guarantee or exhaustive routing claim. [Contract and live evidence](WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
+
+## 2026-10-08 — Selected Journey view and clear departure-to-arrival timing
+
+**Authorization:** Implement interface proposals 1 and 2 on main and update GitHub. The accompanying preset/objective discussion was explicitly brainstorming; do not silently ship different preset rankings or scenic routing.
+
+**Decision:** Use Plan / Map / Journey on phones and a persistent left planning/results panel with a Map / Journey switch on desktop. Move detailed bicycle conditions, itinerary, terrain and fares into Journey. Keep permission, mandatory reservations, unresolved requirements, price and a CFF/SBB link on result cards. View switches preserve map state and do not reroute.
+
+**Decision:** Display feasible origin departure and final arrival, departure-to-arrival duration, and separately the time available before leaving relative to the requested ready time. Retain exact platform allowances, fixed timetable walking and connection waits. Preserve raw search metrics and earliest-arrival/latest-departure ranking. Retimed access is a pure presentation schedule; longer access edits in departure mode may use the original origin slack.
+
+**Evidence:** 418 tests pass, including nine timing regressions; production builds, formatting and Knip pass. Browser/phone QA remains pending. [Implementation and limitations](JOURNEY_VIEW_AND_TIMING_2026-10-08.md).
+
+**Latest proposal, not a decision to implement:** Commuter offers cycling only, fastest, fewer boardings with time trade-offs and least cycling. Bikepacking replaces least cycling with a nice/interesting-place and low-traffic-stress alternative. Personalized allows choosing which objectives produce displayed alternatives, alongside previous preferences. This supersedes the earlier recommendation to remove least cycling from Commuter's default set. Thresholds, walking accounting and scenic evidence remain open. [Brainstorming specification](PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md).

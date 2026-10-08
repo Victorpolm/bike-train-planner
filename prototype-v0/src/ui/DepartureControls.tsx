@@ -22,13 +22,13 @@ export default function DepartureControls({
           value={mode === "arrival" ? "arrival" : "scheduled"}
           onChange={(e) => onMode(e.target.value as "scheduled" | "arrival")}
         >
-          <option value="scheduled">Depart at</option>
-          <option value="arrival">Arrive at</option>
+          <option value="scheduled">Depart after</option>
+          <option value="arrival">Arrive by</option>
         </select>
       </label>
       <div className="departure-time-field">
         <label htmlFor="journey-time">
-          <span>{mode === "arrival" ? "Arrive at" : "Depart at"} · Swiss time</span>
+          <span>{mode === "arrival" ? "Arrive by" : "Ready to leave"} · Swiss time</span>
         </label>
         <div className="departure-time-row">
           <input

@@ -831,3 +831,13 @@ Live 5 October departures checked on 3 October: Zürich–Laax Extended complete
 **Observed:** OJP test quotes independently returned CHF 4.70 for Zürich Platte–Zoo on Tram 6 and CHF 5.20 for Bern Markuskirche–Länggasse on B 20 for 8 October. Both retained exact selected-leg evidence and omitted a bicycle product. The 661.1 m Stadelhofen pedestrian fixture produces a ten-minute application estimate including connectors. See [exact services, timestamps, source links and limitations](WALKING_ENDPOINTS_AND_CITY_FARES_2026-10-07.md).
 
 **Verification:** 409 tests in 11 suites pass, including 14 new cases. TypeScript/frontend/Worker builds, Knip and React formatting pass. Browser QA is pending. Next manually check both placement modes, bicycle checkbox, address walking and arrival deadline on a phone, then inspect the actual station parking/access.
+
+## 2026-10-08 — Journey views and origin waiting
+
+**Implemented:** Three phone views and a desktop Map / Journey switch; clear origin departure, final arrival and duration. [Detailed contract](JOURNEY_VIEW_AND_TIMING_2026-10-08.md).
+
+**Golden regression:** Ready at 09:00 Swiss time, 10-minute cycle, train 09:30–10:00, 5-minute final cycle, 3-minute boarding allowance. Suggested departure 09:17; arrival 10:05; on-journey duration 48 minutes; origin waiting 17 minutes; request-to-arrival 65 minutes. A later service's shorter duration cannot beat the earlier arrival in category selection.
+
+Nine new regressions cover this case, preserved connection waits and time decomposition, exact 241-second OJP access (materialized/unmaterialized), fixed provider walks, prefix waypoint retiming, pedestrian access, unknown readiness, historical/overnight times and an access edit using available origin slack. Fixed service object/fare identity and raw search immutability are asserted. Existing arrival-search editing remains unchanged.
+
+**Gate:** 418 tests in 11 suites; TypeScript/frontend/Worker builds, formatting, Knip and whitespace checks pass. Browser/phone interaction QA and new live timetable observations are not claimed. The site preview's required control-browser capability is unavailable in this session. This is an interface and checked scheduling release, not a new provider or objective-ranking release.

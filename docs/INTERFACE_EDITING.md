@@ -87,3 +87,11 @@ Owner-private **version 46** published on **2 October 2026 at 21:45:56 UTC**, en
 ## Station-time and climbing follow-up, 3 October
 
 `TripPreferences.tsx` places help beside **Cycling hills** and keeps the optional **Offer a Reduce climbing alternative** checkbox separate. There is no global Less climbing mode. `model.ts` ranks the extra **Reduce climbing** proposition without changing the three main ranking functions. `transferTimes.ts` owns shared readiness checks; `ojp.ts` extracts exact access/interchange evidence, while `JourneyPlan.tsx` presents source explanations. Do not encode station times in the UI. [Rules, fallbacks and tests](STATION_TIMES_2026-10-03.md).
+
+## 8 October — Three views and explicit journey timing
+
+`App.tsx` keeps Plan and the map mounted; phone state selects planning/map/journey, and desktop state selects the right-hand Map/Journey view. The selected schedule is memoized per source journey and search session. The map visibility signal includes the current viewport so revealing it triggers sizing without resetting its state. Selection opens Journey, while a separate card action selects and opens Map. Conditions, full fare breakdown and cycling terrain moved to the selected Journey panel.
+
+`src/journeyTiming.ts` computes feasible later origin departure without changing raw search metrics. `src/ui/JourneyTimeSummary.tsx` presents leave/arrive times, duration and the optional detailed breakdown. `JourneyPlan.tsx` retains chronological movement and groups bicycle conditions by service. `cyclingEditor.ts` can restore departure-search origin slack before applying an edit. `ui/interface.css` owns the desktop switch, independently scrolling desktop Journey and three phone navigation buttons.
+
+The input now says Depart after / Arrive by. Do not replace earliest-arrival ranking with the displayed on-journey duration. Do not subtract connection or platform time as if it were free origin time. Preserve fixed service and fare evidence when displaying a retimed prefix. [Timing, regressions and manual acceptance checks](JOURNEY_VIEW_AND_TIMING_2026-10-08.md).

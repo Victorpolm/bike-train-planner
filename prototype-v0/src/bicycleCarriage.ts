@@ -87,7 +87,8 @@ export function bicycleJourneySummary(legs: TransitLeg[]) {
   const names = [...new Set(unknown.map(leg => leg.service))].join(", ");
   const status = unknown.length === 0 ? "Bicycle access verified on every transit leg"
     : `${rules.length - unknown.length} of ${rules.length} services verified · access unknown on ${names}`;
-  return status + (rules.some(r => r.bikeReservation === "required") ? " · bike reservation required" : "");
+  return status + (rules.some(r => r.bikeReservation === "required") ? " · bike reservation required" : "")
+    + (rules.some(r => r.bikeReservation === "unknown" || r.bikeTicket === "unknown") ? " · some ticket/reservation requirements need checking" : "");
 }
 
 export function withTripInfoRule(evidence: BicycleEvidence, rule: CarriageRule, checked: string): BicycleEvidence {
