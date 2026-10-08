@@ -236,7 +236,7 @@ export default function TripPreferences({
           </select>
         </label>
         <label>
-          <span>Extra category</span>
+          <span>Endpoint preference</span>
           <select
             disabled={disabled}
             value={endpoint}

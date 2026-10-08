@@ -16,6 +16,14 @@ import RouteFields from "./ui/RouteFields";
 import DepartureControls from "./ui/DepartureControls";
 import TripPresetPicker from "./ui/TripPresetPicker";
 import TripPreferences from "./ui/TripPreferences";
+import JourneyObjectives from "./ui/JourneyObjectives";
+import {
+  DEFAULT_OBJECTIVES,
+  objectiveLabels,
+  wantsObjective,
+  type JourneyObjective,
+} from "./journeyObjectives";
+import { useObjectiveFares } from "./useObjectiveFares";
 import type { FareProfile } from "./fares";
 import InfoDisclosure from "./InfoDisclosure";
 import {
@@ -202,7 +210,7 @@ function JourneyCard({
               <span key={c}>{c === "Fastest" ? "Earliest arrival with transit" : c}</span>
             ))}
           </span>
-          {win.categories.some((c) => c.startsWith("Least cycling or walking")) && (
+          {win.categories.some((c) => c.startsWith("Least cycling")) && (
             <span className="comparison-caution">
               {arriveBy
                 ? `Among journeys leaving up to ${extraTimeMinutes} minutes before the latest departure in this group.`
@@ -222,6 +230,11 @@ function JourneyCard({
               {arriveBy ? "latest-departing" : "fastest"} journey in this group
             </span>
           )}
+          {win.explanations?.map((text) => (
+            <span className="comparison-caution" key={text}>
+              {text}
+            </span>
+          ))}
         </span>
       ))}
       {takeBikeOnTransit && busSummary && (
@@ -331,6 +344,7 @@ export default function App() {
   const [climbOptimization, setClimbOptimization] = useState(false);
   const [routePreference, setRoutePreference] = useState<RoutePreference>("simplest");
   const [tripPreset, setTripPreset] = useState<TripPreset>("commuter");
+  const [objectives, setObjectives] = useState<readonly JourneyObjective[]>(DEFAULT_OBJECTIVES);
   const [profileOpen, setProfileOpen] = useState(false);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"planning" | "map" | "journey">("planning");
@@ -393,6 +407,7 @@ export default function App() {
     }
     invalidate();
     const next = TRIP_PRESETS[preset];
+    setObjectives([...next.objectives]);
     setCycling(next.cycling);
     setRoutePreference(next.routePreference);
     setBicycleScope(next.bicycleScope);
@@ -410,8 +425,8 @@ export default function App() {
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled" | "arrival">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
   const options = useMemo(
-    () =>
-      preferenceOptions(
+    () => ({
+      ...preferenceOptions(
         cycling,
         endpoint,
         "include-unknown",
@@ -424,6 +439,8 @@ export default function App() {
         takeBikeOnTransit,
         maxWalkingMinutes,
       ),
+      objectives,
+    }),
     [
       cycling,
       endpoint,
@@ -435,6 +452,7 @@ export default function App() {
       climbOptimization,
       takeBikeOnTransit,
       maxWalkingMinutes,
+      objectives,
     ],
   );
   const [session, setSession] = useState<SearchSession | null>(null);
@@ -469,6 +487,24 @@ export default function App() {
     mode === "extended"
       ? (session?.allTransit?.extended ?? session?.allTransit?.baseline)
       : session?.allTransit?.baseline;
+  const farePools = useMemo(
+    () =>
+      [session, ...laterBatches.map((batch) => batch.session)].flatMap((source) =>
+        source
+          ? [
+              {
+                options: source.options,
+                journeys: (mode === "extended"
+                  ? (source.extended ?? source.baseline)
+                  : source.baseline
+                ).journeys,
+              },
+            ]
+          : [],
+      ),
+    [session, laterBatches, mode],
+  );
+  const objectiveFares = useObjectiveFares(farePools, fareProfile, !loading);
   const recommendation = useMemo(
     () =>
       recommend(
@@ -476,8 +512,9 @@ export default function App() {
         solution?.journeys ?? [],
         allTransitSolution?.journeys ?? [],
         session?.options ?? options,
+        objectiveFares.context,
       ),
-    [confirmedSolution, solution, allTransitSolution, session, options],
+    [confirmedSolution, solution, allTransitSolution, session, options, objectiveFares.context],
   );
   const proposalEntries = useMemo(() => {
     const entries = recommendation.proposals.map((proposal) => ({
@@ -498,6 +535,7 @@ export default function App() {
         choose(batch.session),
         choose(batch.session.allTransit),
         batch.session.options,
+        objectiveFares.context,
       );
       for (const proposal of later.proposals) {
         const categories = proposal.categories.filter((category) =>
@@ -541,7 +579,7 @@ export default function App() {
         batch: "custom",
       });
     return entries;
-  }, [recommendation, session, laterBatches, mode, customJourneys]);
+  }, [recommendation, session, laterBatches, mode, customJourneys, objectiveFares.context]);
   const proposals = proposalEntries.map((entry) => entry.proposal);
   const cyclingReference = customCycling ?? session?.cyclingComparison ?? null;
   const cyclingFastest =
@@ -997,17 +1035,29 @@ export default function App() {
                 />
               ),
               presets: (
-                <TripPresetPicker
-                  value={tripPreset}
-                  disabled={loading}
-                  onChange={choosePreset}
-                  library={profileLibrary}
-                  settings={tripPersonal}
-                  notice={profileNotice}
-                  onSelectProfile={(activeId) =>
-                    updateProfiles({ ...profileLibrary, activeId }, "select")
-                  }
-                />
+                <>
+                  <TripPresetPicker
+                    value={tripPreset}
+                    disabled={loading}
+                    onChange={choosePreset}
+                    library={profileLibrary}
+                    settings={tripPersonal}
+                    notice={profileNotice}
+                    onSelectProfile={(activeId) =>
+                      updateProfiles({ ...profileLibrary, activeId }, "select")
+                    }
+                  />
+                  <JourneyObjectives
+                    value={objectives}
+                    personalized={tripPreset === "personalized"}
+                    disabled={loading}
+                    onChange={(next) => {
+                      invalidate();
+                      setObjectives(next);
+                      setTripPreset("personalized");
+                    }}
+                  />
+                </>
               ),
               preferences: (
                 <TripPreferences
@@ -1242,7 +1292,37 @@ export default function App() {
                   ))}
                 </details>
               )}
-              {!proposals.length && !loading && (
+              {wantsObjective(session.options, "cheapest") && (
+                <p className="comparison-note" role="status">
+                  {loading
+                    ? "Price comparison starts when route discovery finishes."
+                    : objectiveFares.loading
+                      ? `Checking fare combinations: ${objectiveFares.checked} of ${objectiveFares.total} completed.`
+                      : `${objectiveFares.checked} fare combination${objectiveFares.checked === 1 ? "" : "s"} checked online. Published complete prices are also compared.`}{" "}
+                  Only complete additional totals can win; online quotes are test estimates.
+                  {objectiveFares.eligible > objectiveFares.total &&
+                    " Some fare combinations were outside the comparison limit."}
+                </p>
+              )}
+              {!loading &&
+                recommendation.unavailable
+                  .filter(
+                    (objective) =>
+                      !proposals.some((p) => p.categories.includes(objectiveLabels[objective])),
+                  )
+                  .map((objective) => (
+                    <p className="comparison-note" key={objective}>
+                      {objectiveLabels[objective]}:{" "}
+                      {objective === "cheapest" && objectiveFares.loading
+                        ? "checking prices; an alternative will appear if a complete total is available."
+                        : objective === "cheapest"
+                          ? "no complete comparable total is available for the checked alternatives."
+                          : objective === "less-traffic"
+                            ? "mapped road information is incomplete for the checked alternatives."
+                            : "no eligible alternative has known reservation requirements for every service."}
+                    </p>
+                  ))}
+              {!proposals.length && !loading && !solution?.journeys.length && (
                 <p className="empty-results">
                   {warnings.length
                     ? "Some timetable or cycling data was unavailable. Please try this journey again."
@@ -1284,18 +1364,17 @@ export default function App() {
                       {group.proposals.length ? (
                         <p>
                           {group.proposals.length} recommendation
-                          {group.proposals.length === 1 ? "" : "s"} · fastest with transit{" "}
-                          {formatMinutes(
-                            Math.min(...group.proposals.map((p) => p.journey.totalMinutes)),
-                          )}
+                          {group.proposals.length === 1 ? "" : "s"} for your selected objectives
                         </p>
                       ) : (
                         <p>
-                          {group.scope === "confirmed"
-                            ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
-                            : loading
-                              ? "Checking possible journeys…"
-                              : "No journey found in this limited search."}
+                          {solution?.journeys.length
+                            ? "Journeys were found, but the selected objectives need more complete price or route information."
+                            : group.scope === "confirmed"
+                              ? "No journey could be confirmed from the available data. This does not mean bicycles are prohibited: one or more departures may have unknown permission."
+                              : loading
+                                ? "Checking possible journeys…"
+                                : "No journey found in this limited search."}
                         </p>
                       )}
                     </div>

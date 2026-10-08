@@ -45,7 +45,7 @@ it("checks the one-train exit before nearer bus stops consume the cycling budget
         ] }] });
       },
     });
-    const fewest = categorize(result.baseline.journeys, DEFAULT_OPTIONS).find(p => p.categories.includes("Fewest boardings"))!.journey;
+    const fewest = categorize(result.baseline.journeys, DEFAULT_OPTIONS).find(p => p.categories.includes("Fewer boardings"))!.journey;
     assert.equal(metrics(fewest).boardings, 1);
     assert.equal(fewest.destinationStation.id, baden.id);
     assert.equal(fewest.totalMinutes, 45);

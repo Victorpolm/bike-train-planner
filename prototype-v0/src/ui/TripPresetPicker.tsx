@@ -29,9 +29,9 @@ export default function TripPresetPicker({
         <div role="group" aria-label="Trip style">
           {(
             [
-              ["commuter", "Commuter", "Shorter bike rides"],
-              ["bikepacking", "Bikepacking", "Room to explore"],
-              ["personalized", "Personalized", "Your own preferences"],
+              ["commuter", "Commuter", "Time, boardings & cycling"],
+              ["bikepacking", "Bikepacking", "Time, boardings & traffic"],
+              ["personalized", "Personalized", "Choose your objectives"],
             ] as const
           ).map(([key, label, hint]) => (
             <button

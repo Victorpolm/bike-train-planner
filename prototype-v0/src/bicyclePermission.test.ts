@@ -149,7 +149,7 @@ it("merges identical journeys while preserving different categories in the three
   const shared = different.proposals.find(p => p.journey.id === j.id)!;
   assert.equal(different.proposals.length, 2); assert.equal(different.identical, false);
   assert.ok(shared.wins[0].categories.includes("Fastest"));
-  assert.deepEqual(shared.wins[1].categories, ["Least cycling or walking"]);
+  assert.deepEqual(shared.wins[1].categories, ["Least cycling"]);
   assert.equal(shared.wins[1].extraMinutes, 10);
 });
 

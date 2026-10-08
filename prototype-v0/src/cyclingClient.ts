@@ -9,7 +9,7 @@ import { applySwisstopo, simplifyTopoLine, type TopoReply } from "./swisstopo.ts
 import { chooseCyclingRoute, type RoutePreference } from "./cyclingPreferences.ts";
 
 const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
-const cache = new Map<string, CyclingRoute>();
+const cache = new Map<string, { route: CyclingRoute; traffic?: CyclingRoute }>();
 type Located = Point & { id?: string; stopId?: string; label?: string; name?: string };
 type CyclingFailureKind = "service" | "no-route" | "off-network" | "limit";
 export type CyclingFailure = {
@@ -39,6 +39,8 @@ function explainFailure(error: unknown): Omit<CyclingFailure, "from" | "to"> {
 class TerrainRouteError extends Error {}
 export class CyclingClient {
   readonly routes = new Map<string, CyclingRoute | null>();
+  readonly trafficRoutes = new Map<string, CyclingRoute>();
+  readonly collectTrafficAlternatives: boolean;
   readonly warnings = new Set<string>();
   readonly failureKinds = new Set<CyclingFailureKind>();
   readonly failedLinks = new Map<string, CyclingFailure>();
@@ -64,7 +66,8 @@ export class CyclingClient {
   readonly hills: HillPreferences;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true,
     fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, pace?: CyclingPace, routePreference?: RoutePreference,
-    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, hills: HillPreferences = DEFAULT_HILLS) {
+    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, hills: HillPreferences = DEFAULT_HILLS, collectTrafficAlternatives = false) {
+    this.collectTrafficAlternatives = collectTrafficAlternatives;
     validateHills(hills); this.hills = { ...hills };
     if (pace) validateCyclingPace(pace);
     this.pace = pace ? { ...pace } : undefined;
@@ -104,8 +107,9 @@ export class CyclingClient {
   beginPhase() { this.remainingMs = CYCLING_LIMITS.phaseMs; }
   fork(signal: AbortSignal) {
     const next = new CyclingClient(signal, this.fetcher, this.gapMs, this.useCache, this.fallbackFetcher,
-      this.pace, this.routePreference, this.terrainFetcher, this.hills);
+      this.pace, this.routePreference, this.terrainFetcher, this.hills, this.collectTrafficAlternatives);
     for (const [key, route] of this.routes) if (route) next.routes.set(key, route);
+    for (const [key, route] of this.trafficRoutes) next.trafficRoutes.set(key, route);
     return next;
   }
   getCached(a: Located, b: Located) { return cachedCycling(this.routes, a, b); }
@@ -117,9 +121,12 @@ export class CyclingClient {
     const equivalent = cachedCycling(this.routes, a, b);
     if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
-    const cacheKey = "terrain-simple-v3|" + JSON.stringify(this.hills) + "|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    const cacheKey = "traffic-objectives-v1|" + this.collectTrafficAlternatives + "|" + JSON.stringify(this.hills) + "|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
-    if (cached && Date.now() - cached.fetchedAt < CYCLING_LIMITS.cacheMs) { this.routes.set(key, cached); return Promise.resolve(cached); }
+    if (cached && Date.now() - cached.route.fetchedAt < CYCLING_LIMITS.cacheMs) {
+      this.routes.set(key, cached.route); if (cached.traffic) this.trafficRoutes.set(key, cached.traffic);
+      return Promise.resolve(cached.route);
+    }
     const task = this.queue.then(async () => {
       this.signal.throwIfAborted();
       const started = Date.now();
@@ -136,7 +143,7 @@ export class CyclingClient {
         this.failureKinds.clear();
         for (const failure of this.failedLinks.values()) this.failureKinds.add(failure.kind);
         if (this.useCache) {
-          cache.delete(cacheKey); cache.set(cacheKey, route);
+          cache.delete(cacheKey); cache.set(cacheKey, { route, traffic: this.trafficRoutes.get(key) });
           while (cache.size > CYCLING_LIMITS.cacheEntries) cache.delete(cache.keys().next().value!);
         }
         return route;
@@ -196,9 +203,10 @@ export class CyclingClient {
                   alternative.set("profile:considerTurnRestrictions", "1");
                   alternative.delete("profile:ignore_cycleroutes");
                   alternative.delete("profile:avoid_unsafe");
-                } else if (stairs || route.blocked) {
+                } else if (stairs || route.blocked || this.collectTrafficAlternatives && this.routePreference === "fastest") {
                   alternative.set("profile:allow_steps", "0");
                   alternative.set("profile:avoid_unsafe", "1");
+                  if (this.collectTrafficAlternatives) alternative.set("profile:ignore_cycleroutes", "0");
                 } else if (this.hills.mode === "none") alternative.set("alternativeidx", "1");
                 try {
                   await waitFor(this.gapMs, this.signal); this.lastRequest = Date.now(); this.requests++; this.alternativeRequests++;
@@ -220,11 +228,16 @@ export class CyclingClient {
               if (rawAlternative) {
                 const preliminary = chooseCyclingRoute([checkedPrimary, rawAlternative], this.routePreference, this.hills);
                 // IDs identify endpoints, so compare the point-array identity here.
-                candidates.push(preliminary?.points === rawAlternative.points ? await this.terrainCheck(rawAlternative) : rawAlternative);
+                const trafficChoice = this.collectTrafficAlternatives && chooseCyclingRoute([checkedPrimary, rawAlternative], "lower-stress", this.hills);
+                candidates.push(preliminary?.points === rawAlternative.points || trafficChoice && trafficChoice.points === rawAlternative.points ? await this.terrainCheck(rawAlternative) : rawAlternative);
               }
               const choice = chooseCyclingRoute(candidates, this.routePreference, this.hills);
               if (!choice) throw new TerrainRouteError("No bicycle-suitable checked path: " +
                 [...new Set(candidates.flatMap(r => r.sections.filter(s => s.mode === "blocked").flatMap(s => s.reasons ?? [])))].join(" "));
+              if (this.collectTrafficAlternatives) {
+                const traffic = chooseCyclingRoute(candidates, "lower-stress", this.hills);
+                if (traffic && traffic.points !== choice.points) this.trafficRoutes.set(key, traffic);
+              }
               route = choice;
             }
             return remember(route);

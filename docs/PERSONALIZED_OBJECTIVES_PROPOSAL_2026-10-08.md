@@ -1,6 +1,8 @@
 # Preset objectives and Personalized results — 8 October 2026
 
-**Status: brainstorming / proposed, not implemented.** The owner authorized implementation of the Journey view and timing changes, while describing the following preset/objective changes as brainstorming. Existing Commuter and Bikepacking preferences remain unchanged in this release.
+**Status: historical brainstorming, partly superseded by implementation later on 8 October.** The owner subsequently authorized the objective sets, chose less mapped traffic exposure for Bikepacking, added fewer mandatory reservations and lower price to Personalized, and approved a boarding compromise with a 1.25 relative ceiling. These changes are delivered in version 58. Existing controls remain Preferences, and Least cycling now means cycling alone. See the [current contract, decisions and evidence](JOURNEY_OBJECTIVES_2026-10-08.md).
+
+The remainder records the earlier proposal and then-current implementation for context. Statements below about what was not implemented refer to the version-57 snapshot. Scenic/interesting-place routing, Discover and custom cycling minimum/maximum remain proposals.
 
 ## Owner's proposed choices
 
@@ -14,7 +16,7 @@
 
 Cycling only remains a labelled reference and does not compete for transit categories (otherwise it always wins zero boardings). When outside the requested cycling placement, budget or horizon, its reference-only label remains. An explicit rider goal to cycle more must not be treated as a disadvantage merely because a least-effort category also exists.
 
-## Current implementation versus proposal
+## Version-57 implementation versus the original proposal
 
 **Fact:** The current ordinary categories are earliest arrival/latest departure, strict fewest boardings, and least cycling **plus walking**. Cycling only is separate. Extras are a single start-or-arrival dropdown, a separate Reduce climbing checkbox and a Gentler slopes path preference. There is no general multi-select objective control or Discover implementation. Commuter currently uses a 45-minute cycling cap, Simplest path and uncertain-but-not-prohibited bike access; Bikepacking uses no separate cycling cap, lower-traffic-stress paths and confirmed bike access.
 
@@ -43,4 +45,5 @@ An automatic optional place is different from an explicit required intermediate 
 3. Test the Bikepacking alternative with a small reviewed place set and an explicit extra-time/cycling allowance. Ask whether the proposed stop and path are desirable, rather than treating the algorithm's score as validation.
 4. Decide the boarding threshold/guardrail, cycling-versus-active-time objective and place preferences from those observations before changing preset defaults.
 
-This document records the latest owner proposal and open decisions. It supersedes the earlier suggestion to remove least cycling from Commuter's defaults; it does not claim any of these proposed changes are already delivered.
+This document preserves the original owner proposal and its then-open decisions. It supersedes the earlier suggestion to remove least cycling from Commuter's defaults; it does not claim any of these proposed changes are already delivered.
+

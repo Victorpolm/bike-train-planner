@@ -1,8 +1,9 @@
 import { StationTransferClient } from "./stationTransferClient.ts";
 import { hillSearch, routeClimb } from "./hills.ts";
+import { wantsObjective } from "./journeyObjectives.ts";
 import { SearchDeadline, SEARCH_DEADLINE_MS, TERRAIN_SEARCH_DEADLINE_MS } from "./searchDeadline.ts";
 import { NationalTimetableClient } from "./nationalTimetableClient.ts";
-import { cyclingMinutes, haversineKm, type CyclingComparison, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
+import { cyclingMinutes, haversineKm, type CyclingComparison, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
 import { WalkingClient, cachedWalking, WALKING_SPEED_KMH, DEFAULT_WALKING_MINUTES } from "./walking.ts";
 import { maxCyclingSpeed } from "./cyclingPace.ts";
 import { CyclingClient } from "./cyclingClient.ts";
@@ -367,27 +368,43 @@ function timeCyclingComparison(session: SearchSession, cycling: CyclingCompariso
     outsideTimeWindow: +departure < +session.start || cycling.minutes > session.options.horizonMinutes };
 }
 function refresh(session: SearchSession, extended: boolean, publish: SearchUpdate) {
-  const run = (options: Options) => {
+  const run = (options: Options, network = session.network) => {
     if (session.waypoints?.length) {
       const points = [session.origin, ...session.waypoints, session.destination];
-      const baseline = solveWaypoints(session.network, points, session.start, options, "baseline");
-      const expanded = extended ? solveWaypoints(session.network, points, session.start, options, "extended") : null;
+      const baseline = solveWaypoints(network, points, session.start, options, "baseline");
+      const expanded = extended ? solveWaypoints(network, points, session.start, options, "extended") : null;
       if (expanded) {
         const one = cyclingTransferLimit(options, "extended") > 1
-          ? solveWaypoints(session.network, points, session.start, { ...options, maxCyclingTransfers: 1 }, "extended") : null;
+          ? solveWaypoints(network, points, session.start, { ...options, maxCyclingTransfers: 1 }, "extended") : null;
         expanded.journeys = [...new Map([...baseline.journeys, ...one?.journeys ?? [], ...expanded.journeys].map(j => [j.id, j])).values()];
         expanded.limited ||= one?.limited ?? false;
       }
       return { baseline, extended: expanded };
     }
-    return extended ? compareModels(session.network, session.origin, session.destination, session.start, options)
-      : { baseline: solve(session.network, session.origin, session.destination, session.start, options, "baseline"), extended: null };
+    return extended ? compareModels(network, session.origin, session.destination, session.start, options)
+      : { baseline: solve(network, session.origin, session.destination, session.start, options, "baseline"), extended: null };
+  };
+  const withTraffic = (options: Options) => {
+    const ordinary = run(options);
+    if (!wantsObjective(options, "less-traffic") || !session.cyclingClient?.trafficRoutes.size) return ordinary;
+    const alternatives = run(options, { ...session.network,
+      cycling: new Map([...session.network.cycling ?? [], ...session.cyclingClient.trafficRoutes]) });
+    const signature = (j: Journey) => JSON.stringify([j.originStation.cyclingRoute?.points,
+      j.transitLegs.filter(l => l.mode === "bike").map(l => l.cyclingRoute?.points), j.destinationStation.cyclingRoute?.points]);
+    const merge = (base: Solution, extra: Solution) => {
+      const originals = new Map(base.journeys.map(j => [j.id, j]));
+      const additions = extra.journeys.filter(j => !originals.has(j.id) || signature(originals.get(j.id)!) !== signature(j))
+        .map(j => ({ ...j, id: `traffic:${j.id}` }));
+      return { ...base, journeys: [...base.journeys, ...additions], limited: base.limited || extra.limited };
+    };
+    return { baseline: merge(ordinary.baseline, alternatives.baseline),
+      extended: ordinary.extended && alternatives.extended ? merge(ordinary.extended, alternatives.extended) : ordinary.extended };
   };
   // Separate label searches are essential: an uncertain path may dominate a
   // confirmed one in the permissive graph. Never derive strict results by filtering.
-  const possible = run({ ...session.options, bicycleScope: "allow-uncertain" });
-  session.confirmed = run({ ...session.options, bicycleScope: "confirmed" });
-  session.allTransit = run({ ...session.options, bicycleScope: "all-transit" });
+  const possible = withTraffic({ ...session.options, bicycleScope: "allow-uncertain" });
+  session.confirmed = withTraffic({ ...session.options, bicycleScope: "confirmed" });
+  session.allTransit = withTraffic({ ...session.options, bicycleScope: "all-transit" });
   const chosen = session.options.bicycleScope === "confirmed" ? session.confirmed : session.options.bicycleScope === "all-transit" ? session.allTransit : possible;
   session.baseline = chosen.baseline; session.extended = chosen.extended;
   publish({ ...session });
@@ -423,7 +440,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   if (!dependencies.previous) client.national = dependencies.nationalClient !== undefined ? dependencies.nationalClient
     : dependencies.fetcher ? null : await NationalTimetableClient.connect(signal);
   const cyclingClient = dependencies.cyclingClient === null || dependencies.previous && !dependencies.previous.cyclingClient ? undefined
-    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills);
+    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills, wantsObjective(options, "less-traffic"));
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const walkingClient = (options.cyclingPosition ?? "anywhere") === "anywhere" ? undefined
     : dependencies.previous?.walkingClient?.fork(signal) ?? dependencies.walkingClient

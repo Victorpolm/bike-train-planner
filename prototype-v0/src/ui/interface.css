@@ -222,3 +222,17 @@ button:disabled { cursor: default; opacity: .55; }
 .cycling-editor button:disabled { opacity: .5; cursor: default; }
 .cycling-edit-point { display: grid; place-items: center; border: 3px solid white; border-radius: 50%; background: #76558e; color: white; font-weight: 700; box-shadow: 0 1px 5px #0008; }
 .editing-cycling { cursor: crosshair; }
+.journey-objectives {
+  margin: 0.9rem 0 0;
+  padding: 0.85rem;
+  border: 1px solid #cddbd4;
+  border-radius: 12px;
+  min-width: 0;
+}
+.objective-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 0.45rem 0.8rem;
+}
+.objective-options .check-row { margin: 0; align-items: flex-start; }
+.objective-options input { flex: 0 0 auto; margin-top: 0.25rem; }

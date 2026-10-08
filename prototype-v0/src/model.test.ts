@@ -140,7 +140,7 @@ describe("active travel objectives", () => {
     ride(n, "A", "C", 5, 20); ride(n, "C", "B", 20, 35, "walk");
     ride(n, "A", "B", 15, 36); ride(n, "B", "D", 40, 60);
     const result = solve(n, origin, destination, start, limits, "baseline");
-    const best = categorize(result.journeys, limits).find(p => p.categories.includes("Least cycling or walking"))!;
+    const best = categorize(result.journeys, limits).find(p => p.categories.includes("Least cycling"))!;
     assert.equal(best.journey.totalMinutes, 60);
     assert.equal(metrics(best.journey).walk, 0);
     assert.equal(metrics(best.journey).boardings, 2);
@@ -165,15 +165,16 @@ describe("active travel objectives", () => {
     assert.equal(m.walk, 10); assert.equal(m.bike, 5); assert.equal(m.active, 15);
     assert.equal(m.activeStart, 6); assert.equal(m.activeEnd, 9);
   });
-  it("selects five minutes cycling over twenty minutes walking for the active-time category", () => {
+  it("minimizes cycling alone while keeping walking visible as a separate raw metric", () => {
     const j = solve(fixture(), origin, destination, start, limits, "baseline").journeys[0];
     const cycling = { ...j, id: "cycling", totalMinutes: 85, originStation: { ...j.originStation, bikeMinutes: 5 } };
     const walking = { ...j, id: "walking", totalMinutes: 80, transitLegs: [...j.transitLegs,
       { ...j.transitLegs[0], mode: "walk" as const, departure: time(60), arrival: time(80) }] };
     const cards = categorize([walking, cycling], limits);
     assert.equal(cards[0].journey.id, "walking");
-    assert.equal(cards.find(c => c.categories.includes("Least cycling or walking"))!.journey.id, "cycling");
-    assert.equal(cards.find(c => c.journey.id === "cycling")!.activeSaved, 15);
+    assert.equal(cards.find(c => c.categories.includes("Least cycling"))!.journey.id, "walking");
+    assert.equal(metrics(cards[0].journey).walk, 20);
+    assert.equal(metrics(cards[0].journey).bike, 0);
   });
 });
 
@@ -181,10 +182,10 @@ describe("category selection", () => {
   it("selects distinct trade-offs and merges duplicate winners", () => {
     const { extended } = compareModels(fixture(), origin, destination, start, limits);
     const cards = categorize(extended.journeys, limits);
-    assert.equal(cards.length, 3);
+    assert.equal(cards.length, 2);
     assert.equal(cards.find(c => c.categories.includes("Fastest"))!.journey.totalMinutes, 50);
-    assert.equal(cards.find(c => c.categories.includes("Least cycling or walking"))!.journey.totalMinutes, 80);
-    assert.equal(cards.find(c => c.categories.includes("Fewest boardings"))!.journey.totalMinutes, 90);
+    assert.equal(cards.find(c => c.categories.includes("Least cycling"))!.journey.totalMinutes, 80);
+    assert.equal(cards.find(c => c.categories.includes("Fewer boardings"))!.journey.totalMinutes, 50);
     const one = categorize([extended.journeys[0]], limits);
     assert.equal(one.length, 1); assert.equal(one[0].categories.length, 3);
   });

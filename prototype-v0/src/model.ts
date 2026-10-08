@@ -7,11 +7,13 @@ import { cachedCycling, type CyclingRoute } from "./cycling.ts";
 import { type BusPreference } from "./busCarriage.ts";
 import { BICYCLE_SCOPES, bicycleLegAllowed, type BicycleScope } from "./bicyclePermission.ts";
 import { cachedWalking, DEFAULT_WALKING_MINUTES, walkingLeg, type WalkingRoute } from "./walking.ts";
+import { BOARDING_COMPROMISE, JOURNEY_OBJECTIVES, boardingAllowance, checkedJourneyPrice, farePathKey, journeyTraffic, objectiveResources, reservationMetrics, wantsObjective, type JourneyObjective, type ObjectiveFareContext } from "./journeyObjectives.ts";
 
 export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end";
 export type CyclingPosition = "anywhere" | "start-only" | "end-only";
 export type Options = {
+  objectives?: readonly JourneyObjective[];
   /** Destination deadline, including the final cycling/walking sections. */
   arriveBy?: string;
   hills?: HillPreferences;
@@ -82,6 +84,9 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 };
 
 export function validateOptions(o: Options) {
+  if (o.objectives !== undefined && (!Array.isArray(o.objectives) || !o.objectives.length
+    || o.objectives.some(value => !JOURNEY_OBJECTIVES.includes(value)) || new Set(o.objectives).size !== o.objectives.length))
+    throw new Error("Choose at least one valid journey objective, without duplicates.");
   if (o.arriveBy !== undefined && (typeof o.arriveBy !== "string" || !/T.*(?:Z|[+-]\d\d:\d\d)$/.test(o.arriveBy) || !Number.isFinite(Date.parse(o.arriveBy))))
     throw new Error("Choose a valid arrival date and time.");
   if (o.hills) validateHills(o.hills);
@@ -130,17 +135,25 @@ export const dominates = (a: number[], b: number[]) => a.every((v, i) => v <= b[
 export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none", options?: Options): Journey[] {
   const vector = (j: Journey) => {
     const m = metrics(j);
-    return [m.time, m.active, m.boardings, ...(options?.arriveBy ? [m.leave] : []), ...(options && hillSearch(options) ? climbVector(journeyClimb(j, options.hills?.maxUphillPercent), options.hills?.mode === "gentler") : []), ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
+    return [m.time, m.active, m.boardings, ...(options && wantsObjective(options, "least-cycling") ? [m.bike] : []),
+      ...(options ? objectiveResources(j.transitLegs, options, [{ route: j.originStation.cyclingRoute, minutes: j.originStation.bikeMinutes }, { route: j.destinationStation.cyclingRoute, minutes: j.destinationStation.bikeMinutes }]) : []),
+      ...(options?.arriveBy ? [m.leave] : []), ...(options && hillSearch(options) ? climbVector(journeyClimb(j, options.hills?.maxUphillPercent), options.hills?.mode === "gentler") : []), ...(endpoint === "none" ? [] : [endpoint === "start" ? m.activeStart : m.activeEnd])];
   };
   const unique = [...new Map(journeys.map(j => [j.id, j])).values()];
   const vectors = unique.map(vector);
-  return unique.filter((_, i) => !vectors.some((v, k) => k !== i && dominates(v, vectors[i])));
+  return unique.filter((j, i) => !vectors.some((v, k) => k !== i
+    && (!options || farePathKey(j.transitLegs, options) === farePathKey(unique[k].transitLegs, options)) && dominates(v, vectors[i])));
 }
-export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number; activeSaved: number; climbingSaved?: number };
-export function categorize(journeys: Journey[], o: Options): Proposal[] {
+export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number; activeSaved: number; climbingSaved?: number; explanations?: string[] };
+export function objectiveCandidatePool(journeys: Journey[], o: Options) {
+  const mixed = [...new Map(journeys.filter(j => metrics(j).boardings >= 1
+    && (!o.arriveBy || +j.startTime + j.totalMinutes * 60_000 <= Date.parse(o.arriveBy))).map(j => [j.id, j])).values()];
+  const best = Math.min(...mixed.map(j => o.arriveBy ? -+j.startTime / 60_000 : j.totalMinutes));
+  return mixed.filter(j => (o.arriveBy ? -+j.startTime / 60_000 : j.totalMinutes) - best <= o.extraTimeMinutes);
+}
+export function categorize(journeys: Journey[], o: Options, fares?: ObjectiveFareContext): Proposal[] {
   // Pure cycling never competes for the mixed-journey categories.
-  const mixed = journeys.filter(j => metrics(j).boardings >= 1
-    && (!o.arriveBy || +j.startTime + j.totalMinutes * 60_000 <= Date.parse(o.arriveBy)));
+  const mixed = objectiveCandidatePool(journeys, o);
   if (!mixed.length) return [];
   const compare = (keys: (keyof ReturnType<typeof metrics>)[]) => (a: Journey, b: Journey) => {
     const am = metrics(a, o.hills?.maxUphillPercent), bm = metrics(b, o.hills?.maxUphillPercent);
@@ -150,28 +163,55 @@ export function categorize(journeys: Journey[], o: Options): Proposal[] {
   const fastest = [...mixed].sort(compare(o.arriveBy ? ["leave", "time", "active", "boardings"] : ["time", "active", "boardings"]))[0];
   const extraTime = (j: Journey) => o.arriveBy ? (+fastest.startTime - +j.startTime) / 60_000 : j.totalMinutes - fastest.totalMinutes;
   const frontier = pareto(mixed.filter(j => extraTime(j) <= o.extraTimeMinutes), o.endpointPreference, o);
-  const definitions: [string, (keyof ReturnType<typeof metrics>)[]][] = [
-    [o.arriveBy ? "Leave latest" : "Fastest", o.arriveBy ? ["leave", "time", "active", "boardings"] : ["time", "active", "boardings"]],
-    ["Fewest boardings", ["boardings", "time", "active"]],
-    ["Least cycling or walking", ["active", "time", "boardings"]],
-  ];
+  const definitions: [string, (keyof ReturnType<typeof metrics>)[]][] = [];
+  if (wantsObjective(o, "fastest")) definitions.push([o.arriveBy ? "Leave latest" : "Fastest", o.arriveBy ? ["leave", "time", "active", "boardings"] : ["time", "active", "boardings"]]);
+  if (wantsObjective(o, "least-cycling")) definitions.push(["Least cycling", ["bike", "time", "walk", "boardings"]]);
   if (o.endpointPreference !== "none") definitions.push([
     o.endpointPreference === "start" ? "Least cycling or walking at start" : "Least cycling or walking at arrival",
     [o.endpointPreference === "start" ? "activeStart" : "activeEnd", "time", "active", "boardings"],
   ]);
   if (o.hills?.mode === "gentler") definitions.push(["Gentlest cycling", ["excessM", "steepM", "ascent", "time"]]);
   const proposals = new Map<string, Proposal>();
+  const add = (winner: Journey | undefined, category: string, explanation?: string) => {
+    if (!winner) return;
+    const existing = proposals.get(winner.id);
+    if (existing) { existing.categories.push(category); if (explanation) (existing.explanations ??= []).push(explanation); }
+    else proposals.set(winner.id, { journey: winner, categories: [category], extraMinutes: extraTime(winner),
+      cyclingSaved: metrics(fastest).bike - metrics(winner).bike,
+      activeSaved: metrics(fastest).active - metrics(winner).active, ...(explanation ? { explanations: [explanation] } : {}) });
+  };
   for (const [category, keys] of definitions) {
     const eligible = category === "Gentlest cycling"
       ? frontier.filter(j => !journeyClimb(j, o.hills?.maxUphillPercent).unknown) : frontier;
     const winner = [...eligible].sort(compare(keys))[0];
-    if (!winner) continue;
-    const existing = proposals.get(winner.id);
-    if (existing) existing.categories.push(category);
-    else proposals.set(winner.id, { journey: winner, categories: [category],
-      extraMinutes: extraTime(winner),
-      cyclingSaved: metrics(fastest).bike - metrics(winner).bike,
-      activeSaved: metrics(fastest).active - metrics(winner).active });
+    add(winner, category);
+  }
+  if (wantsObjective(o, "fewer-boardings")) {
+    const allowance = boardingAllowance(fastest.totalMinutes, o.extraTimeMinutes);
+    const score = (j: Journey) => extraTime(j) + BOARDING_COMPROMISE.minutesPerBoarding * metrics(j).boardings;
+    const winner = [...frontier].filter(j => extraTime(j) <= allowance + 1e-9)
+      .sort((a, b) => score(a) - score(b) || extraTime(a) - extraTime(b) || compare(["active", "boardings"])(a, b))[0];
+    const saved = winner ? metrics(fastest).boardings - metrics(winner).boardings : 0;
+    add(winner, "Fewer boardings", saved > 0 ? `${saved} fewer boarding${saved === 1 ? "" : "s"}; time trade-off within 30 minutes and 25% of the reference journey.`
+      : "No worthwhile reduction in boardings was found within the 30-minute / 25% allowance.");
+  }
+  if (wantsObjective(o, "less-traffic")) {
+    const eligible = frontier.filter(j => journeyTraffic(j).unknown === 0);
+    const winner = eligible.sort((a, b) => journeyTraffic(a).exposure - journeyTraffic(b).exposure || extraTime(a) - extraTime(b) || a.id.localeCompare(b.id))[0];
+    add(winner, "Less traffic exposure", "Lowest mapped road-traffic exposure among checked alternatives. Uses road class, speed tags and cycling infrastructure, not live traffic or a safety guarantee; less cycling can also reduce exposure.");
+  }
+  if (wantsObjective(o, "fewer-reservations")) {
+    const r = (j: Journey) => reservationMetrics(j.transitLegs, o.takeBikeOnTransit !== false);
+    const eligible = frontier.filter(j => !r(j).unknown && !r(j).prohibited);
+    const winner = eligible.sort((a, b) => r(a).required - r(b).required || extraTime(a) - extraTime(b) || compare(["boardings", "active"])(a, b))[0];
+    if (winner) add(winner, "Fewer mandatory bicycle reservations", o.takeBikeOnTransit === false
+      ? "Your bicycle stays off public transport, so no bicycle reservation is needed."
+      : `${r(winner).required} service${r(winner).required === 1 ? " requires" : "s require"} a bicycle reservation. Compared only where all reservation rules are known; this does not check remaining spaces or count separate bookings.`);
+  }
+  if (wantsObjective(o, "cheapest")) {
+    const priced = mixed.map(journey => ({ journey, price: checkedJourneyPrice(journey, o, fares) })).filter(p => p.price !== null && Number.isFinite(p.price));
+    const winner = priced.sort((a, b) => a.price! - b.price! || extraTime(a.journey) - extraTime(b.journey) || a.journey.id.localeCompare(b.journey.id))[0];
+    if (winner) add(winner.journey, "Lowest checked price", `CHF ${winner.price!.toFixed(2)} additional cost, including passenger, bicycle and required reservations. Lowest complete checked total in the sampled alternatives; incomplete fares cannot win. Online quotes are test estimates.`);
   }
   if (o.climbOptimization) {
     const alternatives = frontier.flatMap(journey => {
@@ -264,12 +304,14 @@ export function solve(network: Network, origin: Place, destination: Place, start
   let limited = false;
   const add = (label: Label) => {
     if (label.time > horizon || label.bike > o.maxBikeMinutes || label.boardings > o.maxBoardings) return;
-    const key = `${label.stop}|${label.middle}|${label.needsTransit}|${transferSensitive ? transferContextKey(label.legs) : ""}`;
+    const key = `${label.stop}|${label.middle}|${label.needsTransit}|${transferSensitive ? transferContextKey(label.legs) : ""}|${farePathKey(label.legs, o)}`;
     const bucket = labels.get(key) ?? [];
     // Keep cycling as a resource as well as total active travel as an objective.
     // A lower active total can use more cycling and leave less budget for later.
     // Endpoint attributes must also survive pruning for optional categories.
-    const vector = (l: Label) => [l.time, ...(o.arriveBy ? [-l.startedAt] : []), l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk, ...(hillSearch(o) ? climbVector(l.climb, o.hills?.mode === "gentler") : [])];
+    const vector = (l: Label) => [l.time, ...(o.arriveBy ? [-l.startedAt] : []), l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk,
+      ...objectiveResources(l.legs, o, [{ route: l.access.cyclingRoute, minutes: l.access.bikeMinutes }]),
+      ...(hillSearch(o) ? climbVector(l.climb, o.hills?.mode === "gentler") : [])];
     const v = vector(label);
     if (bucket.some(l => vector(l).every((x, i) => x <= v[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -291,6 +333,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     if (!current.alive) continue;
     explored++;
     for (const edge of outgoing.get(current.stop) ?? []) {
+      if (wantsObjective(o, "cheapest") && current.legs.includes(edge.leg)) continue;
       const ride = edge.leg.mode === "transit";
       const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, o.boardingMinutes, network.stops.get(current.stop)) : null;
       const ready = boarding?.readyAt ?? current.time;

@@ -127,7 +127,7 @@ it("offers Reduce climbing only as a separate category without changing the main
   const extra = categorize(journeys, options);
   assert.ok(normal.every(p => !p.categories.includes("Reduce climbing")));
   assert.ok(extra.some(p => p.categories.includes("Reduce climbing")));
-  for (const name of ["Fastest", "Fewest boardings", "Least cycling or walking"])
+  for (const name of ["Fastest", "Fewer boardings", "Least cycling"])
     assert.equal(extra.find(p => p.categories.includes(name))!.journey.id, normal.find(p => p.categories.includes(name))!.journey.id);
   assert.equal(options.hills!.mode, "none");
 });

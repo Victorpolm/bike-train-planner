@@ -4,6 +4,7 @@ import { arrivalDepartureSeeds, atEndpoint, cyclingLink, cyclingTransferLimit, d
 import { type Journey, type Place, type TransitLeg } from "./routing.ts";
 import { samePlace } from "./cycling.ts";
 import { cachedWalking, DEFAULT_WALKING_MINUTES, walkingLeg } from "./walking.ts";
+import { farePathKey, objectiveResources, wantsObjective } from "./journeyObjectives.ts";
 
 type State = {
   startedAt: number;
@@ -43,9 +44,10 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   let limited = false, explored = 0;
   const add = (state: State) => {
     if (state.time > horizon || state.bike > options.maxBikeMinutes || state.boardings > options.maxBoardings) return;
-    const key = `${state.stop}|${state.stage}|${state.extraTransfers}|${state.stageHasTransit}|${state.needsTransit}|${state.boardings > 0}|${state.endCycling}|${transferSensitive ? transferContextKey(state.legs) : ""}`;
+    const key = `${state.stop}|${state.stage}|${state.extraTransfers}|${state.stageHasTransit}|${state.needsTransit}|${state.boardings > 0}|${state.endCycling}|${transferSensitive ? transferContextKey(state.legs) : ""}|${farePathKey(state.legs, options)}`;
     const bucket = buckets.get(key) ?? [];
-    const vector = (s: State) => [s.time, ...(options.arriveBy ? [-s.startedAt] : []), s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive, ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
+    const vector = (s: State) => [s.time, ...(options.arriveBy ? [-s.startedAt] : []), s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive,
+      ...objectiveResources(s.legs, options), ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
     const values = vector(state);
     if (bucket.some(s => vector(s).every((v, i) => v <= values[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
@@ -123,6 +125,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     }
     const from = network.stops.get(current.stop)!;
     for (const edge of outgoing.get(current.stop) ?? []) {
+      if (wantsObjective(options, "cheapest") && current.legs.includes(edge.leg)) continue;
       const ride = edge.leg.mode === "transit";
       if (ride && current.endCycling) continue;
       const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, options.boardingMinutes, from) : null;
