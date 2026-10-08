@@ -29,6 +29,7 @@ export type Options = {
   maxBoardings: number;
   horizonMinutes: number;
   boardingMinutes: number;
+  /** Alternative window for objectives other than the proportional boarding compromise. */
   extraTimeMinutes: number;
   endpointPreference: EndpointPreference;
   busPreference: BusPreference;
@@ -187,13 +188,16 @@ export function categorize(journeys: Journey[], o: Options, fares?: ObjectiveFar
     add(winner, category);
   }
   if (wantsObjective(o, "fewer-boardings")) {
-    const allowance = boardingAllowance(fastest.totalMinutes, o.extraTimeMinutes);
+    const allowance = boardingAllowance(fastest.totalMinutes);
+    // This objective has its own relative window. Do not discard a useful long
+    // journey at the general (normally 60-minute) window used by other objectives.
+    const boardingFrontier = pareto(objectiveCandidatePool(journeys, { ...o, extraTimeMinutes: allowance }), o.endpointPreference, o);
     const score = (j: Journey) => extraTime(j) + BOARDING_COMPROMISE.minutesPerBoarding * metrics(j).boardings;
-    const winner = [...frontier].filter(j => extraTime(j) <= allowance + 1e-9)
+    const winner = [...boardingFrontier].filter(j => extraTime(j) <= allowance + 1e-9)
       .sort((a, b) => score(a) - score(b) || extraTime(a) - extraTime(b) || compare(["active", "boardings"])(a, b))[0];
     const saved = winner ? metrics(fastest).boardings - metrics(winner).boardings : 0;
-    add(winner, "Fewer boardings", saved > 0 ? `${saved} fewer boarding${saved === 1 ? "" : "s"}; time trade-off within 30 minutes and 25% of the reference journey.`
-      : "No worthwhile reduction in boardings was found within the 30-minute / 25% allowance.");
+    add(winner, "Fewer boardings", saved > 0 ? `${saved} fewer boarding${saved === 1 ? "" : "s"}; compromise values each avoided boarding at ${BOARDING_COMPROMISE.minutesPerBoarding} minutes, within 25% extra reference time overall.`
+      : `No worthwhile reduction in boardings was found with ${BOARDING_COMPROMISE.minutesPerBoarding} minutes per avoided boarding and the 25% overall allowance.`);
   }
   if (wantsObjective(o, "less-traffic")) {
     const eligible = frontier.filter(j => journeyTraffic(j).unknown === 0);

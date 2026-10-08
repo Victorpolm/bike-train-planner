@@ -16,15 +16,17 @@ Cycling only remains a separate reference in every mode, including its explicit 
 
 ## Fewer boardings: formulation and meaning
 
-For the sampled feasible transit candidates within the user's general alternative window, let b count every boarding, including the first. In a departure search let T be elapsed minutes from the common ready time, not the newly displayed departure-to-arrival duration. Let T* be the earliest-arriving eligible reference. Select the minimum of T + 20 b subject to:
+**8 October follow-up decision:** The owner increases the value of avoiding one boarding from 20 to **30 minutes**, while retaining the **1.25 relative bound** and removing the fixed 30-minute ceiling. This replaces the version-58 pilot, not actual boarding or station-transfer times.
 
-`T − T* <= min(general alternative allowance, 30 minutes, 0.25 T*)`.
+For sampled feasible transit candidates, let b count all boardings, including the first. In a departure search, T is elapsed minutes from the common ready time, not the retimed display duration; T* is the earliest-arriving eligible reference. Minimize **T + 30b**, subject to **T − T* <= 0.25 T***. Because the reference itself competes, a winning alternative avoiding k boardings also satisfies **T − T* <= 30k**. Its maximum acceptable delay is therefore **min(30k, 0.25 T*)**. Equal weighted scores favour the faster journey; a ceiling does not require selecting the longest admissible detour. The 30-minute value is an explicit pilot setting, not measured user tolerance.
 
-Equivalently, the allowed arrival bound is the minimum of T* + 30 and 1.25 T*, also respecting the pre-existing general allowance. The percentage is dimensionless; the 20-minute boarding penalty is a separate parameter. Taking the minimum is stricter on short trips, not a relaxation of the absolute ceiling. Both 20 minutes/boarding and 30 minutes are explicit pilot settings, not calibrated willingness-to-wait estimates.
+For a five-hour reference with four boardings, the maximum comparison allowances for avoiding one, two or three boardings are 30, 60 and 75 minutes. A 329-minute/three-boarding journey beats 300/4; 330/3 ties its weighted score and the faster reference wins. The same applies to 359/2 versus the equal-score 360/2. A 375-minute/one-boarding option wins; one second beyond 375 fails the 25% guardrail.
 
-For Arrive by, the reference is the latest feasible origin departure. Replace extra arrival time by how much earlier an alternative must leave; apply the 25% bound to that reference's journey duration. Timetable feasibility, station minimums and departure/arrival constraints are unchanged. Ties favour less extra time. When no worthwhile reduction qualifies, the reference receives the badge with an explicit explanation; do not claim a saved boarding.
+For Arrive by, the reference is the latest feasible origin departure. Compare how much earlier an alternative must leave; use that reference's journey duration for the 25% ceiling. Arrival deadlines, station minimums and other feasibility constraints remain enforced. If no worthwhile reduction qualifies, the reference receives the badge with an explicit explanation.
 
-**Golden example:** 120 minutes / 3 boardings, 134 / 2, 178 / 1. Scores are 180, 174 and 198; the allowance is 30 minutes. The 134-minute candidate wins. On a 40-minute reference, the allowance is 10 minutes; a one-second excess fails. Long trips still have the 30-minute absolute ceiling. This is a synthetic ranking experiment, not a reproduced Zürich–Laax timetable.
+**Candidate window:** Fewer boardings now evaluates the retained feasible pool within its own proportional window. It is not prefiltered by the ordinary 60-minute alternative window; otherwise a valid five-hour +75-minute compromise would disappear before ranking. Other objectives and fare-request sampling retain their existing general window. No extra provider requests, horizon extension or relaxed cycling/boarding/permission budgets are introduced.
+
+**Earlier golden example still holds:** 120 minutes / 3 boardings, 134 / 2 and 178 / 1 now have weighted scores 210, 194 and 208; the 25% ceiling is 30 extra minutes. The 134-minute candidate wins. For a 40-minute reference, the ceiling remains 10 minutes and a one-second excess fails. These are controlled ranking fixtures, not new live timetable observations.
 
 ## Less traffic exposure
 
@@ -58,13 +60,24 @@ No new global optimality guarantee is claimed. Fare histories can enlarge label 
 
 ## Verification
 
-**Verified gate:** All 437 tests in 11 suites pass, along with TypeScript/frontend/Worker production builds, Knip and React formatting. Nineteen new regressions cover preset validation, weighted/proportional boarding boundaries, arrive-by timing, cycling/walking separation, deduplication, reservation completeness, preservation of reservation-free and unpriced prefixes through ordered visits, complete fare/profile/custody accounting, request caps/cache sharing, unknown traffic, alternate-path catchability and zero-time cycles. The mixed-mode fixture also exercises all six objectives under the existing label/resource limits.
+**Verified gate:** All 441 tests in 11 suites pass, along with TypeScript/frontend/Worker production builds, Knip and React formatting. Twenty-three objective regressions cover preset validation, weighted/proportional boarding boundaries, arrive-by timing, cycling/walking separation, deduplication, reservation completeness, preservation of reservation-free and unpriced prefixes through ordered visits, complete fare/profile/custody accounting, request caps/cache sharing, unknown traffic, alternate-path catchability and zero-time cycles. The mixed-mode fixture also exercises all six objectives under the existing label/resource limits.
+
+Four follow-up cases verify five-hour thresholds and equal-score ties, the independent boarding window without expanding other objectives or fare sampling, arrive-by deadlines, and actual Baseline/Extended routing under all three permission scopes.
 
 Existing historical/overnight searches, station minima, cycling edits, permission scopes and later-departure tests remain in the full suite. Earlier tests asserting strict fewest-boardings and active-time labels were updated to the newly authorized behaviour, rather than weakening feasibility assertions.
 
 **Verification limit:** No new live-provider observation or browser/phone interaction test is claimed. The required managed-preview control-browser capability is unavailable, so no alternative browser path was started. Next acceptance pass: choose a familiar journey, switch Commuter/Bikepacking, select custom objectives, inspect a mandatory reservation and incomplete fare, then check a later departure and Arrive by on phone and desktop.
 
-## Publication
+## Current publication — version 59
+
+Owner-private **version 59** published successfully on **8 October 2026 at 21:46:47 UTC** (23:46:47 Europe/Zurich), environment revision **3**, from Site source `f3c22542a5b46eb75487d2a1e9b8b7aca499360b`. The boarding compromise now values each avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling** and no fixed 30-minute cap. Its candidate window is independent of the other objectives' general 60-minute window. **441 tests** in 11 suites, TypeScript/frontend/Worker builds, React formatting and Knip pass. No fresh live-provider or browser/phone check is claimed. Runtime secrets and owner-only access are unchanged.
+
+- Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_6d725b9d32ec819188e693e8d042b467`.
+- Deployment: `appgdep_6ac80f342a288191ab35ab0fb4552c7f`, confirmed `succeeded`.
+- Archive SHA-256: `b9d93f4cee012aaaaf224d5623db1e39e9cde71d72ba025dbbe2dd3544d9e58e`.
+- Next check: compare a familiar long trip with one, two and three fewer boardings, then verify Arrive by and the displayed explanations.
+
+## Previous publication — version 58
 
 Owner-private **version 58** published successfully at **2026-10-08 19:41:40 UTC** (21:41:40 Europe/Zurich), with environment revision **3**. The exact tested source was pushed and its matching frontend/Worker archive deployed. Runtime secrets and owner-only audience are unchanged.
 

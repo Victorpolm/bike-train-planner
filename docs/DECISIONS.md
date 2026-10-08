@@ -672,3 +672,13 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Decision / evidence boundaries:** Traffic is total exposure inferred from mapped road class, posted speed and cycling infrastructure; unknown coverage cannot win. Reservations count services with known mandatory bicycle reservations, not booking transactions or available spaces. Price compares complete additional passenger+bicycle+reservation totals for the selected passes among checked sampled alternatives, never incomplete fares. Up to eight distinct serialized online quotes per batch reuse card requests. OJP test-estimate labels remain.
 
 **Implementation:** Preserve selected-objective resources and distinct unpriced service histories before dominance. Keep normal cycling paths and separately solve bounded lower-traffic variants under the same timetable/budget/permission constraints. No new optimum, live-traffic, scenic, booking or safety guarantee. **437 tests**, formatting, Knip and production builds pass; owner-private version 58 published. Browser/phone and live-provider acceptance remain pending.
+
+## 2026-10-08 — Raise avoided-boarding value to 30 minutes and remove the fixed cap
+
+**Authorization:** Following the explanation that 20 minutes could be too little for an avoided boarding on a five-hour trip, the owner asks to use 30. The discussion had already established replacing the fixed 30-minute maximum by the proportional 1.25 bound.
+
+**Decision:** Minimize elapsed time plus 30 minutes per boarding, with a 25% overall extra-time ceiling. An alternative avoiding k boardings can only improve on the reference within min(30k, 0.25 T*) extra minutes; ties favour the faster journey. The value remains a pilot assumption. Arrive by uses earlier-departure loss. Actual boarding, platform and transfer durations are unaffected.
+
+**Implementation consequence:** Remove the fixed cap and evaluate this objective before the unrelated general 60-minute alternative window can exclude long-trip compromises. Other objectives, fare acquisition, sampled discovery and hard feasibility constraints retain their existing limits. For a five-hour reference, 30/60/75-minute ceilings apply to one/two/three avoided boardings. A separate card is not forced at an equal score.
+
+**Evidence:** Four new regressions plus revised boundary coverage; all 441 tests in 11 suites, production builds, formatting and Knip pass. Owner-private version 59 is published. No fresh live-provider or browser/phone verification is claimed. [Current contract and release evidence](JOURNEY_OBJECTIVES_2026-10-08.md).

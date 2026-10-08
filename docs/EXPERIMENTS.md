@@ -851,3 +851,13 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Fare/evidence fixtures:** Partial or missing fares never win; complete passenger+bicycle+reservation totals, profile and bicycle-custody differences are respected. Up to eight distinct queries are acquired from the retained pool, including routes that are not ordinary card winners. Card and objective requests share one cache/serialized request. Unknown/prohibited reservation requirements cannot become zero; passenger-only journeys need no bike reservation. A mixed fixture exercises all six objectives within the existing label/resource limits.
 
 **Verified gate:** 437 tests in 11 suites pass (19 new objective regressions), plus TypeScript/frontend/Worker builds, Knip and React formatting. The same tested source was packaged and published as owner-private version 58. No fresh provider call or browser/phone interaction is claimed. [Detailed contract, release IDs and manual next checks](JOURNEY_OBJECTIVES_2026-10-08.md).
+
+## 2026-10-08 — Five-hour boarding trade-offs at 30 minutes each
+
+**Golden cases:** Against 300 minutes / 4 boardings, 329 / 3 and 359 / 2 win; 330 / 3 and 360 / 2 tie the weighted score and retain the faster reference. 375 / 1 wins despite being outside the unrelated +60-minute window. 375 minutes + 1 second / 1 fails the 25% ceiling. A 40-minute reference still permits only ten extra minutes. The earlier 120/134/178 fixture still selects 134 / 2 with the updated 30-minute penalty.
+
+**Routing:** A synthetic four-service five-hour path and one-service 375-minute path are solved in both Baseline and Extended under confirmed, allow-uncertain and all-transit scopes. The direct long compromise survives and wins with +75 minutes. Arrival-mode fixtures permit leaving 75 minutes earlier, reject 76 minutes earlier, and reject a superficially attractive alternative that misses the arrival deadline.
+
+**Isolation:** The long candidate gains only the Fewer boardings category. Least cycling and complete checked-price comparison keep their general window; fare sampling does not acquire the out-of-window candidate. These cases protect against accidentally broadening other preferences while removing the fixed boarding cap.
+
+**Verification:** 441 tests in 11 suites pass, including four added objective regressions; TypeScript/frontend/Worker builds, Knip and React formatting pass. The exact tested source was published as owner-private version 59. No new live-provider, browser or phone result is claimed. Next compare the trade-off on a familiar long trip. [Implementation and release](JOURNEY_OBJECTIVES_2026-10-08.md).

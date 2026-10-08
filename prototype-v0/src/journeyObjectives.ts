@@ -12,13 +12,12 @@ export const objectiveLabels: Record<JourneyObjective, string> = {
   "least-cycling": "Least cycling", "less-traffic": "Less traffic exposure",
   "fewer-reservations": "Fewer mandatory bicycle reservations", cheapest: "Lowest checked price",
 };
-export const BOARDING_COMPROMISE = { minutesPerBoarding: 20, maxExtraMinutes: 30, maxTimeFactor: 1.25 } as const;
+export const BOARDING_COMPROMISE = { minutesPerBoarding: 30, maxTimeFactor: 1.25 } as const;
 export type ObjectiveOptions = { objectives?: readonly JourneyObjective[]; takeBikeOnTransit?: boolean };
 export const requestedObjectives = (options: ObjectiveOptions) => options.objectives ?? DEFAULT_OBJECTIVES;
 export const wantsObjective = (options: ObjectiveOptions, objective: JourneyObjective) => requestedObjectives(options).includes(objective);
-export function boardingAllowance(referenceMinutes: number, generalAllowance: number) {
-  return Math.max(0, Math.min(generalAllowance, BOARDING_COMPROMISE.maxExtraMinutes,
-    referenceMinutes * (BOARDING_COMPROMISE.maxTimeFactor - 1)));
+export function boardingAllowance(referenceMinutes: number) {
+  return Math.max(0, referenceMinutes * (BOARDING_COMPROMISE.maxTimeFactor - 1));
 }
 
 export function reservationMetrics(legs: TransitLeg[], takeBikeOnTransit = true) {

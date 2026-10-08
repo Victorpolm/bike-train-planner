@@ -1,4 +1,9 @@
-import { JOURNEY_OBJECTIVES, objectiveLabels, type JourneyObjective } from "../journeyObjectives";
+import {
+  BOARDING_COMPROMISE,
+  JOURNEY_OBJECTIVES,
+  objectiveLabels,
+  type JourneyObjective,
+} from "../journeyObjectives";
 import InlineHelp from "./InlineHelp";
 
 export default function JourneyObjectives({
@@ -44,7 +49,7 @@ export default function JourneyObjectives({
           Avoid a boarding when the time trade-off is worthwhile.
           <InlineHelp
             label="How fewer boardings are compared"
-            text="Pilot rule: avoiding one boarding is worth up to 20 minutes. Total delay must also stay within both 30 minutes and 25% of the fastest eligible journey. For Arrive by, compare how much earlier you must leave. These limits do not change actual boarding or transfer allowances."
+            text={`Pilot rule: avoiding one boarding is worth up to ${BOARDING_COMPROMISE.minutesPerBoarding} minutes. Total extra time is capped at 25% of the reference journey, without a fixed 30-minute cap. Equal scores favour the faster journey. For Arrive by, compare how much earlier you must leave. Actual boarding and transfer allowances still apply.`}
           />
         </p>
       )}

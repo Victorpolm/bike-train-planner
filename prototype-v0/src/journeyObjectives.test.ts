@@ -68,13 +68,66 @@ it("selects the 134-minute/two-boarding compromise instead of the 178-minute ext
   assert.equal(winner.journey.id, "compromise"); assert.equal(winner.extraMinutes, 14);
   assert.match(winner.explanations!.join(" "), /1 fewer boarding/);
 });
-it("uses the minimum of the absolute, relative and existing allowances, including exact boundaries", () => {
-  assert.equal(boardingAllowance(40, 60), 10); assert.equal(boardingAllowance(240, 60), 30); assert.equal(boardingAllowance(240, 5), 5);
+it("uses a proportional boarding allowance without a fixed thirty-minute cap, including exact boundaries", () => {
+  assert.equal(boardingAllowance(40), 10); assert.equal(boardingAllowance(240), 60); assert.equal(boardingAllowance(300), 75);
   const fast = journey("fast", 40, 2), limit = journey("limit", 50, 1), late = journey("late", 50 + 1 / 60, 1);
   const select = (other: Journey) => categorize([fast, other], options).find(p => p.categories.includes("Fewer boardings"))!.journey.id;
   assert.equal(select(limit), "limit"); assert.equal(select(late), "fast");
   const long = journey("long", 240, 2), tooLong = journey("extra31", 271, 1);
   assert.equal(categorize([long, tooLong], options).find(p => p.categories.includes("Fewer boardings"))!.journey.id, "long");
+});
+it("values each avoided boarding at thirty minutes and caps a five-hour reference at seventy-five extra minutes", () => {
+  const fast = journey("five-hours", 300, 4);
+  const select = (minutes: number, boardings: number) => categorize([fast, journey("alternative", minutes, boardings)], options)
+    .find(p => p.categories.includes("Fewer boardings"))!.journey.id;
+  assert.equal(select(329, 3), "alternative");
+  assert.equal(select(330, 3), "five-hours", "equal weighted scores favour the faster journey");
+  assert.equal(select(331, 3), "five-hours");
+  assert.equal(select(359, 2), "alternative");
+  assert.equal(select(360, 2), "five-hours");
+  assert.equal(select(375, 1), "alternative", "the unrelated sixty-minute window must not cut off the compromise");
+  assert.equal(select(375 + 1 / 60, 1), "five-hours", "even one second over the 25% cap is rejected");
+});
+it("extends only the boarding comparison, preserving other objectives and fare-request windows", () => {
+  const fast = journey("fast", 300, 4, 20), fewer = journey("fewer", 375, 1);
+  const o: Options = { ...options, objectives: ["fastest", "fewer-boardings", "least-cycling", "cheapest"], takeBikeOnTransit: false };
+  const quotes = new Map([[objectiveFareKey(fast, DEFAULT_FARE_PROFILE, false), quote(50)], [objectiveFareKey(fewer, DEFAULT_FARE_PROFILE, false), quote(10)]]);
+  const result = categorize([fast, fewer], o, { profile: DEFAULT_FARE_PROFILE, quotes });
+  assert.deepEqual(result.find(p => p.journey.id === fewer.id)!.categories, ["Fewer boardings"]);
+  assert.deepEqual(new Set(result.find(p => p.journey.id === fast.id)!.categories), new Set(["Fastest", "Least cycling", "Lowest checked price"]));
+  assert.equal(objectiveFareRequests([{ journeys: [fast, fewer], options: o }], DEFAULT_FARE_PROFILE, +start - 1000).eligible, 1);
+  assert.equal(categorize([fast, fewer], { ...o, objectives: ["fastest", "least-cycling"] }).length, 1);
+});
+it("allows seventy-five minutes of earlier departure on a five-hour Arrive-by reference while enforcing its deadline", () => {
+  const latest = { ...journey("latest", 300, 4), startTime: at(100) };
+  const earlier = { ...journey("earlier", 375, 1), startTime: at(25) };
+  const tooEarly = { ...journey("too-early", 376, 1), startTime: at(24) };
+  const missesDeadline = { ...journey("misses-deadline", 374, 1), startTime: at(28) };
+  const cards = categorize([latest, earlier, tooEarly, missesDeadline], { ...options, arriveBy: at(400).toISOString() });
+  const winner = cards.find(p => p.categories.includes("Fewer boardings"))!;
+  assert.equal(winner.journey.id, "earlier"); assert.equal(winner.extraMinutes, 75);
+});
+it("retains and selects the long boarding compromise through both routing models and permission scopes", () => {
+  const places = Array.from({ length: 5 }, (_, i) => ({ label: `Long ${i}`, stopId: `long-${i}`, lat: 47 + i * .1, lon: 8 }));
+  const n = emptyNetwork();
+  places.forEach(p => n.stops.set(p.stopId, { ...p, id: p.stopId, name: p.label, distanceKm: 0, bikeMinutes: 0 }));
+  const add = (id: string, from: number, to: number, departure: number, arrival: number) => {
+    const l = leg(id, 0, 1, departure, arrival, "not-required");
+    Object.assign(l, { fromId: places[from].stopId, toId: places[to].stopId, from: places[from].label, to: places[to].label,
+      fromPoint: places[from], toPoint: places[to] });
+    Object.assign(l.bicycleEvidence!, { fromId: l.fromId, toId: l.toId });
+    n.edges.set(id, { id, from: l.fromId!, to: l.toId!, leg: l });
+  };
+  add("first", 0, 1, 3, 60); add("second", 1, 2, 65, 125);
+  add("third", 2, 3, 130, 190); add("fourth", 3, 4, 195, 300);
+  add("direct", 0, 4, 3, 375);
+  for (const mode of ["baseline", "extended"] as const) for (const bicycleScope of ["confirmed", "allow-uncertain", "all-transit"] as const) {
+    const o = { ...options, horizonMinutes: 480, bicycleScope };
+    const result = solve(n, places[0], places[4], start, o, mode);
+    assert.equal(result.limited, false);
+    const winner = categorize(result.journeys, o).find(p => p.categories.includes("Fewer boardings"))!;
+    assert.deepEqual(winner.journey.services, ["direct"]); assert.equal(winner.extraMinutes, 75);
+  }
 });
 it("uses latest-departure loss for Arrive by and does not rank the shorter displayed duration", () => {
   const latest = { ...journey("latest", 60, 2), startTime: at(100) };

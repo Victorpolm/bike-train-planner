@@ -1409,11 +1409,12 @@ export default function App() {
                     {session.options.takeBikeOnTransit === false
                       ? "passenger-only transit choice"
                       : "bicycle-access choice"}{" "}
-                    for {session.options.arriveBy ? "latest departure" : "fastest"}, fewest
-                    boardings and least cycling or walking. Boardings include the first vehicle.{" "}
+                    for your selected objectives. Boardings include the first vehicle.{" "}
                     {session.options.arriveBy
-                      ? `All transit journeys meet your arrival deadline. Alternatives leave at most ${session.options.extraTimeMinutes} minutes before the latest eligible departure.`
-                      : `Alternatives arrive at most ${session.options.extraTimeMinutes} minutes after the fastest eligible transit journey.`}{" "}
+                      ? `All transit journeys meet your arrival deadline. The general alternative window is ${session.options.extraTimeMinutes} minutes before the latest eligible departure.`
+                      : `The general alternative window is ${session.options.extraTimeMinutes} minutes after the fastest eligible transit arrival.`}{" "}
+                    {wantsObjective(session.options, "fewer-boardings") &&
+                      "Fewer boardings uses its own 25% extra-time window and may exceed the general window on long journeys. "}
                     Cycling only remains a separate comparison.
                   </p>
                 )}
