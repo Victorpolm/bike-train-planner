@@ -1,3 +1,4 @@
+import { cachedMapData } from "./mapDataCache.ts";
 import { validAmenityData, type AmenityData } from "./osmAmenities.ts";
 import { waitFor } from "./http.ts";
 import type { ServiceDataset } from "./osmServices.ts";
@@ -16,7 +17,14 @@ export function amenityLoadError(error: unknown, label = "Water/toilet"): Amenit
   return new AmenityLoadError("network", `Could not reach the ${label.toLowerCase()} service. Check the connection or open the planner in its own tab.`);
 }
 export async function loadAmenities(signal: AbortSignal, fetcher: typeof fetch = fetch,
-  options: { timeoutMs?: number; retryDelayMs?: number; dataset?: ServiceDataset } = {}): Promise<AmenityData> {
+  options: { timeoutMs?: number; retryDelayMs?: number; dataset?: ServiceDataset; onUpdate?: (data: AmenityData) => void } = {}): Promise<AmenityData> {
+  if (fetcher === fetch) return cachedMapData(`amenities-v2:${options.dataset ?? "water-toilets"}`, signal,
+    (data): data is AmenityData => validAmenityData(data, options.dataset),
+    () => fetchAmenities(new AbortController().signal, fetcher, options), options.onUpdate);
+  return fetchAmenities(signal, fetcher, options);
+}
+async function fetchAmenities(signal: AbortSignal, fetcher: typeof fetch,
+  options: { timeoutMs?: number; retryDelayMs?: number; dataset?: ServiceDataset }): Promise<AmenityData> {
   const label = options.dataset === "repairs" ? "Repair" : options.dataset === "food" ? "Food" : options.dataset === "food-dining" ? "Café/restaurant" : "Water/toilet";
   for (let attempt = 0; ; attempt++) {
     const controller = new AbortController(), abort = () => controller.abort(signal.reason);

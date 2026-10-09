@@ -1,3 +1,4 @@
+import type { TransitRealtime } from "./realtime.ts";
 import { mergeAccessRules, mergeTransferRules, type StationAccessRule, type StationTransferRule } from "./transferTimes.ts";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import { interpretBicycleAttributes, type BicycleAttribute, type CarriageRule } from "./bicycleCarriage.ts";
@@ -7,6 +8,7 @@ export type OjpStop = { id: string; name: string; lat: number; lon: number };
 export type OjpQuery = { from: OjpStop; to: OjpStop; departure: string; arriveBy?: boolean };
 export type OjpReference = NonNullable<TransitLeg["ojp"]>;
 export type OjpLeg = {
+  realtime?: TransitRealtime;
   transferRules?: StationTransferRule[];
   accessRules?: StationAccessRule[];
   mode: "transit" | "walk"; from: OjpStop; to: OjpStop; departure: string; arrival: string;
@@ -17,7 +19,7 @@ export type OjpLeg = {
 };
 export type OjpConnections = { legs: OjpLeg[]; checked: string; warnings: string[];
   fareSources?: import("./onlineFare.ts").RetainedFareSource[] };
-export type OjpDetails = { rule: CarriageRule; checked: string };
+export type OjpDetails = { rule: CarriageRule; checked: string; realtime?: TransitRealtime };
 
 // XML is confined to this provider boundary. No provider markup reaches innerHTML.
 type Xml = Record<string, any>;
@@ -68,6 +70,22 @@ function ojpLegKey(leg: OjpLeg) {
     leg.reference?.fromRef ?? leg.from.id, leg.reference?.toRef ?? leg.to.id, leg.departure, leg.arrival, leg.operator]);
 }
 
+function realtime(service: Xml, board: Xml, alight: Xml, checkedAt: string): TransitRealtime {
+  const yes = (value: unknown) => text(value) === "true" || text(value) === "1";
+  const estimate = (call: Xml, event: string) => {
+    const planned = instant(call[event]?.TimetabledTime), estimated = instant(call[event]?.EstimatedTime);
+    return planned && estimated && Math.abs(Date.parse(estimated) - Date.parse(planned)) <= 86_400_000 ? estimated : null;
+  };
+  let estimatedDeparture = estimate(board, "ServiceDeparture"), estimatedArrival = estimate(alight, "ServiceArrival");
+  const dep = estimatedDeparture ?? instant(board.ServiceDeparture?.TimetabledTime);
+  const arr = estimatedArrival ?? instant(alight.ServiceArrival?.TimetabledTime);
+  if (dep && arr && Date.parse(arr) < Date.parse(dep)) { estimatedDeparture = null; estimatedArrival = null; }
+  return { checkedAt, estimatedDeparture, estimatedArrival,
+    departurePlatform: text(board.EstimatedQuay) || null, arrivalPlatform: text(alight.EstimatedQuay) || null,
+    cancelled: yes(service.Cancelled), departureCancelled: yes(board.NotServicedStop) || yes(board.NoBoardingAtStop),
+    arrivalCancelled: yes(alight.NotServicedStop) || yes(alight.NoAlightingAtStop), undefinedDelay: yes(service.UndefinedDelay) };
+}
+
 export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[] {
   const data = delivery(xml, "OJPTripDelivery"), stops = places(data.TripResponseContext);
   const legs: OjpLeg[] = [];
@@ -116,7 +134,7 @@ export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[
         }] : [];
         const accessRules: StationAccessRule[] = !previousRide && access && sameRef(access.toRef, fromRef)
           ? [{ ...access, toRef: fromRef, departure, operatingDay, checked: instant(data.ResponseTimestamp) ?? undefined }] : [];
-        const parsed: OjpLeg = { accessRules, mode: "transit", from, to, departure, arrival, service: serviceLabel, transferRules,
+        const parsed: OjpLeg = { realtime: realtime(service, board, alight, instant(data.ResponseTimestamp) ?? new Date().toISOString()), accessRules, mode: "transit", from, to, departure, arrival, service: serviceLabel, transferRules,
           serviceName: text(service.PublishedServiceName) || null, category,
           operator: text(service.OperatorRef) || null, direction: text(service.DestinationText) || null,
           departurePlatform: text(board.PlannedQuay) || null, arrivalPlatform: text(alight.PlannedQuay) || null,
@@ -165,7 +183,7 @@ export function mergeOjpConnections(unfiltered: OjpLeg[], filtered: OjpLeg[]): O
   return [...result.values()];
 }
 
-export function parseOjpTripInfo(xml: string, ref: OjpReference): CarriageRule {
+export function parseOjpDetails(xml: string, ref: OjpReference): OjpDetails {
   const data = delivery(xml, "OJPTripInfoDelivery");
   const results = list<Xml>(data.TripInfoResult);
   if (results.length !== 1) throw new Error("Missing or ambiguous service details");
@@ -176,8 +194,12 @@ export function parseOjpTripInfo(xml: string, ref: OjpReference): CarriageRule {
   const from = calls.findIndex(c => text(c.StopPointRef) === ref.fromRef && instant(c.ServiceDeparture?.TimetabledTime) === ref.departure);
   const to = calls.findIndex((c, i) => i > from && text(c.StopPointRef) === ref.toRef && instant(c.ServiceArrival?.TimetabledTime) === ref.arrival);
   if (from < 0 || to <= from) throw new Error("Service details do not identify the boarded segment");
-  return interpretBicycleAttributes([...attributes(service, "service"), ...calls.slice(from, to + 1).flatMap(c => attributes(c, "stop"))]);
+  const checked = instant(data.ResponseTimestamp) ?? new Date().toISOString();
+  return { rule: interpretBicycleAttributes([...attributes(service, "service"), ...calls.slice(from, to + 1).flatMap(c => attributes(c, "stop"))]),
+    checked, realtime: realtime(service, calls[from], calls[to], checked) };
 }
+
+export function parseOjpTripInfo(xml: string, ref: OjpReference): CarriageRule { return parseOjpDetails(xml, ref).rule; }
 
 const escape = (s: string) => s.replace(/[<>&"']/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&apos;" })[c]!);
 function envelope(kind: string, content: string, now: string) {
@@ -186,8 +208,8 @@ function envelope(kind: string, content: string, now: string) {
 export function ojpTripRequest(query: OjpQuery, filtered: boolean, now: string) {
   const endpoint = (name: string, stop: OjpStop) => `<${name}><PlaceRef><GeoPosition><siri:Longitude>${stop.lon}</siri:Longitude><siri:Latitude>${stop.lat}</siri:Latitude></GeoPosition><Name><Text>${escape(stop.name)}</Text></Name></PlaceRef>${name === (query.arriveBy ? "Destination" : "Origin") ? `<DepArrTime>${escape(query.departure)}</DepArrTime>` : ""}</${name}>`;
   return envelope("OJPTripRequest", endpoint("Origin", query.from) + endpoint("Destination", query.to)
-    + `<Params><NumberOfResults>4</NumberOfResults><UseRealtimeData>none</UseRealtimeData><IncludeIntermediateStops>true</IncludeIntermediateStops><BikeTransport>${filtered}</BikeTransport></Params>`, now);
+    + `<Params><NumberOfResults>4</NumberOfResults><UseRealtimeData>explanatory</UseRealtimeData><IncludeIntermediateStops>true</IncludeIntermediateStops><BikeTransport>${filtered}</BikeTransport></Params>`, now);
 }
 export function ojpTripInfoRequest(ref: OjpReference, now: string) {
-  return envelope("OJPTripInfoRequest", `<JourneyRef>${escape(ref.journeyRef)}</JourneyRef><OperatingDayRef>${escape(ref.operatingDay)}</OperatingDayRef><Params><UseRealtimeData>none</UseRealtimeData><IncludeCalls>true</IncludeCalls><IncludeService>true</IncludeService></Params>`, now);
+  return envelope("OJPTripInfoRequest", `<JourneyRef>${escape(ref.journeyRef)}</JourneyRef><OperatingDayRef>${escape(ref.operatingDay)}</OperatingDayRef><Params><UseRealtimeData>explanatory</UseRealtimeData><IncludeCalls>true</IncludeCalls><IncludeService>true</IncludeService></Params>`, now);
 }

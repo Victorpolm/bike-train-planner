@@ -526,3 +526,9 @@ button:disabled { cursor: default; opacity: .65; }
 .detour-source { color: var(--muted); font-size: .875rem; }
 .detour-panel :focus-visible, .readable-map-popup :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .map-legend .legend-detour { border-top: 4px dashed #76558e; background: none; }
+
+.realtime-status { margin: 1rem 0; padding: 1rem; border: 1px solid #b9d8d0; border-radius: 12px; background: #f1f8f5; }
+.realtime-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.realtime-status p, .plan-realtime { font-size: .85rem; line-height: 1.5; }
+.realtime-warnings { color: #8c3028; padding-left: 1.3rem; }
+.plan-realtime { color: #405e58; }

@@ -1,10 +1,11 @@
+import { effectivePlatform, platformChanged } from "./realtime.ts";
 import type { TransitLeg } from "./routing.ts";
 
 export type TransferFeed = {
   version: string; validFrom: string; validThrough: string; zipSha256: string; source: string;
   generalRules: number; excludedScopedRows: number;
 };
-export type TransferEndpointQuery = { ref: string; stopId?: string; platform?: string };
+export type TransferEndpointQuery = { ref: string; stopId?: string; platform?: string; platformChanged?: boolean };
 export type StaticTransferEndpoint = {
   key: string; status: "matched" | "station" | "unmapped" | "ambiguous" | "unavailable";
   id?: string; minimums?: Record<string, number>; feed?: TransferFeed;
@@ -13,10 +14,10 @@ export type StaticTransferEndpoint = {
 export function transferEndpointQuery(leg: TransitLeg, end: "arrival" | "departure"): TransferEndpointQuery {
   const arrival = end === "arrival", stopId = arrival ? leg.toId : leg.fromId;
   return { ref: (arrival ? leg.ojp?.toRef : leg.ojp?.fromRef) ?? stopId ?? "", stopId,
-    platform: (arrival ? leg.arrivalPlatform : leg.departurePlatform) ?? undefined };
+    platform: effectivePlatform(leg, end) ?? undefined, ...(platformChanged(leg, end) ? { platformChanged: true } : {}) };
 }
 export function transferEndpointKey(query: TransferEndpointQuery): string {
-  return JSON.stringify([query.ref, query.stopId ?? "", query.platform ?? ""]);
+  return JSON.stringify([query.ref, query.stopId ?? "", query.platform ?? "", ...(query.platformChanged ? [true] : [])]);
 }
 const dayFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit" });
 function serviceDay(leg: TransitLeg, end: "arrival" | "departure") {

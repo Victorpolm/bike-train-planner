@@ -1,3 +1,4 @@
+import { useRealtimeJourney } from "./useRealtimeJourney";
 import type { AppliedCyclingEdit } from "./cyclingEditor";
 import {
   DEFAULT_HILLS,
@@ -609,12 +610,22 @@ export default function App() {
   const selectedSource =
     proposalEntries.find((entry) => entry.proposal.journey.id === rawSelected?.id)?.source ??
     session;
+  const realtime = useRealtimeJourney(
+    rawSelected,
+    compactLayout ? mobileView === "journey" : detailView === "journey",
+    selectedSource?.options.boardingMinutes,
+    selectedSource?.options.arriveBy,
+  );
   const selectedTiming = useMemo(
     () =>
-      rawSelected && selectedSource
-        ? journeyTiming(rawSelected, selectedSource.options.boardingMinutes, selectedSource.start)
+      realtime.journey && selectedSource
+        ? journeyTiming(
+            realtime.journey,
+            selectedSource.options.boardingMinutes,
+            selectedSource.start,
+          )
         : null,
-    [rawSelected, selectedSource],
+    [realtime.journey, selectedSource],
   );
   const selected = selectedTiming?.journey ?? null;
   function openJourney(id: string) {
@@ -1639,6 +1650,7 @@ export default function App() {
                 />
                 <JourneyPlan
                   id="selected-travel-plan"
+                  realtime={realtime}
                   journey={selected}
                   origin={selectedSource.origin}
                   destination={selectedSource.destination}

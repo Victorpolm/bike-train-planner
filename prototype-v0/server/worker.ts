@@ -9,12 +9,12 @@ import { handleOjp, type OjpEnvironment } from "./ojpHandler.ts";
 import { handleFare, type FareEnvironment } from "./fareHandler.ts";
 
 export default {
-  async fetch(request: Request, env: OjpEnvironment & TimetableEnvironment & FareEnvironment): Promise<Response> {
+  async fetch(request: Request, env: OjpEnvironment & TimetableEnvironment & FareEnvironment, context?: { waitUntil(task: Promise<unknown>): void }): Promise<Response> {
     const path = new URL(request.url).pathname;
     if (path === "/api/station-transfers/v1") return handleStationTransfers(request);
-    if (path === "/api/amenities/v1") return handleAmenities(request);
+    if (path === "/api/amenities/v1") return handleAmenities(request, fetch, context ? task => context.waitUntil(task) : undefined);
     if (path.startsWith("/api/facilities/")) return handleFacilities(request);
-    if (path.startsWith("/api/services/")) return handleServices(request);
+    if (path.startsWith("/api/services/")) return handleServices(request, fetch, context ? task => context.waitUntil(task) : undefined);
     if (path === "/api/parking" || path.startsWith("/api/parking/v3/")) return handleParking(request);
     if (path === "/api/terrain") return handleSwisstopo(request);
     if (path.startsWith("/api/timetable/")) return handleTimetable(request, env);

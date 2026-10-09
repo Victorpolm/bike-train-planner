@@ -186,3 +186,12 @@ it("the importer excludes route/trip/calendar rules and stay-on-board rows repro
     assert.deepEqual(decoded.rules, [[0, 1, 420]]); assert.equal(decoded.feed.excludedScopedRows, 2); assert.equal(decoded.feed.excludedOtherTypes, 1);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+it("resolves a realtime platform change within the explicitly identified station without accepting contradictory stations", async () => {
+  const [changed, planned, wrongStation] = await query(
+    { ref: "ch:1:sloid:3000:10:18", stopId: "8503000", platform: "42", platformChanged: true },
+    { ref: "ch:1:sloid:3000:10:18", stopId: "8503000", platform: "42" },
+    { ref: "ch:1:sloid:3000:10:18", stopId: "8507000", platform: "42", platformChanged: true });
+  assert.equal(changed.id, "ch:1:sloid:3000:502:42");
+  assert.equal(planned.status, "unmapped"); assert.equal(wrongStation.status, "unmapped");
+});

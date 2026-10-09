@@ -1,4 +1,4 @@
-import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpTripInfo,
+import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpDetails,
   type OjpQuery, type OjpReference } from "../src/ojp.ts";
 import { providerFailure } from "./providerFailure.ts";
 import { retainedConnections } from "./retainedFare.ts";
@@ -43,6 +43,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
   // Bounded, short-lived caches contain timetable responses only. The secret
   // stays in runtime env and is never part of a response, cache key or log.
   const cache = new Map<string, { expires: number; data: unknown }>();
+  const pending = new Map<string, Promise<unknown>>();
   let queue: Promise<unknown> = Promise.resolve(), lastCall = 0, blockedUntil = 0, activeKey = "";
   const requestOjp = (payload: string, key: string) => {
     const task = queue.then(async () => {
@@ -85,7 +86,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
     if (origin && origin !== new URL(request.url).origin) return json({ error: "Origin not allowed" }, 403);
     if (!request.headers.get("content-type")?.startsWith("application/json")) return json({ error: "Use JSON" }, 415);
     if (!key) return json({ error: "Bicycle information is not connected yet." }, 503);
-    if (activeKey !== key) { cache.clear(); activeKey = key; }
+    if (activeKey !== key) { cache.clear(); pending.clear(); activeKey = key; }
     let body: any;
     try { body = JSON.parse(await boundedText(request, 8192)); }
     catch { return json({ error: "Invalid request" }, 400); }
@@ -97,6 +98,8 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
     const cached = cache.get(cacheKey);
     if (cached && cached.expires > Date.now()) return json(cached.data);
     try {
+      if (pending.has(cacheKey)) return json(await pending.get(cacheKey));
+      const task = (async () => {
       const checked = new Date().toISOString();
       let data: unknown;
       if (isConnections) {
@@ -107,13 +110,15 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
         data = { legs: mergeOjpConnections(unfiltered.legs, filtered.legs), checked, warnings,
           fareSources: [...new Map([...unfiltered.sources, ...filtered.sources].map(s => [s.id, s])).values()] };
       } else {
-        const rule = parseOjpTripInfo(await requestOjp(ojpTripInfoRequest(body, checked), key), body);
-        data = { rule, checked };
+        data = parseOjpDetails(await requestOjp(ojpTripInfoRequest(body, checked), key), body);
       }
       if (cache.size >= 32) cache.delete(cache.keys().next().value!);
       // Do not cache failed filtered searches as a reusable complete response.
-      if (!(data as { warnings?: string[] }).warnings?.length) cache.set(cacheKey, { expires: Date.now() + 5 * 60_000, data });
-      return json(data);
+      if (!(data as { warnings?: string[] }).warnings?.length) cache.set(cacheKey, { expires: Date.now() + 15_000, data });
+      return data;
+      })();
+      pending.set(cacheKey, task);
+      try { return json(await task); } finally { if (pending.get(cacheKey) === task) pending.delete(cacheKey); }
     } catch {
       console.warn("OJP journey or service check failed");
       return json({ error: "The bicycle information service could not complete this check. Permission remains unverified." }, 502);

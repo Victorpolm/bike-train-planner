@@ -1,3 +1,4 @@
+import { arrivalTime, departureTime } from "./realtime.ts";
 import type { Journey, Place, TransitLeg } from "./routing.ts";
 import { interpretBicycleAttributes, type BicycleAttribute } from "./bicycleCarriage.ts";
 
@@ -92,14 +93,14 @@ export function journeySteps(journey: Journey, origin: Place, destination: Place
     const steps: JourneyStep[] = [];
     let previous = journey.startTime;
     for (const leg of journey.transitLegs) {
-      if (leg.departure && leg.departure > previous) steps.push({ mode: "wait", title: "Boarding and waiting time",
-        from: leg.from, to: leg.from, departure: previous, arrival: leg.departure });
+      if (departureTime(leg) && departureTime(leg)! > previous) steps.push({ mode: "wait", title: "Boarding and waiting time",
+        from: leg.from, to: leg.from, departure: previous, arrival: departureTime(leg) });
       // Zero-length waypoint visits still make the required visit visible.
-      if (leg.mode !== "bike" || leg.arrival!.getTime() > leg.departure!.getTime() || leg.service.includes("intermediate")) {
+      if (leg.mode !== "bike" || arrivalTime(leg)!.getTime() > departureTime(leg)!.getTime() || leg.service.includes("intermediate")) {
         steps.push({ mode: leg.mode, title: leg.service, from: leg.from, to: leg.to,
-          departure: leg.departure, arrival: leg.arrival, leg, cyclingRoute: leg.cyclingRoute });
+          departure: departureTime(leg), arrival: arrivalTime(leg), leg, cyclingRoute: leg.cyclingRoute });
       }
-      if (leg.arrival) previous = leg.arrival;
+      if (arrivalTime(leg)) previous = arrivalTime(leg)!;
     }
     return steps;
   }
@@ -126,10 +127,10 @@ export function journeySteps(journey: Journey, origin: Place, destination: Place
   }
   journey.transitLegs.forEach((leg, index) => {
     const previous = journey.transitLegs[index - 1];
-    if (previous) addWait(previous.arrival, leg.departure, previous.to, leg.from, "Connection time");
+    if (previous) addWait(arrivalTime(previous), departureTime(leg), previous.to, leg.from, "Connection time");
     steps.push({
       mode: leg.mode, title: leg.service, from: leg.from, to: leg.to,
-      departure: leg.departure, arrival: leg.arrival, leg, cyclingRoute: leg.cyclingRoute,
+      departure: departureTime(leg), arrival: arrivalTime(leg), leg, cyclingRoute: leg.cyclingRoute,
     });
   });
 

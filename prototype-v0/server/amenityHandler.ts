@@ -21,7 +21,7 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
   let cached: AmenityData | undefined, pending: Promise<void> | undefined, retryAfter = 0;
   const now = options.now ?? Date.now;
   const dataset = options.dataset, path = dataset ? `/api/services/v1/${dataset}` : "/api/amenities/v1";
-  return async function(request: Request, fetcher: typeof fetch = fetch): Promise<Response> {
+  return async function(request: Request, fetcher: typeof fetch = fetch, background?: (task: Promise<unknown>) => void): Promise<Response> {
     if (request.method !== "GET") return new Response("Method not allowed", { status: 405 });
     const url = new URL(request.url);
     if (url.pathname !== path) return new Response("Not found", { status: 404 });
@@ -29,7 +29,6 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
     // v2 avoids serving old normalised records that discarded floor/location tags.
     const cacheKey = new Request(new URL(dataset ? `/api/services-cache/v2/${dataset}` : "/api/amenities-cache/v2/osm", url.origin));
     const age = () => cached ? now() - Date.parse(cached.fetchedAt) : Infinity;
-    const load = async () => {
       if (!cached && edge) {
         try {
           const hit = await edge.match(cacheKey);
@@ -37,6 +36,7 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
             if (validAmenityData(data, dataset) && data.facilities.length && Date.parse(data.fetchedAt) <= now()) cached = data; }
         } catch { /* A cache failure does not block the upstream request. */ }
       }
+    const load = async () => {
       if (age() <= TTL) return;
       if (retryAfter > now()) throw new Error("Amenity retry cooling down");
       try {
@@ -51,7 +51,8 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
     try {
       if (age() > TTL) {
         pending ??= load().finally(() => { pending = undefined; });
-        try { await pending; } catch { if (age() > STALE_TTL) throw new Error("Amenities unavailable"); }
+        if (background && age() <= STALE_TTL) background(pending.catch(() => {}));
+        else try { await pending; } catch { if (age() > STALE_TTL) throw new Error("Amenities unavailable"); }
       }
       return Response.json({ ...cached, stale: age() > TTL }, { headers: { "Cache-Control": "private, no-store", "X-Amenity-Schema": "1", "X-Content-Type-Options": "nosniff" } });
     } catch {
@@ -62,8 +63,8 @@ export function createAmenityHandler(options: { now?: () => number; cache?: Cach
 }
 export const handleAmenities = createAmenityHandler();
 const serviceHandlers = { repairs: createAmenityHandler({ dataset: "repairs" }), food: createAmenityHandler({ dataset: "food" }), "food-dining": createAmenityHandler({ dataset: "food-dining" }) };
-export function handleServices(request: Request, fetcher: typeof fetch = fetch) {
+export function handleServices(request: Request, fetcher: typeof fetch = fetch, background?: (task: Promise<unknown>) => void) {
   const path = new URL(request.url).pathname;
   const category = path === "/api/services/v1/repairs" ? "repairs" : path === "/api/services/v1/food" ? "food" : path === "/api/services/v1/food-dining" ? "food-dining" : null;
-  return category ? serviceHandlers[category](request, fetcher) : Promise.resolve(new Response("Not found", { status: 404 }));
+  return category ? serviceHandlers[category](request, fetcher, background) : Promise.resolve(new Response("Not found", { status: 404 }));
 }

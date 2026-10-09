@@ -404,9 +404,19 @@ function refresh(session: SearchSession, extended: boolean, publish: SearchUpdat
   };
   // Separate label searches are essential: an uncertain path may dominate a
   // confirmed one in the permissive graph. Never derive strict results by filtering.
-  const possible = withTraffic({ ...session.options, bicycleScope: "allow-uncertain" });
-  session.confirmed = withTraffic({ ...session.options, bicycleScope: "confirmed" });
-  session.allTransit = withTraffic({ ...session.options, bicycleScope: "all-transit" });
+  // Reuse a solve only when the eligible edge sets are identical. Filtering a
+  // permissive solution is still forbidden: distinct graphs get distinct solves.
+  const equivalent = new Map<string, ReturnType<typeof withTraffic>>();
+  const scoped = (bicycleScope: Options["bicycleScope"]) => {
+    const options = { ...session.options, bicycleScope };
+    const signature = [...session.network.edges.values()].map(edge => journeyLegAllowed(edge.leg, options) ? "1" : "0").join("");
+    let result = equivalent.get(signature);
+    if (!result) { result = withTraffic(options); equivalent.set(signature, result); }
+    return result;
+  };
+  const possible = scoped("allow-uncertain");
+  session.confirmed = scoped("confirmed");
+  session.allTransit = scoped("all-transit");
   const chosen = session.options.bicycleScope === "confirmed" ? session.confirmed : session.options.bicycleScope === "all-transit" ? session.allTransit : possible;
   session.baseline = chosen.baseline; session.extended = chosen.extended;
   publish({ ...session });

@@ -873,3 +873,14 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Fares:** Four distinct pending visitors and one duplicate complete with one upstream call at a time; a fifth distinct quote receives bounded overflow. Cached reuse makes no new calls. Queue cancellation, the total deadline and provider cooldown are covered.
 
 **Verification:** 452 tests in 11 suites pass, including eleven new cases; TypeScript/frontend/Worker production builds, formatting and Knip pass. Published as owner-private version 60. The supplied review's independent corridor/stress figures were not rerun without its external harness; no new live-provider/browser validation is claimed. [Fixes and next realtime contract](UPDATE_REVIEW_FIXES_2026-10-09.md).
+
+
+## 2026-10-09 — Realtime, persistent maps and EPFL–Basel ordering
+
+**Hypothesis:** Different cycling candidate acquisition explains Fastest losing to Simplest; repeated downloads and repeated option metrics contribute to latency.
+
+**Method/result:** Common route candidates now satisfy Fastest ≤ Simplest at 15/20/25 km/h on recorded EPFL–Basel BRouter data. A 240-candidate ranking benchmark using 2,033 elevation samples per endpoint improved median 216.1 → 172.9 ms over seven measured runs, identical proposals. The small solver fixture was already a few milliseconds and showed noise; no general end-to-end improvement is inferred. Cache tests prove reload/pref-switch reuse, invalid/expired-data rejection, coalescing and independent cancellation.
+
+**Realtime:** Both solvers reject missed delayed connections and cancellations while exact scheduled identities survive. Deployed Zürich–Bern IC1 on 9 October returned scheduled 16:32:00–17:28:00 UTC and estimates 16:32:30–17:28:48 in connections and TripInfo, with 12 retained fare sources. Platform/cancellation scenarios are regressions rather than observed live disruptions.
+
+**Gate/limits:** 468 tests, TypeScript/frontend/Worker builds, formatting and Knip pass; private version 61. Exact original 6:46/7:04 profile/coordinates and browser/phone acceptance remain pending. Cold upstream work is still bounded, sampled and potentially slow. [Fixtures, reproducible benchmark, protocol and release evidence](REALTIME_AND_SPEED_2026-10-09.md).

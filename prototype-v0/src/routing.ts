@@ -49,6 +49,9 @@ export type Journey = {
 };
 
 export type TransitLeg = {
+  /** Published departure/arrival stay unchanged for fare and service identity. */
+  realtime?: import("./realtime.ts").TransitRealtime;
+  movementOffsetMs?: number;
   stationArrival?: import("./staticTransfers.ts").StaticTransferEndpoint;
   stationDeparture?: import("./staticTransfers.ts").StaticTransferEndpoint;
   transferRules?: import("./transferTimes.ts").StationTransferRule[];

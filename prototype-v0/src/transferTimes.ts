@@ -1,3 +1,4 @@
+import { arrivalTime, effectivePlatform, platformChanged } from "./realtime.ts";
 import { staticTransfer } from "./staticTransfers.ts";
 import { haversineKm, type Point, type TransitLeg } from "./routing.ts";
 
@@ -29,7 +30,7 @@ export function transferContextKey(legs: readonly TransitLeg[]): string {
   const previous = previousRide(legs)?.leg;
   if (!previous) return "access";
   return JSON.stringify([previous.ojp?.journeyRef, previous.ojp?.operatingDay, previous.ojp?.toRef,
-    previous.arrival, previous.toId, previous.arrivalPlatform, previous.service, previous.operator]);
+    arrivalTime(previous), previous.toId, effectivePlatform(previous, "arrival"), previous.service, previous.operator]);
 }
 export type BoardingCheck = {
   readyAt: number; minutes: number; source: "ojp" | "ojp-access" | "gtfs" | "swiss-default" | "estimate" | "unknown";
@@ -40,7 +41,7 @@ export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, rea
     return { readyAt: Infinity, minutes: Infinity, source: "unknown", note: "Boarding time is unknown; this connection cannot be checked." };
   const previous = previousRide(legs), incoming = previous?.leg;
   const arrivedAt = legs.at(-1)?.cyclingRoute?.to ?? legs.at(-1)?.toPoint ?? accessPoint;
-  const accesses = !incoming && !legs.at(-1)?.stationAccess && arrivedAt && next.ojp ? (next.accessRules ?? []).filter(rule =>
+  const accesses = !platformChanged(next, "departure") && !incoming && !legs.at(-1)?.stationAccess && arrivedAt && next.ojp ? (next.accessRules ?? []).filter(rule =>
     rule.toRef === next.ojp!.fromRef && rule.operatingDay === next.ojp!.operatingDay
     && Date.parse(rule.departure) === +next.departure! && haversineKm(rule.point, arrivedAt) < .01) : [];
   if (accesses.length) {
@@ -52,10 +53,10 @@ export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, rea
       note: `OJP station access: ${seconds / 60} min from the queried station point to this platform, including any provider buffer. Lifts, steps and access with a bicycle remain unverified.`,
       transferLeg: seconds > 0 ? { mode: "walk", from: next.from, to: next.from, fromId: next.fromId, toId: next.fromId,
         fromPoint: arrivedAt, toPoint: next.fromPoint, departure: new Date(readyAt), arrival: new Date(readyAt + seconds * 1000),
-        departurePlatform: null, arrivalPlatform: next.departurePlatform, service: "Access to boarding platform", serviceName: null,
+        departurePlatform: null, arrivalPlatform: effectivePlatform(next, "departure"), service: "Access to boarding platform", serviceName: null,
         direction: null, stationAccess: true } : undefined };
   }
-  const rules = incoming?.ojp && next.ojp ? (next.transferRules ?? []).filter(rule =>
+  const rules = incoming?.ojp && next.ojp && !platformChanged(incoming, "arrival") && !platformChanged(next, "departure") ? (next.transferRules ?? []).filter(rule =>
     rule.incomingJourneyRef === incoming.ojp!.journeyRef && rule.incomingOperatingDay === incoming.ojp!.operatingDay
     && rule.operatingDay === next.ojp!.operatingDay && rule.fromRef === incoming.ojp!.toRef && rule.toRef === next.ojp!.fromRef
     && Date.parse(rule.arrival) === +incoming.arrival! && Date.parse(rule.departure) === +next.departure!) : [];
@@ -71,13 +72,13 @@ export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, rea
     const transferLeg: TransitLeg | undefined = remaining > 0 ? { mode: "walk", from: next.from, to: next.from,
       fromId: next.fromId, toId: next.fromId, fromPoint: next.fromPoint, toPoint: next.fromPoint,
       departure: new Date(readyAt), arrival: new Date(readyAt + remaining * 1000),
-      departurePlatform: incoming.arrivalPlatform, arrivalPlatform: next.departurePlatform,
+      departurePlatform: effectivePlatform(incoming, "arrival"), arrivalPlatform: effectivePlatform(next, "departure"),
       service: "Station transfer", serviceName: null, direction: null, stationTransfer: true } : undefined;
-    return { readyAt: Math.max(readyAt + remaining * 1000, +incoming.arrival + seconds * 1000), minutes: seconds / 60,
+    return { readyAt: Math.max(readyAt + remaining * 1000, +arrivalTime(incoming)! + seconds * 1000), minutes: seconds / 60,
       source: "ojp", transferLeg, url: TRANSFER_SOURCE, checked: rules.find(r => r.checked)?.checked,
       note: `OJP transfer time: ${seconds / 60} min for this dated connection (including any provider buffer)${rules.some(r => r.kind === "guaranteedConnection") ? "; the provider marks a coordinated connection, but waiting is not guaranteed" : ""}. This passenger transfer does not verify lifts, steps or bicycle access.` };
   }
-  if (!incoming && legs.at(-1)?.stationAccess && next.ojp) {
+  if (!platformChanged(next, "departure") && !incoming && legs.at(-1)?.stationAccess && next.ojp) {
     const access = legs.at(-1)!;
     const matched = (next.accessRules ?? []).filter(rule => rule.toRef === next.ojp!.fromRef && rule.operatingDay === next.ojp!.operatingDay
       && Date.parse(rule.departure) === +next.departure! && access.fromPoint && haversineKm(rule.point, access.fromPoint) < .01);
@@ -96,16 +97,16 @@ export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, rea
     const transferLeg: TransitLeg | undefined = remaining > 0 ? { mode: "walk", from: next.from, to: next.from,
       fromId: next.fromId, toId: next.fromId, fromPoint: next.fromPoint, toPoint: next.fromPoint,
       departure: new Date(readyAt), arrival: new Date(readyAt + remaining * 1000),
-      departurePlatform: incoming.arrivalPlatform, arrivalPlatform: next.departurePlatform,
+      departurePlatform: effectivePlatform(incoming, "arrival"), arrivalPlatform: effectivePlatform(next, "departure"),
       service: "Station transfer", serviceName: null, direction: null, stationTransfer: true } : undefined;
-    return { readyAt: Math.max(readyAt + remaining * 1000, +incoming.arrival + seconds * 1000), minutes: seconds / 60,
+    return { readyAt: Math.max(readyAt + remaining * 1000, +arrivalTime(incoming)! + seconds * 1000), minutes: seconds / 60,
       source: "gtfs", transferLeg, url: imported.feed!.source,
       note: `SBB GTFS station transfer: ${seconds / 60} min${imported.basis === "station-maximum" ? " estimated because a platform is missing, using the largest published general transfer at this station" : " for these mapped stops/platforms"}. Feed ${imported.feed!.version}, valid ${imported.feed!.validFrom} to ${imported.feed!.validThrough}. ${imported.basis === "station-maximum" ? "This station estimate does not verify the actual platform pair" : "This is a general passenger minimum"}; service-specific exceptions, lifts, steps and bicycle accessibility remain unverified.` };
   }
   const coverage = imported ? ` ${imported.reason}` : "";
   const swiss = [incoming?.ojp?.toRef, next.ojp?.fromRef, incoming?.toId, next.fromId].some(id => id && (/^ch:/.test(id) || /^85\d{5}$/.test(id)));
   if (incoming?.arrival && incoming.toId && incoming.toId === next.fromId && swiss) {
-    return { readyAt: Math.max(readyAt, +incoming.arrival + 120_000), minutes: 2, source: "swiss-default", url: SWISS_TRANSFER_SOURCE,
+    return { readyAt: Math.max(readyAt, +arrivalTime(incoming)! + 120_000), minutes: 2, source: "swiss-default", url: SWISS_TRANSFER_SOURCE,
       note: "Swiss timetable default: 2 min within a stop. No matching transfer time was supplied; this does not verify platform access with a bicycle." + coverage };
   }
   return { readyAt: readyAt + fallbackMinutes * 60_000, minutes: fallbackMinutes, source: "estimate",

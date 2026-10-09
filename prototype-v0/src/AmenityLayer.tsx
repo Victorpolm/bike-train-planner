@@ -560,7 +560,7 @@ export default function AmenityLayer({
             <>
               {" "}
               · downloaded {new Date(data.fetchedAt).toLocaleDateString("en-GB")}
-              {data.stale && " · showing older data after a failed refresh"}
+              {data.stale && " · showing cached older data; refresh pending or unavailable"}
             </>
           ) : loading ? (
             " · loading"
@@ -596,7 +596,8 @@ export default function AmenityLayer({
                   {FACILITY_SOURCES[provider].label}
                 </a>
                 {` · ${ready.length}/${jobs.length} feeds loaded · ${count} ${category} records`}
-                {jobs.some((l) => l.data?.stale) && " · refresh failed; showing older data"}
+                {jobs.some((l) => l.data?.stale) &&
+                  " · showing cached older data; refresh pending or unavailable"}
               </p>
               <p>{FACILITY_SOURCES[provider].scope}</p>
               {failed.length > 0 && (

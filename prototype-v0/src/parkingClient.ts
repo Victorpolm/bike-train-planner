@@ -1,3 +1,4 @@
+import { cachedMapData } from "./mapDataCache.ts";
 import type { ParkingData, ParkingProvider } from "./bikeParking.ts";
 import { waitFor } from "./http.ts";
 
@@ -17,7 +18,15 @@ export function parkingLoadError(error: unknown): ParkingLoadError {
 }
 
 export async function loadParkingSource(provider: ParkingProvider, signal: AbortSignal, fetcher: typeof fetch = fetch,
-  options: { timeoutMs?: number; retryDelayMs?: number } = {}): Promise<ParkingData> {
+  options: { timeoutMs?: number; retryDelayMs?: number; onUpdate?: (data: ParkingData) => void } = {}): Promise<ParkingData> {
+  if (fetcher === fetch) return cachedMapData(`parking-v3:${provider}`, signal,
+    (data): data is ParkingData => !!data && typeof data === "object" && Array.isArray((data as ParkingData).facilities)
+      && (data as ParkingData).provider === provider && Number.isFinite(Date.parse((data as ParkingData).fetchedAt)),
+    () => fetchParkingSource(provider, new AbortController().signal, fetcher, options), options.onUpdate);
+  return fetchParkingSource(provider, signal, fetcher, options);
+}
+async function fetchParkingSource(provider: ParkingProvider, signal: AbortSignal, fetcher: typeof fetch,
+  options: { timeoutMs?: number; retryDelayMs?: number }): Promise<ParkingData> {
   // Versioned, distinct paths avoid old browser responses and query-key collisions.
   const url = `/api/parking/v3/${provider}`;
   for (let attempt = 0; ; attempt++) {

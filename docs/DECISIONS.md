@@ -702,3 +702,18 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Next priority:** Integrate live delays, cancellations and platform changes for the exact selected services. Existing OJP requests explicitly disable realtime. Preserve scheduled fare/evidence identities, separate estimates, show freshness/unknowns and recheck connections. Static transfer-feed refresh remains a different task.
 
 **Limits:** This does not authorize or implement an engine rewrite, Europe expansion, booking or live bicycle capacity. The report's external stress harness was unavailable; larger-network algorithm work remains deferred. Version 60 passed 452 tests and production/format/unused checks; no new browser or live-provider result is claimed. [Implementation and release](UPDATE_REVIEW_FIXES_2026-10-09.md).
+
+
+## 2026-10-09 — Realtime selected journeys, persistent map cache and comparable cycling candidates
+
+**Authorization:** Implement realtime data, speed up map filters and option computation, and correct EPFL–Basel where Fewest turns appeared faster than Fastest.
+
+**Decision:** Use explanatory OJP data, preserve scheduled service/fare/bicycle identities, and store live times/platforms/status separately. Use estimates in feasibility; exclude cancelled/omitted calls; refresh today's visible selected journey every 30 seconds with short 15-second caches, coalescing and bounded concurrency. Keep a disrupted selection visible with warnings and recheck platform transfers/deadlines. Missing data remains unknown, with explicit freshness.
+
+**Decision:** Cache validated public map datasets asynchronously in IndexedDB: 24-hour reuse, bounded seven-day older-data display and background refresh, versioned keys and memory/network fallback. Keep live service data outside that durable cache. Use Worker background refresh for older OSM edge caches.
+
+**Decision:** All cycling objectives acquire and terrain-check the same bounded trekking/road candidate pair. Reuse complete pools across preference switches; rank within the same pace/hill/feasibility conditions. Fastest may tie Simplest but must not be slower within that pool. This supersedes the Simplest-only road-candidate acquisition of 7 October. Preserve sampling limits and unknown terrain.
+
+**Performance boundary:** Cache immutable vectors/category metrics and reuse a scope solve only when its eligible edge set is identical. No permission postfilter replaces an independent solve of a different graph. An offline ranking benchmark improved about 20%; no complete live-search speedup or national engine replacement is claimed.
+
+**Evidence:** 468 tests and production/format/unused checks pass; private version 61 is published. Deployed OJP returned actual Zürich–Bern estimates; recorded EPFL–Basel candidates satisfy ordering at three paces. Exact original user timings and phone/browser acceptance remain unresolved. [Full evidence and next checks](REALTIME_AND_SPEED_2026-10-09.md).

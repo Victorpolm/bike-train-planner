@@ -1,3 +1,5 @@
+import { arrivalTime, effectivePlatform, realtimeStale, type TransitRealtime } from "./realtime";
+import type { RealtimeJourneyState } from "./useRealtimeJourney";
 import { boardingCheck } from "./transferTimes";
 import InfoDisclosure from "./InfoDisclosure";
 import FareDetails from "./FareDetails";
@@ -20,11 +22,31 @@ const day = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
 });
 
-function PlanTime({ date, start }: { date: Date | null; start: Date }) {
+function PlanTime({
+  date,
+  start,
+  scheduled,
+  realtime,
+}: {
+  date: Date | null;
+  start: Date;
+  scheduled?: Date | null;
+  realtime?: TransitRealtime;
+}) {
   if (!date) return <span className="plan-missing">Time unavailable</span>;
   return (
     <time dateTime={date.toISOString()}>
       {clock.format(date)}
+      {scheduled &&
+        realtime &&
+        (realtime.estimatedDeparture || realtime.estimatedArrival) &&
+        +scheduled !== +date && (
+          <small>
+            Scheduled {clock.format(scheduled)} ·{" "}
+            {Math.round((+date - +scheduled) / 60000) > 0 ? "+" : ""}
+            {Math.round((+date - +scheduled) / 60000)} min
+          </small>
+        )}
       {day.format(date) !== day.format(start) && <small>{day.format(date)}</small>}
     </time>
   );
@@ -32,6 +54,7 @@ function PlanTime({ date, start }: { date: Date | null; start: Date }) {
 
 export default function JourneyPlan({
   id,
+  realtime,
   journey,
   origin,
   destination,
@@ -42,6 +65,7 @@ export default function JourneyPlan({
   cyclingPosition = "anywhere",
 }: {
   id: string;
+  realtime?: RealtimeJourneyState;
   journey: Journey;
   origin: Place;
   destination: Place;
@@ -77,6 +101,36 @@ export default function JourneyPlan({
           </p>
         )}
       </div>
+      {journey.transitLegs.some((l) => l.mode === "transit") && (
+        <section className="realtime-status" aria-label="Live public transport updates">
+          <div className="realtime-heading">
+            <strong>Live transport updates</strong>
+            {realtime?.active && (
+              <button type="button" onClick={realtime.refresh} disabled={realtime.loading}>
+                {realtime.loading ? "Checking…" : "Refresh"}
+              </button>
+            )}
+          </div>
+          <p>
+            {realtime?.active
+              ? "Updates every 30 seconds while this journey is visible. Scheduled times are retained below."
+              : "Live updates are available for today's dated services. Other services show timetable information."}
+          </p>
+          {realtime?.failed && (
+            <p role="status">
+              The latest check failed. Previous estimates may be out of date; check the operator
+              before travelling.
+            </p>
+          )}
+          {!!realtime?.issues.length && (
+            <ul className="realtime-warnings" role="alert">
+              {realtime.issues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
       <ol className="plan-steps">
         {journeySteps(journey, origin, destination).map((step, index) => {
           const minutes =
@@ -87,7 +141,7 @@ export default function JourneyPlan({
           const legIndex = leg ? journey.transitLegs.indexOf(leg) : -1;
           const prefix = journey.transitLegs.slice(0, Math.max(0, legIndex));
           const readyAt = +(
-            prefix.at(-1)?.arrival ??
+            (prefix.length ? arrivalTime(prefix.at(-1)!) : null) ??
             new Date(+journey.startTime + journey.originStation.bikeMinutes * 60_000)
           );
           const transfer =
@@ -115,10 +169,33 @@ export default function JourneyPlan({
                 )}
               </div>
               {leg?.direction && <p className="plan-service">Direction {leg.direction}</p>}
+              {leg?.mode === "transit" && (
+                <p className="plan-realtime">
+                  {leg.realtime?.cancelled
+                    ? "Cancelled"
+                    : leg.realtime?.departureCancelled || leg.realtime?.arrivalCancelled
+                      ? "Boarding or arrival stop cancelled"
+                      : leg.realtime?.estimatedDeparture || leg.realtime?.estimatedArrival
+                        ? "Provider estimates shown"
+                        : "No live time estimate supplied; timetable shown"}
+                  {leg.realtime && (
+                    <>
+                      {" "}
+                      · checked {clock.format(new Date(leg.realtime.checkedAt))}
+                      {realtimeStale(leg.realtime, realtime?.now) ? " · out of date" : ""}
+                    </>
+                  )}
+                </p>
+              )}
               {extraServiceName && <p className="plan-service">Service {leg.serviceName}</p>}
               {leg?.operator && <p className="plan-service">Operator {leg.operator}</p>}
               <div className="plan-stop">
-                <PlanTime date={step.departure} start={journey.startTime} />
+                <PlanTime
+                  date={step.departure}
+                  scheduled={leg?.departure}
+                  realtime={leg?.realtime}
+                  start={journey.startTime}
+                />
                 <div>
                   <span className="plan-stop-label">
                     From{" "}
@@ -127,11 +204,24 @@ export default function JourneyPlan({
                       `(map ${stopNumbers.get(leg.fromId)})`}{" "}
                   </span>
                   <strong>{step.from ?? "Departure stop unavailable"}</strong>
-                  {leg?.departurePlatform && <small>Platform {leg.departurePlatform}</small>}
+                  {leg && effectivePlatform(leg, "departure") && (
+                    <small>
+                      Platform {effectivePlatform(leg, "departure")}
+                      {leg.realtime?.departurePlatform &&
+                      leg.realtime.departurePlatform !== leg.departurePlatform
+                        ? ` · changed from ${leg.departurePlatform ?? "unspecified"}`
+                        : ""}
+                    </small>
+                  )}
                 </div>
               </div>
               <div className="plan-stop">
-                <PlanTime date={step.arrival} start={journey.startTime} />
+                <PlanTime
+                  date={step.arrival}
+                  scheduled={leg?.arrival}
+                  realtime={leg?.realtime}
+                  start={journey.startTime}
+                />
                 <div>
                   <span className="plan-stop-label">
                     To{" "}
@@ -140,7 +230,15 @@ export default function JourneyPlan({
                       `(map ${stopNumbers.get(leg.toId)})`}{" "}
                   </span>
                   <strong>{step.to ?? "Arrival stop unavailable"}</strong>
-                  {leg?.arrivalPlatform && <small>Platform {leg.arrivalPlatform}</small>}
+                  {leg && effectivePlatform(leg, "arrival") && (
+                    <small>
+                      Platform {effectivePlatform(leg, "arrival")}
+                      {leg.realtime?.arrivalPlatform &&
+                      leg.realtime.arrivalPlatform !== leg.arrivalPlatform
+                        ? ` · changed from ${leg.arrivalPlatform ?? "unspecified"}`
+                        : ""}
+                    </small>
+                  )}
                 </div>
               </div>
               {step.mode === "bike" && (

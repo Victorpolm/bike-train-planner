@@ -10,7 +10,7 @@ export function useAmenities(enabled: boolean, dataset?: ServiceDataset) {
     if (!enabled || state.status === "ready") return;
     const controller = new AbortController();
     setState(current => ({ ...current, status: "loading", error: undefined }));
-    void loadAmenities(controller.signal, fetch, { dataset }).then(data => {
+    void loadAmenities(controller.signal, fetch, { dataset, onUpdate: data => setState({ data, status: "ready" }) }).then(data => {
       if (!controller.signal.aborted) setState({ data, status: "ready" });
     }).catch(error => { if (!controller.signal.aborted) setState(current => ({ ...current, status: "error", error: amenityLoadError(error, dataset ?? "Water/toilet") })); });
     return () => controller.abort();

@@ -1,24 +1,22 @@
-# Next steps after version 60
+# Next steps after version 61
 
 _Consolidated 9 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Confirmed starting point
 
-- Owner-private **version 60** is published from Site source `2f0d2bcff6466dd0f6125b0dfe4da1ef375b2508`.
-- GitHub is synchronized with the release's **238 application files**. [Review fixes and release evidence](UPDATE_REVIEW_FIXES_2026-10-09.md).
-- The release passed **452 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's Test and build workflow verifies application commits independently.
+- Owner-private **version 61** is published from Site source `414c08bd1dfb97d097c12de12dc1391ae2332fc9`.
+- GitHub is synchronized with the release's **249 application files**. [Realtime/cache/speed release evidence](REALTIME_AND_SPEED_2026-10-09.md).
+- The release passed **468 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's Test and build workflow verifies application commits independently.
 - Interface/profile and transfer-ZIP branches are already merged. Plan / Map / Journey, walking at the non-cycling endpoint, passenger-only transit, arrival deadlines, later departures and the new objective controls are delivered.
 - Fewer boardings values an avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling**. Its candidate window is independent of the other objectives' general 60-minute window. [Current objective contract](JOURNEY_OBJECTIVES_2026-10-08.md).
 
-The attached update review is addressed in version 60. Its external stress/benchmark harness was not supplied, so its measurements are not claimed as rerun. Browser/phone acceptance and fresh live-provider checks remain pending.
+The attached update review is addressed in version 60. Its external stress/benchmark harness was not supplied, so its measurements are not claimed as rerun. Browser/phone acceptance remains pending; version 61 adds fresh deployed OJP and BRouter checks.
 
-## Next important implementation: selected-service live updates
+## Next priority: realtime and cache acceptance
 
-**Owner instruction, 9 October:** after fixing the report, display delays in the public transport the user selected. This is the next important feature, ahead of optional product extensions.
+The owner subsequently authorized realtime implementation, speed improvements and the EPFL–Basel Fastest/Simplest correction. **Version 61 delivers these changes.** OJP estimates remain separate from scheduled identity; today's selected services refresh while visible, with cancellation/platform/connection warnings and freshness. Public map records persist across reloads. Cycling preferences rank the same checked pool. [Implementation, actual live estimates and benchmark](REALTIME_AND_SPEED_2026-10-09.md).
 
-Current OJP journey and TripInfo requests explicitly send `UseRealtimeData=none`. Verify the supported realtime integration, retain scheduled identities separately from estimated times, and show delays, cancellations, changed platforms and freshness on the selected journey. Refresh within provider limits and recalculate onward-connection feasibility, final arrival and arrival deadlines. Missing realtime data must remain unknown, not become “on time”. The imported GTFS transfer table is a separate static source.
-
-[Implementation sequence and acceptance cases](UPDATE_REVIEW_FIXES_2026-10-09.md#next-important-feature-live-updates-on-the-selected-public-transport).
+Next verify on a real phone/desktop: a delayed selected service, changed platform and tight connection; hidden-page/resume behaviour; and map toggles/reload without repeat downloads. Record exact EPFL–Basel inputs/profile and full search timings. The original 6:46/7:04 pair was not reproduced exactly, though the candidate-set cause is fixed and recorded EPFL–Basel ordering passes. The static station-feed refresh remains separate.
 
 ## Immediate checks already pending
 
@@ -27,9 +25,9 @@ Current OJP journey and TripInfo requests explicitly send `UseRealtimeData=none`
 | Phone and desktop acceptance | Complete one journey through Plan, Map and Journey; switch Commuter/Bikepacking/Personalized; inspect reservations, incomplete prices, profiles and a familiar station transfer | Visual, keyboard and touch behaviour has not had the remaining manual acceptance pass |
 | Objective usefulness | Compare a short ride and a long trip with fewer boardings; repeat with Arrive by and later departures | The 30-minute boarding value and mapped traffic weights are pilot settings, not calibrated user preferences |
 | Route-quality reports | Reproduce the reported Zürich–Laax speed-dependent odd result using its exact endpoints, date/time, rider profile, mode and carriage scope; retain Baden–Witikon as another tracked case | Controlled ranking improvements do not establish the cause of the original live report; discovery is sampled |
-| Food loading on phones | Reproduce the reported failure and record latency, source/session error and partial results; assess compact geographic batches if payload/loading is the cause | The 6 October successful ~30-second nationwide response did not reproduce the phone failure |
+| Food loading on phones | Verify persistent-cache reloads on a phone, then record cold-load bytes/latency and source/session errors; assess compact geographic batches if still necessary | The 6 October successful ~30-second nationwide response did not reproduce the phone failure |
 
-The next feature implementation is selected-service live updates. Complete the familiar-journey phone/desktop release acceptance alongside that work, recording exact inputs for any failure. A reproduced blocking route, fare, permission or loading defect still takes priority. [Interface acceptance](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass) · [Reported failures and proposed investigation](RESULTS_REVIEW_2026-10-06.md).
+Selected-service live updates and caching are implemented. Complete the familiar-journey phone/desktop release acceptance alongside that work, recording exact inputs for any failure. A reproduced blocking route, fare, permission or loading defect still takes priority. [Interface acceptance](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass) · [Reported failures and proposed investigation](RESULTS_REVIEW_2026-10-06.md).
 
 ## Remaining product milestones from the agreed roadmap
 

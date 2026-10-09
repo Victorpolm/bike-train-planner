@@ -180,3 +180,17 @@ it("the client deadline includes a stalled response body", async () => {
   }, { timeoutMs: 10 }), (error: unknown) => error instanceof AmenityLoadError && error.code === "timeout");
   assert.equal(calls, 1);
 });
+
+it("serves a bounded stale edge dataset before a slow background refresh finishes", async () => {
+  let now = Date.parse("2026-10-09T12:00:00Z");
+  const handler = createAmenityHandler({ now: () => now });
+  await handler(request(), async () => Response.json(fixture));
+  now += 2 * 86_400_000;
+  let finish!: (response: Response) => void;
+  const work: Promise<unknown>[] = [];
+  const response = await handler(request(), () => new Promise<Response>(resolve => { finish = resolve; }), task => work.push(task));
+  assert.equal((await response.json()).stale, true); assert.equal(work.length, 1);
+  finish(Response.json(fixture)); await Promise.all(work);
+  const fresh = await handler(request(), async () => { throw new Error("Fresh cache should be reused"); });
+  assert.equal((await fresh.json()).stale, false);
+});

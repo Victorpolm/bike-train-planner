@@ -9,7 +9,7 @@ import { applySwisstopo, simplifyTopoLine, type TopoReply } from "./swisstopo.ts
 import { chooseCyclingRoute, type RoutePreference } from "./cyclingPreferences.ts";
 
 const CYCLING_LIMITS = { requests: 32, timeoutMs: 25_000, phaseMs: 150_000, gapMs: 500, cacheEntries: 100, cacheMs: 30 * 60_000 };
-const cache = new Map<string, { route: CyclingRoute; traffic?: CyclingRoute }>();
+const cache = new Map<string, { candidates: CyclingRoute[] }>();
 type Located = Point & { id?: string; stopId?: string; label?: string; name?: string };
 type CyclingFailureKind = "service" | "no-route" | "off-network" | "limit";
 export type CyclingFailure = {
@@ -121,16 +121,28 @@ export class CyclingClient {
     const equivalent = cachedCycling(this.routes, a, b);
     if (equivalent) { this.routes.set(key, equivalent); return Promise.resolve(equivalent); }
     if (this.pending.has(key)) return this.pending.get(key)!;
-    const cacheKey = "traffic-objectives-v1|" + this.collectTrafficAlternatives + "|" + JSON.stringify(this.hills) + "|" + (this.routePreference ?? "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    // Acquisition and terrain checks are preference-independent. Switching the
+    // objective ranks the same pool instead of starting a different provider search.
+    const cacheKey = "shared-candidates-v2|" + JSON.stringify(this.hills) + "|" + (this.routePreference ? "ranked" : "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
-    if (cached && Date.now() - cached.route.fetchedAt < CYCLING_LIMITS.cacheMs) {
-      this.routes.set(key, cached.route); if (cached.traffic) this.trafficRoutes.set(key, cached.traffic);
-      return Promise.resolve(cached.route);
+    const select = (candidates: CyclingRoute[]) => this.routePreference
+      ? chooseCyclingRoute(candidates, this.routePreference, this.hills) : candidates[0];
+    if (cached && cached.candidates.every(r => Date.now() - r.fetchedAt < CYCLING_LIMITS.cacheMs)) {
+      const chosen = select(cached.candidates);
+      if (chosen) {
+        this.routes.set(key, chosen);
+        if (this.collectTrafficAlternatives) {
+          const traffic = chooseCyclingRoute(cached.candidates, "lower-stress", this.hills);
+          if (traffic && traffic.points !== chosen.points) this.trafficRoutes.set(key, traffic);
+        }
+        return Promise.resolve(chosen);
+      }
     }
     const task = this.queue.then(async () => {
       this.signal.throwIfAborted();
       const started = Date.now();
       const remaining = () => this.remainingMs - Math.max(0, Date.now() - started);
+      let checkedCandidates: CyclingRoute[] | undefined;
       const remember = (route: CyclingRoute) => {
         if (route.source === "OSRM" && this.routePreference) route = { ...route, preference: this.routePreference,
           alternativesChecked: 1, preferenceNote: "Backup cycling service: path preferences and hill avoidance could not be compared. Elevation may be unavailable." };
@@ -142,8 +154,8 @@ export class CyclingClient {
         this.failedLinks.delete(key);
         this.failureKinds.clear();
         for (const failure of this.failedLinks.values()) this.failureKinds.add(failure.kind);
-        if (this.useCache) {
-          cache.delete(cacheKey); cache.set(cacheKey, { route, traffic: this.trafficRoutes.get(key) });
+        if (this.useCache && (!this.routePreference || checkedCandidates && checkedCandidates.length >= 2)) {
+          cache.delete(cacheKey); cache.set(cacheKey, { candidates: checkedCandidates ?? [route] });
           while (cache.size > CYCLING_LIMITS.cacheEntries) cache.delete(cache.keys().next().value!);
         }
         return route;
@@ -155,8 +167,8 @@ export class CyclingClient {
       if (this.routePreference) {
         params.set("timode", "2");
         params.set("profile:turnInstructionMode", "2");
-        params.set("profile:ignore_cycleroutes", this.routePreference === "fastest" ? "1" : "0");
-        params.set("profile:avoid_unsafe", this.routePreference === "lower-stress" ? "1" : "0");
+        params.set("profile:ignore_cycleroutes", "0");
+        params.set("profile:avoid_unsafe", "1");
       }
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -191,29 +203,16 @@ export class CyclingClient {
               const [checkedPrimary, rawAlternative] = await Promise.all([this.terrainCheck(route), (async () => {
                 if (this.alternativeRequests >= (this.hills.mode === "none" ? 6 : 12) || this.requests >= CYCLING_LIMITS.requests - 4 || remaining() <= 7000) return null;
                 const alternative = new URLSearchParams(params);
-                const stairs = route.sections.some(s => s.tags.highway === "steps");
                 uphillParameters(alternative, this.hills);
-                if (this.routePreference === "simplest") {
-                  // A second trekking route can repeat the same cycle-route
-                  // bias. Compare a road-oriented bicycle route instead, then
-                  // rank actual instructions with the same terrain/time checks.
-                  alternative.set("profile", "fastbike");
-                  alternative.set("profile:allow_steps", "0");
-                  alternative.set("profile:allow_motorways", "0");
-                  alternative.set("profile:considerTurnRestrictions", "1");
-                  alternative.delete("profile:ignore_cycleroutes");
-                  alternative.delete("profile:avoid_unsafe");
-                } else if (stairs || route.blocked || this.collectTrafficAlternatives && this.routePreference === "fastest") {
-                  alternative.set("profile:allow_steps", "0");
-                  alternative.set("profile:avoid_unsafe", "1");
-                  if (this.collectTrafficAlternatives) alternative.set("profile:ignore_cycleroutes", "0");
-                } else if (this.hills.mode === "none") alternative.set("alternativeidx", "1");
+                alternative.set("profile", "fastbike");
+                alternative.set("profile:allow_steps", "0");
+                alternative.set("profile:allow_motorways", "0");
+                alternative.set("profile:considerTurnRestrictions", "1");
+                alternative.delete("profile:ignore_cycleroutes");
+                alternative.delete("profile:avoid_unsafe");
                 try {
                   await waitFor(this.gapMs, this.signal); this.lastRequest = Date.now(); this.requests++; this.alternativeRequests++;
-                  // Live city alternatives can take 9–12 s. The old 2.5 s
-                  // first-link timeout often prevented Simplest comparing any.
-                  const timeout = this.routePreference === "simplest" ? 15000
-                    : this.hills.mode !== "none" ? 10000 : !stairs && !route.blocked && this.routes.size < 2 ? 2500 : 10000;
+                  const timeout = 15000;
                   const alternate = await fetchJson<unknown>("https://brouter.de/brouter?" + alternative, this.signal,
                     Math.min(timeout, remaining()), this.fetcher);
                   return parseCyclingRoute(alternate, a, b, Date.now(), this.pace);
@@ -226,11 +225,11 @@ export class CyclingClient {
               })()]);
               const candidates = [checkedPrimary];
               if (rawAlternative) {
-                const preliminary = chooseCyclingRoute([checkedPrimary, rawAlternative], this.routePreference, this.hills);
-                // IDs identify endpoints, so compare the point-array identity here.
-                const trafficChoice = this.collectTrafficAlternatives && chooseCyclingRoute([checkedPrimary, rawAlternative], "lower-stress", this.hills);
-                candidates.push(preliminary?.points === rawAlternative.points || trafficChoice && trafficChoice.points === rawAlternative.points ? await this.terrainCheck(rawAlternative) : rawAlternative);
+                // Every objective sees the same terrain-checked candidates.
+                // A discarded unsafe/slow path must not reappear on a preference switch.
+                candidates.push(await this.terrainCheck(rawAlternative));
               }
+              checkedCandidates = candidates;
               const choice = chooseCyclingRoute(candidates, this.routePreference, this.hills);
               if (!choice) throw new TerrainRouteError("No bicycle-suitable checked path: " +
                 [...new Set(candidates.flatMap(r => r.sections.filter(s => s.mode === "blocked").flatMap(s => s.reasons ?? [])))].join(" "));

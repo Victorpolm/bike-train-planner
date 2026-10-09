@@ -94,19 +94,29 @@ export class OjpClient {
 }
 
 const detailCache = new Map<string, { expires: number; promise: Promise<OjpDetails> }>();
-export function checkOjpTripInfo(ref: OjpReference): Promise<OjpDetails> {
+export function checkOjpTripInfo(ref: OjpReference, signal?: AbortSignal): Promise<OjpDetails> {
+  if (signal?.aborted) return Promise.reject(signal.reason);
   const body = { journeyRef: ref.journeyRef, operatingDay: ref.operatingDay, fromRef: ref.fromRef, toRef: ref.toRef,
     departure: ref.departure, arrival: ref.arrival };
   const key = JSON.stringify(body), cached = detailCache.get(key);
-  if (cached && cached.expires > Date.now()) return cached.promise;
+  if (cached && cached.expires > Date.now()) return detailSubscriber(cached.promise, signal);
   const promise = (async () => {
     return await fetchJson<OjpDetails>("/api/ojp/tripinfo", undefined, 20_000, fetch,
       { method: "POST", headers: { "Content-Type": "application/json" }, body: key });
   })();
   if (detailCache.size >= 64) detailCache.delete(detailCache.keys().next().value!);
-  detailCache.set(key, { expires: Date.now() + 5 * 60_000, promise });
+  detailCache.set(key, { expires: Date.now() + 15_000, promise });
   void promise.catch(() => detailCache.delete(key));
-  return promise;
+  return detailSubscriber(promise, signal);
+}
+function detailSubscriber<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener("abort", abort, { once: true });
+    void promise.then(value => { if (!signal.aborted) resolve(value); }, reject)
+      .finally(() => signal.removeEventListener("abort", abort));
+  });
 }
 
 export function applyBicycleEvidence(network: Network, target: TransitLeg, evidence: BicycleEvidence) {

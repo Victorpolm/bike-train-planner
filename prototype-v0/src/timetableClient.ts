@@ -103,7 +103,7 @@ export class TimetableClient {
           this.cooldown = 0;
           if (this.fetcher === fetch) {
             timetableCooldown = 0;
-            timetableCache.delete(url); timetableCache.set(url, { expires: Date.now() + 30_000, data });
+            timetableCache.delete(url); timetableCache.set(url, { expires: Date.now() + (path === "locations" ? 24 * 60 * 60_000 : 30_000), data });
             while (timetableCache.size > 100) timetableCache.delete(timetableCache.keys().next().value!);
           }
           return data as T;

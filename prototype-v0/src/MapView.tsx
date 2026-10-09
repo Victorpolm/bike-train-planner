@@ -1449,7 +1449,7 @@ export default function MapView({
                       {" "}
                       · {data.facilities.length.toLocaleString("en-GB")} records · downloaded{" "}
                       {new Date(data.fetchedAt).toLocaleDateString("en-GB")}
-                      {data.stale && " · refresh failed; showing older data"}
+                      {data.stale && " · showing cached older data; refresh pending or unavailable"}
                     </>
                   ) : load.status === "error" ? (
                     ` · ${load.error?.message ?? "Loading failed. Retry loading."}`

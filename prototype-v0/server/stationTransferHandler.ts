@@ -38,7 +38,7 @@ function resolve(query: TransferEndpointQuery, data: Awaited<ReturnType<typeof l
   const didok = refDidok || graphDidok;
   let candidates: number[];
   const code = platform(query.platform ?? "");
-  if (exact && exact[5] !== "1" && exact[4]) {
+  if (exact && exact[5] !== "1" && exact[4] && !query.platformChanged) {
     candidates = [data.ids.get(exact[0])!, ...data.originals.get(exact[1]) ?? []];
     candidates = [...new Set(candidates)].filter(i => !code || matchesPlatform(data.stops[i][4], code));
     if (!code) candidates = [data.ids.get(exact[0])!];
@@ -66,6 +66,7 @@ export async function handleStationTransfers(request: Request): Promise<Response
     const { endpoints } = JSON.parse(raw) as { endpoints: TransferEndpointQuery[] };
     if (!Array.isArray(endpoints) || !endpoints.length || endpoints.length > 24 || endpoints.some(q => !q || typeof q.ref !== "string" || !q.ref || q.ref.length > 160
       || q.stopId !== undefined && (typeof q.stopId !== "string" || q.stopId.length > 160)
+      || q.platformChanged !== undefined && typeof q.platformChanged !== "boolean"
       || q.platform !== undefined && (typeof q.platform !== "string" || q.platform.length > 40))) return json({ error: "Invalid endpoints" }, 400);
     const data = await load();
     return json({ feed: data.feed, endpoints: endpoints.map(q => resolve(q, data)) });

@@ -13,7 +13,7 @@ export function useBikeParking(enabled: boolean) {
     for (const provider of providers) {
       if (loads[provider].status === "ready") continue;
       setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "loading", error: undefined } }));
-      void loadParkingSource(provider, controller.signal).then(data => {
+      void loadParkingSource(provider, controller.signal, fetch, { onUpdate: data => setLoads(current => ({ ...current, [provider]: { data, status: "ready" } })) }).then(data => {
         if (!controller.signal.aborted) setLoads(current => ({ ...current, [provider]: { data, status: "ready" } }));
       }).catch(error => {
         if (!controller.signal.aborted) setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "error", error: parkingLoadError(error) } }));

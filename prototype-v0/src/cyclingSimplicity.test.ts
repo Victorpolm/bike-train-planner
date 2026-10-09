@@ -88,3 +88,20 @@ it("keeps the ordinary route when the road candidate is unavailable or less simp
     assert.equal((await client.route(from, to))?.distanceKm, 1.925);
   }
 });
+
+it("Fastest checks the same road candidate as Simplest and reuses it without more requests", async () => {
+  let calls = 0;
+  const fetcher: typeof fetch = async input => { calls++; return Response.json(new URL(String(input)).searchParams.get("profile") === "fastbike" ? road : primary); };
+  const fastest = new CyclingClient(new AbortController().signal, fetcher, 0, true, null, pace, "fastest", null);
+  const quick = await fastest.route(from, to);
+  assert.equal(calls, 2); assert.equal(quick?.distanceKm, 1.551);
+  const simplest = new CyclingClient(new AbortController().signal, fetcher, 0, true, null, pace, "simplest", null);
+  const simple = await simplest.route(from, to);
+  assert.equal(calls, 2); assert.ok(quick!.minutes <= simple!.minutes);
+  assert.equal(simplest.requests, 0);
+});
+it("never labels the 7h04 candidate fastest when the shared pool contains a 6h46 candidate", () => {
+  const route = parse(road), faster = { ...route, minutes: 406, turnCount: 20 }, slower = { ...route, minutes: 424, turnCount: 10 };
+  assert.equal(chooseCyclingRoute([slower, faster], "fastest")!.minutes, 406);
+  assert.ok(chooseCyclingRoute([slower, faster], "simplest")!.minutes >= 406);
+});
