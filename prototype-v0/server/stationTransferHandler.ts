@@ -8,11 +8,14 @@ function prepare(data: Data) {
   const ids = new Map<string, number>(), originals = new Map<string, number[]>(), stations = new Map<string, number[]>();
   const append = (map: Map<string, number[]>, key: string, value: number) => { const values = map.get(key) ?? []; values.push(value); map.set(key, values); };
   data.stops.forEach((s, i) => { ids.set(s[0], i); if (s[1] && s[1] !== s[0]) append(originals, s[1], i); if (s[2]) append(stations, s[2], i); });
-  const rules = new Map<number, Record<string, number>>();
+  const rules = new Map<number, Record<string, number>>(), stationMaximums = new Map<string, number>();
   for (const [from, to, seconds] of data.rules) {
     const row = rules.get(from) ?? {}; row[data.stops[to][0]] = seconds; rules.set(from, row);
+    const station = data.stops[from][2];
+    if (station && station === data.stops[to][2])
+      stationMaximums.set(station, Math.max(stationMaximums.get(station) ?? 0, seconds));
   }
-  return { feed: data.feed, stops: data.stops, ids, originals, stations, rules };
+  return { feed: data.feed, stops: data.stops, ids, originals, stations, rules, stationMaximums };
 }
 async function load() {
   return index ??= (async () => {
@@ -28,9 +31,11 @@ function resolve(query: TransferEndpointQuery, data: Awaited<ReturnType<typeof l
   const rowAt = (id: string) => { const i = data.ids.get(id); return i === undefined ? undefined : data.stops[i]; };
   const exact = rowAt(query.ref), graph = query.stopId ? rowAt(query.stopId) : undefined;
   // IDs come from the supplied DIDOK/original_stop_id columns, never SLOID arithmetic or name similarity.
-  const didok = exact?.[2] || graph?.[2] || (data.stations.has(query.ref) ? query.ref : query.stopId && data.stations.has(query.stopId) ? query.stopId : "");
+  const originalStations = new Set((data.originals.get(query.ref) ?? []).map(i => data.stops[i][2]).filter(Boolean));
+  const refDidok = exact?.[2] || (data.stations.has(query.ref) ? query.ref : originalStations.size === 1 ? [...originalStations][0] : "");
   const graphDidok = graph?.[2] || (query.stopId && data.stations.has(query.stopId) ? query.stopId : "");
-  if (exact && graphDidok && exact[2] !== graphDidok) return missing("unmapped");
+  if (refDidok && graphDidok && refDidok !== graphDidok) return missing("unmapped");
+  const didok = refDidok || graphDidok;
   let candidates: number[];
   const code = platform(query.platform ?? "");
   if (exact && exact[5] !== "1" && exact[4]) {
@@ -41,9 +46,16 @@ function resolve(query: TransferEndpointQuery, data: Awaited<ReturnType<typeof l
     candidates = didok ? data.stations.get(didok) ?? [] : data.originals.get(query.ref) ?? [];
     candidates = candidates.filter(i => data.stops[i][5] !== "1" && matchesPlatform(data.stops[i][4], code));
   }
-  if (candidates.length !== 1) return missing(candidates.length ? "ambiguous" : "unmapped");
+  // Aggregate only an identified station without a platform. Never rescue an
+  // unknown SLOID, a contradictory station, or an explicit unmatched platform.
+  const stationMaximumSeconds = !code && didok && (query.ref === didok || exact && !exact[4] || !exact && originalStations.size === 1)
+    ? data.stationMaximums.get(didok) : undefined;
+  if (candidates.length !== 1) return stationMaximumSeconds !== undefined
+    ? { key, status: "station", stationId: didok, stationMaximumSeconds, feed: data.feed }
+    : missing(candidates.length ? "ambiguous" : "unmapped");
   const i = candidates[0];
-  return { key, status: "matched", id: data.stops[i][0], minimums: data.rules.get(i) ?? {}, feed: data.feed };
+  return { key, status: "matched", id: data.stops[i][0], stationId: data.stops[i][2], stationMaximumSeconds,
+    minimums: data.rules.get(i) ?? {}, feed: data.feed };
 }
 export async function handleStationTransfers(request: Request): Promise<Response> {
   const json = (data: unknown, status = 200) => Response.json(data, { status, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });

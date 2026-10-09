@@ -28,20 +28,22 @@ async function boundedText(response: Response | Request, max: number) {
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
   return new TextDecoder().decode(bytes);
 }
-export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
+export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, timeoutMs = 50_000) {
   const cache = new Map<string, { expires: number; data: OnlineFare }>();
   const pending = new Map<string, Promise<OnlineFare>>();
   let queue: Promise<unknown> = Promise.resolve(), lastCall = 0, blockedUntil = 0;
-  const post = (xml: string, key: string, endpoint = FARE_ENDPOINT) => {
+  const post = (xml: string, key: string, signal: AbortSignal, endpoint = FARE_ENDPOINT) => {
     const job = queue.then(async () => {
+      signal.throwIfAborted();
       if (Date.now() < blockedUntil) throw new Error("Fare service cooling down");
       const pause = Math.max(0, pace - (Date.now() - lastCall));
-      if (pause) await new Promise(resolve => setTimeout(resolve, pause)); lastCall = Date.now();
+      if (pause) await new Promise(resolve => setTimeout(resolve, pause));
+      signal.throwIfAborted(); lastCall = Date.now();
       const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
       let phase = "request";
       try {
         // Reject redirects explicitly; never forward credentials to a Location.
-        const response = await fetcher(endpoint, { method: "POST", redirect: "manual", signal: controller.signal,
+        const response = await fetcher(endpoint, { method: "POST", redirect: "manual", signal: AbortSignal.any([signal, controller.signal]),
           headers: { Authorization: "Bearer " + key, "Content-Type": "application/xml", Accept: "application/xml" }, body: xml });
         if (!response.ok) { console.warn("Fare upstream HTTP failure", endpoint === FARE_ENDPOINT ? "ojpfare" : "ojp20", response.status);
           if ([401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
@@ -55,7 +57,14 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
         throw error;
       } finally { clearTimeout(timer); }
     });
-    queue = job.catch(() => {}); return job;
+    queue = job.catch(() => {});
+    // Expired visitors do not wait behind other quotes or issue stale requests.
+    return new Promise<string>((resolve, reject) => {
+      const aborted = () => reject(signal.reason);
+      signal.addEventListener("abort", aborted, { once: true });
+      if (signal.aborted) aborted();
+      job.then(resolve, reject).finally(() => signal.removeEventListener("abort", aborted));
+    });
   };
   return async (request: Request, env: FareEnvironment): Promise<Response> => {
     const path = new URL(request.url).pathname;
@@ -79,7 +88,14 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
     if (cached && cached.expires > Date.now()) return json(cached.data);
     if (pending.has(id)) return json(await pending.get(id));
     // Bound queue growth when several cards or visitors request prices at once.
-    if (pending.size >= 1 || Date.now() < blockedUntil) return json({ error: "Fare service busy; try again shortly." }, 429);
+    if (pending.size >= 4 || Date.now() < blockedUntil) {
+      const response = json({ error: "Fare service busy; try again shortly." }, 429);
+      response.headers.set("Retry-After", String(Math.max(5, Math.ceil((blockedUntil - Date.now()) / 1000))));
+      return response;
+    }
+    // A small shared queue admits concurrent visitors; upstream calls remain
+    // strictly serialized and paced. Bound each visitor below the client's 60s.
+    const signal = AbortSignal.any([request.signal, AbortSignal.timeout(timeoutMs)]);
     const work = (async (): Promise<OnlineFare> => {
       const data: OnlineFare = { status: "unavailable", passenger: null, bicycle: null, checked: new Date().toISOString(), environment: "test" };
       try {
@@ -91,16 +107,16 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
         } else {
           // Compatibility for public-timetable/older results without OJP data.
           // Never fall back here after retained data failed validation.
-          const trips = fareTrips(await post(fareTripRequest(query.segments), tripKey || key,
+          const trips = fareTrips(await post(fareTripRequest(query.segments), tripKey || key, signal,
             tripKey ? "https://api.opentransportdata.swiss/ojp20" : FARE_ENDPOINT));
           trip = matchingFareTrip(trips, query.segments); data.itinerarySource = "lookup";
         }
         if (!trip) return { ...data, reason: "No exact itinerary match; no substitute route was priced." };
         if (query.passenger !== "ga") {
-          try { data.passenger = parseFare(await post(fareRequest(trip, query.passenger), key), trip, query.passenger); } catch { /* Preserve a possible bicycle quote. */ }
+          try { data.passenger = parseFare(await post(fareRequest(trip, query.passenger), key, signal), trip, query.passenger); } catch { /* Preserve a possible bicycle quote. */ }
         }
         if (query.bicycle) {
-          try { data.bicycle = parseFare(await post(fareRequest(trip, "bicycle"), key), trip, "bicycle"); } catch { /* Unknown remains explicit. */ }
+          try { data.bicycle = parseFare(await post(fareRequest(trip, "bicycle"), key, signal), trip, "bicycle"); } catch { /* Unknown remains explicit. */ }
         }
         const complete = (query.passenger === "ga" || data.passenger) && (!query.bicycle || data.bicycle);
         data.status = complete ? "quoted" : data.passenger || data.bicycle ? "partial" : "unavailable";
@@ -109,6 +125,7 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500) {
         console.warn("Fare itinerary lookup failed");
         data.reason = "The online fare service could not complete this check.";
       }
+      if (signal.aborted) data.reason = "The online fare check timed out or was cancelled. Please try again.";
       return data;
     })();
     pending.set(id, work);

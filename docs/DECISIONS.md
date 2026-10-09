@@ -692,3 +692,13 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Documentation decision:** Add [NEXT_STEPS.md](NEXT_STEPS.md) as the current checklist, link it from README/state/roadmap, and correct stale descriptions of branch merges, walking endpoints and completed interface/preset work. Preserve historical evidence and the latest instruction to retain existing Preferences. Immediate release acceptance and reproduced blockers precede optional extensions; the earlier parking → useful stops → broader interface milestone order is retained with its completed portions marked.
 
 **Boundary:** Discover, custom cycling minimum/maximum, scenic places, independent hill regrouping and further workflows remain separately scoped design items. This synchronization does not authorize their implementation, schedule maintenance, change hosting/access, or claim new live-provider/browser tests. Switzerland-first, owner-private operation and approval before new hosting costs remain in force.
+
+## 2026-10-09 — Fix the update review, then show live transit delays
+
+**Authorization:** The owner requests fixes from the attached update review and identifies delays on selected public transport as the next important step.
+
+**Decisions implemented:** Preserve known reservation requirements across unrelated TripInfo notes; keep conflicting or explicitly unknown dated reservation evidence unresolved instead of using a generic exemption. Keep bicycle permission separate. For a known station without a matched platform pair, use a labelled maximum of the feed's general intra-station transfer rules, preserving exact OJP priority, identity/date checks and existing walking. Clarify permission help, empty climbing results and each comparison window; allow a bounded four-quote queue with serialized provider calls and a 50-second whole-check deadline. Selected flat pace applies to offline estimates; live journeys still require routed geometry.
+
+**Next priority:** Integrate live delays, cancellations and platform changes for the exact selected services. Existing OJP requests explicitly disable realtime. Preserve scheduled fare/evidence identities, separate estimates, show freshness/unknowns and recheck connections. Static transfer-feed refresh remains a different task.
+
+**Limits:** This does not authorize or implement an engine rewrite, Europe expansion, booking or live bicycle capacity. The report's external stress harness was unavailable; larger-network algorithm work remains deferred. Version 60 passed 452 tests and production/format/unused checks; no new browser or live-provider result is claimed. [Implementation and release](UPDATE_REVIEW_FIXES_2026-10-09.md).

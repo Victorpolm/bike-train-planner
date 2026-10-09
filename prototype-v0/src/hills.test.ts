@@ -8,6 +8,7 @@ import { solveWaypoints } from "./waypoints.ts";
 import { selectStationPairs } from "./api.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import type { Place, Point, Station } from "./routing.ts";
+import { climbingNotice, recommend } from "./recommendations.ts";
 
 const origin: Place = { lat: 47, lon: 8, label: "Origin" };
 const destination: Place = { lat: 47.1, lon: 8.1, label: "Destination", stopId: "D" };
@@ -83,6 +84,20 @@ it("does not select unknown elevation as a climbing winner or relax bicycle perm
   assert.ok(result.journeys.length);
   assert.ok(categorize(result.journeys, options).every(p => !p.categories.includes("Reduce climbing")));
   assert.equal(solve(network(), origin, destination, start, { ...options, bicycleScope: "confirmed" }, "baseline").journeys.length, 0);
+});
+
+it("explains missing elevation when other objectives produce no cards, and clears the notice for a later eligible batch", () => {
+  const n = network();
+  for (const [key, r] of n.cycling!) if (r) n.cycling!.set(key, { ...r, ascentM: null, elevationCoverage: 0 });
+  const o: Options = { ...options, objectives: ["cheapest"], hills: { ...DEFAULT_HILLS, mode: "gentler" } };
+  const journeys = solve(n, origin, destination, start, o, "baseline").journeys;
+  assert.ok(journeys.length);
+  const initial = recommend([], journeys, [], o).proposals;
+  assert.equal(initial.length, 0);
+  assert.match(climbingNotice(o, initial)!, /Gentlest cycling.*complete elevation/);
+  const later = recommend([], solve(network(), origin, destination, start, o, "baseline").journeys, [], o).proposals;
+  assert.ok(later.some(p => p.categories.includes("Gentlest cycling")));
+  assert.equal(climbingNotice(o, [...initial, ...later]), null);
 });
 it("keeps a gentler option even when it has more total ascent", () => {
   const n = network(), a = n.stops.get("A")!, b = n.stops.get("B")!;

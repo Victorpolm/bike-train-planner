@@ -4,7 +4,6 @@ import {
   addClimb,
   climbSummary,
   emptyClimb,
-  hillSearch,
   journeyClimb,
   routeClimb,
   type HillPreferences,
@@ -41,7 +40,13 @@ import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession
 import { firstBoarding, laterDepartures } from "./laterDepartures";
 import type { Journey } from "./routing";
 import { metrics, type ModelMode, type EndpointPreference, type CyclingPosition } from "./model";
-import { recommend, compareCycling, scopeLabels, type ScopedProposal } from "./recommendations";
+import {
+  recommend,
+  compareCycling,
+  climbingNotice,
+  scopeLabels,
+  type ScopedProposal,
+} from "./recommendations";
 import MapView from "./MapView";
 import JourneyPlan from "./JourneyPlan";
 import JourneyTimeSummary from "./ui/JourneyTimeSummary";
@@ -581,6 +586,7 @@ export default function App() {
     return entries;
   }, [recommendation, session, laterBatches, mode, customJourneys, objectiveFares.context]);
   const proposals = proposalEntries.map((entry) => entry.proposal);
+  const missingClimbing = climbingNotice(session?.options ?? options, proposals);
   const cyclingReference = customCycling ?? session?.cyclingComparison ?? null;
   const cyclingFastest =
     (session?.options.cyclingPosition ?? "anywhere") === "anywhere" &&
@@ -1420,18 +1426,7 @@ export default function App() {
                 )}
               </InfoDisclosure>
               <div className="journey-list">
-                {hillSearch(session.options) &&
-                  proposals.length > 0 &&
-                  !proposals.some(
-                    (p) =>
-                      p.categories.includes("Reduce climbing") ||
-                      p.categories.includes("Gentlest cycling"),
-                  ) && (
-                    <p className="notice">
-                      No worthwhile climbing reduction was verified within the time allowance.
-                      Routes with incomplete elevation cannot qualify.
-                    </p>
-                  )}
+                {!loading && missingClimbing && <p className="notice">{missingClimbing}</p>}
                 {cyclingReference ? (
                   <CyclingCard
                     comparison={cyclingReference}

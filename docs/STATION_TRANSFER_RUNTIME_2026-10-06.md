@@ -1,5 +1,7 @@
 # Station-transfer runtime integration and repository consolidation
 
+**9 October follow-up, version 60:** When a known station has no matched platform pair because platform information is absent, use its largest published general intra-station minimum as a labelled estimate. Preserve exact OJP priority, identity/edition/date checks and walking already included. Unknown or mismatched IDs and explicit unmatched platforms do not receive this estimate. The original integration below is historical. [Fix and regression evidence](UPDATE_REVIEW_FIXES_2026-10-09.md).
+
 _Implementation deployed 6 October 2026; source, release and regression audit recorded 7 October 2026._
 
 ## Status and provenance

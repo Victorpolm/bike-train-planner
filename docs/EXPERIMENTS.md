@@ -861,3 +861,15 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Isolation:** The long candidate gains only the Fewer boardings category. Least cycling and complete checked-price comparison keep their general window; fare sampling does not acquire the out-of-window candidate. These cases protect against accidentally broadening other preferences while removing the fixed boarding cap.
 
 **Verification:** 441 tests in 11 suites pass, including four added objective regressions; TypeScript/frontend/Worker builds, Knip and React formatting pass. The exact tested source was published as owner-private version 59. No new live-provider, browser or phone result is claimed. Next compare the trade-off on a familiar long trip. [Implementation and release](JOURNEY_OBJECTIVES_2026-10-08.md).
+
+## 2026-10-09 — Update-review regression cases
+
+**Reservation golden cases:** Required bicycle reservations followed by VB/VC/VI/VK/VT/VN remain required; a prohibition still wins permission. Summaries and fewer-reservation ranking retain the requirement. Contradictions within one response or across successive responses remain unknown, keep a conflict notice and cannot qualify as complete checked-price or known-reservation winners. Published operator reservation defaults apply only when the dated reservation field is absent, not explicitly unknown.
+
+**Transfers:** The bundled feed gives missing-platform station maxima of 180 seconds at DIDOK 8503001 and 240 seconds at 8502113. A two-minute change at Zürich Altstetten fails both solvers; three minutes succeeds and is counted once. Existing walking is subtracted. Tests reject conflicting stations, unknown references, unmatched/changed platforms and expired editions; existing exact Zürich/Bern and OJP-priority cases still pass.
+
+**Recommendations and pace:** A gentle-slopes search with incomplete elevation and no priced alternative produces zero cards but an explanatory notice; a later eligible batch clears it. A 75-minute boarding window is disclosed alongside the other categories' 60-minute window. Offline 10 versus 30 km/h changes train-catching feasibility in both solvers; a missing routed path remains unavailable at either pace.
+
+**Fares:** Four distinct pending visitors and one duplicate complete with one upstream call at a time; a fifth distinct quote receives bounded overflow. Cached reuse makes no new calls. Queue cancellation, the total deadline and provider cooldown are covered.
+
+**Verification:** 452 tests in 11 suites pass, including eleven new cases; TypeScript/frontend/Worker production builds, formatting and Knip pass. Published as owner-private version 60. The supplied review's independent corridor/stress figures were not rerun without its external harness; no new live-provider/browser validation is claimed. [Fixes and next realtime contract](UPDATE_REVIEW_FIXES_2026-10-09.md).

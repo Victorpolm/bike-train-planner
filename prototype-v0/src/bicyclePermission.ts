@@ -82,7 +82,7 @@ export const bicycleScopeOptions: Record<BicycleScope, string> = {
   "all-transit": "Also allow public transport that prohibits bicycles",
 };
 export const bicycleScopeHelp: Record<BicycleScope, string> = {
-  confirmed: "Every transit leg must have applicable evidence that your bicycle is allowed. Ticket and reservation conditions still apply.",
+  confirmed: "Every transit leg must have dated service evidence or an applicable published operator policy allowing bicycle carriage. This does not confirm available space. Ticket and reservation conditions still apply.",
   "allow-uncertain": "Include verified and unverified access. Exclude services that prohibit bicycles.",
   "all-transit": "Ignore bicycle-access restrictions when calculating routes. Services that prohibit bicycles are clearly marked; you cannot take your bicycle on those legs.",
 };

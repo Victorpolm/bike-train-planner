@@ -1,16 +1,24 @@
-# Next steps after version 59
+# Next steps after version 60
 
 _Consolidated 9 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Confirmed starting point
 
-- Owner-private **version 59** is published from Site source `f3c22542a5b46eb75487d2a1e9b8b7aca499360b`.
-- All **237 application files** in GitHub implementation commit [`c002731`](https://github.com/Victorpolm/bike-train-planner/commit/c0027316213d2f7932f38ec3177566dfbd10be24) match that source. The local application checkout is clean.
-- The release passed **441 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's [Test and build run](https://github.com/Victorpolm/bike-train-planner/actions/runs/37849560615) also completed successfully for that commit.
+- Owner-private **version 60** is published from Site source `2f0d2bcff6466dd0f6125b0dfe4da1ef375b2508`.
+- GitHub is synchronized with the release's **238 application files**. [Review fixes and release evidence](UPDATE_REVIEW_FIXES_2026-10-09.md).
+- The release passed **452 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's Test and build workflow verifies application commits independently.
 - Interface/profile and transfer-ZIP branches are already merged. Plan / Map / Journey, walking at the non-cycling endpoint, passenger-only transit, arrival deadlines, later departures and the new objective controls are delivered.
 - Fewer boardings values an avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling**. Its candidate window is independent of the other objectives' general 60-minute window. [Current objective contract](JOURNEY_OBJECTIVES_2026-10-08.md).
 
-This consolidation changes documentation only. It does not claim a new application release, another test run, completed browser acceptance or fresh live-provider evidence. Earlier uploaded project-state snapshots must not override the current repository.
+The attached update review is addressed in version 60. Its external stress/benchmark harness was not supplied, so its measurements are not claimed as rerun. Browser/phone acceptance and fresh live-provider checks remain pending.
+
+## Next important implementation: selected-service live updates
+
+**Owner instruction, 9 October:** after fixing the report, display delays in the public transport the user selected. This is the next important feature, ahead of optional product extensions.
+
+Current OJP journey and TripInfo requests explicitly send `UseRealtimeData=none`. Verify the supported realtime integration, retain scheduled identities separately from estimated times, and show delays, cancellations, changed platforms and freshness on the selected journey. Refresh within provider limits and recalculate onward-connection feasibility, final arrival and arrival deadlines. Missing realtime data must remain unknown, not become “on time”. The imported GTFS transfer table is a separate static source.
+
+[Implementation sequence and acceptance cases](UPDATE_REVIEW_FIXES_2026-10-09.md#next-important-feature-live-updates-on-the-selected-public-transport).
 
 ## Immediate checks already pending
 
@@ -21,7 +29,7 @@ This consolidation changes documentation only. It does not claim a new applicati
 | Route-quality reports | Reproduce the reported Zürich–Laax speed-dependent odd result using its exact endpoints, date/time, rider profile, mode and carriage scope; retain Baden–Witikon as another tracked case | Controlled ranking improvements do not establish the cause of the original live report; discovery is sampled |
 | Food loading on phones | Reproduce the reported failure and record latency, source/session error and partial results; assess compact geographic batches if payload/loading is the cause | The 6 October successful ~30-second nationwide response did not reproduce the phone failure |
 
-The concrete next action is the familiar-journey phone/desktop acceptance pass, recording exact inputs for any failure. A reproduced blocking route, fare, permission or loading defect takes priority over optional new features. [Interface acceptance](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass) · [Reported failures and proposed investigation](RESULTS_REVIEW_2026-10-06.md).
+The next feature implementation is selected-service live updates. Complete the familiar-journey phone/desktop release acceptance alongside that work, recording exact inputs for any failure. A reproduced blocking route, fare, permission or loading defect still takes priority. [Interface acceptance](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass) · [Reported failures and proposed investigation](RESULTS_REVIEW_2026-10-06.md).
 
 ## Remaining product milestones from the agreed roadmap
 

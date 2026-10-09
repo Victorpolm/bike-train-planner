@@ -12,6 +12,72 @@ import type { TransitLeg } from "./routing.ts";
 const fixture = (n: string, kind: string) => readFileSync(new URL(`./fixtures/fares-2026-09-27/${n}-${kind}.xml`, import.meta.url), "utf8");
 const quoteXml = (n: string, kind: string) => fixture(n, kind).replaceAll("fareprobe", "farequote");
 const trip = fareTrips(fixture("01", "trip"))[0];
+
+it("queues concurrent visitors, coalesces identical quotes and bounds the queue while serializing upstream calls", async () => {
+  const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+  const xml = fixture("01", "trip").replaceAll("2026-09-29", day), segments = fareTrips(xml)[0].segments;
+  const request = (passenger: "full" | "half-fare", bicycle = false) => new Request("https://app.example/api/fares/quote", {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ segments, passenger, bicycle }) });
+  let release!: () => void, entered!: () => void, calls = 0, active = 0, peak = 0;
+  const gate = new Promise<void>(resolve => { release = resolve; }), firstCall = new Promise<void>(resolve => { entered = resolve; });
+  const handler = createFareHandler(async (_url, options) => {
+    calls++; active++; peak = Math.max(peak, active); entered(); await gate;
+    const body = String(options?.body); active--;
+    return new Response(body.includes("<OJPTripRequest>") ? xml : quoteXml("01",
+      body.includes("<PassengerCategory>Bicycle") ? "bicycle" : body.includes("<EntitlementProductRef>HTA") ? "half-fare" : "full"));
+  }, 0);
+  const env = { OJP_FARE_API_KEY: "fixture-only" };
+  const first = handler(request("full"), env); await firstCall;
+  const queued = [handler(request("half-fare"), env), handler(request("full", true), env), handler(request("half-fare", true), env)];
+  await new Promise(resolve => setImmediate(resolve));
+  const duplicate = handler(request("full"), env);
+  const overflow = await handler(new Request("https://app.example/api/fares/quote", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ segments, passenger: "ga", bicycle: true }) }), env);
+  assert.equal(overflow.status, 429); assert.equal(overflow.headers.get("Retry-After"), "5");
+  release();
+  const replies = await Promise.all([first, ...queued, duplicate]);
+  for (const reply of replies) { assert.equal(reply.status, 200); assert.equal((await reply.json()).status, "quoted"); }
+  assert.equal(peak, 1); assert.equal(calls, 10);
+  assert.equal((await handler(request("full"), env)).status, 200); assert.equal(calls, 10);
+});
+
+it("bounds the whole fare request deadline and retains the provider cooldown", async () => {
+  const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+  const segments = fareTrips(fixture("01", "trip").replaceAll("2026-09-29", day))[0].segments;
+  const request = () => new Request("https://app.example/api/fares/quote", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ segments, passenger: "full", bicycle: false }) });
+  const env = { OJP_FARE_API_KEY: "fixture-only" };
+  const stalled = createFareHandler(async (_url, options) => new Promise((_resolve, reject) => {
+    options!.signal!.addEventListener("abort", () => reject(options!.signal!.reason), { once: true });
+  }), 0, 20);
+  const result = await (await stalled(request(), env)).json();
+  assert.equal(result.status, "unavailable"); assert.match(result.reason, /timed out or was cancelled/);
+  let calls = 0;
+  const limited = createFareHandler(async () => { calls++; return new Response("", { status: 429 }); }, 0);
+  assert.equal((await (await limited(request(), env)).json()).status, "unavailable");
+  const different = request(); const body = await different.json(); body.passenger = "half-fare";
+  const blocked = await limited(new Request(different.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }), env);
+  assert.equal(blocked.status, 429); assert.ok(Number(blocked.headers.get("Retry-After")) >= 59); assert.equal(calls, 1);
+});
+
+it("cancels a queued visitor without sending their fare query upstream", async () => {
+  const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+  const xml = fixture("01", "trip").replaceAll("2026-09-29", day), segments = fareTrips(xml)[0].segments;
+  const request = (passenger: string, signal?: AbortSignal) => new Request("https://app.example/api/fares/quote", { method: "POST", signal,
+    headers: { "Content-Type": "application/json" }, body: JSON.stringify({ segments, passenger, bicycle: false }) });
+  let release!: () => void, entered!: () => void, calls = 0;
+  const gate = new Promise<void>(r => { release = r; }), firstCall = new Promise<void>(r => { entered = r; });
+  const handler = createFareHandler(async (_url, options) => {
+    calls++; entered(); await gate;
+    return new Response(String(options?.body).includes("<OJPTripRequest>") ? xml : quoteXml("01", "full"));
+  }, 0);
+  const env = { OJP_FARE_API_KEY: "fixture-only" }, controller = new AbortController();
+  const first = handler(request("full"), env); await firstCall;
+  const cancelled = handler(request("half-fare", controller.signal), env);
+  await new Promise(resolve => setImmediate(resolve)); controller.abort();
+  assert.equal((await (await cancelled).json()).status, "unavailable");
+  release(); assert.equal((await (await first).json()).status, "quoted"); assert.equal(calls, 2);
+});
 it("uses the host-supported redirect mode throughout the trip-to-fare exchange", async () => {
   const day = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
   const xml = fixture("01", "trip").replaceAll("2026-09-29", day);

@@ -63,13 +63,13 @@ export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
 export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge>; cycling?: Map<string, CyclingRoute | null>;
   walking?: Map<string, WalkingRoute | null> };
 export const emptyNetwork = (): Network => ({ stops: new Map(), edges: new Map() });
-export function cyclingLink(network: Network, from: Point & { id?: string; stopId?: string }, to: Point & { id?: string; stopId?: string }) {
+export function cyclingLink(network: Network, from: Point & { id?: string; stopId?: string }, to: Point & { id?: string; stopId?: string }, pace?: CyclingPace) {
   if (network.cycling) {
     const route = cachedCycling(network.cycling, from, to);
     return { minutes: route?.minutes ?? Infinity, distanceKm: route?.distanceKm ?? Infinity, route: route ?? undefined };
   }
   const distanceKm = (from.stopId ?? from.id) && (from.stopId ?? from.id) === (to.stopId ?? to.id) ? 0 : haversineKm(from, to);
-  return { minutes: cyclingMinutes(distanceKm), distanceKm, route: undefined };
+  return { minutes: cyclingMinutes(distanceKm, pace), distanceKm, route: undefined };
 }
 export const atEndpoint = (stop: Stop, point: Place, network?: Network, direction: "access" | "egress" = "access", o?: Options): Station => {
   if (o && endpointIsWalking(o, direction)) {
@@ -81,7 +81,7 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
     return { ...stop, distanceKm: link.distanceKm, bikeMinutes: link.minutes, cyclingRoute: link.route };
   }
   const distanceKm = point.stopId === stop.id ? 0 : haversineKm(stop, point);
-  return { ...stop, distanceKm, bikeMinutes: cyclingMinutes(distanceKm) };
+  return { ...stop, distanceKm, bikeMinutes: cyclingMinutes(distanceKm, o?.cyclingPace) };
 };
 
 export function validateOptions(o: Options) {
@@ -175,6 +175,9 @@ export function categorize(journeys: Journey[], o: Options, fares?: ObjectiveFar
   const proposals = new Map<string, Proposal>();
   const add = (winner: Journey | undefined, category: string, explanation?: string) => {
     if (!winner) return;
+    const window = category !== "Fastest" && category !== "Leave latest" && category !== "Fewer boardings"
+      ? `Compared within ${o.extraTimeMinutes} minutes ${o.arriveBy ? "before the latest eligible departure" : "of the fastest eligible journey"}.` : "";
+    explanation = [explanation, window].filter(Boolean).join(" ") || undefined;
     const existing = proposals.get(winner.id);
     if (existing) { existing.categories.push(category); if (explanation) (existing.explanations ??= []).push(explanation); }
     else proposals.set(winner.id, { journey: winner, categories: [category], extraMinutes: extraTime(winner),
@@ -196,8 +199,10 @@ export function categorize(journeys: Journey[], o: Options, fares?: ObjectiveFar
     const winner = [...boardingFrontier].filter(j => extraTime(j) <= allowance + 1e-9)
       .sort((a, b) => score(a) - score(b) || extraTime(a) - extraTime(b) || compare(["active", "boardings"])(a, b))[0];
     const saved = winner ? metrics(fastest).boardings - metrics(winner).boardings : 0;
-    add(winner, "Fewer boardings", saved > 0 ? `${saved} fewer boarding${saved === 1 ? "" : "s"}; compromise values each avoided boarding at ${BOARDING_COMPROMISE.minutesPerBoarding} minutes, within 25% extra reference time overall.`
-      : `No worthwhile reduction in boardings was found with ${BOARDING_COMPROMISE.minutesPerBoarding} minutes per avoided boarding and the 25% overall allowance.`);
+    const window = ` Compared within ${allowance} minutes ${o.arriveBy ? "before the latest eligible departure" : "of the fastest eligible journey"}.`
+      + (allowance > o.extraTimeMinutes ? ` This is a wider comparison window than the ${o.extraTimeMinutes} minutes used by the other alternatives.` : "");
+    add(winner, "Fewer boardings", (saved > 0 ? `${saved} fewer boarding${saved === 1 ? "" : "s"}; compromise values each avoided boarding at ${BOARDING_COMPROMISE.minutesPerBoarding} minutes, within 25% extra reference time overall.`
+      : `No worthwhile reduction in boardings was found with ${BOARDING_COMPROMISE.minutesPerBoarding} minutes per avoided boarding and the 25% overall allowance.`) + window);
   }
   if (wantsObjective(o, "less-traffic")) {
     const eligible = frontier.filter(j => journeyTraffic(j).unknown === 0);
@@ -226,11 +231,12 @@ export function categorize(journeys: Journey[], o: Options, fares?: ObjectiveFar
     const winner = alternatives[0];
     if (winner) {
       const existing = proposals.get(winner.journey.id);
-      if (existing) { existing.categories.push("Reduce climbing"); existing.climbingSaved = winner.savedMetres; }
+      if (existing) { add(winner.journey, "Reduce climbing"); existing.climbingSaved = winner.savedMetres; }
       else proposals.set(winner.journey.id, { journey: winner.journey, categories: ["Reduce climbing"],
         extraMinutes: extraTime(winner.journey), climbingSaved: winner.savedMetres,
         cyclingSaved: metrics(fastest).bike - metrics(winner.journey).bike,
-        activeSaved: metrics(fastest).active - metrics(winner.journey).active });
+        activeSaved: metrics(fastest).active - metrics(winner.journey).active,
+        explanations: [`Compared within ${o.extraTimeMinutes} minutes ${o.arriveBy ? "before the latest eligible departure" : "of the fastest eligible journey"}.`] });
     }
   }
   return [...proposals.values()];
@@ -265,7 +271,7 @@ export function arrivalDepartureSeeds(network: Network, points: Place[], earlies
   for (let stage = 0; stage < points.length - 1; stage++) {
     if (stage) {
       const minutes = o.cyclingPosition === "end-only" ? cachedWalking(network.walking, points[stage - 1], points[stage])?.minutes ?? Infinity
-        : cyclingLink(network, points[stage - 1], points[stage]).minutes;
+        : cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).minutes;
       if (minutes > (o.cyclingPosition === "end-only" ? o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : Math.max(o.maxAccessMinutes, o.maxEgressMinutes))) break;
       prefix += minutes;
     }
@@ -354,7 +360,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const from = network.stops.get(current.stop)!;
     let neighbors = cycling.get(from.id);
     if (!neighbors) {
-      neighbors = boardingStops.filter(s => s.id !== from.id).map(stop => ({ stop, ...cyclingLink(network, from, stop) }))
+      neighbors = boardingStops.filter(s => s.id !== from.id).map(stop => ({ stop, ...cyclingLink(network, from, stop, o.cyclingPace) }))
         .filter(n => n.minutes > 0 && n.minutes <= o.maxIntermediateMinutes);
       cycling.set(from.id, neighbors);
     }

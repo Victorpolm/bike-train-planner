@@ -1,3 +1,4 @@
+import { validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import type { CyclingRoute } from "./cycling.ts";
 import type { BicycleEvidence } from "./bicyclePermission.ts";
 const BIKE_SPEED_KMH = 15; // Legacy synthetic experiment only; live journeys use road-route durations.
@@ -101,8 +102,9 @@ export function haversineKm(a: Point, b: Point): number {
   return 2 * radiusKm * Math.asin(Math.sqrt(h));
 }
 
-export function cyclingMinutes(distanceKm: number): number {
-  return distanceKm <= 0.001 ? 0 : Math.ceil((distanceKm / BIKE_SPEED_KMH) * 60);
+export function cyclingMinutes(distanceKm: number, pace?: CyclingPace): number {
+  if (pace) validateCyclingPace(pace);
+  return distanceKm <= 0.001 ? 0 : Math.ceil((distanceKm / (pace?.flatSpeedKmh ?? BIKE_SPEED_KMH)) * 60);
 }
 
 export type CyclingComparison = {
@@ -116,12 +118,12 @@ export type CyclingComparison = {
 
 // A reference estimate, independent of transit budgets and category selection.
 // This is deliberately not represented as a public-transport Journey.
-export function cyclingOnly(origin: Place, destination: Place, start: Date, waypoints: Place[] = []): CyclingComparison {
+export function cyclingOnly(origin: Place, destination: Place, start: Date, waypoints: Place[] = [], pace?: CyclingPace): CyclingComparison {
   const points = [origin, ...waypoints, destination];
   const distances = points.slice(1).map((point, i) => points[i].stopId && points[i].stopId === point.stopId
     ? 0 : haversineKm(points[i], point));
   const distanceKm = distances.reduce((sum, distance) => sum + distance, 0);
-  const minutes = distances.reduce((sum, distance) => sum + cyclingMinutes(distance), 0);
+  const minutes = distances.reduce((sum, distance) => sum + cyclingMinutes(distance, pace), 0);
   return { distanceKm, minutes, arrival: new Date(start.getTime() + minutes * 60_000) };
 }
 

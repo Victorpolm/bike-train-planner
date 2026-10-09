@@ -2,6 +2,15 @@ import { categorize, metrics, type Options, type Proposal } from "./model.ts";
 import { formatMinutes, type CyclingComparison, type Journey } from "./routing.ts";
 import type { BicycleScope } from "./bicyclePermission.ts";
 import { objectiveLabels, requestedObjectives, type ObjectiveFareContext } from "./journeyObjectives.ts";
+import { hillSearch } from "./hills.ts";
+
+/** Use all displayed batches, even when no other objective can produce a card. */
+export function climbingNotice(options: Options, proposals: Pick<Proposal, "categories">[]): string | null {
+  if (!hillSearch(options) || proposals.some(p => p.categories.includes("Gentlest cycling") || p.categories.includes("Reduce climbing"))) return null;
+  return options.hills?.mode === "gentler"
+    ? "Gentlest cycling is unavailable: no eligible journey has complete elevation within the time allowance."
+    : "No worthwhile climbing reduction was verified within the time allowance. Routes with incomplete elevation cannot qualify.";
+}
 
 export const scopeLabels: Record<BicycleScope, string> = {
   confirmed: "Confirmed permission only", "allow-uncertain": "Allow uncertain permission",

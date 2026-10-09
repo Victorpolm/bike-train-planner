@@ -57,6 +57,48 @@ it("preserves generated platform sectors and refuses unknown or contradictory pl
   for (const e of [missing, conflicting, noGuess]) assert.equal(e.status, "unmapped");
   assert.equal(station.id, "ch:1:sloid:3000"); assert.equal(station.minimums?.[station.id!], 420);
 });
+
+it("uses a conservative station maximum for known stations lacking a platform, without guessing identities", async () => {
+  const [station, original, other, badPlatform, mismatched, unknown] = await query(
+    { ref: "8503001" }, { ref: "ch:1:sloid:3001", stopId: "8503001" }, { ref: "8502113" },
+    { ref: "8503001", platform: "999" }, { ref: "8503001", stopId: "8502113" },
+    { ref: "ch:1:sloid:999999999", stopId: "8503001" });
+  assert.equal(station.status, "station"); assert.equal(station.stationMaximumSeconds, 180);
+  assert.equal(original.stationMaximumSeconds, 180); assert.equal(original.stationId, "8503001");
+  assert.equal(other.stationMaximumSeconds, 240);
+  for (const endpoint of [badPlatform, mismatched, unknown]) assert.equal(endpoint.status, "unmapped");
+});
+
+it("rejects a two-minute missing-platform transfer in both solvers and counts the three-minute estimate once", async () => {
+  const interchange = { ...zurich, stopId: "8503001", label: "Zürich Altstetten" };
+  for (const minutes of [2, 3]) {
+    const first = leg("In", a, interchange, 5, 10), next = leg("Out", interchange, d, 10 + minutes, 30);
+    const n = await graph(first, next); n.stops.set(interchange.stopId, { ...interchange, id: interchange.stopId, name: interchange.label });
+    const check = boardingCheck([first], next, +at(10), 3);
+    assert.equal(check.source, "gtfs"); assert.equal(check.minutes, 3);
+    assert.match(check.note, /estimated because a platform is missing.*largest published general transfer/);
+    assert.match(check.note, /does not verify the actual platform pair/);
+    for (const result of both(n)) {
+      assert.equal(result.journeys.length, minutes === 3 ? 1 : 0);
+      if (minutes === 3) assert.equal(metrics(result.journeys[0]).walk, 3);
+    }
+    const walk = { ...leg("Walk", interchange, interchange, 10, 12), mode: "walk" as const };
+    assert.equal(boardingCheck([first, walk], next, +at(12), 3).readyAt, +at(13));
+    next.departurePlatform = "2";
+    assert.match(boardingCheck([first], next, +at(10), 3).note, /platform changed/);
+    next.departurePlatform = null; first.arrival = new Date("2026-12-13T08:00:00Z"); next.departure = new Date("2026-12-13T08:03:00Z");
+    assert.match(boardingCheck([first], next, +first.arrival, 3).note, /outside that period/);
+  }
+});
+
+it("does not apply one station's maximum to a different station or an unmatched explicit platform", async () => {
+  const first = leg("In", a, { ...zurich, stopId: "8503001" }, 5, 10);
+  const next = leg("Out", { ...zurich, stopId: "8502113" }, d, 20, 30);
+  await graph(first, next);
+  assert.notEqual(boardingCheck([first], next, +at(10), 3).source, "gtfs");
+  next.fromId = "8503001"; next.departurePlatform = "999"; await graph(first, next);
+  assert.notEqual(boardingCheck([first], next, +at(10), 3).source, "gtfs");
+});
 it("applies the imported seven-minute minimum in both solvers, once, retaining fare identity", async () => {
   for (const minutes of [6, 7]) {
     const first = leg("In", a, zurich, 5, 10), next = leg("Out", zurich, d, 10 + minutes, 30);

@@ -55,7 +55,9 @@ export function carriageForLeg(leg: TransitLeg) {
   const sob = sobMainlineRule(leg);
   const sbbIR = sbbInterRegioRule(leg);
   const operatorPermissionSource = operatorRule && operatorRule.permission !== "unknown" ? operatorRule.source : sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
-  const reservationFallback = !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && !!operatorRule;
+  // An explicitly unresolved dated requirement cannot become a generic "not required".
+  const reservationFallback = requirements?.bikeReservation === undefined
+    && !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && !!operatorRule;
   const sbb = isSbb(leg);
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
     ? requirements.bikeTicket : sbb || sob || operatorRule?.ticket === "required" || policy?.ticket === "required" ? "required" : "unknown";
@@ -92,14 +94,21 @@ export function bicycleJourneySummary(legs: TransitLeg[]) {
 }
 
 export function withTripInfoRule(evidence: BicycleEvidence, rule: CarriageRule, checked: string): BicycleEvidence {
-  // A detail response without a bike note does not erase existing dated evidence.
+  // Unrelated notes cannot erase a known reservation requirement. Conflicting
+  // dated requirements remain unresolved, including across detail responses.
+  const previousReservation = evidence.prerequisites?.bikeReservation ?? "unknown";
+  const conflict = [...evidence.conditions, ...rule.notes].some(note => /conflicting reservation/i.test(note))
+    || previousReservation !== "unknown" && rule.bikeReservation !== "unknown" && previousReservation !== rule.bikeReservation;
+  const conditions = [...new Set([...evidence.conditions, ...rule.notes])];
+  if (conflict && !conditions.some(note => /conflicting reservation/i.test(note)))
+    conditions.push("The provider gives conflicting reservation conditions. Confirm with the operator before boarding.");
   const permission = evidence.permission === "prohibited" || rule.permission === "prohibited" ? "prohibited"
     : rule.permission === "allowed" ? "allowed" : evidence.permission;
   return { ...evidence, permission,
     basis: rule.basis === "unassessed" ? evidence.basis : rule.basis,
-    conditions: [...new Set([...evidence.conditions, ...rule.notes])],
+    conditions,
     source: { title: "OJP service and stop conditions", url: "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptripinforequest-2-0/", checked },
     prerequisites: { bikeTicket: evidence.prerequisites?.bikeTicket ?? "unknown", ...evidence.prerequisites,
-      bikeReservation: rule.bikeReservation === "unknown" && !rule.notes.length ? evidence.prerequisites?.bikeReservation ?? "unknown" : rule.bikeReservation },
+      bikeReservation: conflict ? "unknown" : rule.bikeReservation === "unknown" ? previousReservation : rule.bikeReservation },
   };
 }

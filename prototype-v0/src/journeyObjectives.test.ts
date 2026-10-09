@@ -15,6 +15,7 @@ import type { OnlineFare } from "./onlineFare.ts";
 import { mixedRoutingFixture } from "./fixtures/mixedRouting.ts";
 import { updateBicycleEvidence, type SearchSession } from "./api.ts";
 import { TimetableClient } from "./timetableClient.ts";
+import { bicycleJourneySummary, carriageForLeg, interpretBicycleAttributes, withTripInfoRule } from "./bicycleCarriage.ts";
 
 const start = new Date("2026-10-09T06:00:00Z"), at = (m: number) => new Date(+start + m * 60_000);
 const points: Place[] = [0, 1, 2].map(i => ({ label: `Point ${i}`, stopId: String(i), lat: 47 + i * .1, lon: 8 }));
@@ -39,6 +40,47 @@ function journey(id: string, totalMinutes: number, boardings: number, bike = 0):
 }
 const options: Options = { ...DEFAULT_OPTIONS, maxAccessMinutes: 0, maxEgressMinutes: 0, maxIntermediateMinutes: 0,
   maxBikeMinutes: 0, horizonMinutes: 240, bicycleScope: "allow-uncertain" };
+
+it("retains required reservations through unrelated TripInfo notes, summaries and objective ranking", () => {
+  const attribute = (code: string) => ({ code, text: code, scope: "service" as const });
+  for (const code of ["A__VB", "A__VC", "A__VI", "A__VK", "A__VT", "A__VN"]) {
+    const j = journey(code, 60, 1), l = j.transitLegs[0];
+    l.operator = "SBB"; l.category = "IR"; l.service = "IR 35"; l.fromId = "8503000"; l.toId = "8507000";
+    l.bicycleEvidence = { ...l.bicycleEvidence!, operator: l.operator, service: l.service, fromId: l.fromId, toId: l.toId };
+    l.bicycleEvidence = withTripInfoRule(l.bicycleEvidence, interpretBicycleAttributes([attribute("A__VR")]), "2026-10-09");
+    l.bicycleEvidence = withTripInfoRule(l.bicycleEvidence, interpretBicycleAttributes([attribute(code)]), "2026-10-09");
+    assert.equal(carriageForLeg(l).bikeReservation, "required", code);
+    assert.equal(carriageForLeg(l).reservationSource, undefined, "A generic rule cannot contradict the dated requirement");
+    assert.equal(reservationMetrics([l]).required, 1);
+    if (code === "A__VN") assert.equal(carriageForLeg(l).permission, "prohibited");
+    else assert.match(bicycleJourneySummary([l])!, /bike reservation required/);
+    const free = journey("no-reservation", 65, 1);
+    free.transitLegs[0].bicycleEvidence!.prerequisites!.bikeReservation = "not-required";
+    assert.equal(categorize([j, free], { ...options, objectives: ["fewer-reservations"] })[0].journey.id, free.id);
+  }
+});
+
+it("keeps conflicting or explicitly unknown dated reservations out of complete-price and reservation winners", () => {
+  const j = journey("conflict", 60, 1), l = j.transitLegs[0];
+  l.operator = "SBB"; l.category = "IR"; l.service = "IR 35"; l.fromId = "8503000"; l.toId = "8507000";
+  l.bicycleEvidence = { ...l.bicycleEvidence!, operator: l.operator, service: l.service, fromId: l.fromId, toId: l.toId };
+  const unknown = structuredClone(l.bicycleEvidence);
+  assert.equal(carriageForLeg(l).bikeReservation, "unknown");
+  assert.equal(carriageForLeg({ ...l, bicycleEvidence: { ...unknown, prerequisites: undefined } }).bikeReservation, "not-required");
+  const required = interpretBicycleAttributes([{ code: "A__VR", text: "", scope: "service" }]);
+  const noReservation = { code: "I_9w2", text: "Die Mitnahme von Velos ist ohne Reservation möglich, sofern genügend Mitnahmeplätze vorhanden sind.", scope: "service" as const };
+  for (const combined of [false, true]) {
+    l.bicycleEvidence = withTripInfoRule(unknown, required, "2026-10-09");
+    l.bicycleEvidence = withTripInfoRule(l.bicycleEvidence, interpretBicycleAttributes(combined ? [...required.attributes, noReservation] : [noReservation]), "2026-10-09");
+    l.bicycleEvidence = withTripInfoRule(l.bicycleEvidence, interpretBicycleAttributes([{ code: "A__VB", text: "", scope: "service" }]), "2026-10-09");
+    assert.equal(carriageForLeg(l).bikeReservation, "unknown");
+    assert.equal(carriageForLeg(l).reservationSource, undefined);
+    assert.match(l.bicycleEvidence.conditions.join(" "), /conflicting reservation/);
+    assert.match(bicycleJourneySummary([l])!, /requirements need checking/);
+    assert.equal(categorize([j], { ...options, objectives: ["fewer-reservations"] }).length, 0);
+    assert.equal(checkedJourneyPrice(j, options, { profile: DEFAULT_FARE_PROFILE, quotes: new Map([[objectiveFareKey(j, DEFAULT_FARE_PROFILE), quote(20, 10)]]) }), null);
+  }
+});
 function network(legs: TransitLeg[]) {
   const n = emptyNetwork(); points.forEach((_, i) => n.stops.set(String(i), station(i)));
   for (const l of legs) n.edges.set(l.service, { id: l.service, from: l.fromId!, to: l.toId!, leg: l });
@@ -95,6 +137,8 @@ it("extends only the boarding comparison, preserving other objectives and fare-r
   const result = categorize([fast, fewer], o, { profile: DEFAULT_FARE_PROFILE, quotes });
   assert.deepEqual(result.find(p => p.journey.id === fewer.id)!.categories, ["Fewer boardings"]);
   assert.deepEqual(new Set(result.find(p => p.journey.id === fast.id)!.categories), new Set(["Fastest", "Least cycling", "Lowest checked price"]));
+  assert.match(result.find(p => p.journey.id === fewer.id)!.explanations!.join(" "), /75 minutes.*wider comparison window.*60 minutes/);
+  assert.match(result.find(p => p.journey.id === fast.id)!.explanations!.join(" "), /Compared within 60 minutes of the fastest eligible journey/);
   assert.equal(objectiveFareRequests([{ journeys: [fast, fewer], options: o }], DEFAULT_FARE_PROFILE, +start - 1000).eligible, 1);
   assert.equal(categorize([fast, fewer], { ...o, objectives: ["fastest", "least-cycling"] }).length, 1);
 });

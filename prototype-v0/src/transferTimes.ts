@@ -100,7 +100,7 @@ export function boardingCheck(legs: readonly TransitLeg[], next: TransitLeg, rea
       service: "Station transfer", serviceName: null, direction: null, stationTransfer: true } : undefined;
     return { readyAt: Math.max(readyAt + remaining * 1000, +incoming.arrival + seconds * 1000), minutes: seconds / 60,
       source: "gtfs", transferLeg, url: imported.feed!.source,
-      note: `SBB GTFS station transfer: ${seconds / 60} min for these mapped stops/platforms. Feed ${imported.feed!.version}, valid ${imported.feed!.validFrom} to ${imported.feed!.validThrough}. This is a general passenger minimum; service-specific exceptions, lifts, steps and bicycle accessibility remain unverified.` };
+      note: `SBB GTFS station transfer: ${seconds / 60} min${imported.basis === "station-maximum" ? " estimated because a platform is missing, using the largest published general transfer at this station" : " for these mapped stops/platforms"}. Feed ${imported.feed!.version}, valid ${imported.feed!.validFrom} to ${imported.feed!.validThrough}. ${imported.basis === "station-maximum" ? "This station estimate does not verify the actual platform pair" : "This is a general passenger minimum"}; service-specific exceptions, lifts, steps and bicycle accessibility remain unverified.` };
   }
   const coverage = imported ? ` ${imported.reason}` : "";
   const swiss = [incoming?.ojp?.toRef, next.ojp?.fromRef, incoming?.toId, next.fromId].some(id => id && (/^ch:/.test(id) || /^85\d{5}$/.test(id)));

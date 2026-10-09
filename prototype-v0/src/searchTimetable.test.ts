@@ -51,13 +51,15 @@ it("honours replacement-bus prohibitions and never treats passenger seat reserva
   assert.equal(interpretBicycleAttributes(searchBicycleAttributes({ "1_4.2_VB": "VELOS: Platzzahl eingeschränkt" })).permission, "allowed");
 });
 
-it("uses the applicable SOB mainline policy with separate ticket and reservation sources, while a dated ban takes precedence", () => {
+it("uses SOB's permission policy without resolving an explicitly unknown dated reservation, while a dated ban takes precedence", () => {
   const n = networkFor(fixture.chur);
   const leg = [...n.edges.values()].find(e => e.leg.operator === "SOB-sob")!.leg;
   const rule = carriageForLeg(leg);
   assert.equal(rule.permission, "confirmed"); assert.equal(rule.bikeTicket, "required");
-  assert.equal(rule.bikeReservation, "not-required");
-  assert.ok(rule.permissionSource?.url.includes("sob.ch")); assert.ok(rule.reservationSource?.url.includes("sob.ch"));
+  assert.equal(rule.bikeReservation, "unknown"); assert.equal(rule.reservationSource, undefined);
+  assert.ok(rule.permissionSource?.url.includes("sob.ch"));
+  const published = carriageForLeg({ ...leg, bicycleEvidence: undefined });
+  assert.equal(published.bikeReservation, "not-required"); assert.ok(published.reservationSource?.url.includes("sob.ch"));
   assert.equal(bicyclePermission({ ...leg, category: "EV" }), "uncertain");
   assert.equal(bicyclePermission({ ...leg, operator: "Another railway" }), "uncertain");
   assert.equal(bicyclePermission({ ...leg, bicycleEvidence: { ...leg.bicycleEvidence!, permission: "prohibited" } }), "prohibited");
@@ -125,7 +127,8 @@ it("discovers the omitted late train to Chur and compares later exits using rout
 it("applies the domestic SBB InterRegio rule narrowly and keeps explicit reservation conflicts unresolved", () => {
   const leg = [...networkFor(fixture.chur).edges.values()].find(e => e.leg.operator === "SBB" && e.leg.toId === "8509000")!.leg;
   const rule = carriageForLeg(leg);
-  assert.equal(rule.permission, "confirmed"); assert.equal(rule.bikeReservation, "not-required");
+  assert.equal(rule.permission, "confirmed"); assert.equal(rule.bikeReservation, "unknown");
+  assert.equal(carriageForLeg({ ...leg, bicycleEvidence: undefined }).bikeReservation, "not-required");
   assert.ok(rule.permissionSource?.title.includes("SBB"));
   // Reviewed regional rules now establish off-peak carriage as well.
   assert.equal(bicyclePermission({ ...leg, category: "S" }), "confirmed");

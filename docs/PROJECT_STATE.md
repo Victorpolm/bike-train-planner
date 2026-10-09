@@ -1,6 +1,8 @@
 # Project state
 
-**9 October repository audit:** all 237 application files on `main` match published version 59; [GitHub Test and build](https://github.com/Victorpolm/bike-train-planner/actions/runs/37849560615) passed for implementation commit `c0027316213d2f7932f38ec3177566dfbd10be24`. Current documentation is synchronized. [Next steps and status](NEXT_STEPS.md) separates acceptance/reliability checks, remaining milestone work and proposals. No new application release or live/browser verification is claimed.
+**9 October review fixes — version 60:** Reservation evidence survives unrelated TripInfo notes; explicitly unknown dated requirements stay unknown. Missing platforms can use a labelled conservative station estimate. Permission/climbing help, comparison-window explanations, fare concurrency and experimental pace estimates are corrected. **452 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. The next important feature is **live delays, cancellations and platform updates on selected public transport, with connection rechecks**. [Fixes, release evidence and realtime plan](UPDATE_REVIEW_FIXES_2026-10-09.md).
+
+**Earlier 9 October repository audit:** all 237 application files on `main` match published version 59; [GitHub Test and build](https://github.com/Victorpolm/bike-train-planner/actions/runs/37849560615) passed for implementation commit `c0027316213d2f7932f38ec3177566dfbd10be24`. Current documentation is synchronized. [Next steps and status](NEXT_STEPS.md) separates acceptance/reliability checks, remaining milestone work and proposals. No new application release or live/browser verification is claimed.
 
 **8 October objective implementation:** Commuter compares earliest arrival/latest departure, fewer boardings and least cycling. Bikepacking replaces least cycling with less mapped traffic exposure. Personalized can select these plus fewer mandatory bicycle reservations and lowest complete checked price. Existing controls remain Preferences; cycling only remains a separate reference. After the owner's follow-up, the boarding compromise uses 30 minutes per avoided boarding within 25% of the reference time, without a fixed 30-minute cap. **441 regressions** and production builds pass. [Current implementation and limits](JOURNEY_OBJECTIVES_2026-10-08.md).
 
@@ -24,7 +26,7 @@
 
 **Earlier branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).
 
-_Last consolidated: 2026-10-08. This is the current summary; dated reports and Git history preserve earlier states._
+_Last consolidated: 2026-10-09. This is the current summary; dated reports and Git history preserve earlier states._
 
 ## Objective and current scope
 

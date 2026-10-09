@@ -1,5 +1,7 @@
 # Journey objectives and boarding compromises — 8 October 2026
 
+**9 October review follow-up:** Version 60 states comparison windows consistently, keeps dated unknown reservation requirements out of known-reservation/complete-price winners, and explains missing climbing alternatives even when no other card qualifies. The 30-minute/25% boarding contract is unchanged. [Fixes and checks](UPDATE_REVIEW_FIXES_2026-10-09.md).
+
 ## Authorization and delivered choices
 
 **Decision:** The owner explicitly approved implementing Commuter/Bikepacking objective sets, choosing lower traffic exposure instead of an unsupported scenic category, and adding fewer mandatory reservations and lower price to Personalized. Existing cycling duration, placement, road preference, hills and endpoint controls remain in Preferences. This supersedes the implementation boundary in the earlier [brainstorming proposal](PERSONALIZED_OBJECTIVES_PROPOSAL_2026-10-08.md).

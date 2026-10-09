@@ -57,7 +57,8 @@ it("publishes an overnight proposal from the real acquisition flow without spend
 
 it("checks Rapperswil–Renens under More cycling even when nearer bus queries return no journeys", async () => {
   const start = new Date("2026-09-21T08:00:00+02:00"), urls: URL[] = [];
-  const options = preferenceOptions("more", "none");
+  // This acquisition fixture was recorded with the legacy 15 km/h estimate.
+  const options = { ...preferenceOptions("more", "none"), cyclingPace: { flatSpeedKmh: 15, electricAssist: false } };
   const rapperswil = MAJOR_STATIONS.find(s => s.id === "8503110")!;
   const renens = MAJOR_STATIONS.find(s => s.id === "8501118")!;
   // Only the recorded Rapperswil pair returns connections in this acquisition

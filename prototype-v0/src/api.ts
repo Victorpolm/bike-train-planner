@@ -195,12 +195,14 @@ function stationAccessError(session: SearchSession) {
 async function roadCandidates(session: SearchSession, point: Place, maxMinutes: number, direction: "access" | "egress" | "both",
   progress: Progress, expand = false, complete = false): Promise<Station[]> {
   const walkOnly = direction !== "both" && endpointIsWalking(session.options, direction);
-  const speed = walkOnly ? WALKING_SPEED_KMH : session.cyclingClient ? maxCyclingSpeed(session.options.cyclingPace) : 15;
+  const speed = walkOnly ? WALKING_SPEED_KMH : session.cyclingClient ? maxCyclingSpeed(session.options.cyclingPace) : session.options.cyclingPace?.flatSpeedKmh ?? 15;
   const pools = session.cyclingCandidatePools ??= new Map<string, Station[]>(), key = `${point.lat},${point.lon}:${maxMinutes}:${direction}:${walkOnly}`;
   const candidates = !expand && pools.has(key) ? pools.get(key)!
     : await findCandidateStations(point, maxMinutes * speed / 15, session.client, progress, expand);
   pools.set(key, candidates);
-  if (!session.cyclingClient && !walkOnly) return candidates;
+  if (!session.cyclingClient && !walkOnly) return candidates
+    .map(stop => atEndpoint(stop, point, session.network, direction === "egress" ? "egress" : "access", session.options))
+    .filter(stop => endpointMinutes(stop) <= maxMinutes);
   const result: Station[] = [];
   for (const stop of candidates) {
     progress(`Checking ${walkOnly ? "walking" : "cycling"} paths near ${point.label}…`);
@@ -588,12 +590,12 @@ async function extendInternal(session: SearchSession, progress: Progress, publis
         const candidates = [...await nearby(from, client), ...network.stops.values(), ...MAJOR_STATIONS.map(s => ({ ...s, kind: "train" }))];
         const neighbors = [...new Map(candidates.map(s => [s.id, s])).values()]
           .filter(s => s.id !== from.id && !samePlace(s, goal) && haversineKm(from, s) > .001 && (session.cyclingClient
-            ? haversineKm(from, s) / maxCyclingSpeed(o.cyclingPace) * 60 : cyclingMinutes(haversineKm(from, s))) <= o.maxIntermediateMinutes)
+            ? haversineKm(from, s) / maxCyclingSpeed(o.cyclingPace) * 60 : cyclingMinutes(haversineKm(from, s), o.cyclingPace)) <= o.maxIntermediateMinutes)
           .sort((a, b) => haversineKm(a, goal) - haversineKm(b, goal) || a.id.localeCompare(b.id))
           .slice(0, SEARCH_LIMITS.neighborsPerTransfer);
         for (const neighbor of neighbors) {
           const route = session.cyclingClient ? await session.cyclingClient.route(from, neighbor) : null;
-          const minutes = session.cyclingClient ? route?.minutes ?? Infinity : cyclingMinutes(haversineKm(from, neighbor));
+          const minutes = session.cyclingClient ? route?.minutes ?? Infinity : cyclingMinutes(haversineKm(from, neighbor), o.cyclingPace);
           if (minutes <= 0 || minutes > o.maxIntermediateMinutes) continue;
           const feasible = exits.filter(l => l.stop === from.id && l.stage === exit.stage && l.bike + minutes <= o.maxBikeMinutes);
           if (!feasible.length) continue;
@@ -605,7 +607,7 @@ async function extendInternal(session: SearchSession, progress: Progress, publis
             queries++;
             const bounds = o.arriveBy ? waypointArrivalBounds(session, exit.stage + 1, "extended") : [+ready];
             for (const bound of bounds.slice(0, 1)) {
-              const egress = atEndpoint(end, goal, network, "egress").bikeMinutes;
+              const egress = atEndpoint(end, goal, network, "egress", o).bikeMinutes;
               if (o.arriveBy && !Number.isFinite(egress)) continue;
               await connections(network, client, neighbor, end, new Date(bound - (o.arriveBy ? egress * 60_000 : 0)), o.boardingMinutes, !!o.arriveBy);
             }

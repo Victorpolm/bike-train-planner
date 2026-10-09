@@ -62,7 +62,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   const walking = (state: State) => options.cyclingPosition === "start-only" && state.boardings > 0
     || options.cyclingPosition === "end-only" && state.boardings === 0;
   const linkMinutes = (state: State, from: Place | Stop, to: Place | Stop) => walking(state)
-    ? cachedWalking(network.walking, from, to)?.minutes ?? Infinity : cyclingLink(network, from, to).minutes;
+    ? cachedWalking(network.walking, from, to)?.minutes ?? Infinity : cyclingLink(network, from, to, options.cyclingPace).minutes;
   const cycle = (state: State, from: Place | Stop, to: Place | Stop, id: string, minutes: number, service: string): State | null => {
     if (!Number.isFinite(minutes)) return null;
     if (walking(state)) {
@@ -79,7 +79,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     const leg: TransitLeg = { mode: "bike", from: name(from), to: name(to), fromId: state.stop, toId: id,
       fromPoint: from, toPoint: to, departure: new Date(state.time), arrival: new Date(arrival),
       departurePlatform: null, arrivalPlatform: null, service, serviceName: null, direction: null,
-      cyclingRoute: cyclingLink(network, from, to).route, geometry: cyclingLink(network, from, to).route?.points };
+      cyclingRoute: cyclingLink(network, from, to, options.cyclingPace).route, geometry: cyclingLink(network, from, to, options.cyclingPace).route?.points };
     return { ...state, stop: id, time: arrival, bike: state.bike + minutes,
       climb: addClimb(state.climb, routeClimb(leg.cyclingRoute, minutes, options.hills?.maxUphillPercent)),
       endCycling: state.endCycling || options.cyclingPosition === "end-only" && minutes > 0,
@@ -140,7 +140,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     visitNext(current, from, options.maxEgressMinutes);
     if (current.extraTransfers >= transferLimit || current.boardings >= options.maxBoardings) continue;
     for (const to of boardingStops) {
-      const minutes = cyclingLink(network, from, to).minutes;
+      const minutes = cyclingLink(network, from, to, options.cyclingPace).minutes;
       if (to.id === from.id || minutes <= 0 || minutes > options.maxIntermediateMinutes) continue;
       const next = cycle(current, from, to, to.id, minutes, "Cycle between stops");
       if (next) add({ ...next, extraTransfers: current.extraTransfers + 1, needsTransit: true });
