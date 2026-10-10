@@ -1,5 +1,9 @@
 # Implemented baseline and extended model
 
+## 10 October 2026 — lower cycling bound
+
+Options may carry a whole-journey lower bound on the existing cycling-section time resource. Both label solvers preserve `-min(b, lower_bound)` in addition to their existing upper-bound/time resources, then require the total cycling resource to lie within the bounds at completion. This prevents a shorter prefix from pruning one needed to reach the minimum. The resource saturates at the minimum. Visit time, transit, waiting and walk-only sections do not count; short pushing/access connectors within a cycling section remain included. Independent beginning/end categories can both contribute their endpoint resource to final dominance. See the release for tests and bounded-acquisition limits. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).
+
 **7 October implementation:** **Arrive at** finds the latest checked feasible departure, including final cycling and platform allowances. **Reduce climbing** now requires worthwhile absolute and relative ascent savings within a limited time cost; near-flat gains do not create an extra suggestion. **388 regressions**, formatting, Knip and production builds pass. [Behaviour, pilot defaults and limits](ARRIVAL_AND_CLIMBING_2026-10-07.md).
 
 **Current station timing (6 October; synchronized 7 October):** The shared boarding check now applies exact OJP evidence, then the original-ZIP general platform minimum when identity/date checks pass, then a labelled fallback. Imported arrival/departure records activate transfer-sensitive dominance in both solvers. [Exact integration, limits and regression journeys](STATION_TRANSFER_RUNTIME_2026-10-06.md).

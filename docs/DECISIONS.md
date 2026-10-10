@@ -1,5 +1,9 @@
 # Decisions
 
+## 10 October 2026 — implement cycling bounds and independent extras
+
+The latest owner feedback supersedes the earlier deferral of custom cycling minimum/maximum and hill regrouping. Use one whole-journey duration with At most/At least/No preference and quick/custom minutes. Preserve higher-cycling prefixes while a minimum is unmet in both solvers. Keep ordinary paths alongside gentler candidates, recheck timetable feasibility and allow both endpoint extras together. Hide objective selectors for Commuter/Bikepacking. Discover/scenic and Europe remain future work; global quota control and the 12 December transfer-feed refresh remain prerequisites for wider access. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).
+
 This file records important project choices. Do not silently rewrite old decisions when the project changes; add a new dated entry explaining the change.
 
 ## 2026-08 — Focus on bike + public transport, not a generic cycling super-app

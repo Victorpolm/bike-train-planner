@@ -177,3 +177,12 @@ it("moves stop durations with live delays and warns about changed opening feasib
   assert.equal(+visit.arrival! - +visit.departure!, 5 * 60000);
   assert.ok(result.issues.some(i => i.includes("opening hours")));
 });
+
+it("does not let a facility visit satisfy the cycling minimum", () => {
+  const c = context(); c.options = { ...c.options, minBikeMinutes: 25 };
+  assert.throws(() => applyFacilityStop(c, stages(c)[0], links(5, 5), fountain, 10), /cycling minimum/);
+  c.options.minBikeMinutes = 20;
+  const accepted = applyFacilityStop(c, stages(c)[0], links(5, 5), fountain, 10).journey!;
+  assert.equal(metrics(accepted).bike, 20);
+  assert.equal(accepted.transitLegs.filter(l => l.facilityVisit).length, 1);
+});

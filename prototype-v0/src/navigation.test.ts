@@ -133,6 +133,14 @@ it("reroutes from now, keeps unvisited waypoints and subtracts used cycling and 
   assert.equal(last.options.cyclingPace, trip.options.cyclingPace); assert.equal(last.mode, trip.mode);
   assert.equal(+last.start, now); assert.equal(last.origin.label, "Current location"); assert.equal(JSON.stringify(trip.options), originalOptions);
 });
+it("subtracts completed cycling from the minimum without counting transit or waiting", () => {
+  const trip = mixed(); trip.options = { ...trip.options, minBikeMinutes: 20 };
+  const access = advanceProgress(trip.stages[0], fix({ ...a, lon: 8.01 }), null, now)!;
+  assert.equal(navigationReplan(trip, 0, false, access, fix(a), now).options.minBikeMinutes, 15);
+  assert.equal(navigationReplan(trip, 2, false, null, fix(c), now).options.minBikeMinutes, 10);
+  trip.options.minBikeMinutes = 5;
+  assert.equal(navigationReplan(trip, 2, false, null, fix(c), now).options.minBikeMinutes, 0);
+});
 it("does not discard a requested visit merely because GPS is near it", () => {
   const trip = bike(), progress = advanceProgress(trip.stages[0], fix(b), null, now);
   assert.deepEqual(navigationReplan(trip, 0, false, progress, fix(b), now).waypoints, [b]);

@@ -1,3 +1,4 @@
+import { cyclingDurationFits } from "./cyclingDuration.ts";
 import { StationTransferClient } from "./stationTransferClient.ts";
 import { hillSearch, routeClimb } from "./hills.ts";
 import { wantsObjective } from "./journeyObjectives.ts";
@@ -348,7 +349,7 @@ function startCyclingComparison(session: SearchSession, publish: SearchUpdate, f
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
   // One separate serial stream keeps a long bicycle-only route from blocking
   // short station access. Transit and cycling cards publish independently.
-  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference, undefined, session.options.hills);
+  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference, undefined, session.options.hills, false, session.options.hills?.mode === "gentler");
   session.comparisonClient = client;
   session.cyclingTask = (async () => {
     const routes = [];
@@ -386,32 +387,38 @@ function refresh(session: SearchSession, extended: boolean, publish: SearchUpdat
     return extended ? compareModels(network, session.origin, session.destination, session.start, options)
       : { baseline: solve(network, session.origin, session.destination, session.start, options, "baseline"), extended: null };
   };
-  const withTraffic = (options: Options) => {
-    const ordinary = run(options);
-    if (!wantsObjective(options, "less-traffic") || !session.cyclingClient?.trafficRoutes.size) return ordinary;
-    const alternatives = run(options, { ...session.network,
-      cycling: new Map([...session.network.cycling ?? [], ...session.cyclingClient.trafficRoutes]) });
+  const withAlternatives = (options: Options) => {
+    let ordinary: { baseline: Solution; extended: Solution | null } = run(options);
     const signature = (j: Journey) => JSON.stringify([j.originStation.cyclingRoute?.points,
       j.transitLegs.filter(l => l.mode === "bike").map(l => l.cyclingRoute?.points), j.destinationStation.cyclingRoute?.points]);
-    const merge = (base: Solution, extra: Solution) => {
+    const merge = (base: Solution, extra: Solution, prefix: string) => {
       const originals = new Map(base.journeys.map(j => [j.id, j]));
       const additions = extra.journeys.filter(j => !originals.has(j.id) || signature(originals.get(j.id)!) !== signature(j))
-        .map(j => ({ ...j, id: `traffic:${j.id}` }));
+        .map(j => ({ ...j, id: `${prefix}:${j.id}` }));
       return { ...base, journeys: [...base.journeys, ...additions], limited: base.limited || extra.limited };
     };
-    return { baseline: merge(ordinary.baseline, alternatives.baseline),
-      extended: ordinary.extended && alternatives.extended ? merge(ordinary.extended, alternatives.extended) : ordinary.extended };
+    const variants = [
+      ["traffic", wantsObjective(options, "less-traffic") ? session.cyclingClient?.trafficRoutes : undefined],
+      ["gentler", options.hills?.mode === "gentler" ? session.cyclingClient?.hillRoutes : undefined],
+    ] as const;
+    for (const [prefix, routes] of variants) {
+      if (!routes?.size) continue;
+      const alternatives = run(options, { ...session.network, cycling: new Map([...session.network.cycling ?? [], ...routes]) });
+      ordinary = { baseline: merge(ordinary.baseline, alternatives.baseline, prefix),
+        extended: ordinary.extended && alternatives.extended ? merge(ordinary.extended, alternatives.extended, prefix) : ordinary.extended };
+    }
+    return ordinary;
   };
   // Separate label searches are essential: an uncertain path may dominate a
   // confirmed one in the permissive graph. Never derive strict results by filtering.
   // Reuse a solve only when the eligible edge sets are identical. Filtering a
   // permissive solution is still forbidden: distinct graphs get distinct solves.
-  const equivalent = new Map<string, ReturnType<typeof withTraffic>>();
+  const equivalent = new Map<string, ReturnType<typeof withAlternatives>>();
   const scoped = (bicycleScope: Options["bicycleScope"]) => {
     const options = { ...session.options, bicycleScope };
     const signature = [...session.network.edges.values()].map(edge => journeyLegAllowed(edge.leg, options) ? "1" : "0").join("");
     let result = equivalent.get(signature);
-    if (!result) { result = withTraffic(options); equivalent.set(signature, result); }
+    if (!result) { result = withAlternatives(options); equivalent.set(signature, result); }
     return result;
   };
   const possible = scoped("allow-uncertain");
@@ -452,7 +459,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   if (!dependencies.previous) client.national = dependencies.nationalClient !== undefined ? dependencies.nationalClient
     : dependencies.fetcher ? null : await NationalTimetableClient.connect(signal);
   const cyclingClient = dependencies.cyclingClient === null || dependencies.previous && !dependencies.previous.cyclingClient ? undefined
-    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills, wantsObjective(options, "less-traffic"));
+    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills, wantsObjective(options, "less-traffic"), options.hills?.mode === "gentler");
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const walkingClient = (options.cyclingPosition ?? "anywhere") === "anywhere" ? undefined
     : dependencies.previous?.walkingClient?.fork(signal) ?? dependencies.walkingClient
@@ -540,7 +547,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   }
   await session.cyclingTask;
   const mixed = [...session.baseline.journeys, ...session.extended?.journeys ?? []];
-  const slowerThanCycling = (options.cyclingPosition ?? "anywhere") === "anywhere" && session.cyclingComparison && mixed.every(j => j.totalMinutes > session.cyclingComparison!.minutes);
+  const slowerThanCycling = (options.cyclingPosition ?? "anywhere") === "anywhere" && session.cyclingComparison && cyclingDurationFits(session.cyclingComparison.minutes, options) && mixed.every(j => j.totalMinutes > session.cyclingComparison!.minutes);
   if ((!mixed.length || slowerThanCycling) && !client.failures) {
     // Finding an overnight wait is not enough to stop looking for useful local PT.
     session.originStations = await roadCandidates(session, origin, endpointTravelLimit(options, "access"), "access", progress, true);
@@ -713,7 +720,9 @@ function waypointArrivalBounds(session: SearchSession, next: number, mode: Model
   const deadline = Date.parse(options.arriveBy!);
   if (points.length === 1) return [deadline];
   const bounds = BICYCLE_SCOPES.flatMap(bicycleScope => {
-    const journeys = solveWaypoints(network, points, start, { ...options, bicycleScope }, mode).journeys;
+    // A suffix need not supply cycling already available in earlier stages.
+    // The final whole-journey search enforces the requested minimum.
+    const journeys = solveWaypoints(network, points, start, { ...options, bicycleScope, minBikeMinutes: 0 }, mode).journeys;
     return journeys.length ? [Math.max(...journeys.map(j => +j.startTime))] : [];
   });
   const cycling = points.slice(1).map((point, i) => cyclingLink(network, points[i], point).minutes);

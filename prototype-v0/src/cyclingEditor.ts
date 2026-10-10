@@ -74,6 +74,7 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     if (visit) stops.push({ afterRoute: index, visit });
     stops.sort((a, b) => a.afterRoute - b.afterRoute);
     const riding = updated.reduce((sum, route) => sum + route.minutes, 0);
+    if (riding + 1e-9 < (options.minBikeMinutes ?? 0)) throw new Error(`This edit falls below your ${options.minBikeMinutes}-minute cycling minimum.`);
     if (visit && riding > options.maxBikeMinutes) throw new Error(`This detour exceeds your ${options.maxBikeMinutes}-minute total cycling limit.`);
     const minutes = riding + stops.reduce((sum, s) => sum + s.visit.minutes, 0);
     if (minutes > options.horizonMinutes) throw new Error("This edited ride exceeds the journey time window.");
@@ -163,6 +164,7 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
       return { ...visit, arrival };
     }) };
   if (metrics(result).bike > options.maxBikeMinutes) throw new Error(`This edit exceeds your ${options.maxBikeMinutes}-minute total cycling limit.`);
+  if (metrics(result).bike + 1e-9 < (options.minBikeMinutes ?? 0)) throw new Error(`This edit falls below your ${options.minBikeMinutes}-minute cycling minimum.`);
   if (result.totalMinutes > options.horizonMinutes) throw new Error("This edit exceeds the journey time window.");
   if (options.arriveBy && cursor > Date.parse(options.arriveBy)) throw new Error("This edit would arrive after your chosen arrival time. Shorten the ride or search for different services.");
   return checkedVisits({ journey: result, cycling: null }, context);

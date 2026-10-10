@@ -17,7 +17,7 @@ export default function JourneyObjectives({
   disabled: boolean;
   onChange: (value: JourneyObjective[]) => void;
 }) {
-  const visible = personalized ? JOURNEY_OBJECTIVES : JOURNEY_OBJECTIVES.slice(0, 4);
+  if (!personalized) return null;
   return (
     <fieldset className="journey-objectives" disabled={disabled}>
       <legend className="preference-heading">
@@ -28,7 +28,7 @@ export default function JourneyObjectives({
         />
       </legend>
       <div className="objective-options">
-        {visible.map((objective) => (
+        {JOURNEY_OBJECTIVES.map((objective) => (
           <label className="check-row" key={objective}>
             <input
               type="checkbox"

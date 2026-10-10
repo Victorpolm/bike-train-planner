@@ -203,6 +203,9 @@ describe("category selection", () => {
     assert.equal(pareto([a, b]).length, 1);
     assert.equal(categorize([a, b], { ...limits, endpointPreference: "start" }).find(c => c.categories.includes("Least cycling or walking at start"))!.journey.id, "b");
     assert.ok(categorize([a, b], { ...limits, endpointPreference: "end" }).length <= 4);
+    const both = categorize([a, b], { ...limits, endpointPreference: "both" });
+    assert.equal(both.find(c => c.categories.includes("Least cycling or walking at start"))!.journey.id, "b");
+    assert.equal(both.find(c => c.categories.includes("Least cycling or walking at arrival"))!.journey.id, "a");
   });
 });
 

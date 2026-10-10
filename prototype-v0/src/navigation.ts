@@ -176,6 +176,7 @@ export function navigationReplan(trip: NavigationTrip, index: number, onboard: b
   const usedEgress = current?.mode === "bike" && lastTransit >= 0 && index > lastTransit ? current.minutes * fraction : 0;
   const usedIntermediate = current?.mode === "bike" && firstTransit >= 0 && index > firstTransit && index < lastTransit ? current.minutes * fraction : 0;
   const options = { ...trip.options, maxBikeMinutes: Math.max(0, Math.floor(trip.options.maxBikeMinutes - usedBike)),
+    minBikeMinutes: Math.max(0, Math.ceil((trip.options.minBikeMinutes ?? 0) - usedBike - 1e-9)),
     maxEgressMinutes: Math.max(0, Math.floor(trip.options.maxEgressMinutes - usedEgress)),
     maxIntermediateMinutes: Math.max(0, Math.floor(trip.options.maxIntermediateMinutes - usedIntermediate)),
     maxCyclingTransfers: Math.max(0, (trip.options.maxCyclingTransfers ?? 2) - usedTransfers),

@@ -1,20 +1,24 @@
-# Next steps after the facility implementation
+# Next steps after the preference corrections
 
 _Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Owner's three next priorities — 10 October
 
-1. **Design proposals:** Discover compromises, scenic/interesting-place Bikepacking routes and custom cycling minimum/maximum remain design work. They are not the immediate implementation queue.
+1. **Design proposals:** Discover compromises and scenic/interesting-place Bikepacking routes remain design work. The owner’s subsequent feedback now authorizes custom cycling minimum/maximum and Extra-category regrouping; these are delivered in the [preference release](PREFERENCE_CONTROLS_2026-10-10.md).
 2. **Before wider access:** implement global API quota control across Worker isolates, confirm actual provider allowances and refresh the station-transfer feed before **12 December 2026**. Local concurrency/cache bounds do not supply a global quota. This is a project task, not a scheduled reminder.
 3. **Europe:** scope a later expansion with country/provider coverage, bicycle-carriage rules, fares, station transfers and data licensing. Current delivery remains Switzerland-first and owner-private; no European coverage is claimed.
 
 ## Requested work now delivered
 
+**10 October preference corrections:** Commuter/Bikepacking hide the alternative selectors. Personalized now has At most/At least/No preference with presets and custom minutes. Extra categories groups independent endpoint choices, Reduce climbing and Gentler slopes; ordinary paths remain available. The minimum is enforced through search, edits and navigation. **566 JavaScript tests**, **13 Python tests**, 576 previous-release comparisons and 14 rendered panels pass. Browser/phone interaction remains unverified. [Behaviour and acceptance meaning](PREFERENCE_CONTROLS_2026-10-10.md).
+
 The owner explicitly authorized synchronization, facility-stop insertion and useful parking/facility information on 10 October. GitHub main was first fast-forwarded to `d1241db0937a9d81d5d2343521ba9324b80c544b`; [CI passed](https://github.com/Victorpolm/bike-train-planner/actions/runs/38059847074). Applied visits, parking choices, timing/access checks and refill gaps are delivered as described in the [facility release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md). The record carries final publication and synchronization evidence: private version 65, implementation commit `a4e5339680db41767d45460d39f3b156f6fca9b4`, all 272 application files matching the deployed source by Git blob hash, and [passing implementation CI](https://github.com/Victorpolm/bike-train-planner/actions/runs/38062304134).
 
 ## Confirmed starting point
 
-- **Current release:** Owner-private **version 65** published successfully on **10 October 2026 at 15:03:12 UTC** (17:03:12 Europe/Zurich), environment revision **3**, from Site source `d10c8af18f011c104756035d8a07f3d174236a82`. The exact pushed source and matching frontend/Worker archive were deployed. **552 JavaScript tests in 11 suites**, **13 Python tests**, 1,372 fixed-connection combinations and six actual React panel render checks pass, together with builds, formatting and Knip. Browser/phone interaction and physical field acceptance remain pending. Title Re.route, the existing URL, runtime secret bindings and owner-only audience are preserved. [Release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
+- **Current release:** Owner-private **version 66** published successfully on **10 October 2026 at 16:11:45 UTC** (18:11:45 Europe/Zurich), environment revision **3**, from Site source `32a5a6ed3677b2d969bd2c9b654d998bada70794`. The pushed source and matching frontend/Worker archive were deployed. **566 JavaScript tests in 11 suites**, **13 Python tests**, 168 independent duration-bound cases, 576 previous-release full-result comparisons and 14 React render panels/callback checks pass, together with builds, formatting and unused-code analysis. Interactive browser and physical-phone acceptance remain unverified. Re.route, the existing URL and the owner-only audience are preserved. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).
+
+- **Earlier release:** Owner-private **version 65** published successfully on **10 October 2026 at 15:03:12 UTC** (17:03:12 Europe/Zurich), environment revision **3**, from Site source `d10c8af18f011c104756035d8a07f3d174236a82`. The exact pushed source and matching frontend/Worker archive were deployed. **552 JavaScript tests in 11 suites**, **13 Python tests**, 1,372 fixed-connection combinations and six actual React panel render checks pass, together with builds, formatting and Knip. Browser/phone interaction and physical field acceptance remain pending. Title Re.route, the existing URL, runtime secret bindings and owner-only audience are preserved. [Release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
 
 - **Earlier release:** owner-private **version 64** published on **10 October 2026 at 13:21:58 UTC**, environment revision **3**, from Site source `0d53a951686e563ad7c96957aa28fb90b6c19ee6`. Re.route branding, speed-review fixes and bounded OJP work are deployed. **515 JavaScript tests**, **13 Python tests**, 576 baseline solver comparisons, production builds, formatting and Knip pass. [Release evidence](SPEED_AND_SCALE_2026-10-10.md).
 - The earlier main-update approval block is resolved by the owner’s explicit 10 October synchronization request. The rename and performance commits were fast-forwarded and CI passed; see the new release record for this implementation’s final synchronization.
@@ -73,7 +77,6 @@ The feed-refresh item is a roadmap task; this document does not create a schedul
 
 | Item | Decision or work still needed |
 |---|---|
-| Personalized minimum/maximum cycling minutes | Keep existing presets; define whole-journey cycling versus walking accounting and enforce minimums during routing, rather than filtering valid candidates away after pruning |
 | Discover compromises | Define a small set of useful intermediate trade-offs and test them against fixed candidates and rider choices |
 | Scenic/interesting-place Bikepacking routes | Define reviewed places, access/visit evidence and a detour budget; the implemented less-traffic objective does not provide this capability |
 | Independent hill alternatives / multi-select endpoint preferences | Earlier regrouping remains a proposal; the latest owner instruction keeps existing choices in Preferences. Revisit only with an explicit scoped design |

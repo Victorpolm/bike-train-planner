@@ -36,4 +36,7 @@ jobs:
       - run: npm run format:check
       - run: npm run check:unused
       - run: npm test
+      - run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - run: node scripts/check-preferences-presentation.mjs
+      - run: node scripts/check-facility-presentation.mjs
       - run: npm run build

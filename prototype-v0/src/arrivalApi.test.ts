@@ -97,6 +97,24 @@ it("keeps OJP departure and arrival requests separate in the client cache", asyn
   for (const arrival of [false, true, false, true]) await client.connections(a, d, at(100), () => true, arrival);
   assert.equal(bodies.length, 2); assert.equal(bodies[0].arriveBy, undefined); assert.equal(bodies[1].arriveBy, true);
 });
+it("acquires an arrive-by suffix with no cycling when the earlier stage supplies the minimum", async () => {
+  const signal = new AbortController().signal, bodies: any[] = [];
+  const home = { lat: 46.99, lon: 8, label: "Home" };
+  const cycling = new CyclingClient(signal, async () => Response.json({ features: [] }), 0, false, null);
+  cycling.routes.set(cyclingKey(home, a), { ...zeroCycling(home, a), minutes: 10, distanceKm: 1 });
+  const ojpClient = new OjpClient(signal, async (_url, init) => {
+    const body = JSON.parse(String(init!.body)); bodies.push(body);
+    return response(body.from.id === "X" ? [leg(x, d, 70, 100)] : [leg(a, x, 30, 65)]);
+  });
+  const session = await plan(home, d, "baseline", { ...options, minBikeMinutes: 10, maxBikeMinutes: 20, maxAccessMinutes: 10 }, signal, () => {}, () => {}, {
+    start, arriveBy: at(100), waypoints: [x], cyclingClient: cycling, ojpClient, gapMs: 0,
+    cyclingFetcher: async () => Response.json({ features: [] }),
+    fetcher: async () => Response.json({ stations: [{ id: a.id, name: a.name, coordinate: { x: a.lat, y: a.lon } }] }),
+  });
+  assert.ok(bodies.some(b => b.from.id === "A" && b.departure === at(67).toISOString()));
+  assert.ok(session.baseline.journeys.length);
+  assert.ok(session.baseline.journeys.every(j => j.transitLegs.filter(l => l.mode === "bike").reduce((sum, l) => sum + (+l.arrival! - +l.departure!) / 60000, 0) === 10));
+});
 it("times the cycling-only reference backwards from arrival and marks rides outside the departure window", async () => {
   for (const earliest of [start, at(99)]) {
     const signal = new AbortController().signal;

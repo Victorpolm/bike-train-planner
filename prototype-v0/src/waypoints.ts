@@ -1,4 +1,5 @@
 import { arrivalTime, departureTime, moveAfter } from "./realtime.ts";
+import { cyclingDurationFits, cyclingMinimumResource } from "./cyclingDuration.ts";
 import { boardingCheck, transferContextKey } from "./transferTimes.ts";
 import { addClimb, climbVector, emptyClimb, hillSearch, routeClimb, type Climb } from "./hills.ts";
 import { arrivalDepartureSeeds, atEndpoint, cyclingLink, cyclingTransferLimit, dominates, journeyLegAllowed, validateOptions, type Edge, type ModelMode, type Network, type Options, type Solution, type Stop } from "./model.ts";
@@ -44,6 +45,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   const stageArrivalsByMode = points.map(() => ({ bike: Infinity, walk: Infinity }));
   let limited = false, explored = 0;
   const computeVector = (s: State) => [s.time, ...(options.arriveBy ? [-s.startedAt] : []), s.bike, s.bike + s.walk, s.boardings, s.accessActive, s.egressActive,
+      ...cyclingMinimumResource(s.bike, options),
       ...objectiveResources(s.legs, options), ...(hillSearch(options) ? climbVector(s.climb, options.hills?.mode === "gentler") : [])];
   const vectors = new WeakMap<State, number[]>();
   const vector = (s: State) => {
@@ -156,7 +158,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     }
   }
   const alive = [...buckets.values()].flat().filter(s => s.alive);
-  const journeys: Journey[] = alive.filter(s => s.stage === points.length - 1 && s.boardings > 0).map(state => {
+  const journeys: Journey[] = alive.filter(s => s.stage === points.length - 1 && s.boardings > 0 && cyclingDurationFits(s.bike, options)).map(state => {
     const rides = state.legs.filter(leg => leg.mode === "transit"), first = rides[0], last = rides.at(-1)!;
     const originStation = { ...atEndpoint(network.stops.get(first.fromId!)!, points[0]), bikeMinutes: 0, distanceKm: 0 };
     const destinationStation = { ...atEndpoint(network.stops.get(last.toId!)!, points.at(-1)!), bikeMinutes: 0, distanceKm: 0 };

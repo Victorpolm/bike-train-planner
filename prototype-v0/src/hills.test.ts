@@ -5,7 +5,8 @@ import { chooseCyclingRoute } from "./cyclingPreferences.ts";
 import { cyclingKey, zeroCycling, type CyclingRoute } from "./cycling.ts";
 import { categorize, DEFAULT_OPTIONS, emptyNetwork, solve, type Options } from "./model.ts";
 import { solveWaypoints } from "./waypoints.ts";
-import { selectStationPairs } from "./api.ts";
+import { selectStationPairs, updateBicycleEvidence, type SearchSession } from "./api.ts";
+import { TimetableClient } from "./timetableClient.ts";
 import { CyclingClient } from "./cyclingClient.ts";
 import type { Place, Point, Station } from "./routing.ts";
 import { climbingNotice, recommend } from "./recommendations.ts";
@@ -168,4 +169,52 @@ it("rejects small, proportionally tiny, overlong and poor-value climbing detours
   assert.equal(journeyClimb(c).ascent, 0, "Raw ascent is not altered by recommendation tolerances.");
   assert.equal(climbingTradeoff({ ...a, startTime: at(40) }, { ...b, startTime: at(10) }, 60, true), null,
     "Arrive-by counts how much earlier the alternative requires leaving.");
+});
+
+it("collects a gentler path beside the ordinary route and preserves both on cache hits and forks", async () => {
+  const from = { lat: 46.8, lon: 8 }, to = { lat: 46.801, lon: 8 }, calls: URL[] = [];
+  const data = (gentle: boolean) => ({ features: [{ geometry: { type: "LineString", coordinates: gentle
+    ? [[8, 46.8, 400], [8.0002, 46.8005, 401], [8, 46.801, 402]] : [[8, 46.8, 400], [8, 46.801, 410]] },
+    properties: { "track-length": gentle ? 117 : 111, "total-time": gentle ? 120 : 60 } }] });
+  const fetcher: typeof fetch = async input => { const url = new URL(String(input)); calls.push(url); return Response.json(data(url.searchParams.has("profile:uphillcost"))); };
+  const hills = { ...DEFAULT_HILLS, mode: "gentler" as const, maxUphillPercent: 4 };
+  for (const cached of [false, true]) {
+    const before = calls.length;
+    const client = new CyclingClient(new AbortController().signal, fetcher, 0, true, null, undefined, "fastest", null, hills, true, true);
+    const found = await client.route(from, to), gentle = client.hillRoutes.get(cyclingKey(from, to));
+    assert.equal(found!.minutes, 1); assert.ok(found!.ascentM! >= 8);
+    assert.equal(gentle!.minutes, 2); assert.equal(gentle!.ascentM, 2);
+    assert.equal(calls.length - before, cached ? 0 : 2, "Collection reuses the bounded checked candidates");
+    const fork = client.fork(new AbortController().signal);
+    assert.equal(fork.collectHillAlternatives, true); assert.equal(fork.hillRoutes.size, 1);
+    assert.equal((await fork.route(from, to))!.minutes, 1);
+  }
+});
+it("rechecks gentler-path boarding times while preserving ordinary journeys and minimum bounds", () => {
+  const n = network(); n.edges.clear();
+  const a = n.stops.get("A")!, d = n.stops.get("D")!;
+  n.stops.delete("B");
+  for (const [id, depart, arrive] of [["early", 8, 30], ["later", 13, 40]] as const) {
+    n.edges.set(id, { id, from: a.id, to: d.id, leg: { mode: "transit", from: a.name, to: d.name,
+      fromId: a.id, toId: d.id, departure: at(depart), arrival: at(arrive), service: id,
+      serviceName: null, direction: null, departurePlatform: null, arrivalPlatform: null } });
+  }
+  const signal = new AbortController().signal;
+  const client = new CyclingClient(signal, async () => { throw new Error("No new requests expected"); }, 0, false, null);
+  client.routes.set(cyclingKey(origin, a), route(origin, a, 5, [400, 410]));
+  client.hillRoutes.set(cyclingKey(origin, a), route(origin, a, 8, [400, 402])); n.cycling = client.routes;
+  const o = { ...options, climbOptimization: false, hills: { ...DEFAULT_HILLS, mode: "gentler" as const } };
+  const session: SearchSession = { origin, destination, start, options: o, network: n, client: new TimetableClient(signal),
+    cyclingClient: client, originStations: [], destinationStations: [], baseline: solve(n, origin, destination, start, o, "baseline"), extended: null };
+  const early = n.edges.get("early")!.leg;
+  const evidence = { permission: "allowed" as const, fromId: a.id, toId: d.id, departure: early.departure!.toISOString(), service: early.service,
+    source: { title: "Test evidence", url: "https://example.org", checked: "2026-10-10" }, conditions: [] };
+  updateBicycleEvidence(session, early, evidence, () => {});
+  assert.ok(session.baseline.journeys.some(j => !j.id.startsWith("gentler:") && j.totalMinutes === 30));
+  const gentle = session.baseline.journeys.find(j => j.id.startsWith("gentler:"))!;
+  assert.equal(gentle.totalMinutes, 40); assert.equal(gentle.transitLegs[0].service, "later");
+  assert.ok(categorize(session.baseline.journeys, o).some(p => p.categories.includes("Gentlest cycling") && p.journey.id === gentle.id));
+  session.options = { ...o, minBikeMinutes: 8 };
+  updateBicycleEvidence(session, early, evidence, () => {});
+  assert.ok(session.baseline.journeys.length); assert.ok(session.baseline.journeys.every(j => j.id.startsWith("gentler:")));
 });

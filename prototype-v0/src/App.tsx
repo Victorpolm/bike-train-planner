@@ -1,3 +1,4 @@
+import { cyclingAmountForPreset, cyclingDurationFits, type CyclingAmount } from "./cyclingDuration";
 import FacilityStopSummary from "./FacilityStopSummary";
 import JourneyNavigation from "./JourneyNavigation";
 import { useJourneyNavigation } from "./useJourneyNavigation";
@@ -91,6 +92,7 @@ function CyclingCard({
   selected,
   start,
   maxBikeMinutes,
+  minBikeMinutes,
   fastest,
   arriveBy,
   cyclingPosition,
@@ -100,6 +102,7 @@ function CyclingCard({
   selected: boolean;
   start: Date;
   maxBikeMinutes: number;
+  minBikeMinutes: number;
   fastest: boolean;
   arriveBy?: string;
   cyclingPosition: CyclingPosition;
@@ -150,6 +153,12 @@ function CyclingCard({
         maxBikeMinutes && (
         <span className="comparison-caution">
           Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.
+        </span>
+      )}
+      {comparison.minutes - (comparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) <
+        minBikeMinutes && (
+        <span className="comparison-caution">
+          Reference only: below your {minBikeMinutes}-minute cycling minimum.
         </span>
       )}
       {cyclingPosition !== "anywhere" && (
@@ -410,6 +419,9 @@ export default function App() {
     }
     return true;
   }
+  const [cyclingAmount, setCyclingAmount] = useState<CyclingAmount>(() =>
+    cyclingAmountForPreset("commuter"),
+  );
   function choosePreset(preset: TripPreset) {
     setTripPreset(preset);
     if (preset === "personalized") {
@@ -420,6 +432,7 @@ export default function App() {
     const next = TRIP_PRESETS[preset];
     setObjectives([...next.objectives]);
     setCycling(next.cycling);
+    setCyclingAmount(cyclingAmountForPreset(next.cycling));
     setRoutePreference(next.routePreference);
     setBicycleScope(next.bicycleScope);
     setEndpoint(next.endpoint);
@@ -449,6 +462,7 @@ export default function App() {
         climbOptimization,
         takeBikeOnTransit,
         maxWalkingMinutes,
+        cyclingAmount,
       ),
       objectives,
     }),
@@ -463,6 +477,7 @@ export default function App() {
       climbOptimization,
       takeBikeOnTransit,
       maxWalkingMinutes,
+      cyclingAmount,
       objectives,
     ],
   );
@@ -599,9 +614,11 @@ export default function App() {
     !!session &&
     !!cyclingReference &&
     !cyclingReference.outsideTimeWindow &&
-    cyclingReference.minutes -
-      (cyclingReference.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) <=
-      session.options.maxBikeMinutes &&
+    cyclingDurationFits(
+      cyclingReference.minutes -
+        (cyclingReference.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0),
+      session.options,
+    ) &&
     proposals.every((p) =>
       session.options.arriveBy
         ? !!cyclingReference.departure && +cyclingReference.departure >= +p.journey.startTime
@@ -714,7 +731,11 @@ export default function App() {
       const cyclingFits =
         !!result.cyclingComparison?.routes?.length &&
         !result.cyclingComparison.outsideTimeWindow &&
-        result.cyclingComparison.minutes <= request.options.maxBikeMinutes;
+        cyclingDurationFits(
+          result.cyclingComparison.minutes -
+            (result.cyclingComparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0),
+          request.options,
+        );
       if (request.bikeOnly ? !cyclingFits : !choices.journeys.length && !cyclingFits)
         throw new Error(
           "No replacement route was found within your remaining limits. Your current journey is kept.",
@@ -1230,7 +1251,7 @@ export default function App() {
                   hasWaypoints={viaInputs.length > 0}
                   bicycleScope={bicycleScope}
                   routePreference={routePreference}
-                  cycling={cycling}
+                  cyclingAmount={cyclingAmount}
                   endpoint={endpoint}
                   cyclingPosition={cyclingPosition}
                   takeBikeOnTransit={takeBikeOnTransit}
@@ -1275,9 +1296,9 @@ export default function App() {
                     setRoutePreference(route);
                     setTripPreset("personalized");
                   }}
-                  onCycling={(amount) => {
+                  onCyclingAmount={(amount) => {
                     invalidate();
-                    setCycling(amount);
+                    setCyclingAmount(amount);
                     setTripPreset("personalized");
                   }}
                   onEndpoint={(preference) => {
@@ -1338,9 +1359,9 @@ export default function App() {
                 </details>
               )}
             <p>
-              {cycling === "unrestricted"
-                ? "No separate cycling cap; shorter rides are also included."
-                : `Up to ${options.maxAccessMinutes} minutes cycling at each ${viaInputs.length ? "stage's " : ""}end${mode === "extended" ? `, and ${options.maxIntermediateMinutes} minutes between services` : ""}.`}{" "}
+              {cyclingAmount.mode === "none"
+                ? "No separate cycling duration preference; shorter and longer rides are eligible."
+                : `${cyclingAmount.mode === "at-most" ? "At most" : "At least"} ${Number.isFinite(cyclingAmount.minutes) ? cyclingAmount.minutes : "…"} minutes across all cycling sections.`}{" "}
               Up to {options.maxBoardings} boardings and {options.horizonMinutes / 60} hours
               overall, including waiting.
             </p>
@@ -1489,8 +1510,9 @@ export default function App() {
                   {warnings.length
                     ? "Some timetable or cycling data was unavailable. Please try this journey again."
                     : `No transit journey was found with your cycling limits, bicycle-access choice and ${session.options.horizonMinutes / 60}-hour arrival window. ${
-                        session.options.maxBikeMinutes < session.options.horizonMinutes
-                          ? "Try No separate cycling cap in Preferences, or a different departure time."
+                        session.options.maxBikeMinutes < session.options.horizonMinutes ||
+                        (session.options.minBikeMinutes ?? 0) > 0
+                          ? "Try No preference under How much cycling, or a different departure time."
                           : "Try a different departure time or nearby stops."
                       } This limited search can miss connections.`}
                 </p>
@@ -1590,6 +1612,7 @@ export default function App() {
                     start={cyclingReference.departure ?? session.start}
                     arriveBy={session.options.arriveBy}
                     maxBikeMinutes={session.options.maxBikeMinutes}
+                    minBikeMinutes={session.options.minBikeMinutes ?? 0}
                     fastest={cyclingFastest}
                     cyclingPosition={session.options.cyclingPosition ?? "anywhere"}
                     onSelect={() => openJourney(BIKE_ONLY_ID)}
@@ -1837,9 +1860,11 @@ export default function App() {
                 </p>
                 <p>No public transport: no bicycle ticket or reservation is needed.</p>
                 {(cyclingReference.outsideTimeWindow ||
-                  cyclingReference.minutes -
-                    (cyclingReference.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) >
-                    session.options.maxBikeMinutes ||
+                  !cyclingDurationFits(
+                    cyclingReference.minutes -
+                      (cyclingReference.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0),
+                    session.options,
+                  ) ||
                   session.options.cyclingPosition !== "anywhere") && (
                   <p className="notice">
                     Reference only: this ride may fall outside your selected time or cycling limits.

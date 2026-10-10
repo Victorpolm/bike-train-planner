@@ -31,6 +31,15 @@ function context(): EditContext {
 const stages = (c: EditContext) => detourStages(c.journey, c.cycling, c.origin, c.destination, c.start);
 const links = () => [route(origin, via, 8), route(via, a, 7)];
 
+it("preserves the whole-journey cycling minimum when shortening an edited section", () => {
+  const c = context(); c.options = { ...c.options, minBikeMinutes: 20 };
+  assert.throws(() => applyCyclingEdit(c, stages(c)[0], [route(origin, a, 5)]), /cycling minimum/);
+  assert.equal(metrics(applyCyclingEdit(c, stages(c)[0], [route(origin, a, 10)]).journey!).bike, 20);
+  const only = { ...c, journey: null, cycling: { routes: [route(origin, destination, 25)], minutes: 25, distanceKm: 1, arrival: time(25) } };
+  assert.throws(() => applyCyclingEdit(only, stages(only)[0], [route(origin, destination, 19)]), /cycling minimum/);
+  assert.equal(applyCyclingEdit(only, stages(only)[0], [route(origin, destination, 20)]).cycling!.minutes, 20);
+});
+
 it("applies an access edit while preserving exact transit objects, fare query and original journey", () => {
   const c = context(), snapshot = JSON.stringify(c), originalLeg = c.journey!.transitLegs[0];
   const updated = applyCyclingEdit(c, stages(c)[0], links()).journey!;
