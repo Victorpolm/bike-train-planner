@@ -1,4 +1,6 @@
-# Bike + public transport prototype
+# Re.route — bike + public transport
+
+**10 October name update:** The app is now **Re.route**. The header, accessible home-link name, browser title and application metadata use the new name. The existing website address, repository, device-local profiles and map caches retain their identity. Routing and navigation behaviour are unchanged.
 
 **3 October update:** Click the ? icons beside bicycle access and cycling position for help. Extended now reserves work for cycling connections and can continue after Baseline uses its allowance. **More · later departures** keeps earlier cards while searching later services with the same preferences and checked cycling paths. OJP stop requests exclude route geometry so exact city itineraries retain their fare evidence; live ZVV and Libero checks succeeded. Past dates are accepted subject to timetable availability; online fares are future-only. [Implementation and evidence](https://github.com/Victorpolm/bike-train-planner/blob/feature/novice-interface-profiles/docs/SEARCH_RELIABILITY_2026-10-03.md).
 

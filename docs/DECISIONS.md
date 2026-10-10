@@ -728,3 +728,13 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Decision:** Recalculate only on explicit request from a fresh location, preserving remaining requested visits, deadline, preferences and conservative remaining journey budgets. Retain the current journey during acquisition/failure and require Start on the reviewed replacement. Block unsupported custody transitions and exhausted original constraints instead of resetting them. Keep GPS in memory without storing a trace; disclose explicit provider requests and map-tile loading.
 
 **Boundary:** No voice, automatic rerouting, background/native navigation, saved traces or new hosting/access changes. Stage matching and ETA thresholds are pilot values; no exact route/safety guarantee. **488 tests**, production/format/unused checks pass; real-phone GPS and browser interaction remain unverified. [GPS_JOURNEY_FOLLOWING_2026-10-10.md](GPS_JOURNEY_FOLLOWING_2026-10-10.md) records the contract, publication and acceptance checklist.
+
+## 2026-10-10 — Rename the app Re.route
+
+**Authorization:** The owner explicitly requested the name **Re.route**.
+
+**Decision:** Use that exact spelling in the app header, accessible home-link label, browser title, application/home-screen metadata and Site title. Use a compact Re. monogram and the descriptive subtitle Bike + public transport. Update the current project documentation; historical release names remain historical.
+
+**Continuity:** Retain the existing Site identity, owner-only audience, website URL and `Victorpolm/bike-train-planner` repository. Keep technical package/provider identifiers and browser storage keys stable so the rename preserves cached map datasets and saved traveller profiles. Routing, fares, realtime and GPS behaviour are unchanged.
+
+**Verification:** All 488 existing tests in 11 suites pass, with TypeScript/frontend/Worker production builds. The generated HTML metadata and server-rendered header show the new name. Browser/phone visual acceptance remains pending.

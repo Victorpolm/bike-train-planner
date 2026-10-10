@@ -1,4 +1,6 @@
-# Bike + Train Journey Planner
+# Re.route — Bike + Train Journey Planner
+
+**10 October name update — version 63:** The app is now **Re.route**, with the name in its header, accessible home link, browser/application metadata and Site listing. The website address, repository, saved profiles and map caches retain their identity. All **488 tests** and TypeScript/frontend/Worker builds pass; browser/phone visual acceptance remains pending.
 
 **10 October GPS journey following — version 62:** Start/Stop now asks for phone location and follows cycling or mixed journeys with an accuracy circle, remaining path, manual stage/boarding controls, live connection estimates, explicit recalculation and optional screen wake lock. GPS updates do not rerun route searches. **488 tests**, builds, formatting and Knip pass; real-phone acceptance remains pending. [Behaviour, verification and limits](docs/GPS_JOURNEY_FOLLOWING_2026-10-10.md).
 
@@ -46,7 +48,7 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** Owner-private **version 62** published on **10 October 2026 at 10:42:11 UTC** (12:42:11 Europe/Zurich), environment revision **3**, from Site source `582c351fe689625556ad2de8cc28a52ff871805f`. **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. Real-phone GPS and browser acceptance remain pending. [Release evidence](docs/GPS_JOURNEY_FOLLOWING_2026-10-10.md).
+**Last verified release:** Owner-private **version 63** published on **10 October 2026 at 12:37:50 UTC** (14:37:50 Europe/Zurich), environment revision **3**, from Site source `36ee02bb319083bd6ccde70d7855b0b102ea5e0c`. The app is named **Re.route**. **488 tests in 11 suites** and TypeScript/frontend/Worker builds pass; generated metadata and the server-rendered header were checked. Browser/phone acceptance remains pending.
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 

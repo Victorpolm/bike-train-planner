@@ -1,6 +1,10 @@
-# Website access and development
+# Re.route — website access and development
 
-**Current publication:** Owner-private **version 62** published on **10 October 2026 at 10:42:11 UTC** (12:42:11 Europe/Zurich), environment revision **3**, from Site source `582c351fe689625556ad2de8cc28a52ff871805f`. **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. Real-phone GPS and browser acceptance remain pending. [GPS following release evidence](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
+**Current publication:** Owner-private **version 63** published on **10 October 2026 at 12:37:50 UTC** (14:37:50 Europe/Zurich), environment revision **3**, from Site source `36ee02bb319083bd6ccde70d7855b0b102ea5e0c`. The app is named **Re.route**. **488 tests in 11 suites** and TypeScript/frontend/Worker builds pass; generated metadata and the server-rendered header were checked. Browser/phone acceptance remains pending.
+
+Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_95c8af0078f081918f3d870b1d15d782`; deployment: `appgdep_6aca318be34c8191a6bd9fc3c6b5f0cc` (`succeeded`). The Site title is Re.route; the existing URL and owner-only audience are preserved.
+
+**Previous publication:** Owner-private **version 62** published on **10 October 2026 at 10:42:11 UTC** (12:42:11 Europe/Zurich), environment revision **3**, from Site source `582c351fe689625556ad2de8cc28a52ff871805f`. **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. Real-phone GPS and browser acceptance remain pending. [GPS following release evidence](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
 
 **Previous publication:** Owner-private **version 61**, 9 October 2026 16:01:35 UTC, environment revision 3, Site source `414c08bd1dfb97d097c12de12dc1391ae2332fc9`. Realtime selected-service updates, persistent map caches and shared cycling candidates are delivered. **468 tests**, production builds, formatting and Knip pass. Live OJP estimates and EPFL–Basel candidate ordering checked; browser/phone acceptance remains pending. [Evidence and limits](REALTIME_AND_SPEED_2026-10-09.md).
 
@@ -57,7 +61,7 @@ Open the preview URL printed in the terminal, normally `http://localhost:4173`. 
 
 ## Publishing changes
 
-GitHub is the authoritative source. The hosted Site has its own source repository and publication history; pushing to GitHub alone does **not** republish it. Ask Codex to publish the latest `prototype-v0/` to the existing private Bike + Train Site after code changes.
+GitHub is the authoritative source. The hosted Site has its own source repository and publication history; pushing to GitHub alone does **not** republish it. Ask Codex to publish the latest `prototype-v0/` to the existing private Re.route Site after code changes.
 
 `prototype-v0/.openai/hosting.json` identifies the existing Site. The build creates a Worker at `dist/server/index.js` with embedded frontend assets. Reuse this identity; do not create a replacement Site. Preserve owner-only access unless explicitly instructed otherwise. The file contains no authentication credentials.
 
