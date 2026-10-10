@@ -1,6 +1,6 @@
-# Next steps after performance steps 1–3
+# Next steps after journey continuity
 
-_Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
+_Consolidated 11 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Owner's three next priorities — 10 October
 
@@ -9,6 +9,8 @@ _Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of o
 3. **Europe:** scope a later expansion with country/provider coverage, bicycle-carriage rules, fares, station transfers and data licensing. Current delivery remains Switzerland-first and owner-private; no European coverage is claimed.
 
 ## Requested work now delivered
+
+**11 October journey continuity:** Save and reopen exact dated itineraries on this device; Plan again uses current timetable acquisition with the saved stops and routing preferences. Navigation recalculation retains unfinished facility visits and their duration. Record an actual parked bicycle, continue with walking/passenger transport, plan a return to its recorded point and explicitly confirm collection. **614 JavaScript tests**, **13 Python tests**, **32 rendered panels** and **288 unchanged-routing comparisons** pass. Browser/phone interaction remains unverified; cross-device sync, automatic parking-site optimization and rental handling are not included. [Evidence](JOURNEY_CONTINUITY_2026-10-11.md).
 
 **10 October performance steps 1–3:** Search timings now separate place, timetable, transfer, road-route, queue and solver work. Unchanged result updates reuse guarded calculations, and both solvers reject impossible vehicle connections before station-access checks. The controlled 24-station benchmark is **2.2–2.6× faster per solve**, with unchanged full results; an identical Extended refresh falls from **2.701 s to 0.011 s**. **593 JavaScript tests**, **13 Python tests**, **25 rendered panels** and **864 previous-release comparisons** pass. These are CPU/offline measurements; live whole-search and phone timing remain separate. [Evidence](PERFORMANCE_PASS_2026-10-10.md).
 
@@ -45,7 +47,7 @@ The attached update review is addressed in version 60. Its external stress/bench
 
 Foreground GPS journey following is implemented after the owner's approval. Try Start/permission, accuracy and route progress, pan/recenter, explicit boarding/alighting, live connection estimates, deliberate off-route recalculation, remaining stops/budgets, Stop and hidden-page/resume behaviour. Check optional screen wake lock and phone battery use. Complete this on a short familiar ride with iOS Safari or Android Chrome before extending navigation. [Detailed acceptance checklist](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
 
-Voice, automatic rerouting, screen-locked/background tracking and custody-aware continuation are not delivered. GPS does not replace station signs or verified entrances.
+Voice, automatic rerouting and screen-locked/background tracking are not delivered. Explicit one-bicycle park/return/collect continuation and unfinished-visit replanning are now delivered; field acceptance remains. GPS does not replace station signs or verified entrances.
 
 ## Realtime and cache acceptance
 
@@ -70,9 +72,9 @@ The agreed product order was **parking → bike services/useful stops → broade
 
 | Milestone | Already available | Planned follow-through |
 |---|---|---|
-| Useful bicycle parking | Official + OSM records plus destination/station/map-point lists, mapped equipment preferences and entry/collection/maxstay checks | Physical entrance verification, coverage gaps and a future custody-aware parking/retrieval workflow |
+| Useful bicycle parking | Official + OSM records plus destination/station/map-point lists, mapped equipment preferences and entry/collection/maxstay checks | Physical entrance verification, coverage gaps and field acceptance of the explicit park/return/collect workflow |
 | Reliable useful stops | Source/floor/direction lists, supported weekly-hour checks, explicit seasonal uncertainty and cycling-section refill gaps | Field verification, unsupported holiday/complex schedules and observed coverage defects. No renewed ETH-specific expansion |
-| Facility stops in the journey | Add as stop, up to five visits, explicit visit durations, fixed-service/budget/deadline checks, map/cards/fare eligibility updates and restore | Browser/phone acceptance, saved journeys and navigation replanning that preserves unfinished visits |
+| Facility stops in the journey | Add as stop, up to five visits, explicit visit durations, fixed-service/budget/deadline checks, map/cards/fare eligibility updates and restore | Browser/phone acceptance of saved journeys and navigation replanning that now preserves unfinished visits |
 | Interface completion | Profiles, three phone views, desktop Map/Journey, objective/preference separation | Fix observed usability problems while preserving selection, map state and all existing options; avoid another redesign without task evidence |
 
 Parking suitability is the priority, not live occupancy. Map proximity does not verify an entrance or an available bicycle space. Larger pilots, sample sizes and municipality lists remain proposals. [Detailed roadmap](APP_ROADMAP.md) · [Parking](BIKE_PARKING.md) · [Useful-stop scope](CYCLING_AMENITIES.md) · [Detour boundaries](FACILITY_DETOURS_2026-09-30.md).
@@ -96,7 +98,7 @@ The feed-refresh item is a roadmap task; this document does not create a schedul
 | Prefilled SBB handoff and further fare products | Check supported parameters and exact journey/profile semantics before adding behaviour |
 | Reusable investigation / implementation / review procedures | The three written workflow procedures were proposed earlier; automatic test/build CI is already implemented. Branch protection and policy changes remain separate decisions |
 
-Further navigation features (voice/background/automatic rerouting), full parking/retrieval or rental handling, additional bikepacking stages/overnights and saved journeys remain later options. A national engine migration, live bicycle-space availability, booking/ticket sales, community features, native apps and international expansion are deferred. Keep Switzerland first and the Site owner-private; new hosting costs need the owner's approval.
+Further navigation features (voice/background/automatic rerouting), automatic parking-site selection, rental/multi-bicycle handling, additional bikepacking stages/overnights and cross-device journey synchronization remain later options. Explicit device-local saving and park/return/collect are delivered. A national engine migration, live bicycle-space availability, booking/ticket sales, community features, native apps and international expansion are deferred. Keep Switzerland first and the Site owner-private; new hosting costs need the owner's approval.
 
 ## Source and decision precedence
 

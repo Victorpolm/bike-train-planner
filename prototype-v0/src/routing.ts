@@ -14,6 +14,8 @@ export type Point = {
 
 export type Place = Point & {
   label: string;
+  /** A required timed facility visit, carried through subsequent searches. */
+  visit?: FacilityVisit;
   stopId?: string;
   kind?: string;
   detail?: string;

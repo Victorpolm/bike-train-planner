@@ -1,0 +1,26 @@
+{
+  "checkedAt": "2026-10-10T22:15:14.910235+00:00",
+  "javascript": {
+    "tests": 614,
+    "suites": 11,
+    "pass": 614,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "python": 13,
+  "renderedPanels": {
+    "continuity": 7,
+    "preferences": 19,
+    "facilities": 6
+  },
+  "differentialComparisons": 288,
+  "browserPhoneAcceptance": "not performed: browser-control capability unavailable",
+  "liveProviderBurst": "not performed",
+  "staticChecks": [
+    "TypeScript",
+    "frontend and server-Worker production builds",
+    "TSX formatting",
+    "unused-code analysis"
+  ]
+}

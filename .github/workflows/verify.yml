@@ -39,4 +39,5 @@ jobs:
       - run: python3 -m unittest discover -s scripts -p 'test_*.py'
       - run: node scripts/check-preferences-presentation.mjs
       - run: node scripts/check-facility-presentation.mjs
+      - run: node scripts/check-continuity-presentation.mjs
       - run: npm run build

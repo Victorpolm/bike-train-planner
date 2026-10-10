@@ -1,5 +1,9 @@
 # Decisions
 
+## 11 October 2026 — implement journey continuity; keep broader readiness separate
+
+The owner authorized item 5 from the current gap list. Save explicit device-local dated itinerary snapshots, retain unfinished facility visits with full dwell time on replan, and track one actual parked bicycle with passenger-only continuation and explicit collection. Do not infer GPS tracking, bicycle collection or fresh timetable validity from opening a saved route. Items 4 and 6 are explanations, not authorization for quota infrastructure, extra paid compute or data-provider expansion. [Scope, behaviour and tests](JOURNEY_CONTINUITY_2026-10-11.md).
+
 ## 10 October 2026 — implement performance steps 1–3; bound the sports proposal
 
 The owner explicitly approved timing the full main search, avoiding unchanged calculations and rejecting impossible connections earlier. Preserve all permission, minimum-cycling, transfer, objective and cap semantics. Record timings locally; reuse only fully guarded inputs; keep Web Worker execution a separate proposal on the user's own device. The sports discussion proposes a target-duration continuous ride using a bounded set of marked cycling routes, followed later by ride sharing; it does not authorize an infinite detour search, a social network or removing At least. [Implementation and evidence](PERFORMANCE_PASS_2026-10-10.md).

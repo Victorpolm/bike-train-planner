@@ -63,6 +63,7 @@ export default function JourneyPlan({
   boardingMinutes = 3,
   takeBikeOnTransit = true,
   cyclingPosition = "anywhere",
+  walkingOnly = false,
 }: {
   id: string;
   realtime?: RealtimeJourneyState;
@@ -72,6 +73,7 @@ export default function JourneyPlan({
   fareProfile?: FareProfile;
   boardingMinutes?: number;
   takeBikeOnTransit?: boolean;
+  walkingOnly?: boolean;
   cyclingPosition?: import("./model").CyclingPosition;
   onEvidence?: EvidenceUpdate;
 }) {
@@ -83,9 +85,11 @@ export default function JourneyPlan({
         <p>{day.format(journey.startTime)} · Swiss local time</p>
         {!takeBikeOnTransit && (
           <p>
-            {cyclingPosition === "start-only"
-              ? `Leave your bicycle at ${journey.originStation.name}; continue by public transport and on foot.`
-              : `Walk to public transport, then use the bicycle you have at ${journey.destinationStation.name}.`}{" "}
+            {walkingOnly
+              ? "Your bicycle stays at its recorded location. This journey uses walking and passenger transport."
+              : cyclingPosition === "start-only"
+                ? `Leave your bicycle at ${journey.originStation.name}; continue by public transport and on foot.`
+                : `Walk to public transport, then use the bicycle you have at ${journey.destinationStation.name}.`}{" "}
             Parking availability and the path from a rack to the platform are not verified.
           </p>
         )}

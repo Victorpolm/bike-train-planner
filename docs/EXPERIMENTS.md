@@ -1,5 +1,9 @@
 # Experiments and golden journeys
 
+## 2026-10-11 — saved itinerary and parked-bicycle continuity
+
+614 JavaScript tests, 13 Python tests, 32 React panels and 288 unchanged-routing comparisons pass. Golden transfer: arrival minute 20, seven-minute visit, three-minute boarding; departure 23 is rejected and departure 30/arrival 50 retained. Deadline 45 rejects the journey. A pre-train ten-minute ride plus seven-minute visit and three-minute boarding correctly yields latest origin departure minute 10 for the minute-30 train. Tests cover snapshots, invalid/blocked storage, visit completion/order, zero-cycling passenger continuation, real walking acquisition, both solver modes and arrival constraints. Browser/phone interaction remains unverified. [Evidence and reproduction](JOURNEY_CONTINUITY_2026-10-11.md).
+
 ## 2026-10-10 — timing, unchanged-result reuse and cheap transfer rejection
 
 593 JavaScript tests, 13 Python tests, 25 rendered panels and 864 previous-release comparisons pass. Golden realtime boundary: scheduled departure −10 minutes with estimated +3 remains valid at the three-minute boarding allowance; +2 is rejected; arrival exactly at the horizon is retained. Impossible vehicles are rejected before access-rule evaluation in both solvers/modes. Cache-on/off acquisition publications and provider requests match; nested evidence changes invalidate reuse and later-departure filtering cannot mutate cached containers. The 24-station hydrated benchmark improves Extended at-most from 1.282 s to 0.550 s and at-least from 8.623 s to 3.857 s, retaining the latter's label cap. Repeated identical refresh improves 2.701 s to 0.011 s. These are CPU medians, not phone/end-to-end claims. [Method, raw results and limits](PERFORMANCE_PASS_2026-10-10.md).

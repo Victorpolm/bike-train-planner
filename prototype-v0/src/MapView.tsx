@@ -14,6 +14,7 @@ import {
   parkingDistance,
   PARKING_SOURCE,
   OSM_COPYRIGHT,
+  type BikeParking,
 } from "./bikeParking";
 import { useBikeParking } from "./useBikeParking";
 import { useAmenities } from "./useAmenities";
@@ -52,6 +53,7 @@ import type { RoutePreference } from "./cyclingPreferences";
 import type { JourneyNavigation } from "./useJourneyNavigation";
 
 type MapViewProps = {
+  onPark?: (facility: BikeParking, collection: Date) => void;
   navigation: JourneyNavigation["map"];
   hills?: HillPreferences;
   editOptions?: Options;
@@ -152,6 +154,7 @@ function fitMap(map: L.Map, bounds: L.LatLngBounds) {
 
 export default function MapView({
   navigation,
+  onPark,
   visible = true,
   origin,
   destination,
@@ -1449,6 +1452,7 @@ export default function MapView({
           <ParkingChoices
             key={detourScope}
             facilities={visibleParking}
+            onPark={onPark}
             mapPoint={parkingPoint}
             targets={[
               ...(origin

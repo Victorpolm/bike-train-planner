@@ -5,7 +5,25 @@ import SearchTimingSummary from "./ui/SearchTimingSummary";
 import FacilityStopSummary from "./FacilityStopSummary";
 import JourneyNavigation from "./JourneyNavigation";
 import { useJourneyNavigation } from "./useJourneyNavigation";
-import { navigationReplan } from "./navigation";
+import {
+  navigationReplan,
+  navigationTrip,
+  remainingNavigationStops,
+  type NavigationInput,
+} from "./navigation";
+import SavedJourneys from "./ui/SavedJourneys";
+import BicycleStatus from "./ui/BicycleStatus";
+import {
+  loadJourneyLibrary,
+  writeJourneyLibrary,
+  saveJourney,
+  type JourneyLibrary,
+  type SavedJourney,
+  type ParkedBicycle,
+} from "./savedJourneys";
+import { withoutBicycle, canFollowWithBicycle } from "./bicycleContinuity";
+import { reopenJourney } from "./reopenJourney";
+import type { BikeParking } from "./bikeParking";
 import { useRealtimeJourney } from "./useRealtimeJourney";
 import type { AppliedCyclingEdit } from "./cyclingEditor";
 import {
@@ -48,7 +66,13 @@ import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { extend, plan, searchWarnings, updateBicycleEvidence, type SearchSession } from "./api";
 import { firstBoarding, laterDepartures } from "./laterDepartures";
 import type { Journey } from "./routing";
-import { metrics, type ModelMode, type EndpointPreference, type CyclingPosition } from "./model";
+import {
+  metrics,
+  type ModelMode,
+  type EndpointPreference,
+  type CyclingPosition,
+  type Options,
+} from "./model";
 import {
   recommend,
   compareCycling,
@@ -341,6 +365,12 @@ export default function App() {
     const place = KNOWN_PLACES.find((p) => p.stopId === stopId)!;
     return { text: place.label, place };
   };
+  const [storedJourneys] = useState(loadJourneyLibrary);
+  const [journeyLibrary, setJourneyLibrary] = useState(storedJourneys.library);
+  const [savedNotice, setSavedNotice] = useState(storedJourneys.notice);
+  const [bikeNotice, setBikeNotice] = useState("");
+  const [resumeStage, setResumeStage] = useState(0);
+  const [restoredOptions, setRestoredOptions] = useState<Options | null>(null);
   const [fromInput, setFromInput] = useState<PlaceValue>(() => initial("8503000"));
   const locationRequest = useRef<AbortController | null>(null);
   const [locating, setLocating] = useState(false);
@@ -456,8 +486,8 @@ export default function App() {
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled" | "arrival">("now");
   const [departureInput, setDepartureInput] = useState(() => swissDateTimeInput(new Date()));
-  const options = useMemo(
-    () => ({
+  const options = useMemo(() => {
+    const base = restoredOptions ?? {
       ...preferenceOptions(
         cycling,
         endpoint,
@@ -473,22 +503,24 @@ export default function App() {
         cyclingAmount,
       ),
       objectives,
-    }),
-    [
-      cycling,
-      endpoint,
-      bicycleScope,
-      cyclingPace,
-      routePreference,
-      cyclingPosition,
-      hills,
-      climbOptimization,
-      takeBikeOnTransit,
-      maxWalkingMinutes,
-      cyclingAmount,
-      objectives,
-    ],
-  );
+    };
+    return journeyLibrary.parked ? withoutBicycle({ ...base, maxWalkingMinutes }) : base;
+  }, [
+    cycling,
+    endpoint,
+    bicycleScope,
+    cyclingPace,
+    routePreference,
+    cyclingPosition,
+    hills,
+    climbOptimization,
+    takeBikeOnTransit,
+    maxWalkingMinutes,
+    cyclingAmount,
+    objectives,
+    restoredOptions,
+    journeyLibrary.parked,
+  ]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [laterBatches, setLaterBatches] = useState<
     { key: string; session: SearchSession; categories: string[] }[]
@@ -597,14 +629,14 @@ export default function App() {
       entries.push({
         proposal: {
           journey: custom.journey,
-          categories: ["Your edited journey"],
+          categories: [custom.source.savedAt ? "Your saved journey" : "Your edited journey"],
           extraMinutes: 0,
           cyclingSaved: 0,
           activeSaved: 0,
           wins: [
             {
               scope: custom.source.options.bicycleScope ?? "allow-uncertain",
-              categories: ["Your edited journey"],
+              categories: [custom.source.savedAt ? "Your saved journey" : "Your edited journey"],
               extraMinutes: 0,
             },
           ],
@@ -681,23 +713,200 @@ export default function App() {
     [realtime.journey, selectedSource],
   );
   const selected = selectedTiming?.journey ?? null;
+  const selectedTrip: NavigationInput | null =
+    selectedSource && (selected || (bikeOnlySelected && cyclingReference?.routes?.length))
+      ? {
+          key: navigationKey,
+          journey: selected,
+          cycling: bikeOnlySelected ? cyclingReference : null,
+          origin: selectedSource.origin,
+          destination: selectedSource.destination,
+          waypoints: selectedSource.waypoints ?? [],
+          options: selectedSource.options,
+          mode,
+          start: selectedSource.start,
+        }
+      : null;
+  const bicycleAvailable =
+    !selectedTrip || canFollowWithBicycle(selectedTrip, journeyLibrary.parked);
   function startNavigation() {
-    if (!selectedSource || loading) return;
+    if (!selectedTrip || loading || !bicycleAvailable) return;
     setSelectedId(rawSelected?.id ?? BIKE_ONLY_ID);
     setCycleFocus(null);
     setRerouteMessage("");
-    navigation.start({
-      key: navigationKey,
-      journey: selected,
-      cycling: bikeOnlySelected ? cyclingReference : null,
-      origin: selectedSource.origin,
-      destination: selectedSource.destination,
-      waypoints: selectedSource.waypoints ?? [],
-      options: selectedSource.options,
-      mode,
-      start: selectedSource.start,
-    });
+    navigation.start(selectedTrip, resumeStage);
     showMobileView("map");
+  }
+  function persistJourneys(next: JourneyLibrary) {
+    const result = writeJourneyLibrary(journeyLibrary, next);
+    setSavedNotice(result.notice);
+    if (result.saved) setJourneyLibrary(result.library);
+    return result.saved;
+  }
+  function saveSelectedJourney(name: string) {
+    if (!selectedTrip) return;
+    try {
+      const active = navigation.following;
+      persistJourneys(
+        saveJourney(
+          journeyLibrary,
+          active?.trip ?? selectedTrip,
+          active?.index ?? resumeStage,
+          name,
+          crypto.randomUUID(),
+        ),
+      );
+    } catch (error) {
+      setSavedNotice(error instanceof Error ? error.message : "Could not save this journey.");
+    }
+  }
+  function restoreRoutingOptions(next: Options) {
+    setRestoredOptions(next);
+    setTripPreset("personalized");
+    setCyclingAmount(
+      (next.minBikeMinutes ?? 0) > 0
+        ? { mode: "at-least", minutes: next.minBikeMinutes! }
+        : { mode: "at-most", minutes: next.maxBikeMinutes },
+    );
+    setCyclingPosition(next.cyclingPosition ?? "anywhere");
+    setTakeBikeOnTransit(next.takeBikeOnTransit !== false);
+    setMaxWalkingMinutes(next.maxWalkingMinutes ?? 30);
+    setEndpoint(next.endpointPreference);
+    setBicycleScope(next.bicycleScope ?? "allow-uncertain");
+    setRoutePreference(next.cyclingRoutePreference ?? "simplest");
+    setHills({ ...(next.hills ?? DEFAULT_HILLS) });
+    setClimbOptimization(next.climbOptimization ?? false);
+    setObjectives(next.objectives ?? DEFAULT_OBJECTIVES);
+    if (next.cyclingPace) {
+      setCyclingPace({ ...next.cyclingPace });
+      setRidingPreset("custom");
+    }
+  }
+  function openSavedJourney(entry: SavedJourney, fresh = false) {
+    if (loading) return;
+    invalidate();
+    const source = reopenJourney(entry),
+      trip = entry.trip;
+    setFromInput({ text: trip.origin.label, place: trip.origin });
+    setToInput({ text: trip.destination.label, place: trip.destination });
+    const stops = fresh ? remainingNavigationStops(navigationTrip(trip), 0) : trip.waypoints;
+    setViaInputs(
+      stops.map((place) => ({
+        id: `via-${++nextViaId.current}`,
+        value: { text: place.label, place },
+      })),
+    );
+    setMode(trip.mode);
+    const { arriveBy: _deadline, ...freshOptions } = trip.options;
+    restoreRoutingOptions(fresh ? freshOptions : trip.options);
+    setDepartureMode(fresh ? "now" : trip.options.arriveBy ? "arrival" : "scheduled");
+    setDepartureInput(
+      swissDateTimeInput(
+        fresh ? new Date() : trip.options.arriveBy ? new Date(trip.options.arriveBy) : trip.start,
+      ),
+    );
+    if (fresh) {
+      setSavedNotice(
+        "Route, stops and routing preferences loaded. Choose your travel time, then Find journey for current options.",
+      );
+      showMobileView("planning");
+      return;
+    }
+    setSession(source);
+    if (trip.journey)
+      setCustomJourneys([{ journey: trip.journey, source, baseId: trip.journey.id }]);
+    setSelectedId(trip.journey?.id ?? BIKE_ONLY_ID);
+    setResumeStage(entry.stage);
+    setSavedNotice(`Opened “${entry.name}”. This is the saved timetable; GPS has not started.`);
+    showMobileView("journey");
+  }
+  function rememberParking(parked: ParkedBicycle | null) {
+    const next = { ...journeyLibrary, parked };
+    const result = writeJourneyLibrary(journeyLibrary, next);
+    // Physical custody changes even when device storage is blocked.
+    setJourneyLibrary(next);
+    setBikeNotice(
+      result.saved
+        ? parked
+          ? "Bicycle location saved. Plan your onward journey below."
+          : "Collection confirmed. Cycling is available again."
+        : "Bicycle status changed for this session, but your browser could not save it. It will not be remembered after reload.",
+    );
+    return result.saved;
+  }
+  function recordParked(
+    place: ParkedBicycle["place"],
+    facility?: BikeParking,
+    collectionAt?: Date,
+  ) {
+    const parked: ParkedBicycle = {
+      place,
+      parkedAt: new Date(),
+      facility,
+      collectionAt: collectionAt && +collectionAt > Date.now() ? collectionAt : undefined,
+      returnTo: selectedSource?.origin ?? fromInput.place,
+      cyclingOptions: options,
+    };
+    invalidate();
+    const saved = rememberParking(parked);
+    setFromInput({ text: place.label, place });
+    setViaInputs([]);
+    setDepartureMode("now");
+    showMobileView("planning");
+    return saved;
+  }
+  async function recordParkingHere() {
+    if (loading || locating || journeyLibrary.parked) return;
+    const abort = new AbortController();
+    locationRequest.current?.abort();
+    locationRequest.current = abort;
+    setLocating(true);
+    setBikeNotice("");
+    try {
+      const found = await currentLocation(
+        window.isSecureContext ? navigator.geolocation : undefined,
+        abort.signal,
+      );
+      if (abort.signal.aborted || locationRequest.current !== abort) return;
+      locationRequest.current = null;
+      const saved = recordParked({ ...found.place, label: "My parked bicycle" });
+      if (saved)
+        setBikeNotice(
+          `Bicycle location recorded with accuracy ±${Math.ceil(found.accuracy)} m. Check the point and entrance before returning.`,
+        );
+    } catch (error) {
+      if (!abort.signal.aborted)
+        setBikeNotice(error instanceof Error ? error.message : "Could not get your location.");
+    } finally {
+      if (locationRequest.current === abort) locationRequest.current = null;
+      setLocating(false);
+    }
+  }
+  function returnToBicycle() {
+    const parked = journeyLibrary.parked;
+    if (!parked || loading) return;
+    invalidate();
+    setToInput({ text: parked.place.label, place: parked.place });
+    setFromInput({ text: "" });
+    setViaInputs([]);
+    setDepartureMode("now");
+    setBikeNotice(
+      "Finding your current departure point. Review From and the travel time, then Find journey to return to your bicycle.",
+    );
+    showMobileView("planning");
+    void useMyLocation();
+  }
+  function collectBicycle() {
+    const parked = journeyLibrary.parked;
+    if (!parked || loading) return;
+    invalidate();
+    rememberParking(null);
+    if (parked.cyclingOptions) restoreRoutingOptions(parked.cyclingOptions);
+    setFromInput({ text: parked.place.label, place: parked.place });
+    if (parked.returnTo) setToInput({ text: parked.returnTo.label, place: parked.returnTo });
+    setViaInputs([]);
+    setDepartureMode("now");
+    showMobileView("planning");
   }
   async function recalculateNavigation() {
     const active = navigation.following;
@@ -760,6 +969,8 @@ export default function App() {
         })),
       );
       setSession(result);
+      restoreRoutingOptions(request.options);
+      setResumeStage(0);
       setCustomJourneys([]);
       setCustomCycling(null);
       setLaterBatches([]);
@@ -788,6 +999,7 @@ export default function App() {
   function openJourney(id: string) {
     if (navigation.following && id !== (rawSelected?.id ?? BIKE_ONLY_ID))
       navigation.stop("Following stopped because you selected another journey.");
+    setResumeStage(0);
     setSelectedId(id);
     setCycleFocus(null);
     viewScroll.current.journey = 0;
@@ -925,6 +1137,8 @@ export default function App() {
     }
   }
   function invalidate() {
+    setRestoredOptions(null);
+    setResumeStage(0);
     timingController.current = null;
     setTimingReport(null);
     locationRequest.current?.abort();
@@ -1115,6 +1329,14 @@ export default function App() {
   }
   async function showLater(source: SearchSession, proposal: ScopedProposal) {
     if (loading) return;
+    if (source.savedAt) {
+      setLaterNotices((current) => ({
+        ...current,
+        [proposal.journey.id]:
+          "Open Saved journeys and choose Plan again to search a new timetable.",
+      }));
+      return;
+    }
     // Repeated clicks on an earlier card advance beyond the latest displayed
     // departure for those categories, rather than loading the same page again.
     const cursor = proposalEntries
@@ -1213,6 +1435,45 @@ export default function App() {
       )}
       <main id="top">
         <section className="planner-panel" id="planning-panel" aria-label="Journey planning">
+          <SavedJourneys
+            journeys={journeyLibrary.journeys}
+            selectedName={
+              selectedTrip ? `${selectedTrip.origin.label} → ${selectedTrip.destination.label}` : ""
+            }
+            canSave={!!selectedTrip}
+            busy={loading || locating}
+            notice={savedNotice}
+            onSave={saveSelectedJourney}
+            onOpen={(entry) => openSavedJourney(entry)}
+            onPlan={(entry) => openSavedJourney(entry, true)}
+            onRename={(id, name) =>
+              persistJourneys({
+                ...journeyLibrary,
+                journeys: journeyLibrary.journeys.map((j) =>
+                  j.id === id ? { ...j, name: name.trim().slice(0, 100) } : j,
+                ),
+              })
+            }
+            onDelete={(id) =>
+              persistJourneys({
+                ...journeyLibrary,
+                journeys: journeyLibrary.journeys.filter((j) => j.id !== id),
+              })
+            }
+          />
+          <BicycleStatus
+            parked={journeyLibrary.parked}
+            busy={loading || locating}
+            notice={bikeNotice}
+            walkingMinutes={maxWalkingMinutes}
+            onWalkingMinutes={(minutes) => {
+              invalidate();
+              setMaxWalkingMinutes(minutes);
+            }}
+            onRecordHere={() => void recordParkingHere()}
+            onReturn={returnToBicycle}
+            onCollected={collectBicycle}
+          />
           <PlannerForm
             loading={loading}
             locating={locating}
@@ -1285,7 +1546,7 @@ export default function App() {
                 <>
                   <TripPresetPicker
                     value={tripPreset}
-                    disabled={loading}
+                    disabled={loading || !!journeyLibrary.parked}
                     onChange={choosePreset}
                     library={profileLibrary}
                     settings={tripPersonal}
@@ -1310,7 +1571,7 @@ export default function App() {
                 <TripPreferences
                   open={preferencesOpen}
                   onOpenChange={setPreferencesOpen}
-                  disabled={loading}
+                  disabled={loading || !!journeyLibrary.parked}
                   mode={mode}
                   hasWaypoints={viaInputs.length > 0}
                   bicycleScope={bicycleScope}
@@ -1807,9 +2068,28 @@ export default function App() {
               Journey
             </button>
           </nav>
+          {selectedSource?.savedAt && (
+            <p className="navigation-result">
+              Saved itinerary ·{" "}
+              {selectedSource.start.toLocaleDateString("en-GB", {
+                timeZone: "Europe/Zurich",
+                dateStyle: "medium",
+              })}{" "}
+              at {clock.format(selectedSource.start)} (Swiss time).
+              {resumeStage > 0 &&
+                ` Start resumes at stage ${resumeStage + 1}; confirm the displayed stage before continuing.`}{" "}
+              Use Saved journeys → Plan again for a new timetable.
+            </p>
+          )}
+          {!bicycleAvailable && (
+            <p className="notice">
+              Your bicycle is recorded as parked elsewhere. You can inspect this itinerary; collect
+              your bicycle before following a route that needs it.
+            </p>
+          )}
           <JourneyNavigation
             navigation={navigation}
-            canStart={!!selectedSource && (!!selected || !!cyclingReference?.routes?.length)}
+            canStart={!!selectedTrip && bicycleAvailable}
             busy={loading}
             realtime={realtime}
             onStart={startNavigation}
@@ -1824,6 +2104,16 @@ export default function App() {
           <div className="map-panel" id="journey-map">
             <MapView
               navigation={navigation.map}
+              onPark={
+                !loading && !journeyLibrary.parked
+                  ? (facility, collection) =>
+                      recordParked(
+                        { lat: facility.lat, lon: facility.lon, label: facility.name },
+                        facility,
+                        collection,
+                      )
+                  : undefined
+              }
               visible={detailView === "map" && (!compactLayout || mobileView === "map")}
               origin={fromInput.place ?? session?.origin ?? null}
               destination={toInput.place ?? session?.destination ?? null}
@@ -1845,8 +2135,9 @@ export default function App() {
               editOptions={selectedSource?.options}
               onApplyCycling={applyCyclingChange}
               onRestoreCycling={
-                (selected && customJourneys.some((entry) => entry.journey.id === selected.id)) ||
-                (bikeOnlySelected && customCycling)
+                !selectedSource?.savedAt &&
+                ((selected && customJourneys.some((entry) => entry.journey.id === selected.id)) ||
+                  (bikeOnlySelected && customCycling))
                   ? restoreCyclingChange
                   : undefined
               }
@@ -1905,6 +2196,7 @@ export default function App() {
                   boardingMinutes={selectedSource.options.boardingMinutes}
                   fareProfile={fareProfile}
                   takeBikeOnTransit={selectedSource.options.takeBikeOnTransit !== false}
+                  walkingOnly={selectedSource.options.walkingOnly}
                   cyclingPosition={selectedSource.options.cyclingPosition}
                   onEvidence={updateSelectedEvidence}
                 />

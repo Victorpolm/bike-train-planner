@@ -16,6 +16,7 @@ export default function ParkingChoices({
   alongJourney,
   onLocate,
   onDetour,
+  onPark,
 }: {
   facilities: readonly BikeParking[];
   targets: ParkingTarget[];
@@ -24,6 +25,7 @@ export default function ParkingChoices({
   alongJourney: boolean;
   onLocate: (facility: BikeParking) => void;
   onDetour?: (target: DetourFacility) => void;
+  onPark?: (facility: BikeParking, collection: Date) => void;
 }) {
   const [targetKey, setTargetKey] = useState(
     targets.some((t) => t.key === "destination") ? "destination" : (targets[0]?.key ?? ""),
@@ -247,6 +249,11 @@ export default function ParkingChoices({
                     Preview visit / access
                   </button>
                 )}
+                {onPark && (
+                  <button type="button" onClick={() => onPark(f, retrieval)}>
+                    I’ve parked here
+                  </button>
+                )}
                 {url && (
                   <a href={url} target="_blank" rel="noreferrer">
                     Source / entry details ↗
@@ -284,7 +291,8 @@ export default function ParkingChoices({
       <p className="facility-note">
         Hours reflect supported mapped weekly schedules; exceptions and actual entry are unverified.
         Nearby records without a shared source identity remain separate. A preview visits this
-        location with your bicycle; it does not create a park-and-ride arrangement.
+        location with your bicycle. “I’ve parked here” records actual parking and changes subsequent
+        searches to walking and passenger transport.
       </p>
     </section>
   );

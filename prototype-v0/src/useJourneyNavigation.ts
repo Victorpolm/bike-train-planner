@@ -69,12 +69,12 @@ export function useJourneyNavigation(selectionKey: string) {
       recenter, onPan: () => setFollowingMap(false) },
     recenter: () => { setFollowingMap(true); setRecenter(n => n + 1); },
     retry: () => setAttempt(n => n + 1),
-    start: (input: NavigationInput) => {
+    start: (input: NavigationInput, stage = 0) => {
       const trip = navigationTrip(input);
       if (!trip.stages.length) { setNotice("No route sections are available to follow yet."); return; }
       watch.current?.stop(); wake.current?.disable();
       activeTrip.current = trip;
-      setFollowing({ trip, index: 0, onboard: false, progress: null }); setAttempt(n => n + 1);
+      setFollowing({ trip, index: Number.isInteger(stage) && stage >= 0 && stage < trip.stages.length ? stage : 0, onboard: false, progress: null }); setAttempt(n => n + 1);
       setLocation(idleLocation()); setNotice(""); setNow(Date.now()); setFollowingMap(true); setRecenter(n => n + 1);
     },
     stop,

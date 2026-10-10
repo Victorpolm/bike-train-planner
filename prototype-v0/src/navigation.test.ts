@@ -153,6 +153,10 @@ it("blocks replanning with stale GPS, while boarded, after a passed deadline or 
   trip.options.arriveBy = at(-1).toISOString();
   assert.throws(() => navigationReplan(trip, 0, false, null, fix(a), now), /deadline/);
   delete trip.options.arriveBy; trip.options.takeBikeOnTransit = false; trip.options.cyclingPosition = "start-only";
+  const passenger = navigationReplan(trip, 1, false, null, fix(b), now);
+  assert.equal(passenger.options.walkingOnly, true); assert.equal(passenger.options.maxBikeMinutes, 0);
+  assert.equal(passenger.options.takeBikeOnTransit, false);
+  trip.options.cyclingPosition = "end-only";
   assert.throws(() => navigationReplan(trip, 1, false, null, fix(b), now), /bicycle/);
   trip.options.takeBikeOnTransit = true; trip.options.maxBoardings = 1;
   assert.throws(() => navigationReplan(trip, 2, false, null, fix(c), now), /boarding limit/);

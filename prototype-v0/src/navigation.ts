@@ -1,3 +1,4 @@
+import { withoutBicycle } from "./bicycleContinuity.ts";
 import { cyclingSteps, journeySteps } from "./itinerary.ts";
 import { arrivalTime, departureTime, realtimeKey, realtimeStale, realtimeUnavailable, effectivePlatform } from "./realtime.ts";
 import { boardingCheck } from "./transferTimes.ts";
@@ -37,12 +38,13 @@ export function navigationTrip(input: NavigationInput): NavigationTrip {
     for (let i = 1; i < distances.length; i++) distances[i] += distances[i - 1];
     if (!input.journey) {
       const end = route?.to, next = input.waypoints[visits];
-      if (step.mode === "bike" && end && next && distance(end, next) < 100) visits++;
+      if (next?.visit ? step.leg?.facilityVisit?.id === next.visit.id : step.mode === "bike" && end && next && distance(end, next) < 100) visits++;
     }
     else {
       const end = route?.to ?? step.leg?.toPoint;
       const visit = input.journey.waypoints?.[visits];
-      if (visit && step.arrival && +step.arrival >= +visit.arrival && end && distance(end, visit.place) < 100) visits++;
+      if (visit && step.arrival && +step.arrival >= +visit.arrival && end && distance(end, visit.place) < 100
+        && (!visit.place.visit || step.leg?.facilityVisit?.id === visit.place.visit.id)) visits++;
     }
     return { mode: step.mode as TransitLeg["mode"], title: step.title, from: step.from ?? "Starting point", to: step.to ?? "Destination",
       minutes: route?.minutes ?? (step.arrival && step.departure ? Math.max(0, (+step.arrival - +step.departure) / minute) : 0),
@@ -150,19 +152,34 @@ export function navigationConnection(trip: NavigationTrip, index: number, onboar
     unavailable, stale, unknownDelay: !!leg.realtime?.undefinedDelay, allowance: check.note };
 }
 
+/** Merge ordinary waypoints and added facilities in their actual itinerary order.
+ * A stop is completed only after its stage has been explicitly confirmed. */
+export function remainingNavigationStops(trip: NavigationTrip, index: number): Place[] {
+  const result: Place[] = [];
+  let completed = trip.stages[index - 1]?.completedVisits ?? 0;
+  for (const stage of trip.stages.slice(index)) {
+    for (let i = completed; i < stage.completedVisits; i++) {
+      const point = trip.waypoints[i];
+      if (point && !point.visit) result.push(point);
+    }
+    const visit = stage.leg?.facilityVisit;
+    if (visit) result.push({ lat: visit.lat, lon: visit.lon, label: visit.name, visit: { ...visit } });
+    completed = stage.completedVisits;
+  }
+  return result;
+}
+
 /** Replanning keeps hard limits for the whole trip, not a new full budget.
  * Unsupported custody transitions are blocked instead of conjuring a bicycle. */
 export function navigationReplan(trip: NavigationTrip, index: number, onboard: boolean, progress: RouteProgress | null,
   fix: LocationFix | null, now: number) {
   if (!usableFix(fix, now)) throw new Error("Wait for a fresh, accurate location before recalculating.");
   if (onboard || trip.stages[index]?.mode === "unknown") throw new Error("Confirm that you have alighted before recalculating from here.");
-  if (trip.stages.slice(index).some(s => s.leg?.facilityVisit)) throw new Error("Finish the remaining facility stops before recalculating, or stop following and choose a new journey in Plan. Recalculation cannot preserve their visit durations yet.");
   const previous = trip.stages.slice(0, index);
   const boardings = previous.filter(s => s.mode === "transit").length;
   const firstTransit = trip.stages.findIndex(s => s.mode === "transit");
   const lastTransit = trip.stages.reduce((last, s, i) => s.mode === "transit" ? i : last, -1);
-  if (trip.options.takeBikeOnTransit === false && (trip.options.cyclingPosition === "start-only" && firstTransit >= 0 && index >= firstTransit
-    || trip.options.cyclingPosition === "end-only" && lastTransit >= 0 && index > lastTransit))
+  if (trip.options.takeBikeOnTransit === false && trip.options.cyclingPosition === "end-only" && lastTransit >= 0)
     throw new Error("Your bicycle’s location has changed. Stop following and choose a new journey in Plan so its bicycle placement is explicit.");
   if (boardings >= trip.options.maxBoardings) throw new Error("Your original boarding limit has been used. Choose a new journey in Plan to change that limit.");
   if (trip.options.arriveBy && Date.parse(trip.options.arriveBy) <= now) throw new Error("Your arrival deadline has passed. Choose a new time in Plan.");
@@ -172,10 +189,11 @@ export function navigationReplan(trip: NavigationTrip, index: number, onboard: b
     + (current?.mode === "bike" ? current.minutes * fraction : 0);
   const usedAccess = previous.filter((s, i) => s.mode === "bike" && (firstTransit < 0 || i < firstTransit)).reduce((sum, s) => sum + s.minutes, 0)
     + (current?.mode === "bike" && (firstTransit < 0 || index < firstTransit) ? current.minutes * fraction : 0);
-  const usedTransfers = previous.filter((s, i) => s.mode === "bike" && i > firstTransit && i < lastTransit).length;
+  const usedTransfers = new Set(previous.flatMap((s, i) => s.mode === "bike" && i > firstTransit && i < lastTransit
+    ? [s.leg?.cyclingSectionId ?? `stage:${i}`] : [])).size;
   const usedEgress = current?.mode === "bike" && lastTransit >= 0 && index > lastTransit ? current.minutes * fraction : 0;
   const usedIntermediate = current?.mode === "bike" && firstTransit >= 0 && index > firstTransit && index < lastTransit ? current.minutes * fraction : 0;
-  const options = { ...trip.options, maxBikeMinutes: Math.max(0, Math.floor(trip.options.maxBikeMinutes - usedBike)),
+  let options = { ...trip.options, maxBikeMinutes: Math.max(0, Math.floor(trip.options.maxBikeMinutes - usedBike)),
     minBikeMinutes: Math.max(0, Math.ceil((trip.options.minBikeMinutes ?? 0) - usedBike - 1e-9)),
     maxEgressMinutes: Math.max(0, Math.floor(trip.options.maxEgressMinutes - usedEgress)),
     maxIntermediateMinutes: Math.max(0, Math.floor(trip.options.maxIntermediateMinutes - usedIntermediate)),
@@ -186,7 +204,10 @@ export function navigationReplan(trip: NavigationTrip, index: number, onboard: b
     maxAccessMinutes: boardings ? Math.max(0, Math.floor(Math.min(trip.options.maxAccessMinutes,
       trip.options.maxIntermediateMinutes - usedIntermediate, trip.options.maxEgressMinutes - usedEgress)))
       : Math.max(0, Math.floor(trip.options.maxAccessMinutes - usedAccess)) };
-  const completedVisits = previous.at(-1)?.completedVisits ?? 0;
+  if (trip.options.walkingOnly || trip.options.takeBikeOnTransit === false && trip.options.cyclingPosition === "start-only" && firstTransit >= 0 && index >= firstTransit) {
+    if ((options.minBikeMinutes ?? 0) > 0) throw new Error("Your remaining cycling minimum requires collecting your bicycle first.");
+    options = { ...options, ...withoutBicycle(options) };
+  }
   return { origin: { lat: fix.lat, lon: fix.lon, label: "Current location" } as Place, destination: trip.destination,
-    waypoints: trip.waypoints.slice(completedVisits), options, start: new Date(now), mode: trip.mode, bikeOnly: !trip.journey };
+    waypoints: remainingNavigationStops(trip, index), options, start: new Date(now), mode: trip.mode, bikeOnly: !trip.journey };
 }

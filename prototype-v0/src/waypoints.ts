@@ -1,3 +1,4 @@
+import { requiredVisitLeg, validateRequiredStops } from "./requiredVisits.ts";
 import { arrivalTime, departureTime, moveAfter } from "./realtime.ts";
 import { cyclingDurationFits, cyclingMinimumResource } from "./cyclingDuration.ts";
 import { boardingCheck, transferContextKey } from "./transferTimes.ts";
@@ -26,6 +27,7 @@ const pointId = (index: number) => `requested-point:${index}`;
 export function solveWaypoints(network: Network, points: Place[], start: Date, options: Options,
   mode: ModelMode, labelLimit = 50_000): WaypointSolution {
   validateOptions(options);
+  validateRequiredStops(points.slice(1, -1));
   if (points.length < 2 || !Number.isFinite(start.getTime())) throw new Error("A route needs a start, finish and valid departure time.");
   const horizon = options.arriveBy ? Date.parse(options.arriveBy) : start.getTime() + options.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(options, mode);
@@ -71,7 +73,7 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
       stageArrivalsByMode[state.stage][mode] = Math.min(stageArrivalsByMode[state.stage][mode], state.time);
     }
   };
-  const walking = (state: State) => options.cyclingPosition === "start-only" && state.boardings > 0
+  const walking = (state: State) => !!options.walkingOnly || options.cyclingPosition === "start-only" && state.boardings > 0
     || options.cyclingPosition === "end-only" && state.boardings === 0;
   const linkMinutes = (state: State, from: Place | Stop, to: Place | Stop) => walking(state)
     ? cachedWalking(network.walking, from, to)?.minutes ?? Infinity : cyclingLink(network, from, to, options.cyclingPace).minutes;
@@ -106,8 +108,11 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     const advanced = cycle(state, from, next, pointId(stage), minutes,
       stage === points.length - 1 ? "Cycle to your destination" : `Cycle to intermediate stop ${stage}`);
     if (!advanced) return;
-    add({ ...advanced, stage, stageHasTransit: false, needsTransit: false,
-      visits: stage === points.length - 1 ? state.visits : [...state.visits, { place: next, arrival: new Date(advanced.time) }] });
+    const visit = next.visit ? requiredVisitLeg(next, advanced.time) : null;
+    if (next.visit && !visit) return;
+    const time = visit ? +visit.arrival! : advanced.time;
+    add({ ...advanced, time, legs: visit ? [...advanced.legs, visit] : advanced.legs, stage, stageHasTransit: false, needsTransit: false,
+      visits: stage === points.length - 1 ? state.visits : [...state.visits, { place: next, arrival: new Date(time) }] });
   };
   for (const startedAt of options.arriveBy ? arrivalDepartureSeeds(network, points, start, options) : [+start])
     add({ startedAt, climb: emptyClimb(), stop: pointId(0), stage: 0, time: startedAt, bike: 0, walk: 0, boardings: 0,

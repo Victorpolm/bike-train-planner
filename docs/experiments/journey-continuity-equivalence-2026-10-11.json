@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-10-10T22:10:35.028Z",
+  "comparisons": 288,
+  "nonempty": 204,
+  "capped": 42,
+  "fingerprint": "f2fb59fc02cce2ceb540b0caf1afae564676e3896eb92f0bdd8c2d2117813bd1",
+  "coverage": "Complete results, label counts/caps, both solvers and modes, all permission scopes, minimum durations, arrival deadlines, realtime delays/cancellations/platform changes and hydrated/missing transfer data."
+}

@@ -532,3 +532,16 @@ button:disabled { cursor: default; opacity: .65; }
 .realtime-status p, .plan-realtime { font-size: .85rem; line-height: 1.5; }
 .realtime-warnings { color: #8c3028; padding-left: 1.3rem; }
 .plan-realtime { color: #405e58; }
+
+/* Journey continuity controls remain compact on the planning panel. */
+.saved-journeys, .bicycle-status { border: 1px solid #cddcd7; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; background: #f7faf8; }
+.saved-journeys summary, .bicycle-status summary { cursor: pointer; font-weight: 650; overflow-wrap: anywhere; }
+.saved-journeys p, .bicycle-status p { font-size: .85rem; line-height: 1.5; margin: 9px 0; }
+.saved-journey-save { display: grid; gap: 8px; }
+.saved-journeys label, .bicycle-status label { display: grid; gap: 5px; font-size: .85rem; }
+.saved-journeys input, .bicycle-status select { min-width: 0; max-width: 100%; padding: 8px; border: 1px solid #b9cdc4; border-radius: 7px; }
+.saved-journey-list { list-style: none; padding: 0; margin: 10px 0 0; }
+.saved-journey-list li { border-top: 1px solid #d5e2dc; padding: 12px 0; overflow-wrap: anywhere; }
+.saved-journey-list small { display: block; line-height: 1.5; color: #425c52; }
+.saved-journey-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 9px; }
+.saved-journeys button, .bicycle-status button { min-height: 40px; white-space: normal; }
