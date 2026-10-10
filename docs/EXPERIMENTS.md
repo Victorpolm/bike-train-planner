@@ -884,3 +884,12 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Realtime:** Both solvers reject missed delayed connections and cancellations while exact scheduled identities survive. Deployed Zürich–Bern IC1 on 9 October returned scheduled 16:32:00–17:28:00 UTC and estimates 16:32:30–17:28:48 in connections and TripInfo, with 12 retained fare sources. Platform/cancellation scenarios are regressions rather than observed live disruptions.
 
 **Gate/limits:** 468 tests, TypeScript/frontend/Worker builds, formatting and Knip pass; private version 61. Exact original 6:46/7:04 profile/coordinates and browser/phone acceptance remain pending. Cold upstream work is still bounded, sampled and potentially slow. [Fixtures, reproducible benchmark, protocol and release evidence](REALTIME_AND_SPEED_2026-10-09.md).
+
+
+## 2026-10-10 — Foreground GPS lifecycle, progress and constrained replanning
+
+**Method:** Inject deterministic location callbacks, browser errors and wake-lock promises. Use straight, looped, crossing and mixed bike–transit fixtures with requested visits, live delay/platform updates and newly inserted platform walking. Check Stop/hide/restart races and long-gap reacquisition.
+
+**Result:** Twenty new navigation regressions pass. The full suite passes **488 tests in 11 suites**. A halfway access fix halves the routed portion's remaining time; an extra live five-minute platform walk remains in readiness. Instant position jumps do not skip ahead, while plausible travel during a 20-minute hidden interval can reacquire on the same stage. An unmapped 100 m endpoint retains 1.5 minutes of conservative access allowance. Recalculation keeps an unconfirmed visit even when GPS is at it, subtracts prior cycling/boarding usage, rejects stale data and blocks unsupported bicycle-custody changes. Scheduled service identity remains intact.
+
+**Interpretation / limits:** Pure model and lifecycle correctness is checked; physical GPS, real battery use, phone layout and browser permission/embedding behaviours still require acceptance. No full live-search or on-device speed benchmark is claimed. Complete the [short ride acceptance](GPS_JOURNEY_FOLLOWING_2026-10-10.md) next.

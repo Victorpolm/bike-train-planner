@@ -717,3 +717,14 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Performance boundary:** Cache immutable vectors/category metrics and reuse a scope solve only when its eligible edge set is identical. No permission postfilter replaces an independent solve of a different graph. An offline ranking benchmark improved about 20%; no complete live-search speedup or national engine replacement is claimed.
 
 **Evidence:** 468 tests and production/format/unused checks pass; private version 61 is published. Deployed OJP returned actual Zürich–Bern estimates; recorded EPFL–Basel candidates satisfy ordering at three paces. Exact original user timings and phone/browser acceptance remain unresolved. [Full evidence and next checks](REALTIME_AND_SPEED_2026-10-09.md).
+
+
+## 2026-10-10 — Permission-based foreground journey following
+
+**Authorization:** Implement the proposed phone-location Start workflow.
+
+**Decision:** Deliver foreground visual tracking for selected cycling-only and mixed journeys. Request location after Start; display accuracy, current section and remaining path; use explicit section/boarding/alighting confirmation. Keep transit realtime active with the map open and retain transfer allowances. Pan suspends map following until recentered. Stop and hidden-page lifecycle cleanup release watches and wake locks; return reacquires fresh data. Optional screen wake lock is best effort.
+
+**Decision:** Recalculate only on explicit request from a fresh location, preserving remaining requested visits, deadline, preferences and conservative remaining journey budgets. Retain the current journey during acquisition/failure and require Start on the reviewed replacement. Block unsupported custody transitions and exhausted original constraints instead of resetting them. Keep GPS in memory without storing a trace; disclose explicit provider requests and map-tile loading.
+
+**Boundary:** No voice, automatic rerouting, background/native navigation, saved traces or new hosting/access changes. Stage matching and ETA thresholds are pilot values; no exact route/safety guarantee. **488 tests**, production/format/unused checks pass; real-phone GPS and browser interaction remain unverified. [GPS_JOURNEY_FOLLOWING_2026-10-10.md](GPS_JOURNEY_FOLLOWING_2026-10-10.md) records the contract, publication and acceptance checklist.

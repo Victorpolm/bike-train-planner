@@ -1,18 +1,24 @@
-# Next steps after version 61
+# Next steps after version 62
 
-_Consolidated 9 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
+_Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Confirmed starting point
 
-- Owner-private **version 61** is published from Site source `414c08bd1dfb97d097c12de12dc1391ae2332fc9`.
-- GitHub is synchronized with the release's **249 application files**. [Realtime/cache/speed release evidence](REALTIME_AND_SPEED_2026-10-09.md).
-- The release passed **468 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's Test and build workflow verifies application commits independently.
+- Owner-private **version 62** published on **10 October 2026 at 10:42:11 UTC** (12:42:11 Europe/Zurich), environment revision **3**, from Site source `582c351fe689625556ad2de8cc28a52ff871805f`. **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. Real-phone GPS and browser acceptance remain pending.
+- GitHub is synchronized with the release's **254 application files**. [GPS following release evidence](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
+- The release passed **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's Test and build workflow verifies application commits independently.
 - Interface/profile and transfer-ZIP branches are already merged. Plan / Map / Journey, walking at the non-cycling endpoint, passenger-only transit, arrival deadlines, later departures and the new objective controls are delivered.
 - Fewer boardings values an avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling**. Its candidate window is independent of the other objectives' general 60-minute window. [Current objective contract](JOURNEY_OBJECTIVES_2026-10-08.md).
 
 The attached update review is addressed in version 60. Its external stress/benchmark harness was not supplied, so its measurements are not claimed as rerun. Browser/phone acceptance remains pending; version 61 adds fresh deployed OJP and BRouter checks.
 
-## Next priority: realtime and cache acceptance
+## Next priority: real-phone navigation acceptance
+
+Foreground GPS journey following is implemented after the owner's approval. Try Start/permission, accuracy and route progress, pan/recenter, explicit boarding/alighting, live connection estimates, deliberate off-route recalculation, remaining stops/budgets, Stop and hidden-page/resume behaviour. Check optional screen wake lock and phone battery use. Complete this on a short familiar ride with iOS Safari or Android Chrome before extending navigation. [Detailed acceptance checklist](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
+
+Voice, automatic rerouting, screen-locked/background tracking and custody-aware continuation are not delivered. GPS does not replace station signs or verified entrances.
+
+## Realtime and cache acceptance
 
 The owner subsequently authorized realtime implementation, speed improvements and the EPFL–Basel Fastest/Simplest correction. **Version 61 delivers these changes.** OJP estimates remain separate from scheduled identity; today's selected services refresh while visible, with cancellation/platform/connection warnings and freshness. Public map records persist across reloads. Cycling preferences rank the same checked pool. [Implementation, actual live estimates and benchmark](REALTIME_AND_SPEED_2026-10-09.md).
 
@@ -61,7 +67,7 @@ The feed-refresh item is a roadmap task; this document does not create a schedul
 | Prefilled SBB handoff and further fare products | Check supported parameters and exact journey/profile semantics before adding behaviour |
 | Reusable investigation / implementation / review procedures | The three written workflow procedures were proposed earlier; automatic test/build CI is already implemented. Branch protection and policy changes remain separate decisions |
 
-GPS/navigation, full parking/retrieval or rental handling, additional bikepacking stages/overnights and saved journeys remain later options. A national engine migration, live bicycle-space availability, booking/ticket sales, community features, native apps and international expansion are deferred. Keep Switzerland first and the Site owner-private; new hosting costs need the owner's approval.
+Further navigation features (voice/background/automatic rerouting), full parking/retrieval or rental handling, additional bikepacking stages/overnights and saved journeys remain later options. A national engine migration, live bicycle-space availability, booking/ticket sales, community features, native apps and international expansion are deferred. Keep Switzerland first and the Site owner-private; new hosting costs need the owner's approval.
 
 ## Source and decision precedence
 

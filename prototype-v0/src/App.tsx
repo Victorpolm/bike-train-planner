@@ -1,3 +1,6 @@
+import JourneyNavigation from "./JourneyNavigation";
+import { useJourneyNavigation } from "./useJourneyNavigation";
+import { navigationReplan } from "./navigation";
 import { useRealtimeJourney } from "./useRealtimeJourney";
 import type { AppliedCyclingEdit } from "./cyclingEditor";
 import {
@@ -610,9 +613,29 @@ export default function App() {
   const selectedSource =
     proposalEntries.find((entry) => entry.proposal.journey.id === rawSelected?.id)?.source ??
     session;
+  const navigationKey = selectedSource
+    ? JSON.stringify([
+        rawSelected?.id ?? BIKE_ONLY_ID,
+        selectedSource.start,
+        selectedSource.origin.lat,
+        selectedSource.origin.lon,
+        rawSelected ? null : cyclingReference?.routes?.map((route) => route.id),
+      ])
+    : "";
+  const navigation = useJourneyNavigation(navigationKey);
+  const rerouteController = useRef<AbortController | null>(null);
+  const [rerouteMessage, setRerouteMessage] = useState("");
+  useEffect(() => {
+    if (!navigation.following && rerouteController.current) {
+      rerouteController.current.abort();
+      rerouteController.current = null;
+      setLoading(false);
+      setRerouteMessage("Recalculation stopped. Your journey is kept.");
+    }
+  }, [navigation.following]);
   const realtime = useRealtimeJourney(
     rawSelected,
-    compactLayout ? mobileView === "journey" : detailView === "journey",
+    !!navigation.following || (compactLayout ? mobileView === "journey" : detailView === "journey"),
     selectedSource?.options.boardingMinutes,
     selectedSource?.options.arriveBy,
   );
@@ -628,7 +651,109 @@ export default function App() {
     [realtime.journey, selectedSource],
   );
   const selected = selectedTiming?.journey ?? null;
+  function startNavigation() {
+    if (!selectedSource || loading) return;
+    setSelectedId(rawSelected?.id ?? BIKE_ONLY_ID);
+    setCycleFocus(null);
+    setRerouteMessage("");
+    navigation.start({
+      key: navigationKey,
+      journey: selected,
+      cycling: bikeOnlySelected ? cyclingReference : null,
+      origin: selectedSource.origin,
+      destination: selectedSource.destination,
+      waypoints: selectedSource.waypoints ?? [],
+      options: selectedSource.options,
+      mode,
+      start: selectedSource.start,
+    });
+    showMobileView("map");
+  }
+  async function recalculateNavigation() {
+    const active = navigation.following;
+    if (!active || loading) return;
+    let request;
+    try {
+      request = navigationReplan(
+        active.trip,
+        active.index,
+        active.onboard,
+        active.progress,
+        navigation.location.fix,
+        Date.now(),
+      );
+    } catch (e) {
+      setRerouteMessage(e instanceof Error ? e.message : "Recalculation is unavailable.");
+      return;
+    }
+    const abort = new AbortController();
+    rerouteController.current = abort;
+    setLoading(true);
+    setRerouteMessage("Finding journeys from your current location…");
+    try {
+      const result = await plan(
+        request.origin,
+        request.destination,
+        request.mode,
+        request.options,
+        abort.signal,
+        (message) => {
+          if (!abort.signal.aborted) setRerouteMessage(message);
+        },
+        () => {},
+        { start: request.start, waypoints: request.waypoints },
+      );
+      if (abort.signal.aborted || !navigation.isFollowing(active.trip)) return;
+      const choices =
+        request.mode === "extended" ? (result.extended ?? result.baseline) : result.baseline;
+      const cyclingFits =
+        !!result.cyclingComparison?.routes?.length &&
+        !result.cyclingComparison.outsideTimeWindow &&
+        result.cyclingComparison.minutes <= request.options.maxBikeMinutes;
+      if (request.bikeOnly ? !cyclingFits : !choices.journeys.length && !cyclingFits)
+        throw new Error(
+          "No replacement route was found within your remaining limits. Your current journey is kept.",
+        );
+      // Keep the old route throughout acquisition. Replacement requires Start
+      // again, so a new service is never silently treated as the boarded one.
+      navigation.stop("Route recalculated. Review the new journey, then press Start to follow it.");
+      setFromInput({ text: request.origin.label, place: request.origin });
+      setToInput({ text: request.destination.label, place: request.destination });
+      setViaInputs(
+        request.waypoints.map((place) => ({
+          id: `via-${++nextViaId.current}`,
+          value: { text: place.label, place },
+        })),
+      );
+      setSession(result);
+      setCustomJourneys([]);
+      setCustomCycling(null);
+      setLaterBatches([]);
+      setLaterNotices({});
+      setSelectedId(request.bikeOnly ? BIKE_ONLY_ID : null);
+      setCycleFocus(null);
+      setDepartureMode(request.options.arriveBy ? "arrival" : "now");
+      if (request.options.arriveBy)
+        setDepartureInput(swissDateTimeInput(new Date(request.options.arriveBy)));
+      setRerouteMessage(
+        `Recalculated with ${request.waypoints.length} remaining stop(s), up to ${request.options.maxBikeMinutes} cycling minutes and ${request.options.maxBoardings} boarding(s).`,
+      );
+      showMobileView("journey");
+    } catch (e) {
+      if (!abort.signal.aborted)
+        setRerouteMessage(
+          e instanceof Error ? e.message : "Recalculation failed. Your current journey is kept.",
+        );
+    } finally {
+      if (rerouteController.current === abort) {
+        rerouteController.current = null;
+        setLoading(false);
+      }
+    }
+  }
   function openJourney(id: string) {
+    if (navigation.following && id !== (rawSelected?.id ?? BIKE_ONLY_ID))
+      navigation.stop("Following stopped because you selected another journey.");
     setSelectedId(id);
     setCycleFocus(null);
     viewScroll.current.journey = 0;
@@ -731,6 +856,8 @@ export default function App() {
   const warnings = session ? searchWarnings(session) : [];
 
   function invalidate() {
+    if (navigation.following) navigation.stop("Following stopped because the trip changed.");
+    setRerouteMessage("");
     setSession(null);
     setCustomJourneys([]);
     setCustomCycling(null);
@@ -744,6 +871,7 @@ export default function App() {
   useEffect(
     () => () => {
       controller.current?.abort();
+      rerouteController.current?.abort();
       for (const abort of naming.current.values()) abort.abort();
     },
     [],
@@ -864,6 +992,8 @@ export default function App() {
   }
   async function changeMode(next: ModelMode) {
     if (loading || next === mode) return;
+    if (navigation.following)
+      navigation.stop("Following stopped because the routing mode changed.");
     setMode(next);
     setCustomJourneys([]);
     setCustomCycling(null);
@@ -987,6 +1117,16 @@ export default function App() {
           />
         }
       />
+      {navigation.following && compactLayout && mobileView === "planning" && (
+        <div className="navigation-trip-bar">
+          <button type="button" onClick={() => showMobileView("map")}>
+            Following journey · Open map
+          </button>
+          <button type="button" onClick={() => navigation.stop()}>
+            Stop
+          </button>
+        </div>
+      )}
       <main id="top">
         <section className="planner-panel" id="planning-panel" aria-label="Journey planning">
           <PlannerForm
@@ -1574,14 +1714,29 @@ export default function App() {
               Journey
             </button>
           </nav>
+          <JourneyNavigation
+            navigation={navigation}
+            canStart={!!selectedSource && (!!selected || !!cyclingReference?.routes?.length)}
+            busy={loading}
+            realtime={realtime}
+            onStart={startNavigation}
+            onRecalculate={recalculateNavigation}
+            onMap={() => showMobileView("map")}
+          />
+          {rerouteMessage && (
+            <p className="navigation-result" role="status">
+              {rerouteMessage}
+            </p>
+          )}
           <div className="map-panel" id="journey-map">
             <MapView
+              navigation={navigation.map}
               visible={detailView === "map" && (!compactLayout || mobileView === "map")}
               origin={fromInput.place ?? session?.origin ?? null}
               destination={toInput.place ?? session?.destination ?? null}
               stops={stops}
               waypoints={mapWaypoints}
-              editingDisabled={loading}
+              editingDisabled={loading || !!navigation.following}
               canAddWaypoint={viaInputs.length < MAX_WAYPOINTS}
               onSelectPoint={(target, point) =>
                 target === "via" ? addWaypoint(point) : setMapPoint(target, point)

@@ -44,8 +44,10 @@ import { detourStages, type DetourFacility, type DetourRoutes } from "./cyclingD
 import DetourPanel from "./DetourPanel";
 import type { CyclingPace } from "./cyclingPace";
 import type { RoutePreference } from "./cyclingPreferences";
+import type { JourneyNavigation } from "./useJourneyNavigation";
 
 type MapViewProps = {
+  navigation: JourneyNavigation["map"];
   hills?: HillPreferences;
   editOptions?: Options;
   onApplyCycling: (edit: AppliedCyclingEdit) => void;
@@ -144,6 +146,7 @@ function fitMap(map: L.Map, bounds: L.LatLngBounds) {
 }
 
 export default function MapView({
+  navigation,
   visible = true,
   origin,
   destination,
@@ -613,6 +616,89 @@ export default function MapView({
       fittedRef.current = "";
     };
   }, []);
+
+  // This layer is independent of route/facility rendering. GPS updates move two
+  // Leaflet objects and the remaining-path line without fetching route data.
+  const navigationRef = useRef(navigation);
+  navigationRef.current = navigation;
+  const navigationLayers = useRef<{
+    marker: L.CircleMarker;
+    circle: L.Circle;
+    line: L.Polyline;
+  } | null>(null);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !navigation.active) return;
+    if (!map.getPane("navigation")) {
+      const pane = map.createPane("navigation");
+      pane.style.zIndex = "625";
+      pane.style.pointerEvents = "none";
+    }
+    const layer = L.layerGroup().addTo(map);
+    const circle = L.circle([0, 0], {
+      pane: "navigation",
+      color: "#247dbb",
+      weight: 1,
+      fillOpacity: 0.1,
+      interactive: false,
+    }).addTo(layer);
+    const marker = L.circleMarker([0, 0], {
+      pane: "navigation",
+      radius: 8,
+      color: "white",
+      weight: 3,
+      fillColor: "#247dbb",
+      fillOpacity: 1,
+      interactive: false,
+    })
+      .bindTooltip("Your location")
+      .addTo(layer);
+    const line = L.polyline([], {
+      pane: "navigation",
+      color: "#247dbb",
+      weight: 7,
+      opacity: 0.85,
+      interactive: false,
+    }).addTo(layer);
+    marker.bringToFront();
+    navigationLayers.current = { marker, circle, line };
+    const pan = () => navigationRef.current.onPan();
+    map.on("dragstart", pan);
+    return () => {
+      map.off("dragstart", pan);
+      layer.remove();
+      navigationLayers.current = null;
+    };
+  }, [navigation.active]);
+  useEffect(() => {
+    const layers = navigationLayers.current,
+      map = mapRef.current;
+    if (!layers || !map) return;
+    const fix = navigation.fix;
+    layers.marker.setStyle({
+      opacity: fix ? 1 : 0,
+      fillOpacity: fix ? (navigation.fresh ? 1 : 0.4) : 0,
+    });
+    layers.circle.setStyle({ opacity: fix ? 0.5 : 0, fillOpacity: fix ? 0.1 : 0 });
+    if (fix) {
+      layers.marker.setLatLng([fix.lat, fix.lon]);
+      layers.circle.setLatLng([fix.lat, fix.lon]).setRadius(fix.accuracy);
+      if (visible && navigation.following && navigation.fresh) {
+        if (map.getZoom() < 14) map.setView([fix.lat, fix.lon], 15, { animate: false });
+        else map.panTo([fix.lat, fix.lon], { animate: false });
+      }
+    }
+  }, [
+    navigation.active,
+    navigation.fix,
+    navigation.fresh,
+    navigation.following,
+    navigation.recenter,
+    visible,
+  ]);
+  useEffect(() => {
+    navigationLayers.current?.line.setLatLngs(navigation.path.map((p) => [p.lat, p.lon]));
+  }, [navigation.active, navigation.path]);
 
   useEffect(() => {
     const map = mapRef.current,

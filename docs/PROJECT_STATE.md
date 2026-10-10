@@ -1,5 +1,7 @@
 # Project state
 
+**10 October GPS journey following — version 62:** Start/Stop now asks for phone location and follows cycling or mixed journeys with an accuracy circle, remaining path, manual stage/boarding controls, live connection estimates, explicit recalculation and optional screen wake lock. GPS updates do not rerun route searches. **488 tests**, builds, formatting and Knip pass; real-phone acceptance remains pending. [Behaviour, verification and limits](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
+
 **9 October realtime and speed — version 61:** Selected journeys show live OJP estimates, cancellations, platform changes and connection warnings, with visible-view refresh. Public map layers persist across reloads with background refresh. Cycling preferences share the same checked candidates, fixing the Fastest/Simplest inconsistency. Ranking reuse improves the recorded long-route benchmark by about 20%; **468 tests**, builds, formatting and Knip pass. A deployed Zürich–Bern check returned actual delay estimates. Phone/browser acceptance remains pending. [Implementation, live evidence and limits](REALTIME_AND_SPEED_2026-10-09.md).
 
 **9 October review fixes — version 60:** Reservation evidence survives unrelated TripInfo notes; explicitly unknown dated requirements stay unknown. Missing platforms can use a labelled conservative station estimate. Permission/climbing help, comparison-window explanations, fare concurrency and experimental pace estimates are corrected. **452 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. At that release, the next priority was live updates; version 61 above implements them. [Fixes, release evidence and realtime plan](UPDATE_REVIEW_FIXES_2026-10-09.md).
@@ -28,7 +30,7 @@
 
 **Earlier branch implementation, 3 October:** Clickable preference help, compact OJP requests, bounded Extended recovery, expanded endpoint candidates and functional later-departure pages are implemented. Past dates are accepted subject to provider data. **327 regressions** and live ZVV/Libero/Extended/later-departure checks pass; browser QA remains pending. [Current evidence and remaining limits](SEARCH_RELIABILITY_2026-10-03.md).
 
-_Last consolidated: 2026-10-09. This is the current summary; dated reports and Git history preserve earlier states._
+_Last consolidated: 2026-10-10. This is the current summary; dated reports and Git history preserve earlier states._
 
 ## Objective and current scope
 
@@ -77,7 +79,7 @@ _Last consolidated: 2026-10-09. This is the current summary; dated reports and G
 
 ## Last verified publication and tests
 
-**Current fact:** Version 61 published on 9 October 2026 at 16:01:35 UTC from Site source `414c08bd1dfb97d097c12de12dc1391ae2332fc9`, environment revision 3. **468 tests in 11 suites** and production/format/unused checks pass. Live deployed OJP estimates and EPFL–Basel candidate ordering were checked. Browser/phone acceptance remains pending. [Release evidence](REALTIME_AND_SPEED_2026-10-09.md).
+**Current fact:** Owner-private **version 62** published on **10 October 2026 at 10:42:11 UTC** (12:42:11 Europe/Zurich), environment revision **3**, from Site source `582c351fe689625556ad2de8cc28a52ff871805f`. **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. Real-phone GPS and browser acceptance remain pending. [Release evidence](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
 
 **Earlier fact:** Owner-private **version 59** published successfully on **8 October 2026 at 21:46:47 UTC** (23:46:47 Europe/Zurich), environment revision **3**, from Site source `f3c22542a5b46eb75487d2a1e9b8b7aca499360b`. The boarding compromise now values each avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling** and no fixed 30-minute cap. Its candidate window is independent of the other objectives' general 60-minute window. **441 tests** in 11 suites, TypeScript/frontend/Worker builds, React formatting and Knip pass. No fresh live-provider or browser/phone check is claimed. Runtime secrets and owner-only access are unchanged. [Current contract and release evidence](JOURNEY_OBJECTIVES_2026-10-08.md).
 
@@ -100,10 +102,10 @@ The 29 September public-feed audit found **1,608 BIKE facility records** and 1,2
 
 Use [NEXT_STEPS.md](NEXT_STEPS.md) as the consolidated checklist. The immediate next action is a phone/desktop acceptance pass for realtime refresh, connection changes and persistent map caching, including the new objective sets, long-trip boarding trade-off, prices and a station transfer. Reproduce reported Zürich–Laax/Baden–Witikon route issues and phone food loading with exact inputs before assigning causes; demonstrated blockers take priority. The milestone items below remain tracked.
 
-1. **Parking:** try the colours and adjustable selected-journey filter on familiar trips, then review municipal coverage, unresolved duplicate identities and entrances. GPS is a later explicit permission-based action. Do not treat proximity or equipment colours as a completed suitability/entrance-routing milestone.
+1. **Parking:** try the colours and adjustable selected-journey filter on familiar trips, then review municipal coverage, unresolved duplicate identities and entrances. Journey Start now provides explicit permission-based GPS following; GPS-based parking ranking remains separate. Do not treat proximity or equipment colours as a completed suitability/entrance-routing milestone.
 2. **Bike services and useful stops:** validate all five filters against familiar places, especially DIY/repair ambiguity, broken pumps, food-machine access and hours. Validate the new timed detour preview, then add checked entrances and opening-at-visit evidence. Applying/saving a preview must revalidate original search limits before changing cards or fares.
 3. **Objectives acceptance:** compare familiar journeys in Commuter/Bikepacking, then Personalized with traffic, reservations and checked prices. Confirm the 30-minutes-per-avoided-boarding / 25% overall trade-off feels useful, and inspect missing-data explanations on phone and desktop. The 30-minute boarding penalty and traffic weights remain pilot settings.
-4. **Broader interface:** the novice/profile implementation is merged into main. Complete the remaining [desktop/phone acceptance pass](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass), including a familiar station transfer; preserve all options. Past-date entry and later-departure pages are now delivered; complete historical timetable coverage, additional fare products and GPS navigation remain backlog items. Discuss supported prefilled SBB links next.
+4. **Broader interface:** the novice/profile implementation is merged into main. Complete the remaining [desktop/phone acceptance pass](INTERFACE_PROFILES_2026-10-02.md#manual-acceptance-pass), including a familiar station transfer; preserve all options. Past-date entry and later-departure pages are now delivered; complete historical timetable coverage and additional fare products remain backlog items. Foreground GPS following is implemented; phone acceptance is next. Discuss supported prefilled SBB links next.
 
 Fix route/price/permission regressions when demonstrated; the unresolved Baden–Witikon search and bounded discovery remain tracked work. New amenities must load independently and must not consume the transit search budget. Keep each stage small, documented and independently reviewable; preserve completed test evidence between sessions.
 
