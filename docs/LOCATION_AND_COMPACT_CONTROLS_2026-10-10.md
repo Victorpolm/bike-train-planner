@@ -49,4 +49,4 @@ Owner-private **version 67** published successfully on **10 October 2026 at 17:0
 
 Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_1105be390f9081919ac79d5089358068`; deployment: `appgdep_6aca708795488191a732ecb9251bc81f` (`succeeded`).
 
-The Site remains Re.route at its existing URL, with one owner and no groups/external visitors. Source synchronization and CI evidence are recorded after their checks complete.
+The Site remains Re.route at its existing URL, with one owner and no groups/external visitors. GitHub main contains implementation commit `bee44a5115fb9e36a22addd93f76d0d0d80428ff`. All **280 application files** match deployed Site source `8cae50704eaedc42d4af6cdb1dee1b34c0724f8a` by Git blob hash. [GitHub CI run 38070557151](https://github.com/Victorpolm/bike-train-planner/actions/runs/38070557151) completed successfully, including JavaScript and Python tests, both React rendering checks, formatting, unused-code analysis and production builds. The following documentation confirmation changes no application files.
