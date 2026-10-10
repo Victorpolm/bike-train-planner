@@ -10,7 +10,7 @@ _Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of o
 
 ## Requested work now delivered
 
-The owner explicitly authorized synchronization, facility-stop insertion and useful parking/facility information on 10 October. GitHub main was first fast-forwarded to `d1241db0937a9d81d5d2343521ba9324b80c544b`; [CI passed](https://github.com/Victorpolm/bike-train-planner/actions/runs/38059847074). Applied visits, parking choices, timing/access checks and refill gaps are delivered as described in the [facility release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md). The record carries final publication and synchronization evidence.
+The owner explicitly authorized synchronization, facility-stop insertion and useful parking/facility information on 10 October. GitHub main was first fast-forwarded to `d1241db0937a9d81d5d2343521ba9324b80c544b`; [CI passed](https://github.com/Victorpolm/bike-train-planner/actions/runs/38059847074). Applied visits, parking choices, timing/access checks and refill gaps are delivered as described in the [facility release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md). The record carries final publication and synchronization evidence: private version 65, implementation commit `a4e5339680db41767d45460d39f3b156f6fca9b4`, all 272 application files matching the deployed source by Git blob hash, and [passing implementation CI](https://github.com/Victorpolm/bike-train-planner/actions/runs/38062304134).
 
 ## Confirmed starting point
 
