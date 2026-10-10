@@ -4,10 +4,12 @@ export const PARKING_SOURCE = "https://opentransportdata.swiss/en/cookbook/road-
 export const PARKING_DOWNLOAD = "https://data.opentransportdata.swiss/en/dataset/bike-and-car-parking/permalink";
 export const OSM_COPYRIGHT = "https://www.openstreetmap.org/copyright";
 export type ParkingProvider = "official" | "osm";
-type ParkingReference = { provider: ParkingProvider; id: string; url: string };
+type ParkingReference = { provider: ParkingProvider; id: string; url: string; retrievedAt?: string };
 export type BikeParking = Point & { id: string; name: string; operator: string; type: string;
   covered: boolean | null; capacity: number | null; publicAccess: boolean | null; traits: string[]; url?: string;
-  access?: string; fee?: boolean | null; openingHours?: string; parkingType?: string; sources?: ParkingReference[] };
+  access?: string; fee?: boolean | null; openingHours?: string; parkingType?: string; sources?: ParkingReference[];
+  tags?: Record<string, string>; locationRole?: "point" | "area" | "entrance";
+  stationIds?: { scheme: "uic" | "didok"; value: string }[] };
 export type ParkingData = { facilities: BikeParking[]; fetchedAt: string; source: string; coverage: string; stale?: boolean;
   provider?: ParkingProvider; updatedAt?: string };
 type ClosestBikeParking = { facility: BikeParking; distanceKm: number };
@@ -62,7 +64,10 @@ export function parseBikeParking(value: unknown, fetchedAt = new Date().toISOStr
       covered: type.includes("COVERED") ? true : null,
       capacity: Number.isInteger(capacity) && capacity! >= 0 ? capacity! : null,
       publicAccess: typeof p.publicAccess === "boolean" ? p.publicAccess : null, traits, url,
-      sources: [{ provider: "official", id: feature.id, url: PARKING_SOURCE }] });
+      locationRole: "point", stationIds: [["uic", p.uic], ["didok", p.didokId]].flatMap(([scheme, value]) =>
+        (typeof value === "string" || typeof value === "number") && String(value).length < 80
+          ? [{ scheme: scheme as "uic" | "didok", value: String(value) }] : []),
+      sources: [{ provider: "official", id: feature.id, url: PARKING_SOURCE, retrievedAt: fetchedAt }] });
   }
   return { facilities: [...facilities.values()], fetchedAt, source: PARKING_SOURCE, provider: "official",
     coverage: "Official station and partner facilities in Switzerland and nearby border areas; not an inventory of every bicycle rack." };
@@ -125,7 +130,9 @@ export function mergeBikeParking(datasets: readonly ParkingData[]): BikeParking[
     facilities[index] = { ...previous, capacity, covered,
       publicAccess: previous.publicAccess === false || facility.publicAccess === false ? false : access,
       access: osm.access, fee: value(previous.fee, facility.fee, "Fee"), openingHours: osm.openingHours,
-      parkingType: osm.parkingType, sources: refs, traits: [...new Set([...previous.traits, ...facility.traits, ...conflicts])] };
+      parkingType: osm.parkingType, tags: osm.tags, locationRole: osm.locationRole ?? previous.locationRole,
+      stationIds: [...previous.stationIds ?? [], ...facility.stationIds ?? []],
+      sources: refs, traits: [...new Set([...previous.traits, ...facility.traits, ...conflicts])] };
     keys.forEach(key => identities.set(key, index));
   }
   return facilities;

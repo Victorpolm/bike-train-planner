@@ -16,6 +16,12 @@ export default function FareDetails({
   return (
     <section className="fare-details">
       <h4>Tickets and price</h4>
+      {journey.transitLegs.some((l) => l.facilityVisit) && (
+        <p>
+          Transport prices describe this edited itinerary. Facility purchases and parking fees are
+          not included; an added stop between services may prevent a through-fare quote.
+        </p>
+      )}
       {fare.prohibited && (
         <p>
           This comparison includes a bicycle ban. The passenger price can still be checked; buying a

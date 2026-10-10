@@ -1,14 +1,27 @@
 import { boardingCheck } from "./transferTimes.ts";
 import { detourStages, type DetourStage } from "./cyclingDetour.ts";
 import type { CyclingRoute } from "./cycling.ts";
-import { journeySteps } from "./itinerary.ts";
-import { earlierJourneyStart } from "./journeyTiming.ts";
+import { cyclingSteps, journeySteps } from "./itinerary.ts";
+import { earlierJourneyStart, journeyTiming } from "./journeyTiming.ts";
+import { visitHours } from "./facilityHours.ts";
 import { metrics, validateOptions, type Options } from "./model.ts";
-import { haversineKm, type CyclingComparison, type Journey, type Place, type TransitLeg } from "./routing.ts";
+import { haversineKm, type CyclingComparison, type FacilityVisit, type Journey, type Place, type TransitLeg } from "./routing.ts";
 
 export const MAX_SHAPING_POINTS = 6;
 export type EditContext = { journey: Journey | null; cycling: CyclingComparison | null; origin: Place; destination: Place; start: Date; options: Options };
 export type AppliedCyclingEdit = { journey: Journey | null; cycling: CyclingComparison | null };
+
+function checkedVisits(edit: AppliedCyclingEdit, context: EditContext): AppliedCyclingEdit {
+  if (edit.journey?.transitLegs.some(l => l.facilityVisit)) edit.journey = journeyTiming(edit.journey, context.options.boardingMinutes, context.start).journey;
+  const steps = edit.journey ? journeySteps(edit.journey, context.origin, context.destination)
+    : edit.cycling ? cyclingSteps(edit.cycling, context.origin, context.destination, context.start) : [];
+  for (const step of steps) {
+    const f = step.leg?.facilityVisit;
+    if (f && visitHours(f.openingHours, f.seasonal, step.departure!, step.arrival!).state === "closed")
+      throw new Error(`${f.name}: mapped hours do not cover this visit. Choose another stop or journey.`);
+  }
+  return edit;
+}
 
 export async function requestEditedCycling(stage: DetourStage, via: readonly Place[],
   client: { route: (a: Place, b: Place) => Promise<CyclingRoute | null> }, signal: AbortSignal): Promise<CyclingRoute[]> {
@@ -26,10 +39,13 @@ export async function requestEditedCycling(stage: DetourStage, via: readonly Pla
 }
 
 /** Rebuild only active travel times; public-transport legs retain their exact objects and fare evidence. */
-export function applyCyclingEdit(context: EditContext, stage: DetourStage, routes: readonly CyclingRoute[]): AppliedCyclingEdit {
+export function applyCyclingEdit(context: EditContext, stage: DetourStage, routes: readonly CyclingRoute[], visit?: FacilityVisit): AppliedCyclingEdit {
   validateOptions(context.options);
   const { journey, cycling, origin, destination, options } = context;
   const start = journey?.startTime ?? cycling?.departure ?? context.start;
+  if (visit && (routes.length !== 2 || !Number.isFinite(visit.minutes) || visit.minutes < 0 || visit.minutes > 180
+    || !Number.isFinite(visit.lat) || !Number.isFinite(visit.lon) || haversineKm(visit, routes[0].to) > .001))
+    throw new Error("Choose a valid facility and a stop duration from 0 to 180 minutes.");
   const current = detourStages(journey, cycling, origin, destination, start).find(s => s.id === stage.id && s.route === stage.route);
   if (!current) throw new Error("The selected journey changed. Reopen the cycling editor.");
   // A suggested later departure must not discard time the user has available
@@ -41,7 +57,7 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
       const index = detourStages(journey, null, origin, destination, start).findIndex(s => s.id === stage.id);
       const rebased = detourStages(earlier, null, origin, destination, context.start)[index];
       if (!rebased || rebased.route !== stage.route) throw new Error("The selected cycling section changed. Reopen the editor.");
-      return applyCyclingEdit({ ...context, journey: earlier }, rebased, routes);
+      return applyCyclingEdit({ ...context, journey: earlier }, rebased, routes, visit);
     }
   }
   if (!routes.length || routes.length > MAX_SHAPING_POINTS + 1 || routes.some(r => r.blocked || !Number.isFinite(r.minutes) || r.minutes < 0))
@@ -54,12 +70,17 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     if (!cycling?.routes) throw new Error("No cycling route is selected.");
     const index = detourStages(null, cycling, origin, destination, start).findIndex(s => s.id === stage.id);
     const updated = [...cycling.routes.slice(0, index), ...routes, ...cycling.routes.slice(index + 1)];
-    const minutes = updated.reduce((sum, route) => sum + route.minutes, 0);
+    const stops = (cycling.stops ?? []).map(s => ({ ...s, afterRoute: s.afterRoute >= index ? s.afterRoute + routes.length - 1 : s.afterRoute }));
+    if (visit) stops.push({ afterRoute: index, visit });
+    stops.sort((a, b) => a.afterRoute - b.afterRoute);
+    const riding = updated.reduce((sum, route) => sum + route.minutes, 0);
+    if (visit && riding > options.maxBikeMinutes) throw new Error(`This detour exceeds your ${options.maxBikeMinutes}-minute total cycling limit.`);
+    const minutes = riding + stops.reduce((sum, s) => sum + s.visit.minutes, 0);
     if (minutes > options.horizonMinutes) throw new Error("This edited ride exceeds the journey time window.");
     const departure = options.arriveBy ? new Date(Date.parse(options.arriveBy) - minutes * 60_000) : start;
     if (+departure < +context.start) throw new Error("This edited ride would require leaving before the search time window. Choose a later arrival or a shorter ride.");
-    return { journey: null, cycling: { routes: updated, minutes, distanceKm: updated.reduce((sum, r) => sum + r.distanceKm, 0),
-      departure, arrival: new Date(+departure + minutes * 60_000), outsideTimeWindow: false } };
+    return checkedVisits({ journey: null, cycling: { routes: updated, ...(stops.length ? { stops } : {}), minutes, distanceKm: updated.reduce((sum, r) => sum + r.distanceKm, 0),
+      departure, arrival: new Date(+departure + minutes * 60_000), outsideTimeWindow: false } }, context);
   }
 
   const steps = journeySteps(journey, origin, destination);
@@ -93,16 +114,23 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   for (let i = 0; i < steps.length; i++) {
     const step = steps[i];
     if (step.mode === "wait") continue;
-    if (!step.departure || !step.arrival || step.mode === "unknown") throw new Error("Some onward times are unknown; this edit cannot be applied.");
+    if (!step.departure || !step.arrival || !Number.isFinite(+step.departure) || !Number.isFinite(+step.arrival)
+      || +step.arrival < +step.departure || step.mode === "unknown") throw new Error("Some onward times are unknown or invalid; this edit cannot be applied.");
     if (i === target) {
       cursor = +step.departure;
       routes.forEach((route, part) => {
         const previous = plainLeg(i), departure = new Date(cursor);
         cursor += route.minutes * 60_000;
-        legs.push({ ...previous, from: part === 0 ? step.from : `Route point ${part}`, to: part === routes.length - 1 ? step.to : `Route point ${part + 1}`,
+        legs.push({ ...previous, from: part === 0 ? step.from : visit?.name ?? `Route point ${part}`, to: part === routes.length - 1 ? step.to : visit?.name ?? `Route point ${part + 1}`,
           fromId: part === 0 ? previous.fromId : undefined, toId: part === routes.length - 1 ? previous.toId : undefined,
-          fromPoint: route.from, toPoint: route.to, departure, arrival: new Date(cursor), cyclingRoute: route, geometry: route.points,
+          fromPoint: route.from, toPoint: route.to, departure, arrival: new Date(cursor), movementOffsetMs: undefined, cyclingRoute: route, geometry: route.points,
           cyclingSectionId: group, cyclingSectionLimit: cap });
+        if (visit && part === 0) {
+          const departure = new Date(cursor); cursor += visit.minutes * 60_000;
+          legs.push({ mode: "stop", facilityVisit: visit, from: visit.name, to: visit.name, fromPoint: visit, toPoint: visit,
+            departure, arrival: new Date(cursor), departurePlatform: null, arrivalPlatform: null,
+            service: `Stop at ${visit.name}`, serviceName: null, direction: null });
+        }
       });
     } else if (i < target || step.mode === "transit") {
       const boarding = i > target && step.mode === "transit" ? boardingCheck(legs, plainLeg(i), cursor, options.boardingMinutes) : null;
@@ -113,7 +141,7 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     } else {
       const duration = +step.arrival - +step.departure;
       if (duration < 0) throw new Error("Some onward times are invalid.");
-      legs.push({ ...plainLeg(i), departure: new Date(cursor), arrival: new Date(cursor + duration) });
+      legs.push({ ...plainLeg(i), movementOffsetMs: undefined, departure: new Date(cursor), arrival: new Date(cursor + duration) });
       cursor += duration;
     }
     arrivalByStep.set(i, new Date(cursor));
@@ -137,5 +165,5 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   if (metrics(result).bike > options.maxBikeMinutes) throw new Error(`This edit exceeds your ${options.maxBikeMinutes}-minute total cycling limit.`);
   if (result.totalMinutes > options.horizonMinutes) throw new Error("This edit exceeds the journey time window.");
   if (options.arriveBy && cursor > Date.parse(options.arriveBy)) throw new Error("This edit would arrive after your chosen arrival time. Shorten the ride or search for different services.");
-  return { journey: result, cycling: null };
+  return checkedVisits({ journey: result, cycling: null }, context);
 }

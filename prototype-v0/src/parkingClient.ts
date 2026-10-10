@@ -19,7 +19,7 @@ export function parkingLoadError(error: unknown): ParkingLoadError {
 
 export async function loadParkingSource(provider: ParkingProvider, signal: AbortSignal, fetcher: typeof fetch = fetch,
   options: { timeoutMs?: number; retryDelayMs?: number; onUpdate?: (data: ParkingData) => void } = {}): Promise<ParkingData> {
-  if (fetcher === fetch) return cachedMapData(`parking-v3:${provider}`, signal,
+  if (fetcher === fetch) return cachedMapData(`parking-v4:${provider}`, signal,
     (data): data is ParkingData => !!data && typeof data === "object" && Array.isArray((data as ParkingData).facilities)
       && (data as ParkingData).provider === provider && Number.isFinite(Date.parse((data as ParkingData).fetchedAt)),
     () => fetchParkingSource(provider, new AbortController().signal, fetcher, options), options.onUpdate);

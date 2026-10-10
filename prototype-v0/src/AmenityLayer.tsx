@@ -1,3 +1,4 @@
+import FacilityChoices from "./FacilityChoices";
 import { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import { OSM_COPYRIGHT, parkingDistance } from "./bikeParking.ts";
@@ -134,6 +135,8 @@ type Props = {
   category: AmenityCategory;
   map: L.Map | null;
   origin: Place | null;
+  destination?: Place | null;
+  visitAt?: Date;
   data?: AmenityData;
   records: readonly Amenity[];
   loading: boolean;
@@ -158,6 +161,8 @@ export default function AmenityLayer({
   category,
   map,
   origin,
+  destination,
+  visitAt,
   data,
   records,
   loading,
@@ -399,6 +404,24 @@ export default function AmenityLayer({
           ))}
         </fieldset>
       )}
+      <FacilityChoices
+        key={`${scopeKey}:${category}`}
+        records={visible}
+        category={category}
+        kinds={kinds}
+        origin={origin}
+        destination={destination ?? null}
+        at={visitAt ?? new Date()}
+        onDetour={onDetour}
+        onLocate={(facility) => {
+          onLocate(facility);
+          if (map)
+            L.popup({ maxWidth: 360 })
+              .setLatLng([facility.lat, facility.lon])
+              .setContent(popup(facility, category, onDetour))
+              .openOn(map);
+        }}
+      />
       {category === "water" && (
         <label className="service-filters">
           <input

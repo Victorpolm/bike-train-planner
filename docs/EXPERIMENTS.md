@@ -904,3 +904,14 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Result:** 32-station hydrated Extended median 8.932 s → 2.485 s (3.59×), all full hashes equal. The 576 comparisons include 574 nonempty and 46 capped searches. 515 JS and 13 Python tests pass, as do build, formatting and Knip. Burst overflow receives 429; 32 identical subscribers share one physical connection pair. No upstream load burst or browser/phone acceptance is claimed.
 
 **Limit:** CPU-only synthetic measurements do not reproduce the missing 376-station review fixture, global Worker load or live end-to-end latency. Per-isolate queueing is not a global quota. [Raw outputs, reproduction and release evidence](SPEED_AND_SCALE_2026-10-10.md).
+
+
+## 2026-10-10 — Facility visits respect fixed services and original limits
+
+**Hypothesis:** Explicit visits can be inserted into the selected cycling section while preserving the source journey and fixed trains, with visit time separated from cycling/walking.
+
+**Golden fixture:** Monday 5 October, 08:00 Europe/Zurich, ten-minute station access, fixed service at 08:25–09:00 and ten-minute egress. Original access limit 20 minutes and boarding allowance three minutes. Enumerate first and second links from 1 to 14 minutes and visit duration from 0 to 30 in five-minute increments. Independent expectation: cycling sum <=20 and cycling+visit <=22. All 1,372 combinations agree: 378 accepted, 994 rejected. Service objects and final arrival remain unchanged in accepted access cases. Separate egress/interchange, repeated visits, route shaping, arrival deadlines, cycling-only, fare, navigation and live-delay cases pass.
+
+**Results:** 552 JavaScript regressions in 11 suites, 13 Python checks, six actual React panel render checks, production builds, formatting and Knip pass. The first full run identified the expected internal parking-cache version assertion; updating it to the intentionally bumped v4 namespace restored the suite. The public parking v3 URL remains compatible. New enriched records no longer reuse older persistent/edge cache entries.
+
+**Boundaries:** Fixed services are not replaced; physical entrances, complex/holiday opening and actual availability remain unverified. Five visits maximum, current-search persistence only; replanning unfinished timed visits is explicitly blocked. Browser/phone interaction and physical acceptance remain pending. [Full evidence and release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md).

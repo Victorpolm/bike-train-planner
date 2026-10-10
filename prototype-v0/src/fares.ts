@@ -43,7 +43,7 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
   const required = takeBikeOnTransit ? rules.filter(r => r.bikeReservation === "required").length : 0;
   const unknown = takeBikeOnTransit ? rules.filter(r => r.bikeReservation === "unknown").length : 0;
   const hasCyclingBreak = legs.slice(legs.findIndex(l => l.mode === "transit") + 1,
-    legs.reduce((n, l, i) => l.mode === "transit" ? i : n, -1)).some(l => l.mode === "bike");
+    legs.reduce((n, l, i) => l.mode === "transit" ? i : n, -1)).some(l => l.mode === "bike" || l.mode === "stop");
   // The published Swiss rail charge covers connecting trains in one booking.
   const reservationChf = !takeBikeOnTransit ? 0 : covered && dayPrice !== null && !unknown && !hasCyclingBreak ? required ? 2 : 0 : null;
   const published = publishedRouteFare(legs);

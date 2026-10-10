@@ -1,0 +1,87 @@
+{
+  "checkedAt": "2026-10-10T15:04:24.187Z",
+  "passed": true,
+  "titleVerified": true,
+  "updatedBundleVerified": true,
+  "observations": [
+    {
+      "path": "/",
+      "status": 200,
+      "milliseconds": 6945
+    },
+    {
+      "path": "/assets/index-Bh--WBp9.js",
+      "status": 200,
+      "milliseconds": 579
+    },
+    {
+      "path": "/api/parking/v3/official",
+      "status": 200,
+      "milliseconds": 3624
+    },
+    {
+      "path": "/api/parking/v3/osm",
+      "status": 200,
+      "milliseconds": 14334
+    },
+    {
+      "path": "/api/facilities/v1/sbb/8503000",
+      "status": 200,
+      "milliseconds": 1990
+    },
+    {
+      "path": "/api/facilities/v1/graubuenden/dorfplatz-trin",
+      "status": 200,
+      "milliseconds": 2632
+    }
+  ],
+  "records": [
+    {
+      "provider": "official",
+      "records": 1608,
+      "fetchedAt": "2026-10-10T15:04:04.999Z",
+      "stale": false,
+      "stationIdentities": 1356,
+      "retainedTags": {},
+      "roles": {
+        "point": 1608,
+        "area": 0,
+        "entrance": 0
+      }
+    },
+    {
+      "provider": "osm",
+      "records": 20778,
+      "fetchedAt": "2026-10-10T15:04:18.867Z",
+      "stale": false,
+      "stationIdentities": 0,
+      "retainedTags": {
+        "maxstay": 32,
+        "surveillance": 43,
+        "level": 166,
+        "access:conditional": 1,
+        "authentication": 1
+      },
+      "roles": {
+        "point": 12904,
+        "area": 7874,
+        "entrance": 0
+      }
+    },
+    {
+      "path": "/api/facilities/v1/sbb/8503000",
+      "records": 76,
+      "fetchedAt": "2026-10-10T15:04:19.608Z",
+      "withFloor": 76,
+      "withDirections": 76
+    },
+    {
+      "path": "/api/facilities/v1/graubuenden/dorfplatz-trin",
+      "records": 1,
+      "fetchedAt": "2026-10-10T15:04:21.680Z",
+      "withFloor": 0,
+      "withDirections": 0
+    }
+  ],
+  "caveat": "One bounded deployed schema/source check, not visual/browser, field, provider-availability or load verification."
+}

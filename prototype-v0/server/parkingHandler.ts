@@ -30,7 +30,7 @@ export function createParkingHandler(options: { now?: () => number; cache?: Cach
     const provider: ParkingProvider = source;
     const edge = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
     // Cache only public parking data, under a versioned, source-specific key.
-    const cacheUrl = new URL(`/api/parking-cache/v3/${provider}`, url.origin);
+    const cacheUrl = new URL(`/api/parking-cache/v4/${provider}`, url.origin);
     const cacheKey = new Request(cacheUrl);
     const age = () => cached[provider] ? now() - Date.parse(cached[provider]!.fetchedAt) : Infinity;
     const load = async () => {

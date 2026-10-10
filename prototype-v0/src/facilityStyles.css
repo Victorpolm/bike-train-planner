@@ -1,0 +1,29 @@
+.facility-choices { border-top: 1px solid #d9e3db; margin-top: 1rem; padding-top: 1rem; }
+.facility-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.facility-section-heading h3 { margin: 0 0 .7rem; }
+.facility-section-heading > span { font-size: .8rem; color: #56665e; }
+.facility-fields { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .65rem; }
+.facility-fields label { display: grid; gap: .3rem; font-size: .85rem; font-weight: 600; }
+.facility-fields input, .facility-fields select { min-width: 0; width: 100%; padding: .55rem; border: 1px solid #bdcbc0; border-radius: .45rem; background: #fff; color: #173a2b; }
+.facility-filters { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin: .85rem 0; }
+.facility-filters label { display: flex; align-items: center; gap: .4rem; font-size: .82rem; }
+.facility-filters input { width: auto; flex: 0 0 auto; }
+.facility-note { color: #52635a; font-size: .82rem; line-height: 1.5; }
+.facility-cards { list-style: none; padding: 0; display: grid; gap: .7rem; margin: .8rem 0; }
+.facility-card { background: #fff; border: 1px solid #d4e0d7; border-radius: .7rem; padding: .9rem; overflow-wrap: anywhere; }
+.facility-card h4 { margin: 0 0 .45rem; font-size: 1rem; }
+.facility-card p { margin: .4rem 0; font-size: .86rem; line-height: 1.5; }
+.facility-card details { margin-top: .65rem; border-top: 1px solid #e5ece6; padding-top: .5rem; }
+.facility-card summary { cursor: pointer; font-size: .83rem; font-weight: 600; }
+.facility-match { color: #195e4d; font-weight: 600; }
+.facility-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin-top: .65rem; }
+.facility-actions button, .facility-choices > button { min-height: 38px; padding: .5rem .7rem; border: 1px solid #b7cdbf; background: #eef5ef; color: #195e4d; border-radius: .4rem; cursor: pointer; }
+.facility-actions a { font-size: .82rem; color: #195e4d; }
+.facility-apply-button { background: #195e4d; color: #fff; font-weight: 700; padding: .8rem 1.15rem; border: 0; border-radius: .5rem; min-height: 44px; }
+.facility-apply-button:disabled { opacity: .5; cursor: not-allowed; }
+.facility-stops { margin: 1rem 0; padding: .9rem; border: 1px solid #d4e0d7; border-radius: .7rem; background: #f2f7f1; }
+.facility-stops h3 { margin: 0 0 .6rem; }
+.facility-stops ol { padding-left: 1.25rem; }
+.facility-stops li { padding: .25rem 0; }
+.plan-step-stop { border-left-color: #98621c; background: #faf5e9; }
+@media (max-width: 400px) { .facility-fields { grid-template-columns: 1fr; } .facility-actions > button { flex: 1 1 auto; } }

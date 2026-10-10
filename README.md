@@ -1,5 +1,7 @@
 # Re.route — Bike + Train Journey Planner
 
+**10 October facility implementation:** Up to five applied facility stops update the selected itinerary, map, checked time and transport-price eligibility while retaining fixed services. Parking now has destination/station/map-point suitability lists, arrival/collection hours and maximum-stay checks. Facility lists expose floors/directions and water coverage identifies cycling-section refill gaps. **552 JavaScript tests**, **13 Python tests**, 1,372 timing combinations and six rendered panels pass; browser/phone acceptance remains pending. [Behaviour, evidence and limits](docs/FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
+
 **10 October speed and scale review — version 64:** Guarded caches, reusable label resources and compatible transfer keys reduce the 32-station hydrated Extended CPU benchmark from **8.93 s to 2.49 s**, with identical full results. OJP now bounds outstanding work, coalesces requests and handles cancellation/deadlines explicitly. **515 JavaScript tests**, **13 Python tests** and **576 baseline comparisons** pass. Real-phone, full live-search timings and global quota enforcement remain separate. [Evidence and limits](docs/SPEED_AND_SCALE_2026-10-10.md).
 
 **10 October name update — version 63:** The app is now **Re.route**, with the name in its header, accessible home link, browser/application metadata and Site listing. The website address, repository, saved profiles and map caches retain their identity. All **488 tests** and TypeScript/frontend/Worker builds pass; browser/phone visual acceptance remains pending.
@@ -50,17 +52,19 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** Owner-private **version 63** published on **10 October 2026 at 12:37:50 UTC** (14:37:50 Europe/Zurich), environment revision **3**, from Site source `36ee02bb319083bd6ccde70d7855b0b102ea5e0c`. The app is named **Re.route**. **488 tests in 11 suites** and TypeScript/frontend/Worker builds pass; generated metadata and the server-rendered header were checked. Browser/phone acceptance remains pending.
+**Last verified release:** Owner-private **version 65** published successfully on **10 October 2026 at 15:03:12 UTC** (17:03:12 Europe/Zurich), environment revision **3**, from Site source `d10c8af18f011c104756035d8a07f3d174236a82`. The exact pushed source and matching frontend/Worker archive were deployed. **552 JavaScript tests in 11 suites**, **13 Python tests**, 1,372 fixed-connection combinations and six actual React panel render checks pass, together with builds, formatting and Knip. Browser/phone interaction and physical field acceptance remain pending. Title Re.route, the existing URL, runtime secret bindings and owner-only audience are preserved. [Evidence](docs/FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 
 ## Next priorities
 
-**Immediate checks:** finish phone/desktop acceptance of the delivered interface and objectives, reproduce the reported route and food-loading failures, and fix demonstrated blockers. See the [current checklist and status](docs/NEXT_STEPS.md). The remaining product milestones retain the order below.
+**The owner's three next priorities:**
 
-1. **Bike parking:** try the delivered colours, adjustable journey filter and closest-to-start action, then improve coverage and entrance/access information. Destination/station recommendations and GPS-based parking ranking remain later additions; Start already follows journeys using phone location.
-2. **Bike services and useful stops:** prioritise rural refill precision: access/seasonality evidence, distance along the ride to the next supported refill point, checked entrances/detours, then opening at arrival. Use the new timed detour preview; an explicit Apply/save action still needs search-budget checks before updating the journey. [Audited gaps and acceptance checks](docs/FACILITY_SOURCES_2026-09-30.md#what-the-roadmap-still-promises-but-the-app-does-not-yet-implement).
-3. **User interface:** the requested redesign and objective controls are delivered. Complete their phone/desktop acceptance, then refine parking and useful-stop interactions from observed problems.
+1. **Design proposals:** Discover compromises, scenic Bikepacking routes and custom cycling minimum/maximum remain outside the immediate implementation queue.
+2. **Before expanding access:** implement global API quota control and refresh station-transfer data before the current feed expires on **12 December 2026**.
+3. **Europe:** scope later country/provider coverage, bicycle rules, fares, transfer data and licensing. The delivered app remains Switzerland-first.
+
+Complete phone/desktop acceptance of the implemented stops, parking, interface and navigation, and fix demonstrated defects. The synchronization, Add as stop and useful-information work requested on 10 October is delivered. [Current checklist](docs/NEXT_STEPS.md).
 
 [Roadmap and completion criteria](docs/APP_ROADMAP.md) · [Concrete bike-parking proposal](docs/BIKE_PARKING.md) · [Useful stops: brainstorming and data plan](docs/CYCLING_AMENITIES.md)
 
@@ -74,7 +78,7 @@ The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle o
 
 Sign in with the ChatGPT account that owns the Site. The website remains owner-private; this GitHub repository is public. GitHub source updates and website publication are separate. Personal GPX data and secrets are not committed. New hosting spend requires the owner's approval.
 
-The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Specific parking racks, availability, parking duration/cost and later retrieval remain unimplemented; their requirements are tracked in the roadmap.
+The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Parking lists now inspect mapped access, duration and collection conditions. Binding a rack to bicycle custody, live availability, a complete parking price and an onward retrieval journey remain unimplemented; their requirements are tracked in the roadmap.
 
 ## Repository as project memory
 

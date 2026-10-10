@@ -1,6 +1,7 @@
 import { arrivalTime, departureTime, moveAfter, realtimeKey, realtimeUnavailable, platformChanged, type TransitRealtime } from "./realtime.ts";
 import { boardingCheck } from "./transferTimes.ts";
 import type { Journey, TransitLeg } from "./routing.ts";
+import { visitHours } from "./facilityHours.ts";
 
 /** Re-evaluate the selected path without changing its scheduled service/fare IDs
  * or silently replacing it when a cancellation makes it impossible. */
@@ -22,6 +23,9 @@ export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, Trans
       if (leg.realtime?.undefinedDelay) issues.push(`${leg.service}: the provider reports a delay of unknown duration.`);
     }
     legs.push(leg);
+    if (leg.facilityVisit && departureTime(leg) && arrivalTime(leg)
+      && visitHours(leg.facilityVisit.openingHours, leg.facilityVisit.seasonal, departureTime(leg)!, arrivalTime(leg)!).state === "closed")
+      issues.push(`${leg.facilityVisit.name}: the updated arrival no longer fits the mapped opening hours. Review this stop.`);
     ready = +(arrivalTime(leg) ?? new Date(ready));
   }
   const arrival = new Date(ready), end = ready + (raw.legsIncludeEndpoints ? 0 : raw.destinationStation.bikeMinutes * 60_000);

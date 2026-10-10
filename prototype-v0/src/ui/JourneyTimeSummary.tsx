@@ -45,6 +45,7 @@ export default function JourneyTimeSummary({
             Cycling ≈ {formatMinutes(timing.cyclingMinutes)} · Walking{" "}
             {formatMinutes(timing.walkingMinutes)} · On board {formatMinutes(timing.transitMinutes)}{" "}
             · Connections/boarding {formatMinutes(timing.connectionMinutes)}
+            {timing.stopMinutes > 0 && <> · Facility stops {formatMinutes(timing.stopMinutes)}</>}
           </span>
           <span>Journey duration includes all walking, platform access and connection waits.</span>
           {!arriveBy && (

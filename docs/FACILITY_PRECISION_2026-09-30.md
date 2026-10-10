@@ -1,5 +1,7 @@
 # Facility precision: rural water first, indoor locations second
 
+**10 October implementation update:** [Facility stops and useful choices](FACILITY_STOPS_AND_CHOICES_2026-10-10.md) supersedes the older preview-only/suitability/opening-gap status below. Add as stop, repeated visits, budget/connection checks, parking destination/station/map-point lists with collection/maxstay checks, conservative weekly hours and per-cycling-section refill gaps are implemented. Physical entrances, live stock/flow/occupancy, saved journeys and custody-aware parking remain unverified or separate work. Earlier proposals and dated evidence below retain their historical scope.
+
 _Historical research recorded 30 September 2026. The subsequent user-authorised implementation, source scope and remaining gaps are in [FACILITY_SOURCES_2026-09-30.md](FACILITY_SOURCES_2026-09-30.md). ETH is excluded from that follow-up scope; earlier proposed gates below preserve the research-stage decision._
 
 ## User decision
@@ -66,3 +68,4 @@ The [swisstopo app's data attribution](https://www.swisstopo.admin.ch/en/terms-o
 ## Verification and handoff
 
 The [compact source audit](experiments/facility-precision-source-audit-2026-09-30.json) records response sizes/counts, source URLs, the bounded Overpass query and the specific limitations. Bulk responses are excluded from Git. This change records research and updates project priorities only; application tests/builds were not rerun because application code was unchanged. The previous 265-test/build release gate remains dated to version 38.
+

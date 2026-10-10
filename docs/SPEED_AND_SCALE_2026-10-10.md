@@ -83,3 +83,6 @@ Owner-private **version 64** published successfully on **10 October 2026 at 13:2
 Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_56dcae37804c8191874a8ec3ada9ff54`. Deployment: `appgdep_6aca3be390148191a217d0dc38b1348e` (`succeeded`).
 
 GitHub main was last verified at `fbcf0f9fa9db5e635e556fe11dcc42da3db37b3a`. The app and documentation changes, including the pending rename, are prepared for review; the earlier automatic approval rejection of the main ref update still requires the owner's explicit approval. No new GitHub branch or CI success for this revision is claimed.
+
+
+**10 October synchronization follow-up:** The owner explicitly authorized finishing synchronization. GitHub main was fast-forwarded to `d1241db0937a9d81d5d2343521ba9324b80c544b` and [Test and build passed](https://github.com/Victorpolm/bike-train-planner/actions/runs/38059847074). This resolves the historical approval block above. The subsequent [facility release](FACILITY_STOPS_AND_CHOICES_2026-10-10.md) records the newer publication and source state.

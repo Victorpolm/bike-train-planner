@@ -1,5 +1,5 @@
 import { arrivalTime, departureTime } from "./realtime.ts";
-import type { Journey, Place, TransitLeg } from "./routing.ts";
+import type { CyclingComparison, Journey, Place, TransitLeg } from "./routing.ts";
 import { interpretBicycleAttributes, type BicycleAttribute } from "./bicycleCarriage.ts";
 
 export type TransportStop = {
@@ -87,6 +87,27 @@ export type JourneyStep = {
   leg?: TransitLeg;
   cyclingRoute?: TransitLeg["cyclingRoute"];
 };
+
+/** Cycling-only plans share the same explicit visit steps as mixed journeys. */
+export function cyclingSteps(cycling: CyclingComparison, origin: Place, destination: Place, start: Date): JourneyStep[] {
+  let cursor = +(cycling.departure ?? start);
+  const steps: JourneyStep[] = [];
+  const routes = cycling.routes ?? [];
+  routes.forEach((route, i) => {
+    const before = (cycling.stops ?? []).find(s => s.afterRoute === i - 1)?.visit;
+    const after = (cycling.stops ?? []).find(s => s.afterRoute === i)?.visit;
+    const departure = new Date(cursor); cursor += route.minutes * 60_000;
+    steps.push({ mode: "bike", title: "Cycle", from: before?.name ?? (i === 0 ? origin.label : "Cycling section"),
+      to: after?.name ?? (i === routes.length - 1 ? destination.label : "Cycling section"), departure, arrival: new Date(cursor), cyclingRoute: route });
+    for (const s of (cycling.stops ?? []).filter(s => s.afterRoute === i)) {
+      const departure = new Date(cursor); cursor += s.visit.minutes * 60_000;
+      const leg: TransitLeg = { mode: "stop", facilityVisit: s.visit, from: s.visit.name, to: s.visit.name, fromPoint: s.visit, toPoint: s.visit,
+        departure, arrival: new Date(cursor), departurePlatform: null, arrivalPlatform: null, service: `Stop at ${s.visit.name}`, serviceName: null, direction: null };
+      steps.push({ mode: "stop", title: leg.service, from: leg.from, to: leg.to, departure, arrival: leg.arrival, leg });
+    }
+  });
+  return steps;
+}
 
 export function journeySteps(journey: Journey, origin: Place, destination: Place): JourneyStep[] {
   if (journey.legsIncludeEndpoints) {

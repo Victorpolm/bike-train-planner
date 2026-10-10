@@ -1,5 +1,7 @@
 # Bike parking: current trial and proposed next milestone
 
+**10 October implementation update:** [Facility stops and useful choices](FACILITY_STOPS_AND_CHOICES_2026-10-10.md) supersedes the older preview-only/suitability/opening-gap status below. Add as stop, repeated visits, budget/connection checks, parking destination/station/map-point lists with collection/maxstay checks, conservative weekly hours and per-cycling-section refill gaps are implemented. Physical entrances, live stock/flow/occupancy, saved journeys and custody-aware parking remain unverified or separate work. Earlier proposals and dated evidence below retain their historical scope.
+
 _29 September 2026. Status: closest-to-start trial, OSM coverage, equipment colours and selected-journey filtering delivered. Municipal enrichment, suitability shortlist and entrance routing below remain proposals._
 
 **Current distance control:** Version 37 shares a 100 m / 500 m / 1 km choice across parking, water, toilets, repairs and food. The default remains 100 m; the band is geographic proximity, not an entrance route. [Details and checks](REPAIRS_AND_FOOD_2026-09-29.md).
@@ -129,3 +131,4 @@ Following the user's municipal-data example, add or substitute Biel/Bienne cases
 Offer this only as an explicit additional choice if the user wants it. A route state must track whether the bicycle is with the traveller or stored at a specific facility. After parking, onward transit is passenger-only and onward cycling with that bicycle is impossible until retrieval. Account for the approach, entry/locking allowance, walk to boarding, accessible path, hours at both ends, parking tariff and a realistic return plan. A destination bicycle/rental requires its own explicit pickup/return model.
 
 Compare this mode with taking the bike along using complete door-to-door time and relevant costs. Do not remove bicycle fares/requirements from today's journeys merely because a parking pin is nearby. No occupancy, space reservation, sales or automatic mode change is part of the first parking milestone.
+

@@ -1,4 +1,9 @@
+import { facilityStopSteps } from "./facilityStops";
+import RefillCoverage from "./RefillCoverage";
 import CyclingEditor from "./CyclingEditor";
+import ParkingChoices from "./ParkingChoices";
+import { parkingDetourTarget, parkingInformation, parkingVisitAllowed } from "./parkingSuitability";
+import { hoursAt } from "./facilityHours";
 import type { AppliedCyclingEdit, EditContext } from "./cyclingEditor";
 import type { HillPreferences } from "./hills";
 import type { Options } from "./model";
@@ -205,6 +210,7 @@ export default function MapView({
     routePreference,
     hills,
     stages.map((stage) => stage.id),
+    cycling?.stops,
   ]);
   const [editorScope, setEditorScope] = useState<string | null>(null);
   const routeEditing = editorScope === detourScope && !editingDisabled;
@@ -387,6 +393,7 @@ export default function MapView({
     retry: retryParking,
   } = useBikeParking(showParking);
   const [parkingMapNote, setParkingMapNote] = useState("");
+  const [parkingPoint, setParkingPoint] = useState<Place | null>(null);
   const [onlyAlongJourney, setOnlyAlongJourney] = useState(true);
   const parkingRoute = useMemo(
     () =>
@@ -417,7 +424,13 @@ export default function MapView({
   const closestParking = useMemo(
     () =>
       showParking && closestRequest?.scope === parkingScopeKey
-        ? closestBikeParking(visibleParking, origin)
+        ? closestBikeParking(
+            visibleParking.filter(
+              (f) =>
+                parkingVisitAllowed(f) && hoursAt(f.openingHours, start ?? new Date()) !== "closed",
+            ),
+            origin,
+          )
         : null,
     [showParking, closestRequest, parkingScopeKey, visibleParking, origin?.lat, origin?.lon],
   );
@@ -446,25 +459,19 @@ export default function MapView({
         }
         count++;
         const style = parkingStyle(facility);
-        const content = popup(facility.name, [style.detail, ...parkingDetails(facility)]);
+        const content = popup(facility.name, [
+          style.detail,
+          ...parkingDetails(facility),
+          ...parkingInformation(facility),
+        ]);
         if (stages.length && !editingDisabled) {
           const button = document.createElement("button");
           button.type = "button";
           button.className = "facility-detour-button";
           button.textContent = "Preview cycling detour";
-          button.disabled =
-            facility.publicAccess === false ||
-            (!!facility.access &&
-              !["yes", "public", "permissive", "unknown"].includes(facility.access));
-          button.onclick = () =>
-            previewDetour({
-              id: facility.id,
-              name: facility.name,
-              lat: facility.lat,
-              lon: facility.lon,
-              category: "parking",
-              note: "This preview visits the parking location and continues with your bicycle. Access and the entrance have not been verified.",
-            });
+          const target = parkingDetourTarget(facility);
+          button.disabled = !!target.unavailable;
+          button.onclick = () => previewDetour(target);
           content.append(button);
           if (button.disabled) {
             const p = document.createElement("p");
@@ -584,6 +591,18 @@ export default function MapView({
         };
         content.append(button);
       }
+      const parkingButton = document.createElement("button");
+      parkingButton.type = "button";
+      parkingButton.textContent = "Find bike parking here";
+      parkingButton.onclick = () => {
+        setParkingPoint({ lat: point.lat, lon: point.lng, label: "Selected map point" });
+        setShowParking(true);
+        map.closePopup();
+        requestAnimationFrame(() =>
+          document.getElementById("parking-choices-title")?.scrollIntoView({ block: "nearest" }),
+        );
+      };
+      content.append(parkingButton);
       L.DomEvent.disableClickPropagation(content);
       L.popup({ maxWidth: 260, className: "location-popup" })
         .setLatLng(point)
@@ -964,6 +983,7 @@ export default function MapView({
       bounds.extend([first.lat, first.lon]);
       bounds.extend([last.lat, last.lon]);
       for (const leg of selectedJourney.transitLegs) {
+        if (leg.mode === "stop") continue;
         if (leg.mode === "bike") {
           drawCycling(leg.cyclingRoute, COLORS.cycle, leg.service, true);
           continue;
@@ -1065,6 +1085,37 @@ export default function MapView({
       animate: false,
     });
   }, [cycleFocus]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !editContext) return;
+    const layer = L.layerGroup().addTo(map);
+    const visits = facilityStopSteps(
+      { journey: selectedJourney, cycling: bikeOnlySelected ? cycling : null },
+      editContext,
+    );
+    visits.forEach((step, i) => {
+      const f = step.leg!.facilityVisit!;
+      const marker = L.marker([f.lat, f.lon], {
+        icon: markerIcon("#98621c", `F${i + 1}`),
+        title: `Facility stop ${i + 1}: ${f.name}`,
+        bubblingMouseEvents: false,
+      }).addTo(layer);
+      bindReadablePopup(
+        marker,
+        map,
+        popup(`Stop ${i + 1}: ${f.name}`, [
+          `${f.minutes} min visit`,
+          `${clock.format(step.departure!)} → ${clock.format(step.arrival!)}`,
+          f.note ?? "Access remains unverified.",
+        ]),
+        L.popup,
+      );
+    });
+    return () => {
+      layer.remove();
+    };
+  }, [selectedJourney, cycling, bikeOnlySelected, editContext]);
 
   return (
     <>
@@ -1375,6 +1426,12 @@ export default function MapView({
         <DetourPanel
           key={`${detourScope}:${currentDetour.id}:${currentDetour.category}`}
           facility={currentDetour}
+          context={editContext}
+          onApply={(edit) => {
+            onApplyCycling(edit);
+            setDetour(null);
+            setDetourRoutes(null);
+          }}
           stages={stages}
           pace={cyclingPace}
           preference={routePreference}
@@ -1389,6 +1446,47 @@ export default function MapView({
       )}
       {showParking && (
         <section id="parking-panel" className="parking-panel" aria-label="Bicycle parking">
+          <ParkingChoices
+            key={detourScope}
+            facilities={visibleParking}
+            mapPoint={parkingPoint}
+            targets={[
+              ...(origin
+                ? [{ key: "origin", place: { ...origin, label: "Start · " + origin.label } }]
+                : []),
+              ...(destination
+                ? [
+                    {
+                      key: "destination",
+                      place: { ...destination, label: "Destination · " + destination.label },
+                    },
+                  ]
+                : []),
+              ...stops
+                .filter((s) =>
+                  selectedJourney?.transitLegs.some(
+                    (l) => l.mode === "transit" && [l.fromId, l.toId].includes(s.id),
+                  ),
+                )
+                .map((s) => ({ key: s.id, place: { lat: s.lat, lon: s.lon, label: s.name } })),
+            ]}
+            at={
+              selectedJourney
+                ? new Date(+selectedJourney.startTime + selectedJourney.totalMinutes * 60000)
+                : (cycling?.arrival ?? start ?? new Date())
+            }
+            alongJourney={alongJourney}
+            onLocate={(f) => {
+              const map = mapRef.current;
+              if (!map) return;
+              map.setView([f.lat, f.lon], Math.max(17, map.getZoom()));
+              L.popup({ maxWidth: 360 })
+                .setLatLng([f.lat, f.lon])
+                .setContent(popup(f.name, [...parkingDetails(f), ...parkingInformation(f)]))
+                .openOn(map);
+            }}
+            onDetour={stages.length && !editingDisabled ? previewDetour : undefined}
+          />
           <ul className="parking-legend" aria-label="Parking colours by mapped equipment">
             {PARKING_LEGEND.map((style) => (
               <li key={style.label}>
@@ -1554,6 +1652,20 @@ export default function MapView({
           </div>
         </section>
       )}
+      {showWater && (
+        <RefillCoverage
+          stages={stages}
+          facilities={amenityFacilities}
+          radius={routeRadius}
+          partial={
+            amenities.loading ||
+            !!amenities.error ||
+            extraSources.loads.some((l) => l.provider === "graubuenden" && l.status !== "ready")
+          }
+          onWiden={() => setRouteRadius(1000)}
+          onDetour={stages.length && !editingDisabled ? previewDetour : undefined}
+        />
+      )}
       {(["water", "toilets", "repairs", "food"] as const).map((category) => {
         const enabled = {
           water: showWater,
@@ -1569,6 +1681,12 @@ export default function MapView({
               category={category}
               map={mapRef.current}
               origin={origin}
+              destination={destination}
+              visitAt={
+                selectedJourney
+                  ? new Date(+selectedJourney.startTime + selectedJourney.totalMinutes * 60000)
+                  : (cycling?.arrival ?? start ?? undefined)
+              }
               data={source.data}
               loading={source.loading}
               error={source.error}

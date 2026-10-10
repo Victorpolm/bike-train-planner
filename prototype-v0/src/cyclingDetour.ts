@@ -4,7 +4,8 @@ import { journeySteps, type JourneyStep } from "./itinerary.ts";
 import type { CyclingRoute } from "./cycling.ts";
 import { amenityRestricted, amenityStyle, AMENITY_STYLES, type Amenity, type AmenityCategory } from "./osmAmenities.ts";
 
-export type DetourFacility = Point & { id: string; name: string; category: AmenityCategory | "parking"; note?: string; unavailable?: string };
+export type DetourFacility = Point & { id: string; name: string; category: AmenityCategory | "parking"; note?: string; unavailable?: string;
+  url?: string; openingHours?: string; seasonal?: string };
 export type DetourStage = {
   preceding?: JourneyStep[];
   id: string; label: string; from: Place; to: Place; route: CyclingRoute;
@@ -16,7 +17,8 @@ export function amenityDetourTarget(f: Amenity, category: AmenityCategory): Deto
   const unavailable = category === "water" && f.potable !== "yes" ? "Only mapped drinking water can be suggested as a refill stop."
     : amenityRestricted(f, category) || amenityStyle(f, category) === AMENITY_STYLES.restricted
       ? "This facility is mapped as restricted or unavailable." : undefined;
-  return { id: f.id, name: f.name, lat: f.lat, lon: f.lon, category, unavailable,
+  return { id: f.id, name: f.name, lat: f.lat, lon: f.lon, category, unavailable, url: f.url,
+    openingHours: f.tags.opening_hours, seasonal: f.tags["drinking_water:seasonal"] ?? f.tags.seasonal,
     note: f.tags.indoor === "yes" || f.tags.level || f.location?.floorLabel || f.location?.precision === "building"
       ? "This is a building location. Indoor access, floor changes and the entrance are not routed. Allow time to reach the facility."
       : "The route reaches the mapped location. The entrance and opening hours still need checking." };
@@ -43,11 +45,11 @@ export function detourStages(journey: Journey | null, cycling: CyclingComparison
   }
   let departure = cycling?.departure ?? start;
   return (cycling?.routes ?? []).map((route, index) => {
-    const from = at(route, "from", index === 0 ? origin.label : `Intermediate stop ${index}`);
-    const to = at(route, "to", index === cycling!.routes!.length - 1 ? destination.label : `Intermediate stop ${index + 1}`);
+    const from = at(route, "from", index === 0 ? origin.label : cycling?.stops?.find(s => s.afterRoute === index - 1)?.visit.name ?? `Intermediate stop ${index}`);
+    const to = at(route, "to", index === cycling!.routes!.length - 1 ? destination.label : cycling?.stops?.find(s => s.afterRoute === index)?.visit.name ?? `Intermediate stop ${index + 1}`);
     const stage: DetourStage = { id: `${index}:${route.id}`, label: `${from.label} → ${to.label}`, from, to, route,
       departure, originalMinutes: route.minutes, following: [], originalArrival: cycling!.arrival };
-    departure = new Date(departure.getTime() + route.minutes * 60_000);
+    departure = new Date(departure.getTime() + (route.minutes + (cycling?.stops ?? []).filter(s => s.afterRoute === index).reduce((n, s) => n + s.visit.minutes, 0)) * 60_000);
     return stage;
   });
 }

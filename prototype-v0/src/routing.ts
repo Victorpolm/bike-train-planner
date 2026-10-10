@@ -48,7 +48,14 @@ export type Journey = {
   waypoints?: { place: Place; arrival: Date }[];
 };
 
+export type FacilityVisit = Point & {
+  id: string; name: string; category: "water" | "toilets" | "repairs" | "food" | "parking";
+  minutes: number; note?: string; url?: string; openingHours?: string; seasonal?: string;
+};
+type CyclingStop = { afterRoute: number; visit: FacilityVisit };
+
 export type TransitLeg = {
+  facilityVisit?: FacilityVisit;
   /** Published departure/arrival stay unchanged for fare and service identity. */
   realtime?: import("./realtime.ts").TransitRealtime;
   movementOffsetMs?: number;
@@ -60,7 +67,7 @@ export type TransitLeg = {
   accessRules?: import("./transferTimes.ts").StationAccessRule[];
   cyclingSectionId?: string;
   cyclingSectionLimit?: number;
-  mode: "transit" | "walk" | "unknown" | "bike";
+  mode: "transit" | "walk" | "unknown" | "bike" | "stop";
   from: string | null;
   to: string | null;
   departure: Date | null;
@@ -111,6 +118,7 @@ export function cyclingMinutes(distanceKm: number, pace?: CyclingPace): number {
 }
 
 export type CyclingComparison = {
+  stops?: CyclingStop[];
   distanceKm: number;
   minutes: number;
   departure?: Date;

@@ -1,4 +1,4 @@
-import { journeySteps } from "./itinerary.ts";
+import { cyclingSteps, journeySteps } from "./itinerary.ts";
 import { arrivalTime, departureTime, realtimeKey, realtimeStale, realtimeUnavailable, effectivePlatform } from "./realtime.ts";
 import { boardingCheck } from "./transferTimes.ts";
 import { haversineKm, type CyclingComparison, type Journey, type Place, type Point, type TransitLeg } from "./routing.ts";
@@ -27,8 +27,7 @@ const legKey = (leg: TransitLeg) => realtimeKey(leg) || JSON.stringify([leg.mode
 export function navigationTrip(input: NavigationInput): NavigationTrip {
   let visits = 0;
   const steps = input.journey ? journeySteps(input.journey, input.origin, input.destination).filter(s => s.mode !== "wait")
-    : (input.cycling?.routes ?? []).map((route, i) => ({ mode: "bike" as const, title: "Cycle", from: [input.origin, ...input.waypoints][i]?.label,
-      to: [...input.waypoints, input.destination][i]?.label, departure: null, arrival: null, cyclingRoute: route, leg: undefined }));
+    : input.cycling ? cyclingSteps(input.cycling, input.origin, input.destination, input.start) : [];
   const stages = steps.map((step, index): NavigationStage => {
     const route = step.cyclingRoute ?? step.leg?.walkingRoute;
     // Never use schematic transit/stop geometry for street progress or warnings.
@@ -36,7 +35,10 @@ export function navigationTrip(input: NavigationInput): NavigationTrip {
       : step.leg?.geometryKind === "path" && step.mode !== "transit" ? [...step.leg.geometry ?? []] : [];
     const distances = path.map((_, i) => i ? distance(path[i - 1], path[i]) : 0);
     for (let i = 1; i < distances.length; i++) distances[i] += distances[i - 1];
-    if (!input.journey) visits = Math.min(index + 1, input.waypoints.length);
+    if (!input.journey) {
+      const end = route?.to, next = input.waypoints[visits];
+      if (step.mode === "bike" && end && next && distance(end, next) < 100) visits++;
+    }
     else {
       const end = route?.to ?? step.leg?.toPoint;
       const visit = input.journey.waypoints?.[visits];
@@ -154,6 +156,7 @@ export function navigationReplan(trip: NavigationTrip, index: number, onboard: b
   fix: LocationFix | null, now: number) {
   if (!usableFix(fix, now)) throw new Error("Wait for a fresh, accurate location before recalculating.");
   if (onboard || trip.stages[index]?.mode === "unknown") throw new Error("Confirm that you have alighted before recalculating from here.");
+  if (trip.stages.slice(index).some(s => s.leg?.facilityVisit)) throw new Error("Finish the remaining facility stops before recalculating, or stop following and choose a new journey in Plan. Recalculation cannot preserve their visit durations yet.");
   const previous = trip.stages.slice(0, index);
   const boardings = previous.filter(s => s.mode === "transit").length;
   const firstTransit = trip.stages.findIndex(s => s.mode === "transit");

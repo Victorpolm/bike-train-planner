@@ -89,15 +89,19 @@ export default function JourneyNavigation({
         ? "Cycle"
         : stage.mode === "walk"
           ? "Walk"
-          : "Follow the itinerary";
+          : stage.mode === "stop"
+            ? "Facility stop"
+            : "Follow the itinerary";
   const confirm =
     stage.mode === "transit"
       ? onboard
         ? "I’ve alighted"
         : "I’m on board"
-      : index === trip.stages.length - 1
-        ? "I’ve arrived · Finish"
-        : "Section completed";
+      : stage.mode === "stop"
+        ? "Stop finished · Continue"
+        : index === trip.stages.length - 1
+          ? "I’ve arrived · Finish"
+          : "Section completed";
   return (
     <section className="navigation-panel navigation-active" aria-label="Journey following">
       <div className="navigation-heading">
@@ -147,7 +151,7 @@ export default function JourneyNavigation({
           access is approximate; follow local signs.
         </small>
       )}
-      {!["transit", "unknown"].includes(stage.mode) && !stage.path.length && (
+      {!["transit", "unknown", "stop"].includes(stage.mode) && !stage.path.length && (
         <p>
           Detailed path unavailable for this section. Follow station signs and confirm when
           completed.

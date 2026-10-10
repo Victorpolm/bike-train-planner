@@ -1,5 +1,7 @@
 # Useful stops along a cycling journey
 
+**10 October implementation update:** [Facility stops and useful choices](FACILITY_STOPS_AND_CHOICES_2026-10-10.md) supersedes the older preview-only/suitability/opening-gap status below. Add as stop, repeated visits, budget/connection checks, parking destination/station/map-point lists with collection/maxstay checks, conservative weekly hours and per-cycling-section refill gaps are implemented. Physical entrances, live stock/flow/occupancy, saved journeys and custody-aware parking remain unverified or separate work. Earlier proposals and dated evidence below retain their historical scope.
+
 _Brainstorm recorded 29 September 2026. All five categories now have map filters, adjustable 100 m / 500 m / 1 km proximity and closest-to-A actions. Repairs/Food add service types and marker grouping; dining is optional. [Version-37 implementation and limits](REPAIRS_AND_FOOD_2026-09-29.md). Version 41 adds persistent details and cycling-section detour previews with visit duration and fixed-service timing checks. Evaluated opening, verified entrances and applied/saved stop insertion remain future work. The bicycle still accompanies the traveller._
 
 ## The need
@@ -108,3 +110,4 @@ Measure service classification and attribute correctness, duplicate rate, entran
 Version 38 preserves floor/location descriptions and adds a small source-labelled reviewed inventory. ETH HG’s reported Selecta machines use one approximate building point with floor F and the Starbucks-machine landmark. Existing Zürich HB Hygienecenter identities receive SBB floor/zone/plan details. [Implementation and verification](FACILITY_LOCATIONS_2026-09-30.md).
 
 The revised [roadmap](APP_ROADMAP.md#30-september-proposal-keep-facility-coverage-manageable) limits manual station work to a proposed ten priority stations and makes additional city sources optional. [opendata.swiss research](OPENDATA_SWISS_2026-09-30.md) isolates catalogue discovery from runtime map requests, records today’s HTTP 403 barrier and the announced API migration, and verifies a national publisher feed with 63 station-plan references. No nationwide indoor mapping or municipal integration is implied.
+

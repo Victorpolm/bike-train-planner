@@ -9,7 +9,7 @@ const validTimes = (leg: TransitLeg) => leg.departure && leg.arrival
 // Timetabled walks and fare-bearing provider legs stay fixed. Only our own
 // untimed street/access movements can move with the origin departure.
 const flexible = (leg: TransitLeg) => !leg.ojp && !leg.fareSources?.length
-  && (leg.mode === "bike" || leg.mode === "walk" && (!!leg.walkingRoute || !!leg.stationAccess));
+  && (leg.mode === "bike" || leg.mode === "stop" || leg.mode === "walk" && (!!leg.walkingRoute || !!leg.stationAccess));
 function prefixLength(journey: Journey) {
   const index = journey.transitLegs.findIndex(leg => !flexible(leg));
   return index < 0 ? journey.transitLegs.length : index;
@@ -62,10 +62,12 @@ export function journeyTiming(raw: Journey, boardingMinutes = 3, requestedStart 
   const m = metrics(journey);
   const transitMinutes = journey.transitLegs.filter(l => l.mode === "transit").reduce((sum, l) => sum
     + (validTimes(l) ? (+arrivalTime(l)! - +departureTime(l)!) / minute : 0), 0);
+  const stopMinutes = journey.transitLegs.filter(l => l.mode === "stop").reduce((sum, l) => sum
+    + (validTimes(l) ? (+arrivalTime(l)! - +departureTime(l)!) / minute : 0), 0);
   return { journey, departure: journey.startTime, arrival, journeyMinutes: journey.totalMinutes,
     beforeDepartureMinutes: Math.max(0, (+journey.startTime - +requestedStart) / minute),
     elapsedMinutes: (+arrival - +requestedStart) / minute, cyclingMinutes: m.bike, walkingMinutes: m.walk,
-    transitMinutes, connectionMinutes: Math.max(0, journey.totalMinutes - m.active - transitMinutes) };
+    transitMinutes, stopMinutes, connectionMinutes: Math.max(0, journey.totalMinutes - m.active - transitMinutes - stopMinutes) };
 }
 
 export type JourneyTiming = ReturnType<typeof journeyTiming>;

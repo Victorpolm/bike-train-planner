@@ -1,5 +1,7 @@
 # Readable facility details and cycling-only detour previews
 
+**10 October implementation update:** [Facility stops and useful choices](FACILITY_STOPS_AND_CHOICES_2026-10-10.md) supersedes the older preview-only/suitability/opening-gap status below. Add as stop, repeated visits, budget/connection checks, parking destination/station/map-point lists with collection/maxstay checks, conservative weekly hours and per-cycling-section refill gaps are implemented. Physical entrances, live stock/flow/occupancy, saved journeys and custody-aware parking remain unverified or separate work. Earlier proposals and dated evidence below retain their historical scope.
+
 _Implemented 30 September 2026. This report supersedes earlier statements that all facility detour and visit-duration work remains unimplemented._
 
 ## User request and outcome
@@ -41,3 +43,4 @@ New checks cover persistent popup lifetime during transient-marker removal/map/h
 Deployment evidence is recorded in [WEBSITE.md](WEBSITE.md). Existing owner-only audience, OJP secrets and environment revision 3 remain unchanged.
 
 Next check: in the published site, select a journey with an origin cycling leg, open a food/fountain popup near the edge of the map, move the pointer away and scroll its text. Preview the detour, increase the stop time until the connection warning changes, then cancel/close and verify that the original journey remains selected. Repeat once on mobile and with a grouped multi-floor station facility. After that, prioritise rural refill gaps and access evidence, then an explicit Apply action with budget checks.
+

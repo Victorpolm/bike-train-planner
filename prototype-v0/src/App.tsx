@@ -1,3 +1,4 @@
+import FacilityStopSummary from "./FacilityStopSummary";
 import JourneyNavigation from "./JourneyNavigation";
 import { useJourneyNavigation } from "./useJourneyNavigation";
 import { navigationReplan } from "./navigation";
@@ -145,7 +146,8 @@ function CyclingCard({
         Estimated using your cycling profile, including short walking access to the path. Select to
         explore elevation and surfaces.
       </span>
-      {comparison.minutes > maxBikeMinutes && (
+      {comparison.minutes - (comparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) >
+        maxBikeMinutes && (
         <span className="comparison-caution">
           Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.
         </span>
@@ -597,7 +599,9 @@ export default function App() {
     !!session &&
     !!cyclingReference &&
     !cyclingReference.outsideTimeWindow &&
-    cyclingReference.minutes <= session.options.maxBikeMinutes &&
+    cyclingReference.minutes -
+      (cyclingReference.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) <=
+      session.options.maxBikeMinutes &&
     proposals.every((p) =>
       session.options.arriveBy
         ? !!cyclingReference.departure && +cyclingReference.departure >= +p.journey.startTime
@@ -620,6 +624,7 @@ export default function App() {
         selectedSource.origin.lat,
         selectedSource.origin.lon,
         rawSelected ? null : cyclingReference?.routes?.map((route) => route.id),
+        rawSelected ? null : cyclingReference?.stops,
       ])
     : "";
   const navigation = useJourneyNavigation(navigationKey);
@@ -1832,7 +1837,9 @@ export default function App() {
                 </p>
                 <p>No public transport: no bicycle ticket or reservation is needed.</p>
                 {(cyclingReference.outsideTimeWindow ||
-                  cyclingReference.minutes > session.options.maxBikeMinutes ||
+                  cyclingReference.minutes -
+                    (cyclingReference.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) >
+                    session.options.maxBikeMinutes ||
                   session.options.cyclingPosition !== "anywhere") && (
                   <p className="notice">
                     Reference only: this ride may fall outside your selected time or cycling limits.
@@ -1845,6 +1852,16 @@ export default function App() {
                 Find journeys in Plan, then select a result to see its itinerary, tickets and
                 bicycle requirements.
               </p>
+            )}
+            {selectedSource && (
+              <FacilityStopSummary
+                journey={selected}
+                cycling={bikeOnlySelected ? cyclingReference : null}
+                origin={selectedSource.origin}
+                destination={selectedSource.destination}
+                start={selectedSource.start}
+                onRestore={!loading && !navigation.following ? restoreCyclingChange : undefined}
+              />
             )}
             {!!cyclingRoutes.length && (
               <CyclingDetails

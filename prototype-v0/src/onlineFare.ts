@@ -41,7 +41,7 @@ export function fareQuery(legs: TransitLeg[], profile: FareProfile, takeBikeOnTr
     && l.cyclingRoute?.minutes === 0 && l.cyclingRoute.distanceKm === 0
     && (!!l.fromId && l.fromId === l.toId || !!l.fromPoint && !!l.toPoint
       && l.fromPoint.lat === l.toPoint.lat && l.fromPoint.lon === l.toPoint.lon);
-  if (first < 0 || legs.slice(first, last + 1).some(l => l.mode === "unknown" || l.mode === "bike" && !stationary(l))) return null;
+  if (first < 0 || legs.slice(first, last + 1).some(l => l.mode === "unknown" || l.mode === "stop" || l.mode === "bike" && !stationary(l))) return null;
   const transit = legs.filter(l => l.mode === "transit");
   if (transit.length > 8 || transit.some(l => !l.fromId || !l.toId || !l.departure || !l.arrival)) return null;
   // Graph stops may also contain complete cycling routes and cache timestamps.

@@ -1,11 +1,23 @@
-# Next steps after version 64
+# Next steps after the facility implementation
 
 _Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
+## Owner's three next priorities — 10 October
+
+1. **Design proposals:** Discover compromises, scenic/interesting-place Bikepacking routes and custom cycling minimum/maximum remain design work. They are not the immediate implementation queue.
+2. **Before wider access:** implement global API quota control across Worker isolates, confirm actual provider allowances and refresh the station-transfer feed before **12 December 2026**. Local concurrency/cache bounds do not supply a global quota. This is a project task, not a scheduled reminder.
+3. **Europe:** scope a later expansion with country/provider coverage, bicycle-carriage rules, fares, station transfers and data licensing. Current delivery remains Switzerland-first and owner-private; no European coverage is claimed.
+
+## Requested work now delivered
+
+The owner explicitly authorized synchronization, facility-stop insertion and useful parking/facility information on 10 October. GitHub main was first fast-forwarded to `d1241db0937a9d81d5d2343521ba9324b80c544b`; [CI passed](https://github.com/Victorpolm/bike-train-planner/actions/runs/38059847074). Applied visits, parking choices, timing/access checks and refill gaps are delivered as described in the [facility release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md). The record carries final publication and synchronization evidence.
+
 ## Confirmed starting point
 
-- Owner-private **version 64** published on **10 October 2026 at 13:21:58 UTC**, environment revision **3**, from Site source `0d53a951686e563ad7c96957aa28fb90b6c19ee6`. Re.route branding, speed-review fixes and bounded OJP work are deployed. **515 JavaScript tests**, **13 Python tests**, 576 baseline solver comparisons, production builds, formatting and Knip pass. [Release evidence](SPEED_AND_SCALE_2026-10-10.md).
-- At release preparation, GitHub `main` remains at `fbcf0f9fa9db5e635e556fe11dcc42da3db37b3a`; the prepared rename and performance changes await explicit approval of the main update after the earlier automatic approval rejection. No new CI run for these changes is claimed.
+- **Current release:** Owner-private **version 65** published successfully on **10 October 2026 at 15:03:12 UTC** (17:03:12 Europe/Zurich), environment revision **3**, from Site source `d10c8af18f011c104756035d8a07f3d174236a82`. The exact pushed source and matching frontend/Worker archive were deployed. **552 JavaScript tests in 11 suites**, **13 Python tests**, 1,372 fixed-connection combinations and six actual React panel render checks pass, together with builds, formatting and Knip. Browser/phone interaction and physical field acceptance remain pending. Title Re.route, the existing URL, runtime secret bindings and owner-only audience are preserved. [Release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
+
+- **Earlier release:** owner-private **version 64** published on **10 October 2026 at 13:21:58 UTC**, environment revision **3**, from Site source `0d53a951686e563ad7c96957aa28fb90b6c19ee6`. Re.route branding, speed-review fixes and bounded OJP work are deployed. **515 JavaScript tests**, **13 Python tests**, 576 baseline solver comparisons, production builds, formatting and Knip pass. [Release evidence](SPEED_AND_SCALE_2026-10-10.md).
+- The earlier main-update approval block is resolved by the owner’s explicit 10 October synchronization request. The rename and performance commits were fast-forwarded and CI passed; see the new release record for this implementation’s final synchronization.
 - Interface/profile and transfer-ZIP branches are already merged. Plan / Map / Journey, walking at the non-cycling endpoint, passenger-only transit, arrival deadlines, later departures and the new objective controls are delivered.
 - Fewer boardings values an avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling**. Its candidate window is independent of the other objectives' general 60-minute window. [Current objective contract](JOURNEY_OBJECTIVES_2026-10-08.md).
 
@@ -40,9 +52,9 @@ The agreed product order was **parking → bike services/useful stops → broade
 
 | Milestone | Already available | Planned follow-through |
 |---|---|---|
-| Useful bicycle parking | Official + OSM records, equipment colours, selected-route proximity and closest-to-start | Verify entrances/access and unresolved duplicates; improve relevant coverage; specify a destination/station suitability shortlist and retrieval conditions |
-| Reliable useful stops | Water, toilets, food, repairs and parking layers; rural water and station-floor sources | Prioritise dependable rural refill information, access/seasonality and along-route gaps; then improve entrances/floors and opening at the expected visit. No renewed ETH-specific expansion |
-| Facility stops in the journey | Cycling-section detour preview, visit-duration input and fixed-connection check | Specify and implement an explicit Apply/Add as stop action that rechecks cycling/time budgets and connections and updates cards/fares. Multiple stops and saved journeys remain further work |
+| Useful bicycle parking | Official + OSM records plus destination/station/map-point lists, mapped equipment preferences and entry/collection/maxstay checks | Physical entrance verification, coverage gaps and a future custody-aware parking/retrieval workflow |
+| Reliable useful stops | Source/floor/direction lists, supported weekly-hour checks, explicit seasonal uncertainty and cycling-section refill gaps | Field verification, unsupported holiday/complex schedules and observed coverage defects. No renewed ETH-specific expansion |
+| Facility stops in the journey | Add as stop, up to five visits, explicit visit durations, fixed-service/budget/deadline checks, map/cards/fare eligibility updates and restore | Browser/phone acceptance, saved journeys and navigation replanning that preserves unfinished visits |
 | Interface completion | Profiles, three phone views, desktop Map/Journey, objective/preference separation | Fix observed usability problems while preserving selection, map state and all existing options; avoid another redesign without task evidence |
 
 Parking suitability is the priority, not live occupancy. Map proximity does not verify an entrance or an available bicycle space. Larger pilots, sample sizes and municipality lists remain proposals. [Detailed roadmap](APP_ROADMAP.md) · [Parking](BIKE_PARKING.md) · [Useful-stop scope](CYCLING_AMENITIES.md) · [Detour boundaries](FACILITY_DETOURS_2026-09-30.md).

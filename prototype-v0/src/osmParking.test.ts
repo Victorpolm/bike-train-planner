@@ -103,7 +103,7 @@ it("reuses the shared edge cache across cold handlers with separate source keys"
   await createParkingHandler({ cache })(osmRequest(), async () => Response.json(fixture));
   const response = await createParkingHandler({ cache })(osmRequest(), async () => { throw new Error("Must use edge cache"); });
   assert.equal(response.status, 200); assert.equal((await response.json()).provider, "osm");
-  assert.equal(entries.size, 1); assert.match([...entries.keys()][0], /\/api\/parking-cache\/v3\/osm$/);
+  assert.equal(entries.size, 1); assert.match([...entries.keys()][0], /\/api\/parking-cache\/v4\/osm$/);
 });
 
 it("rejects legacy or wrong-source edge cache data and serves the versioned source endpoint", async () => {
