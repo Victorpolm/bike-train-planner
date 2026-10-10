@@ -738,3 +738,12 @@ Unknown/non-potable water and mapped restricted/unavailable facilities cannot be
 **Continuity:** Retain the existing Site identity, owner-only audience, website URL and `Victorpolm/bike-train-planner` repository. Keep technical package/provider identifiers and browser storage keys stable so the rename preserves cached map datasets and saved traveller profiles. Routing, fares, realtime and GPS behaviour are unchanged.
 
 **Verification:** All 488 existing tests in 11 suites pass, with TypeScript/frontend/Worker production builds. The generated HTML metadata and server-rendered header show the new name. Browser/phone visual acceptance remains pending.
+
+
+## 2026-10-10 — Act on the speed and scale review with equivalence checks
+
+The owner supplied the speed/scale review and requested extensive testing. Optimize the measured local work while preserving routing objectives, dominance, feasibility, permission uncertainty and budgets. This supersedes the 9 October per-solve vector WeakMap choice: resource vectors now live on inserted labels and are always recomputed for spread-derived candidates. Compact buckets in place; guard carriage caches against value/nested mutations; bound Zurich date caches. Preserve the existing public transfer endpoint JSON key and use collision-free internal context keys.
+
+Bound OJP to four distinct outstanding checks per isolate with identical-request sharing, independent subscriber cancellation, total queue deadlines, explicit 429/Retry-After and 504 warnings. Keep 1,500 ms pacing and existing fare behavior. Public standard OJP/OJPFare quotas were checked, but no account-specific quota exception was assumed. The queue is not a global limiter; wider access needs global per-key/day coordination and measured demand. No new infrastructure, cost or audience expansion is authorized by this change.
+
+The original report's large fixture was unavailable. Use committed deterministic synthetic benchmarks with actual bundled transfer lookups and complete-result equivalence, clearly separated from end-to-end phone/network timing. All 515 JS and 13 Python tests pass; 576 differential solver cases match. [Implementation, results and remaining gates](SPEED_AND_SCALE_2026-10-10.md).

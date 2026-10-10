@@ -1,5 +1,7 @@
 # Re.route — project state
 
+**10 October speed and scale review — version 64:** Guarded caches, reusable label resources and compatible transfer keys reduce the 32-station hydrated Extended CPU benchmark from **8.93 s to 2.49 s**, with identical full results. OJP now bounds outstanding work, coalesces requests and handles cancellation/deadlines explicitly. **515 JavaScript tests**, **13 Python tests** and **576 baseline comparisons** pass. Real-phone, full live-search timings and global quota enforcement remain separate. [Evidence and limits](SPEED_AND_SCALE_2026-10-10.md).
+
 **10 October name update — version 63:** The app is now **Re.route**, with the name in its header, accessible home link, browser/application metadata and Site listing. The website address, repository, saved profiles and map caches retain their identity. All **488 tests** and TypeScript/frontend/Worker builds pass; browser/phone visual acceptance remains pending.
 
 **10 October GPS journey following — version 62:** Start/Stop now asks for phone location and follows cycling or mixed journeys with an accuracy circle, remaining path, manual stage/boarding controls, live connection estimates, explicit recalculation and optional screen wake lock. GPS updates do not rerun route searches. **488 tests**, builds, formatting and Knip pass; real-phone acceptance remains pending. [Behaviour, verification and limits](GPS_JOURNEY_FOLLOWING_2026-10-10.md).

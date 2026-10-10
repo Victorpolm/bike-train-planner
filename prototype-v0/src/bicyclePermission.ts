@@ -42,7 +42,7 @@ export function evaluateBicyclePermission(leg: TransitLeg): "confirmed" | "uncer
 
 type Permission = ReturnType<typeof evaluateBicyclePermission>;
 const permissionCache = new WeakMap<TransitLeg, { inputs: unknown[]; permission: Permission }>();
-function permissionInputs(leg: TransitLeg): unknown[] {
+export function permissionInputs(leg: TransitLeg): unknown[] {
   const e = leg.bicycleEvidence;
   // Snapshot every input used by the evaluator, bus policy and operator rules.
   // Store values, not nested object identities: Date.setTime(), edits to source

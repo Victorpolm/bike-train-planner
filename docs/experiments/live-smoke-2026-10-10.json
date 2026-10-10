@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-10T13:23:40.327Z",
+  "departure": "2026-10-10T13:43:26.662Z",
+  "observations": [
+    { "path": "/", "status": 200, "milliseconds": 8828 },
+    { "path": "/api/ojp/status", "status": 200, "milliseconds": 639 },
+    { "path": "/api/fares/status", "status": 200, "milliseconds": 5876 },
+    { "path": "/api/ojp/connections", "status": 200, "milliseconds": 8789 },
+    { "path": "/api/ojp/tripinfo", "status": 200, "milliseconds": 4875 }
+  ],
+  "route": "Zürich HB → Bern",
+  "legs": 6,
+  "warnings": 0,
+  "tripInfoFields": ["rule", "checked", "realtime"],
+  "titleVerified": true,
+  "configured": { "ojp": true, "fares": true },
+  "caveat": "One live connection pair and one selected-service detail check; not a browser, fare quote or production load test."
+}

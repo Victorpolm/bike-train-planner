@@ -4,7 +4,7 @@ import { haversineKm, type TransitLeg } from "./routing.ts";
 import type { BicycleEvidence } from "./bicyclePermission.ts";
 import type { Network, Stop } from "./model.ts";
 import type { OjpConnections, OjpDetails, OjpReference, OjpStop } from "./ojp.ts";
-import { fetchJson } from "./http.ts";
+import { fetchJson, HttpError } from "./http.ts";
 
 const SOURCE = "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptriprequest-2-0/";
 export function addOjpConnections(network: Network, data: OjpConnections) {
@@ -83,8 +83,12 @@ export class OjpClient {
         if (!Array.isArray(data.legs) || !data.checked || !Array.isArray(data.warnings)) throw new Error("Invalid OJP result");
         data.warnings.forEach(w => this.warnings.add(w));
         return data;
-      } catch {
+      } catch (error) {
         this.signal.throwIfAborted(); this.unavailable = true;
+        if (error instanceof HttpError && error.status === 429) this.warnings.add(
+          `The journey service is busy. Try again in ${Math.max(1, Math.ceil((error.retryAfterMs ?? 5000) / 1000))} seconds.`);
+        else if (error instanceof HttpError && error.status === 504 || error instanceof Error && error.name === "TimeoutError")
+          this.warnings.add("The journey service timed out. Please try again shortly.");
         this.warnings.add("Bicycle information could not be checked. The fallback timetable may include services with unknown bicycle permission.");
         return null;
       }

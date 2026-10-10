@@ -17,13 +17,26 @@ export function transferEndpointQuery(leg: TransitLeg, end: "arrival" | "departu
     platform: effectivePlatform(leg, end) ?? undefined, ...(platformChanged(leg, end) ? { platformChanged: true } : {}) };
 }
 export function transferEndpointKey(query: TransferEndpointQuery): string {
-  return JSON.stringify([query.ref, query.stopId ?? "", query.platform ?? "", ...(query.platformChanged ? [true] : [])]);
+  const ref = query.ref, stop = query.stopId ?? "", platform = query.platform ?? "";
+  // This key is also a v1 wire field. Preserve JSON's exact escaping for old
+  // open tabs, while avoiding the serializer for ordinary stop/platform IDs.
+  if (/["\\\u0000-\u001f\ud800-\udfff]/.test(ref + stop + platform))
+    return JSON.stringify([ref, stop, platform, ...(query.platformChanged ? [true] : [])]);
+  return `["${ref}","${stop}","${platform}"${query.platformChanged ? ",true" : ""}]`;
 }
 const dayFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit" });
+const serviceDayCache = new Map<number, string>();
 function serviceDay(leg: TransitLeg, end: "arrival" | "departure") {
   if (/^\d{4}-\d{2}-\d{2}$/.test(leg.ojp?.operatingDay ?? "")) return leg.ojp!.operatingDay;
   const date = end === "arrival" ? leg.arrival : leg.departure;
-  return date && Number.isFinite(+date) ? dayFormatter.format(date) : "";
+  if (!date || !Number.isFinite(+date)) return "";
+  const timestamp = +date, key = timestamp < 0 ? timestamp : Math.floor(timestamp / 3_600_000);
+  const cached = serviceDayCache.get(key);
+  if (cached !== undefined) return cached;
+  const day = dayFormatter.format(date);
+  if (serviceDayCache.size >= 4096) serviceDayCache.clear();
+  serviceDayCache.set(key, day);
+  return day;
 }
 /** Pure resolver shared by routing, edits, detours and the journey details. */
 export function staticTransfer(incoming: TransitLeg, next: TransitLeg): { seconds?: number; feed?: TransferFeed; basis?: "platform-pair" | "station-maximum"; reason: string } {

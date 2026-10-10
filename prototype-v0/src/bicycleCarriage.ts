@@ -1,5 +1,5 @@
 import { normalizeName as normalized } from "./normalization.ts";
-import { applicableBicycleEvidence, bicyclePermission, type BicycleEvidence } from "./bicyclePermission.ts";
+import { applicableBicycleEvidence, bicyclePermission, permissionInputs, type BicycleEvidence } from "./bicyclePermission.ts";
 import { busCarriage } from "./busCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
 import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB_IR_BICYCLES, operatorBicycleRule, isSbb } from "./operatorBicycleRules.ts";
@@ -49,7 +49,7 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
   };
 }
 
-export function carriageForLeg(leg: TransitLeg) {
+export function evaluateCarriageForLeg(leg: TransitLeg) {
   const evidence = applicableBicycleEvidence(leg), policy = busCarriage(leg);
   const requirements = evidence?.prerequisites, operatorRule = operatorBicycleRule(leg);
   const sob = sobMainlineRule(leg);
@@ -78,6 +78,21 @@ export function carriageForLeg(leg: TransitLeg) {
     ] : policy?.instructions ?? [],
     policySource: operatorPermissionSource ?? policy?.source,
   };
+}
+
+const carriageCache = new WeakMap<TransitLeg, { inputs: unknown[]; value: ReturnType<typeof evaluateCarriageForLeg> }>();
+export function carriageForLeg(leg: TransitLeg) {
+  const evidence = leg.bicycleEvidence, requirements = evidence?.prerequisites;
+  const source = requirements?.ticketSource;
+  // Permission inputs cover operator/date/segment/condition mutations. Retain
+  // source values too: bookingUrl may have been derived from a mutable URL.
+  const inputs = [...permissionInputs(leg), evidence, requirements?.bikeTicket, requirements?.bikeReservation,
+    source, source?.title, source?.url, source?.checked, requirements?.bookingUrl];
+  const cached = carriageCache.get(leg);
+  if (cached && cached.inputs.length === inputs.length && inputs.every((value, i) => Object.is(value, cached.inputs[i]))) return cached.value;
+  const value = evaluateCarriageForLeg(leg);
+  carriageCache.set(leg, { inputs, value });
+  return value;
 }
 
 export function bicycleJourneySummary(legs: TransitLeg[]) {

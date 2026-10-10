@@ -1,0 +1,173 @@
+{
+  "measuredAt": "2026-10-10T13:15:26.103Z",
+  "stations": 32,
+  "samples": 5,
+  "warmups": 1,
+  "results": [
+    {
+      "hydrated": false,
+      "mode": "baseline",
+      "before": {
+        "medianMs": 103.42737599999998,
+        "minMs": 99.53659200000004,
+        "maxMs": 109.98588899999993,
+        "timesMs": [
+          99.53659200000004,
+          101.47796800000003,
+          109.98588899999993,
+          103.64258900000004,
+          103.42737599999998
+        ],
+        "edges": 2394,
+        "journeys": 10,
+        "explored": 93,
+        "retained": 93,
+        "limited": false,
+        "fingerprint": "e2e4fcabe47131f14eaae6380b88db1ec779dad7e2edb047206324840e4ed5df"
+      },
+      "after": {
+        "medianMs": 26.459045999999944,
+        "minMs": 20.367355999999972,
+        "maxMs": 33.419983,
+        "timesMs": [
+          33.419983,
+          29.891521999999895,
+          22.58375500000011,
+          26.459045999999944,
+          20.367355999999972
+        ],
+        "edges": 2394,
+        "journeys": 10,
+        "explored": 93,
+        "retained": 93,
+        "limited": false,
+        "fingerprint": "e2e4fcabe47131f14eaae6380b88db1ec779dad7e2edb047206324840e4ed5df"
+      },
+      "speedup": 3.9089608899731383
+    },
+    {
+      "hydrated": false,
+      "mode": "extended",
+      "before": {
+        "medianMs": 481.7925869999999,
+        "minMs": 467.42820900000015,
+        "maxMs": 495.90690399999994,
+        "timesMs": [
+          471.0487680000001,
+          495.90690399999994,
+          467.42820900000015,
+          481.7925869999999,
+          487.979601
+        ],
+        "edges": 2394,
+        "journeys": 36,
+        "explored": 514,
+        "retained": 514,
+        "limited": false,
+        "fingerprint": "5784dc2a332ac2a4950c0c920fe28e296695ed82becb18c5cf6406edae68b1bb"
+      },
+      "after": {
+        "medianMs": 63.98721999999998,
+        "minMs": 57.92341099999976,
+        "maxMs": 66.68255900000077,
+        "timesMs": [
+          64.81588499999998,
+          63.98721999999998,
+          57.92341099999976,
+          60.329335000000356,
+          66.68255900000077
+        ],
+        "edges": 2394,
+        "journeys": 36,
+        "explored": 514,
+        "retained": 514,
+        "limited": false,
+        "fingerprint": "5784dc2a332ac2a4950c0c920fe28e296695ed82becb18c5cf6406edae68b1bb"
+      },
+      "speedup": 7.529512721446565
+    },
+    {
+      "hydrated": true,
+      "mode": "baseline",
+      "before": {
+        "medianMs": 2653.0718130000005,
+        "minMs": 2504.539886999999,
+        "maxMs": 2691.9774770000004,
+        "timesMs": [
+          2654.2522880000006,
+          2579.656256,
+          2653.0718130000005,
+          2691.9774770000004,
+          2504.539886999999
+        ],
+        "edges": 2394,
+        "journeys": 193,
+        "explored": 3190,
+        "retained": 3190,
+        "limited": false,
+        "fingerprint": "7b986530adb6e6c0c553190a6b8b2267127eefbbc589442cfe0b96dfb77d61af"
+      },
+      "after": {
+        "medianMs": 749.8587890000017,
+        "minMs": 726.4604810000019,
+        "maxMs": 775.7857259999982,
+        "timesMs": [
+          775.7857259999982,
+          747.0919130000002,
+          726.4604810000019,
+          749.8587890000017,
+          767.8551220000008
+        ],
+        "edges": 2394,
+        "journeys": 193,
+        "explored": 3190,
+        "retained": 3190,
+        "limited": false,
+        "fingerprint": "7b986530adb6e6c0c553190a6b8b2267127eefbbc589442cfe0b96dfb77d61af"
+      },
+      "speedup": 3.538095241289483
+    },
+    {
+      "hydrated": true,
+      "mode": "extended",
+      "before": {
+        "medianMs": 8931.72094,
+        "minMs": 8614.697428000007,
+        "maxMs": 9190.437563,
+        "timesMs": [
+          8880.605789999994,
+          9190.437563,
+          8931.72094,
+          8614.697428000007,
+          9021.041461
+        ],
+        "edges": 2394,
+        "journeys": 820,
+        "explored": 10682,
+        "retained": 10682,
+        "limited": false,
+        "fingerprint": "984c5fccb3ab9a334ee9da7245633afddfdf03b19dcb419e6f4c020024c52635"
+      },
+      "after": {
+        "medianMs": 2485.3233450000116,
+        "minMs": 2458.6856849999895,
+        "maxMs": 2650.805231999999,
+        "timesMs": [
+          2485.3233450000116,
+          2505.585607000001,
+          2458.6856849999895,
+          2650.805231999999,
+          2475.342625999998
+        ],
+        "edges": 2394,
+        "journeys": 820,
+        "explored": 10682,
+        "retained": 10682,
+        "limited": false,
+        "fingerprint": "984c5fccb3ab9a334ee9da7245633afddfdf03b19dcb419e6f4c020024c52635"
+      },
+      "speedup": 3.5937862805533487
+    }
+  ],
+  "caveat": "Synthetic geometry and timetable, with actual bundled platform-transfer lookups. CPU-only solve timings; not the external Uster–Baden fixture or end-to-end provider/browser latency."
+}

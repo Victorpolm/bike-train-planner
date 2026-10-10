@@ -893,3 +893,14 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Result:** Twenty new navigation regressions pass. The full suite passes **488 tests in 11 suites**. A halfway access fix halves the routed portion's remaining time; an extra live five-minute platform walk remains in readiness. Instant position jumps do not skip ahead, while plausible travel during a 20-minute hidden interval can reacquire on the same stage. An unmapped 100 m endpoint retains 1.5 minutes of conservative access allowance. Recalculation keeps an unconfirmed visit even when GPS is at it, subtracts prior cycling/boarding usage, rejects stale data and blocks unsupported bicycle-custody changes. Scheduled service identity remains intact.
 
 **Interpretation / limits:** Pure model and lifecycle correctness is checked; physical GPS, real battery use, phone layout and browser permission/embedding behaviours still require acceptance. No full live-search or on-device speed benchmark is claimed. Complete the [short ride acceptance](GPS_JOURNEY_FOLLOWING_2026-10-10.md) next.
+
+
+## 2026-10-10 — Speed review, full equivalence and bounded OJP load
+
+**Hypothesis:** guarded carriage/date/resource reuse and allocation reductions can reduce hydrated solver cost without changing complete journeys, categories or label retention; a bounded OJP queue can reject excess work explicitly and abandon stale work.
+
+**Method:** immutable complete version-63 baseline versus current source; one warmup plus five sequential measured runs at 32 stations, and three runs at 24 stations. Synthetic timetable/geometry, actual bundled transfer hydration. Separate 96-seed × six-mode/scope differential experiment. Stub-provider bursts up to 64 and cancellation/rotation/deadline cases.
+
+**Result:** 32-station hydrated Extended median 8.932 s → 2.485 s (3.59×), all full hashes equal. The 576 comparisons include 574 nonempty and 46 capped searches. 515 JS and 13 Python tests pass, as do build, formatting and Knip. Burst overflow receives 429; 32 identical subscribers share one physical connection pair. No upstream load burst or browser/phone acceptance is claimed.
+
+**Limit:** CPU-only synthetic measurements do not reproduce the missing 376-station review fixture, global Worker load or live end-to-end latency. Per-isolate queueing is not a global quota. [Raw outputs, reproduction and release evidence](SPEED_AND_SCALE_2026-10-10.md).

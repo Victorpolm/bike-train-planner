@@ -1,12 +1,11 @@
-# Next steps after version 62
+# Next steps after version 64
 
 _Consolidated 10 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Confirmed starting point
 
-- Owner-private **version 62** published on **10 October 2026 at 10:42:11 UTC** (12:42:11 Europe/Zurich), environment revision **3**, from Site source `582c351fe689625556ad2de8cc28a52ff871805f`. **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip pass. Real-phone GPS and browser acceptance remain pending.
-- GitHub is synchronized with the release's **254 application files**. [GPS following release evidence](GPS_JOURNEY_FOLLOWING_2026-10-10.md).
-- The release passed **488 tests in 11 suites**, TypeScript/frontend/Worker builds, formatting and Knip. GitHub's Test and build workflow verifies application commits independently.
+- Owner-private **version 64** published on **10 October 2026 at 13:21:58 UTC**, environment revision **3**, from Site source `0d53a951686e563ad7c96957aa28fb90b6c19ee6`. Re.route branding, speed-review fixes and bounded OJP work are deployed. **515 JavaScript tests**, **13 Python tests**, 576 baseline solver comparisons, production builds, formatting and Knip pass. [Release evidence](SPEED_AND_SCALE_2026-10-10.md).
+- At release preparation, GitHub `main` remains at `fbcf0f9fa9db5e635e556fe11dcc42da3db37b3a`; the prepared rename and performance changes await explicit approval of the main update after the earlier automatic approval rejection. No new CI run for these changes is claimed.
 - Interface/profile and transfer-ZIP branches are already merged. Plan / Map / Journey, walking at the non-cycling endpoint, passenger-only transit, arrival deadlines, later departures and the new objective controls are delivered.
 - Fewer boardings values an avoided boarding at **30 minutes**, with a **25% overall extra-time ceiling**. Its candidate window is independent of the other objectives' general 60-minute window. [Current objective contract](JOURNEY_OBJECTIVES_2026-10-08.md).
 
@@ -49,6 +48,8 @@ The agreed product order was **parking → bike services/useful stops → broade
 Parking suitability is the priority, not live occupancy. Map proximity does not verify an entrance or an available bicycle space. Larger pilots, sample sizes and municipality lists remain proposals. [Detailed roadmap](APP_ROADMAP.md) · [Parking](BIKE_PARKING.md) · [Useful-stop scope](CYCLING_AMENITIES.md) · [Detour boundaries](FACILITY_DETOURS_2026-09-30.md).
 
 ## Technical maintenance and data gaps already tracked
+
+- **Scale before wider access:** verify the actual key allowance and observed peak/daily demand, then coordinate global per-key quotas across Worker isolates. Version 64 bounds work only inside each isolate; a short shared cache alone does not enforce a quota. Record full cold/warm live-search timing and obtain the original 376-station fixture if an exact reproduction is required. [Speed/scale evidence](SPEED_AND_SCALE_2026-10-10.md).
 
 - **Station transfers:** validate a familiar station on phone/desktop; correctly match service/route/calendar exceptions; establish a maintained feed refresh before the imported feed's **12 December 2026** validity boundary. Entrances, lifts, stairs and bicycle passage remain unverified. [Current integration and remaining work](STATION_TRANSFER_RUNTIME_2026-10-06.md).
 - **Fares and acquisition:** investigate demonstrated city/itinerary quote gaps, including unsupported through fares across cycling breaks. Measure bounded discovery, runtime and truncation on fixed cases; do not describe eight sampled fare queries as a global cheapest-fare search.

@@ -43,11 +43,21 @@ export function domesticSwissLeg(leg: TransitLeg) {
   return /^85\d{5}$/.test(leg.fromId ?? "") && /^85\d{5}$/.test(leg.toId ?? "");
 }
 const ruleDateFormat = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" });
+const ruleDateCache = new Map<number, { year: number; month: number; day: number; hour: number; weekday: number }>();
 function localDate(date: Date) {
+  const timestamp = +date;
+  // Modern Zurich offsets use whole hours, including both DST transitions.
+  // Keep exact instants before the epoch for historical sub-hour offsets.
+  const key = timestamp < 0 ? timestamp : Math.floor(timestamp / 3_600_000);
+  const cached = ruleDateCache.get(key);
+  if (cached) return cached;
   const parts = ruleDateFormat.formatToParts(date);
   const get = (name: string) => Number(parts.find(p => p.type === name)?.value);
-  return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"),
+  const value = { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"),
     weekday: new Date(Date.UTC(get("year"), get("month") - 1, get("day"))).getUTCDay() };
+  if (ruleDateCache.size >= 4096) ruleDateCache.clear();
+  ruleDateCache.set(key, value);
+  return value;
 }
 function regionalBicycleWindow(leg: TransitLeg): { morning: [number, number]; label: string } {
   const names = [leg.from, leg.to].join(" ");

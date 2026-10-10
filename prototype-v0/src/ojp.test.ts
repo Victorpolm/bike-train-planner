@@ -187,6 +187,6 @@ describe("server-only OJP boundary", () => {
     assert.ok(data.legs.some((l: any) => l.rule?.permission === "unknown"));
     assert.ok(data.legs.every((l: any) => l.rule?.basis !== "ojp-filter"));
     const retry = await handler(request(), { OJP_API_KEY: "test-key" });
-    assert.equal(retry.status, 502); assert.equal(calls, 2);
+    assert.equal(retry.status, 429); assert.ok(Number(retry.headers.get("Retry-After")) > 0); assert.equal(calls, 2);
   });
 });

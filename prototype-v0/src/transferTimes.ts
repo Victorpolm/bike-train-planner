@@ -26,11 +26,20 @@ function previousRide(legs: readonly TransitLeg[]) {
   return null;
 }
 /** Arrival platform/service changes onward feasibility, so it must survive dominance pruning. */
+const identityPart = (value: string | number | null | undefined) => {
+  if (value == null) return "-";
+  const text = String(value);
+  return `${text.length}:${text}`;
+};
 export function transferContextKey(legs: readonly TransitLeg[]): string {
   const previous = previousRide(legs)?.leg;
   if (!previous) return "access";
-  return JSON.stringify([previous.ojp?.journeyRef, previous.ojp?.operatingDay, previous.ojp?.toRef,
-    arrivalTime(previous), previous.toId, effectivePlatform(previous, "arrival"), previous.service, previous.operator]);
+  const arrival = arrivalTime(previous), instant = arrival && Number.isFinite(+arrival) ? +arrival : null;
+  // Length prefixes are collision-free even if provider strings contain a
+  // separator; numeric instants also avoid Date.toISOString in JSON.stringify.
+  return identityPart(previous.ojp?.journeyRef) + identityPart(previous.ojp?.operatingDay) + identityPart(previous.ojp?.toRef)
+    + identityPart(instant) + identityPart(previous.toId) + identityPart(effectivePlatform(previous, "arrival"))
+    + identityPart(previous.service) + identityPart(previous.operator);
 }
 export type BoardingCheck = {
   readyAt: number; minutes: number; source: "ojp" | "ojp-access" | "gtfs" | "swiss-default" | "estimate" | "unknown";

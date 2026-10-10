@@ -254,6 +254,7 @@ type Label = {
   startedAt: number;
   stop: string; time: number; bike: number; walk: number; accessActive: number; egressWalk: number; boardings: number; middle: number;
   climb: Climb; needsTransit: boolean; access: Station; legs: TransitLeg[]; alive: boolean;
+  vector?: number[];
 };
 export type Solution = { journeys: Journey[]; reachable: Label[]; explored: number; retained: number; limited: boolean };
 
@@ -323,12 +324,6 @@ export function solve(network: Network, origin: Place, destination: Place, start
   const computeVector = (l: Label) => [l.time, ...(o.arriveBy ? [-l.startedAt] : []), l.bike, l.bike + l.walk, l.boardings, l.accessActive, l.egressWalk,
       ...objectiveResources(l.legs, o, [{ route: l.access.cyclingRoute, minutes: l.access.bikeMinutes }]),
       ...(hillSearch(o) ? climbVector(l.climb, o.hills?.mode === "gentler") : [])];
-  const vectors = new WeakMap<Label, number[]>();
-  const vector = (l: Label) => {
-    let value = vectors.get(l);
-    if (!value) { value = computeVector(l); vectors.set(l, value); }
-    return value;
-  };
   const add = (label: Label) => {
     if (label.time > horizon || label.bike > o.maxBikeMinutes || label.boardings > o.maxBoardings) return;
     const key = `${label.stop}|${label.middle}|${label.needsTransit}|${transferSensitive ? transferContextKey(label.legs) : ""}|${farePathKey(label.legs, o)}`;
@@ -337,11 +332,18 @@ export function solve(network: Network, origin: Place, destination: Place, start
     // A lower active total can use more cycling and leave less budget for later.
     // Endpoint attributes must also survive pruning for optional categories.
 
-    const v = vector(label);
-    if (bucket.some(l => vector(l).every((x, i) => x <= v[i]))) return;
+    // Derived labels spread their parent: always overwrite the inherited vector.
+    // Only already-inserted bucket members may reuse their computed resources.
+    const v = label.vector = computeVector(label);
+    if (bucket.some(l => l.vector!.every((x, i) => x <= v[i]))) return;
     if (queue.length >= labelLimit) { limited = true; return; }
-    for (const l of bucket) if (dominates(v, vector(l))) l.alive = false;
-    labels.set(key, [...bucket.filter(l => l.alive), label]); queue.push(label);
+    let retained = 0;
+    for (const l of bucket) {
+      if (dominates(v, l.vector!)) l.alive = false;
+      else bucket[retained++] = l;
+    }
+    bucket.length = retained; bucket.push(label);
+    labels.set(key, bucket); queue.push(label);
   };
   for (const stop of network.stops.values()) {
     if (!outgoing.has(stop.id)) continue;

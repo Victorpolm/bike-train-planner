@@ -1,6 +1,10 @@
 # Re.route — website access and development
 
-**Current publication:** Owner-private **version 63** published on **10 October 2026 at 12:37:50 UTC** (14:37:50 Europe/Zurich), environment revision **3**, from Site source `36ee02bb319083bd6ccde70d7855b0b102ea5e0c`. The app is named **Re.route**. **488 tests in 11 suites** and TypeScript/frontend/Worker builds pass; generated metadata and the server-rendered header were checked. Browser/phone acceptance remains pending.
+**Current publication:** Owner-private **version 64** published successfully on **10 October 2026 at 13:21:58 UTC** (15:21:58 Europe/Zurich), environment revision **3**, from Site source `0d53a951686e563ad7c96957aa28fb90b6c19ee6`. The exact tested source was pushed before its matching frontend/Worker archive was deployed. Title **Re.route**, URL, runtime secret bindings and owner-only audience are preserved. The access check confirms one owner, no groups and no external visitors. **515 JavaScript tests**, **13 Python tests**, 576 complete-result solver comparisons, TypeScript/frontend/Worker builds, formatting and Knip pass. Browser/phone acceptance remains pending. [Measurements and limits](SPEED_AND_SCALE_2026-10-10.md).
+
+Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_56dcae37804c8191874a8ec3ada9ff54`; deployment: `appgdep_6aca3be390148191a217d0dc38b1348e` (`succeeded`).
+
+**Previous publication:** Owner-private **version 63** published on **10 October 2026 at 12:37:50 UTC** (14:37:50 Europe/Zurich), environment revision **3**, from Site source `36ee02bb319083bd6ccde70d7855b0b102ea5e0c`. The app is named **Re.route**. **488 tests in 11 suites** and TypeScript/frontend/Worker builds pass; generated metadata and the server-rendered header were checked. Browser/phone acceptance remains pending.
 
 Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_95c8af0078f081918f3d870b1d15d782`; deployment: `appgdep_6aca318be34c8191a6bd9fc3c6b5f0cc` (`succeeded`). The Site title is Re.route; the existing URL and owner-only audience are preserved.
 
