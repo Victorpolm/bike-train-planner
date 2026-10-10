@@ -86,7 +86,7 @@ The fresh official-feed audit contains 1,608 bicycle facilities but no bicycle o
 
 Sign in with the ChatGPT account that owns the Site. The website remains owner-private; this GitHub repository is public. GitHub source updates and website publication are separate. Personal GPX data and secrets are not committed. New hosting spend requires the owner's approval.
 
-The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Parking lists now inspect mapped access, duration and collection conditions. Binding a rack to bicycle custody, live availability, a complete parking price and an onward retrieval journey remain unimplemented; their requirements are tracked in the roadmap.
+The default keeps the bicycle on public transport. Beginning/end-only can instead leave it at the first boarding station or use one already at the last alighting station, with walking at the opposite end. Parking lists now inspect mapped access, duration and collection conditions. Explicitly recording an actual parked bicycle, continuing without it, planning a return to its recorded point and confirming collection are now delivered. Automatic future parking-site selection, live availability, complete parking prices and rental/multi-bicycle workflows remain separate.
 
 ## Repository as project memory
 
