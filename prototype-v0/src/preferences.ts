@@ -8,7 +8,7 @@ import { cyclingDurationOptions, type CyclingAmount } from "./cyclingDuration.ts
 export type CyclingPreference = "less" | "commuter" | "balanced" | "more" | "unrestricted";
 export function preferenceOptions(cycling: CyclingPreference, endpointPreference: EndpointPreference, busPreference: BusPreference = "include-unknown", bicycleScope?: BicycleScope, cyclingPace: CyclingPace = DEFAULT_CYCLING_PACE, cyclingRoutePreference: RoutePreference = "fastest", cyclingPosition: CyclingPosition = "anywhere", hills: HillPreferences = DEFAULT_HILLS, climbOptimization = false, takeBikeOnTransit = true, maxWalkingMinutes = 30, amount?: CyclingAmount): Options {
   const budgets = {
-    commuter: { maxBikeMinutes: 45, maxAccessMinutes: 45, maxEgressMinutes: 45, maxIntermediateMinutes: 45 },
+    commuter: { maxBikeMinutes: 30, maxAccessMinutes: 30, maxEgressMinutes: 30, maxIntermediateMinutes: 30 },
     // Share the displayed total across sections without hidden, tighter leg caps.
     less: { maxBikeMinutes: 40, maxAccessMinutes: 40, maxEgressMinutes: 40, maxIntermediateMinutes: 40 },
     balanced: { maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60, maxIntermediateMinutes: 20 },

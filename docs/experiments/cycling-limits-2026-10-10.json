@@ -1,0 +1,156 @@
+{
+  "checkedAt": "2026-10-10T17:00:24.505Z",
+  "stations": 24,
+  "edges": 1674,
+  "samples": 3,
+  "warmups": 1,
+  "horizonMinutes": 180,
+  "maxBoardings": 4,
+  "results": [
+    {
+      "amount": {
+        "mode": "at-most",
+        "minutes": 30
+      },
+      "mode": "baseline",
+      "medianMs": 673.555202,
+      "timesMs": [
+        686.5260869999997,
+        673.555202,
+        624.9327350000003
+      ],
+      "explored": 3272,
+      "retained": 3272,
+      "journeys": 1654,
+      "limited": false,
+      "fingerprint": "f536bc67a3182a14b45766b4e966194f612b0824dafc1e9b2dafd38c54f7e41d"
+    },
+    {
+      "amount": {
+        "mode": "at-most",
+        "minutes": 30
+      },
+      "mode": "extended",
+      "medianMs": 1344.4616539999988,
+      "timesMs": [
+        1518.826016,
+        1344.4616539999988,
+        1255.6396249999998
+      ],
+      "explored": 6673,
+      "retained": 6673,
+      "journeys": 3521,
+      "limited": false,
+      "fingerprint": "1a9a3a904ca2a602f1555449f5f70f25a8afc88d3d4f06ab27530acc24425517"
+    },
+    {
+      "amount": {
+        "mode": "at-most",
+        "minutes": 45
+      },
+      "mode": "baseline",
+      "medianMs": 645.623923000001,
+      "timesMs": [
+        617.9836809999997,
+        680.6011949999993,
+        645.623923000001
+      ],
+      "explored": 3542,
+      "retained": 3542,
+      "journeys": 2395,
+      "limited": false,
+      "fingerprint": "0fe4527d5ed1cb87dbb05aae6ccad9eb39d2646c57a9c6b64c38b33e161a9eb2"
+    },
+    {
+      "amount": {
+        "mode": "at-most",
+        "minutes": 45
+      },
+      "mode": "extended",
+      "medianMs": 1343.7260510000015,
+      "timesMs": [
+        1304.8674629999987,
+        1357.3746749999991,
+        1343.7260510000015
+      ],
+      "explored": 6943,
+      "retained": 6943,
+      "journeys": 5079,
+      "limited": false,
+      "fingerprint": "fff98fc34282d6f7798cd9f7f766e0ec147f54818fcd0064a0b865193c2b2dd4"
+    },
+    {
+      "amount": {
+        "mode": "none",
+        "minutes": 0
+      },
+      "mode": "baseline",
+      "medianMs": 703.7862820000009,
+      "timesMs": [
+        703.7862820000009,
+        729.5631539999995,
+        625.4408680000015
+      ],
+      "explored": 3639,
+      "retained": 3639,
+      "journeys": 3454,
+      "limited": false,
+      "fingerprint": "226d287bd773540f6b4741acf41b7ba8b7f01f6068671ef5576e12414b255622"
+    },
+    {
+      "amount": {
+        "mode": "none",
+        "minutes": 0
+      },
+      "mode": "extended",
+      "medianMs": 1391.894236,
+      "timesMs": [
+        1346.0198780000028,
+        1391.894236,
+        1447.2295040000026
+      ],
+      "explored": 7040,
+      "retained": 7040,
+      "journeys": 6559,
+      "limited": false,
+      "fingerprint": "124689621242e3e3897baa0b916527f4c4881396325f58de1d5b90c58432cff3"
+    },
+    {
+      "amount": {
+        "mode": "at-least",
+        "minutes": 30
+      },
+      "mode": "baseline",
+      "medianMs": 1846.1267829999997,
+      "timesMs": [
+        1846.1267829999997,
+        1805.2358900000036,
+        1864.6266869999963
+      ],
+      "explored": 10434,
+      "retained": 10434,
+      "journeys": 6089,
+      "limited": false,
+      "fingerprint": "ca56a75ac53840922b4df7238ebeaeb5d4c2bbafae5c0026a1bdc13e6a9ba05f"
+    },
+    {
+      "amount": {
+        "mode": "at-least",
+        "minutes": 30
+      },
+      "mode": "extended",
+      "medianMs": 9149.734464999994,
+      "timesMs": [
+        9149.734464999994,
+        8688.787949999998,
+        9581.251202999993
+      ],
+      "explored": 38458,
+      "retained": 38458,
+      "journeys": 25627,
+      "limited": true,
+      "fingerprint": "c323de2f5cb0cddb4a5d4de27cadcc2585e4c15709a9e5b2890dccadf8f7ed3f"
+    }
+  ],
+  "caveat": "Controlled CPU-only single-solve measurements on synthetic geometry/timetables with actual bundled station-transfer rules. Not end-to-end live search, phone performance, a before/after speed claim, or a national-completeness proof. The real app also acquires provider data and repeats solves across graph updates, modes and distinct bicycle-permission scopes."
+}

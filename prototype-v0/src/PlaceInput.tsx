@@ -8,11 +8,13 @@ export default function PlaceInput({
   value,
   disabled,
   onChange,
+  locationAction,
 }: {
   label: string;
   value: PlaceValue;
   disabled: boolean;
   onChange: (value: PlaceValue) => void;
+  locationAction?: { onClick: () => void; loading: boolean; notice: string };
 }) {
   const id = useId(),
     listId = `${id}-suggestions`,
@@ -123,6 +125,33 @@ export default function PlaceInput({
           }
         }}
       />
+      {locationAction && (
+        <div className="from-location-action">
+          <button
+            type="button"
+            disabled={disabled || locationAction.loading}
+            onClick={() => {
+              setOpen(false);
+              locationAction.onClick();
+            }}
+            aria-busy={locationAction.loading}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="7" />
+              <circle cx="12" cy="12" r="2" />
+              <path d="M12 1v4m0 14v4M1 12h4m14 0h4" />
+            </svg>
+            {locationAction.loading ? "Finding your location…" : "From your location"}
+          </button>
+          {locationAction.notice && <small role="status">{locationAction.notice}</small>}
+        </div>
+      )}
       {visible && (places.length > 0 || status) && (
         <div className="suggestion-panel">
           <ul id={listId} role="listbox" aria-label={`${label} suggestions`}>

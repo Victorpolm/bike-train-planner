@@ -66,6 +66,10 @@ export default function TripPreferences({
   onHills: (hills: HillPreferences) => void;
   onClimbOptimization: (enabled: boolean) => void;
 }) {
+  const extraCount =
+    (endpoint === "both" ? 2 : endpoint === "none" ? 0 : 1) +
+    Number(climbOptimization) +
+    Number(hills.mode === "gentler");
   return (
     <details
       className="preferences trip-preferences"
@@ -117,6 +121,7 @@ export default function TripPreferences({
         <InlineHelp
           label="About where you can cycle"
           text={
+            "This restricts where cycling is allowed. Extra categories below add comparisons within these rules. " +
             (cyclingPosition === "start-only"
               ? "Ride before your first service, then walk from public transport to your destination."
               : cyclingPosition === "end-only"
@@ -131,10 +136,6 @@ export default function TripPreferences({
           }
         />
       </div>
-      <p className="preference-note">
-        This restricts where cycling is allowed. Extra categories below add comparisons within these
-        rules.
-      </p>
       <select
         id="cycling-position"
         disabled={disabled}
@@ -226,115 +227,120 @@ export default function TripPreferences({
         </label>
       </div>
       <CyclingAmountControl value={cyclingAmount} disabled={disabled} onChange={onCyclingAmount} />
-      <fieldset className="extra-categories" disabled={disabled}>
-        <legend>Extra categories</legend>
-        <p className="preference-note">
-          Choose any combination. These add alternatives to compare, within your journey limits.
-        </p>
-        {(["start", "end"] as const).map((end) => (
-          <label className="check-row" key={end}>
-            <input
-              type="checkbox"
-              checked={endpoint === end || endpoint === "both"}
-              onChange={(e) => {
-                const other = end === "start" ? "end" : "start";
-                const hasOther = endpoint === other || endpoint === "both";
-                onEndpoint(
-                  e.target.checked ? (hasOther ? "both" : end) : hasOther ? other : "none",
-                );
-              }}
-            />
-            <span>Less cycling or walking at {end === "start" ? "start" : "arrival"}</span>
-          </label>
-        ))}
-        <p className="preference-note">
-          Endpoint alternatives reduce cycling or walking at that end; they do not forbid cycling
-          elsewhere.
-        </p>
-        <label className="check-row">
-          <input
-            type="checkbox"
-            disabled={disabled}
-            checked={climbOptimization}
-            onChange={(e) => onClimbOptimization(e.target.checked)}
-          />
-          <span>Reduce climbing</span>
-        </label>
-        {climbOptimization && (
-          <p className="preference-note">
-            Offers an alternative only when it saves at least 50 m and 25% of the climbing, with a
-            limited time cost.
-            <InlineHelp
-              label="How climbing alternatives are chosen"
-              text="Compared with the fastest journey (or latest departure for Arrive at), allow at most 30 extra minutes and 25% of its duration, within your overall alternative allowance. A saving of 100 m is worth up to 5 minutes in this initial compromise. Routes with incomplete elevation cannot qualify. Your cycling-path preference stays selected."
-            />
-          </p>
-        )}
-        <label className="check-row">
-          <input
-            type="checkbox"
-            checked={hills.mode === "gentler"}
-            onChange={(e) =>
-              onHills({
-                ...hills,
-                mode: e.target.checked ? "gentler" : "none",
-                maxUphillPercent:
-                  Number.isFinite(hills.maxUphillPercent) &&
-                  hills.maxUphillPercent >= 1 &&
-                  hills.maxUphillPercent <= 20
-                    ? hills.maxUphillPercent
-                    : 6,
-                extraMinutes:
-                  Number.isInteger(hills.extraMinutes) &&
-                  hills.extraMinutes >= 0 &&
-                  hills.extraMinutes <= 60
-                    ? hills.extraMinutes
-                    : 15,
-              })
-            }
-          />
-          <span>Gentler slopes</span>
+      <div className="extra-categories-group">
+        <div className="preference-heading">
+          <strong>Extra categories</strong>
           <InlineHelp
-            label="About gentler slopes"
-            text="Adds an alternative with less uphill travel above your chosen percentage, when a suitable checked path is available within your time limits. Elevation is sampled and may miss short ramps, so this is a preference rather than a guaranteed limit. Your ordinary alternatives remain available."
+            label="About extra categories"
+            text="Choose any combination. These add alternatives to compare, within your journey limits. Endpoint alternatives reduce cycling or walking at that end; they do not forbid cycling elsewhere."
           />
-        </label>
-        {hills.mode === "gentler" && (
-          <label>
-            <span>Prefer to avoid uphill slopes above (%)</span>
-            <input
-              type="number"
-              min="1"
-              max="20"
-              step="0.5"
-              required
-              value={Number.isFinite(hills.maxUphillPercent) ? hills.maxUphillPercent : ""}
-              onChange={(e) => onHills({ ...hills, maxUphillPercent: e.target.valueAsNumber })}
-            />
-            <small>
-              6% means climbing 6 metres over about 100 metres. A preference, not a hard limit.
-            </small>
-          </label>
-        )}
-        {hills.mode !== "none" && (
-          <label>
-            <span>Extra minutes allowed per cycling section</span>
-            <input
-              type="number"
-              min="0"
-              max="60"
-              step="1"
-              required
-              value={Number.isFinite(hills.extraMinutes) ? hills.extraMinutes : ""}
-              onChange={(e) => onHills({ ...hills, extraMinutes: e.target.valueAsNumber })}
-            />
-            <small>
-              Compared with the quickest checked cycling path. Your total cycling limit still
-              applies.
-            </small>
-          </label>
-        )}
-      </fieldset>
+        </div>
+        <details className="extra-categories-menu">
+          <summary>{extraCount ? `${extraCount} selected` : "Choose extra categories"}</summary>
+          <fieldset className="extra-categories" disabled={disabled}>
+            <legend className="sr-only">Extra category choices</legend>
+            {(["start", "end"] as const).map((end) => (
+              <label className="check-row" key={end}>
+                <input
+                  type="checkbox"
+                  checked={endpoint === end || endpoint === "both"}
+                  onChange={(e) => {
+                    const other = end === "start" ? "end" : "start";
+                    const hasOther = endpoint === other || endpoint === "both";
+                    onEndpoint(
+                      e.target.checked ? (hasOther ? "both" : end) : hasOther ? other : "none",
+                    );
+                  }}
+                />
+                <span>Less cycling or walking at {end === "start" ? "start" : "arrival"}</span>
+              </label>
+            ))}
+            <label className="check-row">
+              <input
+                type="checkbox"
+                disabled={disabled}
+                checked={climbOptimization}
+                onChange={(e) => onClimbOptimization(e.target.checked)}
+              />
+              <span>Reduce climbing</span>
+            </label>
+            {climbOptimization && (
+              <p className="preference-note">
+                Offers an alternative only when it saves at least 50 m and 25% of the climbing, with
+                a limited time cost.
+                <InlineHelp
+                  label="How climbing alternatives are chosen"
+                  text="Compared with the fastest journey (or latest departure for Arrive at), allow at most 30 extra minutes and 25% of its duration, within your overall alternative allowance. A saving of 100 m is worth up to 5 minutes in this initial compromise. Routes with incomplete elevation cannot qualify. Your cycling-path preference stays selected."
+                />
+              </p>
+            )}
+            <label className="check-row">
+              <input
+                type="checkbox"
+                checked={hills.mode === "gentler"}
+                onChange={(e) =>
+                  onHills({
+                    ...hills,
+                    mode: e.target.checked ? "gentler" : "none",
+                    maxUphillPercent:
+                      Number.isFinite(hills.maxUphillPercent) &&
+                      hills.maxUphillPercent >= 1 &&
+                      hills.maxUphillPercent <= 20
+                        ? hills.maxUphillPercent
+                        : 6,
+                    extraMinutes:
+                      Number.isInteger(hills.extraMinutes) &&
+                      hills.extraMinutes >= 0 &&
+                      hills.extraMinutes <= 60
+                        ? hills.extraMinutes
+                        : 15,
+                  })
+                }
+              />
+              <span>Gentler slopes</span>
+              <InlineHelp
+                label="About gentler slopes"
+                text="Adds an alternative with less uphill travel above your chosen percentage, when a suitable checked path is available within your time limits. Elevation is sampled and may miss short ramps, so this is a preference rather than a guaranteed limit. Your ordinary alternatives remain available."
+              />
+            </label>
+            {hills.mode === "gentler" && (
+              <label>
+                <span>Prefer to avoid uphill slopes above (%)</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  step="0.5"
+                  required
+                  value={Number.isFinite(hills.maxUphillPercent) ? hills.maxUphillPercent : ""}
+                  onChange={(e) => onHills({ ...hills, maxUphillPercent: e.target.valueAsNumber })}
+                />
+                <small>
+                  6% means climbing 6 metres over about 100 metres. A preference, not a hard limit.
+                </small>
+              </label>
+            )}
+            {hills.mode !== "none" && (
+              <label>
+                <span>Extra minutes allowed per cycling section</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="60"
+                  step="1"
+                  required
+                  value={Number.isFinite(hills.extraMinutes) ? hills.extraMinutes : ""}
+                  onChange={(e) => onHills({ ...hills, extraMinutes: e.target.valueAsNumber })}
+                />
+                <small>
+                  Compared with the quickest checked cycling path. Your total cycling limit still
+                  applies.
+                </small>
+              </label>
+            )}
+          </fieldset>
+        </details>
+      </div>
     </details>
   );
 }

@@ -1,3 +1,4 @@
+import InlineHelp from "./ui/InlineHelp";
 import type { JourneyNavigation as Navigation } from "./useJourneyNavigation";
 import type { RealtimeJourneyState } from "./useRealtimeJourney";
 import {
@@ -37,7 +38,13 @@ export default function JourneyNavigation({
     return (
       <section className="navigation-panel" aria-label="Follow your journey">
         <div className="navigation-heading">
-          <strong>Follow your journey</strong>
+          <div className="preference-heading navigation-title">
+            <strong>Follow your journey</strong>
+            <InlineHelp
+              label="About following your journey"
+              text="Start asks for your phone’s location. Keep the app open to follow the route. Tracking stays on this device and no GPS history is saved. Recalculate sends your current position to the route providers. Map tiles load around the viewed area. Following pauses when the app is hidden or your phone locks; there are no voice directions."
+            />
+          </div>
           <button
             className="navigation-primary"
             type="button"
@@ -47,17 +54,7 @@ export default function JourneyNavigation({
             Start
           </button>
         </div>
-        <p>Start asks for your phone’s location. Keep the app open to follow the route.</p>
         {nav.notice && <p role="status">{nav.notice}</p>}
-        <details>
-          <summary>Location and privacy</summary>
-          <p>
-            Tracking stays on this device and no GPS history is saved. Recalculate sends your
-            current position to the route providers. Map tiles load around the viewed area.
-            Following pauses when the app is hidden or your phone locks; there are no voice
-            directions.
-          </p>
-        </details>
       </section>
     );
   const { trip, index, onboard, progress } = active;

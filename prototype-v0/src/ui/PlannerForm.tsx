@@ -4,10 +4,12 @@ import { PLANNER_COPY, PLANNER_MODULES, type PlannerModule } from "./plannerLayo
 export default function PlannerForm({
   sections,
   loading,
+  locating = false,
   onSubmit,
 }: {
   sections: Record<PlannerModule, ReactNode>;
   loading: boolean;
+  locating?: boolean;
   onSubmit: (event: FormEvent) => void;
 }) {
   return (
@@ -22,8 +24,12 @@ export default function PlannerForm({
             {sections[id]}
           </div>
         ))}
-        <button className="search-button" type="submit" disabled={loading}>
-          {loading ? PLANNER_COPY.searching : PLANNER_COPY.submit}
+        <button className="search-button" type="submit" disabled={loading || locating}>
+          {locating
+            ? "Finding your location…"
+            : loading
+              ? PLANNER_COPY.searching
+              : PLANNER_COPY.submit}
         </button>
       </form>
     </>

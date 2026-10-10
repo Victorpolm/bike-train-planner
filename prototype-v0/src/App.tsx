@@ -1,4 +1,5 @@
 import { cyclingAmountForPreset, cyclingDurationFits, type CyclingAmount } from "./cyclingDuration";
+import { currentLocation } from "./currentLocation";
 import FacilityStopSummary from "./FacilityStopSummary";
 import JourneyNavigation from "./JourneyNavigation";
 import { useJourneyNavigation } from "./useJourneyNavigation";
@@ -339,6 +340,9 @@ export default function App() {
     return { text: place.label, place };
   };
   const [fromInput, setFromInput] = useState<PlaceValue>(() => initial("8503000"));
+  const locationRequest = useRef<AbortController | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locationNotice, setLocationNotice] = useState("");
   const [toInput, setToInput] = useState<PlaceValue>(() => initial("8509786"));
   const [viaInputs, setViaInputs] = useState<{ id: string; value: PlaceValue }[]>([]);
   const nextViaId = useRef(0);
@@ -881,7 +885,46 @@ export default function App() {
   );
   const warnings = session ? searchWarnings(session) : [];
 
+  async function useMyLocation() {
+    if (loading) return;
+    locationRequest.current?.abort();
+    const abort = new AbortController();
+    locationRequest.current = abort;
+    setLocating(true);
+    setLocationNotice("");
+    try {
+      const found = await currentLocation(
+        window.isSecureContext ? navigator.geolocation : undefined,
+        abort.signal,
+      );
+      if (abort.signal.aborted || locationRequest.current !== abort) return;
+      locationRequest.current = null;
+      invalidate();
+      naming.current.get("origin")?.abort();
+      setFromInput({ text: found.place.label, place: found.place });
+      setPointNotice("");
+      setLocationNotice(
+        `Using your location · accuracy ±${Math.ceil(found.accuracy)} m. Adjust the start on the map if needed.`,
+      );
+    } catch (error) {
+      if (!abort.signal.aborted && locationRequest.current === abort)
+        setLocationNotice(
+          error instanceof Error
+            ? error.message
+            : "Could not find your location. Try again or choose it on the map.",
+        );
+    } finally {
+      if (locationRequest.current === abort) {
+        locationRequest.current = null;
+        setLocating(false);
+      }
+    }
+  }
   function invalidate() {
+    locationRequest.current?.abort();
+    locationRequest.current = null;
+    setLocating(false);
+    setLocationNotice("");
     if (navigation.following) navigation.stop("Following stopped because the trip changed.");
     setRerouteMessage("");
     setSession(null);
@@ -897,6 +940,7 @@ export default function App() {
   useEffect(
     () => () => {
       controller.current?.abort();
+      locationRequest.current?.abort();
       rerouteController.current?.abort();
       for (const abort of naming.current.values()) abort.abort();
     },
@@ -975,7 +1019,7 @@ export default function App() {
   }
   async function search(event: FormEvent) {
     event.preventDefault();
-    if (loading || !fromInput.text.trim() || !toInput.text.trim()) return;
+    if (loading || locating || !fromInput.text.trim() || !toInput.text.trim()) return;
     if (!validPersonalSettings(tripPersonal)) {
       setProfileOpen(true);
       return;
@@ -1157,6 +1201,7 @@ export default function App() {
         <section className="planner-panel" id="planning-panel" aria-label="Journey planning">
           <PlannerForm
             loading={loading}
+            locating={locating}
             onSubmit={search}
             sections={{
               locations: (
@@ -1166,6 +1211,11 @@ export default function App() {
                   vias={viaInputs}
                   disabled={loading}
                   notice={pointNotice}
+                  currentLocation={{
+                    onClick: () => void useMyLocation(),
+                    loading: locating,
+                    notice: locationNotice,
+                  }}
                   onFrom={(value) => {
                     invalidate();
                     setFromInput(value);

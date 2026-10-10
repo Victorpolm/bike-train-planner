@@ -1,3 +1,4 @@
+import InlineHelp from "./InlineHelp";
 import { CYCLING_TIME_PRESETS, type CyclingAmount } from "../cyclingDuration";
 
 export default function CyclingAmountControl({
@@ -11,18 +12,30 @@ export default function CyclingAmountControl({
 }) {
   return (
     <fieldset className="cycling-amount" disabled={disabled}>
-      <legend>How much cycling?</legend>
-      <label>
-        <span>I would like to cycle</span>
-        <select
-          value={value.mode}
-          onChange={(e) => onChange({ ...value, mode: e.target.value as CyclingAmount["mode"] })}
-        >
-          <option value="at-most">At most</option>
-          <option value="at-least">At least</option>
-          <option value="none">No preference</option>
-        </select>
-      </label>
+      <legend className="preference-heading">
+        How much cycling
+        <InlineHelp
+          label="About cycling duration"
+          text={
+            "Across the whole journey, adding all cycling sections. Walking-only sections, waiting and facility visits do not count. Cycling estimates include short pushing and access connectors." +
+            (value.mode === "at-least"
+              ? " If no checked journey reaches your minimum, no matching transit alternative is shown."
+              : "") +
+            (value.mode === "none"
+              ? " Shorter and longer rides are eligible, including rides over 150 minutes, within the journey search window."
+              : "")
+          }
+        />
+      </legend>
+      <select
+        aria-label="Cycling duration rule"
+        value={value.mode}
+        onChange={(e) => onChange({ ...value, mode: e.target.value as CyclingAmount["mode"] })}
+      >
+        <option value="at-most">At most</option>
+        <option value="at-least">At least</option>
+        <option value="none">No preference</option>
+      </select>
       {value.mode !== "none" && (
         <>
           <div className="cycling-time-presets" aria-label="Cycling duration presets">
@@ -51,14 +64,6 @@ export default function CyclingAmountControl({
           </label>
         </>
       )}
-      <p className="preference-note">
-        Across the whole journey, adding all cycling sections. Walking-only sections, waiting and
-        facility visits do not count. Cycling estimates include short pushing and access connectors.
-        {value.mode === "at-least" &&
-          " If no checked journey reaches your minimum, no matching transit alternative is shown."}
-        {value.mode === "none" &&
-          " Shorter and longer rides are eligible, including rides over 150 minutes, within the journey search window."}
-      </p>
     </fieldset>
   );
 }

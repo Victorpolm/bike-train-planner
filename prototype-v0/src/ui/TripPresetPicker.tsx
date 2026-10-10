@@ -92,7 +92,7 @@ export default function TripPresetPicker({
       )}
       <p className="preset-summary">
         {value === "commuter"
-          ? "Up to 45 min cycling · fewer turns · unverified bike access included"
+          ? "Up to 30 min cycling · fewer turns · unverified bike access included"
           : value === "bikepacking"
             ? "No separate cycling cap · lower traffic stress · verified bike access only"
             : "Choose the preferences for this journey below."}

@@ -1,5 +1,9 @@
 # Experiments and golden journeys
 
+## 2026-10-10 — one-shot origin, 30-minute Commuter and duration cost
+
+576 JavaScript and 13 Python tests pass, plus 19 actual React panels. New location regressions cover cancellation, stale/invalid fixes, denied/blocked APIs, timeout and late callbacks. Golden Commuter case accepts 30 minutes of routed access and rejects 31 in both models. A controlled 24-station experiment gives Extended medians of 1.344 s for At most 30 and 9.150 s for At least 30; the latter reaches the label allowance. Three measured runs plus a warmup per condition; these are single-solve CPU timings, not end-to-end or phone timings. [Full method, raw evidence and next work](LOCATION_AND_COMPACT_CONTROLS_2026-10-10.md).
+
 ## 2026-10-10 — cycling minimum and Extra-category regression
 
 566 JavaScript tests, 13 Python tests, 168 independent duration-bound cases, 576 previous-release full-result comparisons, eight preference panels/callback checks and six facility panels pass. Golden case preserves an 8-minute access prefix otherwise dominated by a 2-minute prefix when At least 8 is requested; At least 9 returns no result. Both routing modes/solvers and arrive-by suffix acquisition are covered. Edited and facility-stop duration exclusions, navigation remaining minimum, simultaneous endpoint winners and ordinary/gentler timetable variants are checked. TypeScript/frontend/Worker, formatting and Knip pass. Actual browser interaction and phone GPS/touch/visual acceptance were not performed. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).

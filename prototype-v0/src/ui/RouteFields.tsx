@@ -15,6 +15,7 @@ export default function RouteFields({
   onRemove,
   onMove,
   onChooseMap,
+  currentLocation,
 }: {
   from: PlaceValue;
   to: PlaceValue;
@@ -29,11 +30,18 @@ export default function RouteFields({
   onRemove: (id: string) => void;
   onMove: (index: number, delta: number) => void;
   onChooseMap: () => void;
+  currentLocation: { onClick: () => void; loading: boolean; notice: string };
 }) {
   return (
     <div className="route-fields">
       <div className="place-inputs">
-        <PlaceInput label="From" value={from} disabled={disabled} onChange={onFrom} />
+        <PlaceInput
+          label="From"
+          value={from}
+          disabled={disabled}
+          onChange={onFrom}
+          locationAction={currentLocation}
+        />
         <button
           type="button"
           className="reverse-route"

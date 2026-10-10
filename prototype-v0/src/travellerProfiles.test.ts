@@ -100,7 +100,7 @@ it("trip presets retain personal values and the original model options", () => {
   assert.equal(preferenceOptions("balanced", "end").maxBikeMinutes, 90);
   assert.equal(preferenceOptions("more", "none").maxBikeMinutes, 150);
 });
-it("Commuter admits a routed 45-minute access ride and rejects 46 minutes in both models", () => {
+it("Commuter admits a routed 30-minute access ride and rejects 31 minutes in both models", () => {
   const start = new Date("2026-10-03T08:00:00+02:00"), at = (m: number) => new Date(+start + m * 60_000);
   const from = { label: "Start", lat: 46, lon: 8 }, station = { id: "A", name: "Boarding", lat: 46.13, lon: 8 };
   const to = { label: "Finish", lat: 47, lon: 9, stopId: "B" };
@@ -109,9 +109,9 @@ it("Commuter admits a routed 45-minute access ride and rejects 46 minutes in bot
   const route = parseCyclingRoute({ features: [{ geometry: { type: "LineString", coordinates: [[8, 46, 400], [8, 46.13, 400]] }, properties: { "track-length": 15000, "total-time": 2700 } }] }, from, station, +start);
   const preset = TRIP_PRESETS.commuter;
   const options = preferenceOptions(preset.cycling, preset.endpoint, "include-unknown", preset.bicycleScope, guestSettings().pace, preset.routePreference);
-  for (const minutes of [45, 46]) {
+  for (const minutes of [30, 31]) {
     n.cycling = new Map([[cyclingKey(from, station), { ...route, minutes }]]);
     for (const mode of ["baseline", "extended"] as const)
-      assert.equal(solve(n, from, to, start, options, mode).journeys.length > 0, minutes === 45);
+      assert.equal(solve(n, from, to, start, options, mode).journeys.length > 0, minutes === 30);
   }
 });

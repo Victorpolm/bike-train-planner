@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
-import { cyclingAmountForPreset, cyclingDurationOptions, cyclingDurationFits } from "./cyclingDuration.ts";
+import { CYCLING_TIME_PRESETS, cyclingAmountForPreset, cyclingDurationOptions, cyclingDurationFits } from "./cyclingDuration.ts";
 import { categorize, DEFAULT_OPTIONS, emptyNetwork, metrics, solve, validateOptions, type Options } from "./model.ts";
 import { solveWaypoints } from "./waypoints.ts";
 import { cyclingKey, zeroCycling } from "./cycling.ts";
@@ -30,7 +30,9 @@ function fixture() {
 }
 
 it("maps existing profiles and quick durations to explicit whole-journey choices", () => {
-  assert.deepEqual(cyclingAmountForPreset("commuter"), { mode: "at-most", minutes: 45 });
+  assert.deepEqual(cyclingAmountForPreset("commuter"), { mode: "at-most", minutes: 30 });
+  assert.deepEqual(CYCLING_TIME_PRESETS, [20, 45, 90, 150]);
+  assert.equal(preferenceOptions("commuter", "none").maxBikeMinutes, 30);
   assert.equal(cyclingAmountForPreset("unrestricted").mode, "none");
   for (const minutes of [0, 40, 45, 90, 150, 237, 1440]) {
     const maximum = cyclingDurationOptions({ mode: "at-most", minutes });
