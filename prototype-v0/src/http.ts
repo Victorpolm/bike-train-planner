@@ -1,3 +1,4 @@
+import { beginTiming } from "./searchTiming.ts";
 // AbortController works on browsers that do not yet implement AbortSignal.any/timeout.
 // Keep the deadline active while reading the response body, not only its headers.
 export async function fetchJson<T>(url: string | URL, signal: AbortSignal | undefined,
@@ -7,6 +8,7 @@ export async function fetchJson<T>(url: string | URL, signal: AbortSignal | unde
   if (signal?.aborted) abort();
   else signal?.addEventListener("abort", abort, { once: true });
   const timer = setTimeout(() => controller.abort(new DOMException("Request timed out", "TimeoutError")), timeoutMs);
+  const endTiming = beginTiming(signal, "network");
   try {
     if (controller.signal.aborted) throw controller.signal.reason;
     const response = await fetcher(url, { ...init, signal: controller.signal });
@@ -33,6 +35,7 @@ export async function fetchJson<T>(url: string | URL, signal: AbortSignal | unde
     }
     return await response.json() as T;
   } finally {
+    endTiming();
     clearTimeout(timer);
     signal?.removeEventListener("abort", abort);
   }
@@ -58,9 +61,10 @@ export function transientFailure(error: unknown) {
 export function waitFor(ms: number, signal: AbortSignal): Promise<void> {
   signal.throwIfAborted();
   if (ms <= 0) return Promise.resolve();
-  return new Promise((resolve, reject) => {
+  const endTiming = beginTiming(signal, "pacing");
+  return new Promise<void>((resolve, reject) => {
     const abort = () => { clearTimeout(timer); signal.removeEventListener("abort", abort); reject(signal.reason); };
     const timer = setTimeout(() => { signal.removeEventListener("abort", abort); resolve(); }, ms);
     signal.addEventListener("abort", abort, { once: true });
-  });
+  }).finally(endTiming);
 }

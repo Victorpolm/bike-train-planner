@@ -1,4 +1,5 @@
 import { fetchJson, HttpError, waitFor } from "./http.ts";
+import { beginTiming } from "./searchTiming.ts";
 import type { Point } from "./routing.ts";
 
 let queue: Promise<unknown> = Promise.resolve(), nextRequest = 0;
@@ -7,7 +8,9 @@ let queue: Promise<unknown> = Promise.resolve(), nextRequest = 0;
 // Its published policy allows at most one request per second.
 export function streetRoute(mode: "bike" | "foot", from: Point, to: Point, signal: AbortSignal,
   timeoutMs: number, fetcher: typeof fetch = fetch): Promise<unknown> {
+  const endQueue = beginTiming(signal, "queue");
   const task = queue.then(async () => {
+    endQueue();
     signal.throwIfAborted();
     const started = Date.now(), delay = Math.max(0, nextRequest - started);
     if (delay >= timeoutMs) throw new Error("The street routing service is busy.");
@@ -23,7 +26,7 @@ export function streetRoute(mode: "bike" | "foot", from: Point, to: Point, signa
       if (error instanceof HttpError && error.status === 429) nextRequest = Date.now() + Math.max(error.retryAfterMs ?? 60_000, 1000);
       throw error;
     }
-  });
+  }).finally(endQueue);
   queue = task.catch(() => undefined);
   return task;
 }

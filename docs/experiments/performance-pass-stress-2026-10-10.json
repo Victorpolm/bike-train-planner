@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-10T21:03:41.206Z",
+  "seeds": 96,
+  "comparisons": 576,
+  "nonempty": 574,
+  "capped": 46,
+  "aggregateFingerprint": "08154d1b13ee9842e31dcd6e658360d596fa144ee2e989681779fb1307ba00fe",
+  "coverage": [
+    "full journey objects and category selections",
+    "explored/retained counts and label caps",
+    "three bicycle-permission scopes",
+    "both routing modes",
+    "arrival deadlines",
+    "boarding/cycling/time budgets",
+    "mandatory and unknown reservations",
+    "hydrated and missing platform data",
+    "DST, midnight and expired transfer feeds"
+  ],
+  "caveat": "Deterministic synthetic cases compared against pre-change code; equivalence is not a proof of global routing completeness."
+}

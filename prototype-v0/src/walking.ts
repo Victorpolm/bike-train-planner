@@ -1,5 +1,6 @@
 import { cyclingKey, parseCyclingRoute, samePlace, type CyclePoint } from "./cycling.ts";
 import { streetRoute } from "./streetRouting.ts";
+import { beginTiming } from "./searchTiming.ts";
 import type { Place, Point, TransitLeg } from "./routing.ts";
 
 export const WALKING_SPEED_KMH = 4.5;
@@ -60,6 +61,7 @@ export class WalkingClient {
       return Promise.resolve(null);
     }
     this.requests++;
+    const endTiming = beginTiming(this.signal, "walking");
     const task = (async () => {
       try {
         const route = parseWalkingRoute(await streetRoute("foot", from, to, this.signal, 15000, this.fetcher), from, to);
@@ -68,7 +70,7 @@ export class WalkingClient {
         this.signal.throwIfAborted(); this.routes.set(key, null);
         this.warnings.add("A walking path could not be checked. Only returned pedestrian routes are used.");
         return null;
-      } finally { this.pending.delete(key); }
+      } finally { this.pending.delete(key); endTiming(); }
     })();
     this.pending.set(key, task); return task;
   }

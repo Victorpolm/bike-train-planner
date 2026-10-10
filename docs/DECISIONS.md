@@ -1,5 +1,10 @@
 # Decisions
 
+## 10 October 2026 — implement performance steps 1–3; bound the sports proposal
+
+The owner explicitly approved timing the full main search, avoiding unchanged calculations and rejecting impossible connections earlier. Preserve all permission, minimum-cycling, transfer, objective and cap semantics. Record timings locally; reuse only fully guarded inputs; keep Web Worker execution a separate proposal on the user's own device. The sports discussion proposes a target-duration continuous ride using a bounded set of marked cycling routes, followed later by ride sharing; it does not authorize an infinite detour search, a social network or removing At least. [Implementation and evidence](PERFORMANCE_PASS_2026-10-10.md).
+
+
 ## 10 October 2026 — implement cycling bounds and independent extras
 
 The latest owner feedback supersedes the earlier deferral of custom cycling minimum/maximum and hill regrouping. Use one whole-journey duration with At most/At least/No preference and quick/custom minutes. Preserve higher-cycling prefixes while a minimum is unmet in both solvers. Keep ordinary paths alongside gentler candidates, recheck timetable feasibility and allow both endpoint extras together. Hide objective selectors for Commuter/Bikepacking. Discover/scenic and Europe remain future work; global quota control and the 12 December transfer-feed refresh remain prerequisites for wider access. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).

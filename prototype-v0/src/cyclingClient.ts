@@ -1,5 +1,6 @@
 import { DEFAULT_HILLS, uphillParameters, validateHills, type HillPreferences } from "./hills.ts";
 import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
+import { beginTiming } from "./searchTiming.ts";
 import { cachedCycling, cyclingKey, CYCLING_PROFILE, MAX_ENDPOINT_GAP_METRES, EndpointSnapError, parseCyclingRoute, samePlace, zeroCycling, type CyclingRoute } from "./cycling.ts";
 import { haversineKm, type Point } from "./routing.ts";
 import { MAJOR_STATIONS } from "./majorStations.ts";
@@ -150,7 +151,9 @@ export class CyclingClient {
         return Promise.resolve(chosen);
       }
     }
+    const endQueue = beginTiming(this.signal, "queue"), endCycling = beginTiming(this.signal, "cycling");
     const task = this.queue.then(async () => {
+      endQueue();
       this.signal.throwIfAborted();
       const started = Date.now();
       const remaining = () => this.remainingMs - Math.max(0, Date.now() - started);
@@ -291,8 +294,9 @@ export class CyclingClient {
         this.remainingMs -= Math.max(0, Date.now() - started);
       }
     });
-    this.pending.set(key, task); this.queue = task.catch(() => undefined);
-    void task.finally(() => this.pending.delete(key)).catch(() => undefined);
-    return task;
+    const measured = task.finally(() => { endQueue(); endCycling(); });
+    this.pending.set(key, measured); this.queue = measured.catch(() => undefined);
+    void measured.finally(() => this.pending.delete(key)).catch(() => undefined);
+    return measured;
   }
 }

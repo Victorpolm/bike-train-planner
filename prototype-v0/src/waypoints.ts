@@ -30,12 +30,14 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
   const horizon = options.arriveBy ? Date.parse(options.arriveBy) : start.getTime() + options.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(options, mode);
   const outgoing = new Map<string, Edge[]>();
+  const vehicleTimes = new Map<TransitLeg, { departure: number; arrival: number }>();
   const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length || e.leg.stationArrival?.id || e.leg.stationDeparture?.id);
   for (const edge of network.edges.values()) {
     const leg = edge.leg;
     if (!leg.departure || !leg.arrival || !Number.isFinite(leg.departure.getTime()) || !Number.isFinite(leg.arrival.getTime())
       || arrivalTime(leg)! < departureTime(leg)! || !["transit", "walk"].includes(leg.mode) || !journeyLegAllowed(leg, options)
       || !network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
+    if (leg.mode === "transit") vehicleTimes.set(leg, { departure: +departureTime(leg)!, arrival: +arrivalTime(leg)! });
     outgoing.set(edge.from, [...outgoing.get(edge.from) ?? [], edge]);
   }
   const boardingStops = [...network.stops.values()].filter(stop => outgoing.get(stop.id)?.some(edge => edge.leg.mode === "transit"));
@@ -135,14 +137,18 @@ export function solveWaypoints(network: Network, points: Place[], start: Date, o
     }
     const from = network.stops.get(current.stop)!;
     for (const original of outgoing.get(current.stop) ?? []) {
+      const vehicle = vehicleTimes.get(original.leg);
+      if (vehicle && (vehicle.departure < current.time || vehicle.arrival > horizon || current.boardings >= options.maxBoardings)) continue;
       const edge = { ...original, leg: moveAfter(original.leg, current.time) };
+      const departure = vehicle?.departure ?? +departureTime(edge.leg)!, arrival = vehicle?.arrival ?? +arrivalTime(edge.leg)!;
+      if (departure < current.time || arrival > horizon) continue;
       if (wantsObjective(options, "cheapest") && current.legs.includes(edge.leg)) continue;
       const ride = edge.leg.mode === "transit";
       if (ride && current.endCycling) continue;
       const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, options.boardingMinutes, from) : null;
-      if (+departureTime(edge.leg)! < (boarding?.readyAt ?? current.time)) continue;
+      if (departure < (boarding?.readyAt ?? current.time)) continue;
       const walk = ride ? (boarding?.transferLeg ? (+boarding.transferLeg.arrival! - +boarding.transferLeg.departure!) / 60_000 : 0) : (+arrivalTime(edge.leg)! - +departureTime(edge.leg)!) / 60_000;
-      add({ ...current, stop: edge.to, time: +arrivalTime(edge.leg)!, boardings: current.boardings + Number(ride),
+      add({ ...current, stop: edge.to, time: arrival, boardings: current.boardings + Number(ride),
         walk: current.walk + walk, accessActive: current.accessActive + (current.boardings === 0 ? walk : 0),
         egressActive: ride ? 0 : current.egressActive + walk, stageHasTransit: ride || current.stageHasTransit,
         needsTransit: ride ? false : current.needsTransit, legs: [...current.legs, ...(boarding?.transferLeg ? [boarding.transferLeg] : []), edge.leg], alive: true });

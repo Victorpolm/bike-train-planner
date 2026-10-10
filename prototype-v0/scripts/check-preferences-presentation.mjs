@@ -108,4 +108,13 @@ assert.match(nav, /class="inline-help-content" hidden="">Start asks for/);
 assert.doesNotMatch(nav, /<details>|<p>Start asks/);
 const profile = render(TripPresetPicker, { value: 'commuter', disabled: false, onChange: noop, library: { profiles: [] }, settings: guestSettings(), notice: '', onSelectProfile: noop }); panels++;
 assert.match(profile, /Up to 30 min cycling/); assert.doesNotMatch(profile, /45 min cycling/);
-console.log(JSON.stringify({ passed: true, panels, checks: 'Preset visibility and 30-minute Commuter; 20/45/90/150 quick choices; all cycling modes; hidden question-mark help; collapsed multi-select extras; From-location and pending submission states; compact navigation help; pure callback transitions', limitation: 'Server rendering and callback checks only; interactive browser and physical-phone acceptance remain unverified.' }, null, 2));
+const SearchTimingSummary = (await import('../src/ui/SearchTimingSummary.tsx')).default;
+assert.equal(render(SearchTimingSummary, { report: null }), ''); panels++;
+for (const status of ['running', 'complete', 'limited', 'cancelled', 'failed']) {
+  const html = render(SearchTimingSummary, { report: { status, elapsedMs: 1800, firstResultMs: 1200, firstTransitMs: null,
+    refreshes: 4, reusedRefreshes: 2, solverCalls: 3, stages: { network: { calls: 2, milliseconds: 1600 }, solving: { calls: 1, milliseconds: 300 } } } }); panels++;
+  assert.match(html, /<details class="search-notice search-timing">/); assert.match(html, /1\.20 s/); assert.match(html, /Not reached/);
+  assert.match(html, /2 of 4 result updates reused/); assert.match(html, /Stages overlap/); assert.match(html, /before screen rendering/);
+  assert.doesNotMatch(html, /<details[^>]* open=/);
+}
+console.log(JSON.stringify({ passed: true, panels, checks: 'Preset visibility and 30-minute Commuter; 20/45/90/150 quick choices; all cycling modes; hidden question-mark help; collapsed multi-select extras; From-location and pending submission states; compact navigation help; pure callback transitions; all search-timing states and overlapping-stage disclosure', limitation: 'Server rendering and callback checks only; interactive browser and physical-phone acceptance remain unverified.' }, null, 2));

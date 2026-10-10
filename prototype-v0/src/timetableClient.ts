@@ -1,4 +1,5 @@
 import { fetchJson, HttpError, transientFailure, waitFor } from "./http.ts";
+import { beginTiming } from "./searchTiming.ts";
 import { SEARCH_LIMITS } from "./searchLimits.ts";
 import type { NationalTimetableClient } from "./nationalTimetableClient.ts";
 import type { StationTransferClient } from "./stationTransferClient.ts";
@@ -77,7 +78,8 @@ export class TimetableClient {
     if (cached) return cached as Promise<T | null>;
     const reusable = this.fetcher === fetch ? timetableCache.get(url) : undefined;
     if (reusable && reusable.expires > Date.now()) return Promise.resolve(reusable.data as T);
-    const task = this.queue.then(() => this.timed(async () => {
+    const endQueue = beginTiming(this.signal, "queue");
+    const task = this.queue.then(() => { endQueue(); return this.timed(async () => {
       const started = Date.now();
       const remaining = () => this.remainingMs - Math.max(0, Date.now() - started);
       let error: unknown;
@@ -127,7 +129,7 @@ export class TimetableClient {
       this.warnings.add(error instanceof Error && !["TimeoutError", "TypeError"].includes(error.name)
         ? error.message : "Some timetable requests timed out or could not connect; this search is incomplete.");
       return null;
-    }));
+    }); }).finally(endQueue);
     this.cache.set(url, task); this.queue = task.catch(() => undefined);
     void task.then(value => { if (value === null) this.cache.delete(url); }, () => this.cache.delete(url));
     return task;

@@ -1,5 +1,10 @@
 # Experiments and golden journeys
 
+## 2026-10-10 — timing, unchanged-result reuse and cheap transfer rejection
+
+593 JavaScript tests, 13 Python tests, 25 rendered panels and 864 previous-release comparisons pass. Golden realtime boundary: scheduled departure −10 minutes with estimated +3 remains valid at the three-minute boarding allowance; +2 is rejected; arrival exactly at the horizon is retained. Impossible vehicles are rejected before access-rule evaluation in both solvers/modes. Cache-on/off acquisition publications and provider requests match; nested evidence changes invalidate reuse and later-departure filtering cannot mutate cached containers. The 24-station hydrated benchmark improves Extended at-most from 1.282 s to 0.550 s and at-least from 8.623 s to 3.857 s, retaining the latter's label cap. Repeated identical refresh improves 2.701 s to 0.011 s. These are CPU medians, not phone/end-to-end claims. [Method, raw results and limits](PERFORMANCE_PASS_2026-10-10.md).
+
+
 ## 2026-10-10 — one-shot origin, 30-minute Commuter and duration cost
 
 576 JavaScript and 13 Python tests pass, plus 19 actual React panels. New location regressions cover cancellation, stale/invalid fixes, denied/blocked APIs, timeout and late callbacks. Golden Commuter case accepts 30 minutes of routed access and rejects 31 in both models. A controlled 24-station experiment gives Extended medians of 1.344 s for At most 30 and 9.150 s for At least 30; the latter reaches the label allowance. Three measured runs plus a warmup per condition; these are single-solve CPU timings, not end-to-end or phone timings. [Full method, raw evidence and next work](LOCATION_AND_COMPACT_CONTROLS_2026-10-10.md).

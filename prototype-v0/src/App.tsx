@@ -1,5 +1,7 @@
 import { cyclingAmountForPreset, cyclingDurationFits, type CyclingAmount } from "./cyclingDuration";
 import { currentLocation } from "./currentLocation";
+import type { SearchTimingReport } from "./searchTiming";
+import SearchTimingSummary from "./ui/SearchTimingSummary";
 import FacilityStopSummary from "./FacilityStopSummary";
 import JourneyNavigation from "./JourneyNavigation";
 import { useJourneyNavigation } from "./useJourneyNavigation";
@@ -342,6 +344,8 @@ export default function App() {
   const [fromInput, setFromInput] = useState<PlaceValue>(() => initial("8503000"));
   const locationRequest = useRef<AbortController | null>(null);
   const [locating, setLocating] = useState(false);
+  const [timingReport, setTimingReport] = useState<SearchTimingReport | null>(null);
+  const timingController = useRef<AbortController | null>(null);
   const [locationNotice, setLocationNotice] = useState("");
   const [toInput, setToInput] = useState<PlaceValue>(() => initial("8509786"));
   const [viaInputs, setViaInputs] = useState<{ id: string; value: PlaceValue }[]>([]);
@@ -921,6 +925,8 @@ export default function App() {
     }
   }
   function invalidate() {
+    timingController.current = null;
+    setTimingReport(null);
     locationRequest.current?.abort();
     locationRequest.current = null;
     setLocating(false);
@@ -1029,6 +1035,7 @@ export default function App() {
     const id = ++runId.current,
       abort = new AbortController();
     controller.current = abort;
+    timingController.current = abort;
     setLoading(true);
     try {
       const start = departureMode === "now" ? new Date() : parseSwissDateTime(departureInput);
@@ -1047,6 +1054,9 @@ export default function App() {
         {
           ...(departureMode === "arrival" ? { arriveBy: start } : { start }),
           waypoints: viaInputs.map((input) => input.value.place ?? input.value.text.trim()),
+          onTiming: (report) => {
+            if (timingController.current === abort) setTimingReport(report);
+          },
         },
       );
       if (id === runId.current) {
@@ -1074,6 +1084,7 @@ export default function App() {
     if (next === "extended" && session && !session.extendedComplete) {
       const abort = new AbortController();
       controller.current = abort;
+      timingController.current = abort;
       const id = ++runId.current;
       setLoading(true);
       try {
@@ -1086,6 +1097,9 @@ export default function App() {
             if (id === runId.current) setSession(result);
           },
           abort.signal,
+          (report) => {
+            if (timingController.current === abort) setTimingReport(report);
+          },
         );
         if (id === runId.current) {
           setSession(result);
@@ -1476,6 +1490,7 @@ export default function App() {
               <p>{error}</p>
             </div>
           )}
+          <SearchTimingSummary report={timingReport} />
           {session && (
             <section className="results">
               <p className="resolved-places">

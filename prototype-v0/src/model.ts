@@ -312,6 +312,8 @@ export function solve(network: Network, origin: Place, destination: Place, start
   const horizon = o.arriveBy ? Date.parse(o.arriveBy) : start.getTime() + o.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(o, mode);
   const outgoing = new Map<string, Edge[]>();
+  // A solve is synchronous: effective vehicle times cannot change mid-search.
+  const vehicleTimes = new Map<TransitLeg, { departure: number; arrival: number }>();
   const transferSensitive = [...network.edges.values()].some(e => e.leg.transferRules?.length || e.leg.stationArrival?.id || e.leg.stationDeparture?.id);
   for (const edge of network.edges.values()) {
     const l = edge.leg;
@@ -319,6 +321,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
       !Number.isFinite(l.arrival.getTime()) || arrivalTime(l)! < departureTime(l)! ||
       !["transit", "walk"].includes(l.mode) || !journeyLegAllowed(l, o)) continue;
     if (!network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
+    if (l.mode === "transit") vehicleTimes.set(l, { departure: +departureTime(l)!, arrival: +arrivalTime(l)! });
     const list = outgoing.get(edge.from) ?? [];
     list.push(edge); outgoing.set(edge.from, list);
   }
@@ -366,14 +369,18 @@ export function solve(network: Network, origin: Place, destination: Place, start
     if (!current.alive) continue;
     explored++;
     for (const original of outgoing.get(current.stop) ?? []) {
+      const vehicle = vehicleTimes.get(original.leg);
+      if (vehicle && (vehicle.departure < current.time || vehicle.arrival > horizon || current.boardings >= o.maxBoardings)) continue;
       const edge = { ...original, leg: moveAfter(original.leg, current.time) };
+      const departure = vehicle?.departure ?? +departureTime(edge.leg)!, arrival = vehicle?.arrival ?? +arrivalTime(edge.leg)!;
+      if (departure < current.time || arrival > horizon) continue;
       if (wantsObjective(o, "cheapest") && current.legs.includes(edge.leg)) continue;
       const ride = edge.leg.mode === "transit";
       const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, o.boardingMinutes, network.stops.get(current.stop)) : null;
       const ready = boarding?.readyAt ?? current.time;
-      if (+departureTime(edge.leg)! < ready || +arrivalTime(edge.leg)! > horizon) continue;
+      if (departure < ready) continue;
       const walking = ride ? (boarding?.transferLeg ? (+boarding.transferLeg.arrival! - +boarding.transferLeg.departure!) / 60_000 : 0) : (+arrivalTime(edge.leg)! - +departureTime(edge.leg)!) / 60_000;
-      add({ ...current, stop: edge.to, time: +arrivalTime(edge.leg)!,
+      add({ ...current, stop: edge.to, time: arrival,
         walk: current.walk + walking,
         accessActive: current.accessActive + (current.boardings === 0 ? walking : 0),
         egressWalk: ride ? 0 : current.egressWalk + walking,

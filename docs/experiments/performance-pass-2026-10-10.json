@@ -1,0 +1,195 @@
+{
+  "measuredAt": "2026-10-10T21:03:26.112Z",
+  "stations": 24,
+  "hydrated": true,
+  "samples": 3,
+  "warmups": 1,
+  "results": [
+    {
+      "condition": {
+        "kind": "solve",
+        "mode": "baseline",
+        "amount": {
+          "mode": "at-most",
+          "minutes": 30
+        }
+      },
+      "before": {
+        "medianMs": 665.6603029999999,
+        "timesMs": [
+          665.6603029999999,
+          720.9069949999998,
+          582.7167090000003
+        ],
+        "fingerprint": "f536bc67a3182a14b45766b4e966194f612b0824dafc1e9b2dafd38c54f7e41d",
+        "journeys": 1654,
+        "explored": 3272,
+        "retained": 3272,
+        "limited": false
+      },
+      "after": {
+        "medianMs": 254.0381779999998,
+        "timesMs": [
+          254.0381779999998,
+          235.78852000000006,
+          281.6279770000001
+        ],
+        "fingerprint": "f536bc67a3182a14b45766b4e966194f612b0824dafc1e9b2dafd38c54f7e41d",
+        "journeys": 1654,
+        "explored": 3272,
+        "retained": 3272,
+        "limited": false
+      },
+      "speedup": 2.620316002266401
+    },
+    {
+      "condition": {
+        "kind": "solve",
+        "mode": "baseline",
+        "amount": {
+          "mode": "at-least",
+          "minutes": 30
+        }
+      },
+      "before": {
+        "medianMs": 1632.8157759999995,
+        "timesMs": [
+          1618.3366899999992,
+          1632.8157759999995,
+          1699.2174000000014
+        ],
+        "fingerprint": "ca56a75ac53840922b4df7238ebeaeb5d4c2bbafae5c0026a1bdc13e6a9ba05f",
+        "journeys": 6089,
+        "explored": 10434,
+        "retained": 10434,
+        "limited": false
+      },
+      "after": {
+        "medianMs": 637.5276219999978,
+        "timesMs": [
+          637.5276219999978,
+          657.1588929999998,
+          626.0349989999995
+        ],
+        "fingerprint": "ca56a75ac53840922b4df7238ebeaeb5d4c2bbafae5c0026a1bdc13e6a9ba05f",
+        "journeys": 6089,
+        "explored": 10434,
+        "retained": 10434,
+        "limited": false
+      },
+      "speedup": 2.561168676704027
+    },
+    {
+      "condition": {
+        "kind": "solve",
+        "mode": "extended",
+        "amount": {
+          "mode": "at-most",
+          "minutes": 30
+        }
+      },
+      "before": {
+        "medianMs": 1282.4433219999992,
+        "timesMs": [
+          1282.4433219999992,
+          1291.272643999997,
+          1253.839226
+        ],
+        "fingerprint": "1a9a3a904ca2a602f1555449f5f70f25a8afc88d3d4f06ab27530acc24425517",
+        "journeys": 3521,
+        "explored": 6673,
+        "retained": 6673,
+        "limited": false
+      },
+      "after": {
+        "medianMs": 549.5539570000001,
+        "timesMs": [
+          643.0651760000001,
+          527.9530679999989,
+          549.5539570000001
+        ],
+        "fingerprint": "1a9a3a904ca2a602f1555449f5f70f25a8afc88d3d4f06ab27530acc24425517",
+        "journeys": 3521,
+        "explored": 6673,
+        "retained": 6673,
+        "limited": false
+      },
+      "speedup": 2.33360765701847
+    },
+    {
+      "condition": {
+        "kind": "solve",
+        "mode": "extended",
+        "amount": {
+          "mode": "at-least",
+          "minutes": 30
+        }
+      },
+      "before": {
+        "medianMs": 8623.490731000005,
+        "timesMs": [
+          8161.823190999996,
+          8623.490731000005,
+          8678.463013000008
+        ],
+        "fingerprint": "c323de2f5cb0cddb4a5d4de27cadcc2585e4c15709a9e5b2890dccadf8f7ed3f",
+        "journeys": 25627,
+        "explored": 38458,
+        "retained": 38458,
+        "limited": true
+      },
+      "after": {
+        "medianMs": 3856.622948000004,
+        "timesMs": [
+          3841.573371999999,
+          3856.622948000004,
+          4115.225321000005
+        ],
+        "fingerprint": "c323de2f5cb0cddb4a5d4de27cadcc2585e4c15709a9e5b2890dccadf8f7ed3f",
+        "journeys": 25627,
+        "explored": 38458,
+        "retained": 38458,
+        "limited": true
+      },
+      "speedup": 2.236021215263483
+    },
+    {
+      "condition": {
+        "kind": "unchanged refresh",
+        "mode": "extended",
+        "amount": {
+          "mode": "at-most",
+          "minutes": 30
+        }
+      },
+      "before": {
+        "medianMs": 2700.7774120000104,
+        "timesMs": [
+          2700.7774120000104,
+          2674.0001690000063,
+          2709.5668390000064
+        ],
+        "fingerprint": "d371ae8a49baa87af98ce09fef613596d6045171efba16efedc759f726098778",
+        "journeys": 3521,
+        "explored": 6673,
+        "retained": 6673,
+        "limited": false
+      },
+      "after": {
+        "medianMs": 11.032172999999602,
+        "timesMs": [
+          12.477671000000555,
+          11.032172999999602,
+          10.887740000005579
+        ],
+        "fingerprint": "d371ae8a49baa87af98ce09fef613596d6045171efba16efedc759f726098778",
+        "journeys": 3521,
+        "explored": 6673,
+        "retained": 6673,
+        "limited": false
+      },
+      "speedup": 244.80919688261847
+    }
+  ],
+  "caveat": "Controlled synthetic CPU benchmark with real bundled transfer rules. The unchanged-refresh case measures exact repeated input, not an entire live acquisition. No phone/network speedup or routing completeness is claimed; minimum cases can reach the unchanged label allowance."
+}
