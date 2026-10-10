@@ -16,6 +16,8 @@ The owner explicitly authorized synchronization, facility-stop insertion and use
 
 ## Confirmed starting point
 
+GitHub main contains implementation commit `a798c8b2c0a1785861e789f96f92148da72cd205`. All **277 application files** match the deployed source checkout by Git blob hash. [GitHub CI run 38066824618](https://github.com/Victorpolm/bike-train-planner/actions/runs/38066824618) completed successfully, including 566 JavaScript tests, 13 Python tests, both React rendering checks, formatting, unused-code analysis and production builds. The CI workflow now runs the Python and presentation checks on future application changes. This record is a documentation follow-up; it does not change the deployed application.
+
 - **Current release:** Owner-private **version 66** published successfully on **10 October 2026 at 16:11:45 UTC** (18:11:45 Europe/Zurich), environment revision **3**, from Site source `32a5a6ed3677b2d969bd2c9b654d998bada70794`. The pushed source and matching frontend/Worker archive were deployed. **566 JavaScript tests in 11 suites**, **13 Python tests**, 168 independent duration-bound cases, 576 previous-release full-result comparisons and 14 React render panels/callback checks pass, together with builds, formatting and unused-code analysis. Interactive browser and physical-phone acceptance remain unverified. Re.route, the existing URL and the owner-only audience are preserved. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).
 
 - **Earlier release:** Owner-private **version 65** published successfully on **10 October 2026 at 15:03:12 UTC** (17:03:12 Europe/Zurich), environment revision **3**, from Site source `d10c8af18f011c104756035d8a07f3d174236a82`. The exact pushed source and matching frontend/Worker archive were deployed. **552 JavaScript tests in 11 suites**, **13 Python tests**, 1,372 fixed-connection combinations and six actual React panel render checks pass, together with builds, formatting and Knip. Browser/phone interaction and physical field acceptance remain pending. Title Re.route, the existing URL, runtime secret bindings and owner-only audience are preserved. [Release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
@@ -79,7 +81,6 @@ The feed-refresh item is a roadmap task; this document does not create a schedul
 |---|---|
 | Discover compromises | Define a small set of useful intermediate trade-offs and test them against fixed candidates and rider choices |
 | Scenic/interesting-place Bikepacking routes | Define reviewed places, access/visit evidence and a detour budget; the implemented less-traffic objective does not provide this capability |
-| Independent hill alternatives / multi-select endpoint preferences | Earlier regrouping remains a proposal; the latest owner instruction keeps existing choices in Preferences. Revisit only with an explicit scoped design |
 | Prefilled SBB handoff and further fare products | Check supported parameters and exact journey/profile semantics before adding behaviour |
 | Reusable investigation / implementation / review procedures | The three written workflow procedures were proposed earlier; automatic test/build CI is already implemented. Branch protection and policy changes remain separate decisions |
 

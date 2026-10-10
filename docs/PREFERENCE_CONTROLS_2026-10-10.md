@@ -59,4 +59,4 @@ Owner-private **version 66** published successfully on **10 October 2026 at 16:1
 
 Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_f917e584b51481919080139edfbacd85`; deployment: `appgdep_6aca63ac7e9c81919787d5d15e8bba3f` (`succeeded`).
 
-GitHub synchronization and CI evidence are recorded below when complete.
+GitHub main contains implementation commit `a798c8b2c0a1785861e789f96f92148da72cd205`. All **277 application files** match the deployed source checkout by Git blob hash. [GitHub CI run 38066824618](https://github.com/Victorpolm/bike-train-planner/actions/runs/38066824618) completed successfully, including 566 JavaScript tests, 13 Python tests, both React rendering checks, formatting, unused-code analysis and production builds. The CI workflow now runs the Python and presentation checks on future application changes. This record is a documentation follow-up; it does not change the deployed application.
