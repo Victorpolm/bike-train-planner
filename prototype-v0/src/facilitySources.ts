@@ -1,5 +1,6 @@
 import type { Amenity, AmenityCategory } from "./osmAmenities.ts";
 import { safePublicLink } from "./amenityLocation.ts";
+import { facilityReuseAllowed } from "./sourcePolicy.ts";
 
 export type FacilityProvider = "graubuenden" | "sbb" | "swisstlm3d";
 export const FACILITY_SOURCES = {
@@ -56,8 +57,9 @@ export function validFacilityData(value: unknown, job: Pick<FacilityJob, "provid
 }
 
 export function mergeFacilitySources(base: readonly Amenity[], extras: readonly Amenity[], categories: readonly AmenityCategory[]) {
-  const byId = new Map(base.map(f => [f.id, f]));
+  const byId = new Map(base.filter(f => facilityReuseAllowed(f.provenance?.provider ?? "") && !f.id.startsWith("sbb:")).map(f => [f.id, f]));
   for (const f of extras) {
+    if (!facilityReuseAllowed(f.provenance?.provider ?? "") || f.id.startsWith("sbb:")) continue;
     if (!f.categories.some(c => categories.includes(c))) continue;
     // Only explicit reviewed identities can enrich existing OSM records. Never merge by distance/floor alone.
     const ids = (f.provenance?.referenceOsmIds ?? []).filter(id => byId.has(id));

@@ -1,5 +1,7 @@
 # Re.route — Bike + Train Journey Planner
 
+**11 October official cycling and launch safeguards:** Official SwitzerlandMobility cycling sections can now be checked and applied from Map without adding work to the initial search. Unlicensed Trafimage/INSA and tourism-page enrichments are disabled; integration fare quotes are hidden. Privacy/source notices, a 16-source register, component licences and stricter official-parking refresh are included. External launch remains blocked on owner identity/contact, hosting facts, service rights, name/software-licence decisions and legal/manual acceptance. [Behaviour, evidence and remaining decisions](docs/OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).
+
 11 October: [Shared quotas, maintained transfer feeds and fare/data-quality corrections](docs/DATA_QUALITY_AND_QUOTAS_2026-10-11.md).
 
 **11 October journey continuity:** Save and reopen exact dated itineraries on this device; Plan again uses current timetable acquisition with the saved stops and routing preferences. Navigation recalculation retains unfinished facility visits and their duration. Record an actual parked bicycle, continue with walking/passenger transport, plan a return to its recorded point and explicitly confirm collection. **614 JavaScript tests**, **13 Python tests**, **32 rendered panels** and **288 unchanged-routing comparisons** pass. Browser/phone interaction remains unverified; cross-device sync, automatic parking-site optimization and rental handling are not included. [Behaviour and evidence](docs/JOURNEY_CONTINUITY_2026-10-11.md).
@@ -62,7 +64,7 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **Approved review changes implemented:** detours frame automatically; the two redundant map buttons are removed with keyboard location selection retained. Shared operator normalization, mutation-aware bicycle-permission caching, extracted timetable code, conservative cleanup, automatic offline CI and React formatting are in place. **300 tests and production builds pass.** A local MOTIS comparison found a middle-permission-scope gap; there is no engine migration. [Changes, rejected suggestions and evidence](docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
-**Last verified release:** Owner-private **version 65** published successfully on **10 October 2026 at 15:03:12 UTC** (17:03:12 Europe/Zurich), environment revision **3**, from Site source `d10c8af18f011c104756035d8a07f3d174236a82`. The exact pushed source and matching frontend/Worker archive were deployed. **552 JavaScript tests in 11 suites**, **13 Python tests**, 1,372 fixed-connection combinations and six actual React panel render checks pass, together with builds, formatting and Knip. Browser/phone interaction and physical field acceptance remain pending. Title Re.route, the existing URL, runtime secret bindings and owner-only audience are preserved. [Evidence](docs/FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
+**Last verified release:** See the [current release record](docs/OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md) for exact publication and test evidence. Historical releases below retain their original verification scope.
 
 [Current project state](docs/PROJECT_STATE.md) · [Website/release details](docs/WEBSITE.md) · [Experiments and remaining gaps](docs/EXPERIMENTS.md)
 
@@ -70,8 +72,8 @@ A **Bike parking** icon toggles official **and OpenStreetMap** parking, includin
 
 **The owner's three next priorities:**
 
-1. **Design proposals:** Discover compromises, scenic Bikepacking routes and custom cycling minimum/maximum remain outside the immediate implementation queue.
-2. **Before expanding access:** implement global API quota control and refresh station-transfer data before the current feed expires on **12 December 2026**.
+1. **Design proposals:** Discover compromises and a target-duration sports/loop planner remain proposals. Custom cycling bounds are already delivered; this release adds bounded official cycling-route sections.
+2. **Before expanding access:** shared quota control and maintained 2026/2027 transfer feeds are delivered. Complete the privacy, provider-rights/capacity, trademark/licensing, counsel and phone-acceptance gates recorded in the launch review.
 3. **Europe:** scope later country/provider coverage, bicycle rules, fares, transfer data and licensing. The delivered app remains Switzerland-first.
 
 Complete phone/desktop acceptance of the implemented stops, parking, interface and navigation, and fix demonstrated defects. The synchronization, Add as stop and useful-information work requested on 10 October is delivered. [Current checklist](docs/NEXT_STEPS.md).

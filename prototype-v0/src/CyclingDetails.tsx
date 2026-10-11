@@ -3,6 +3,7 @@ import CyclingTerrainSummary from "./CyclingTerrainSummary";
 import { useId } from "react";
 import { breakdown, finalClimb, pointAlong, STEEP_PERCENT, type CyclingRoute } from "./cycling";
 import { formatMinutes } from "./routing";
+import { OFFICIAL_CYCLING_ATTRIBUTION } from "./officialCycling";
 
 export type CycleFocus = { routeId: string; distanceM: number };
 export type NamedCycleRoute = { label: string; route: CyclingRoute };
@@ -92,6 +93,18 @@ export default function CyclingDetails({
         </div>
       </dl>
       <CyclingTerrainSummary route={route} />
+      {route.officialRoute && (
+        <p className="official-route-evidence">
+          Re.route itinerary using {route.officialRoute.sectionKm.toFixed(1)} km of{" "}
+          <a href={route.officialRoute.url} target="_blank" rel="noreferrer">
+            SwitzerlandMobility Route {route.officialRoute.number} · {route.officialRoute.title}
+          </a>
+          . {route.officialRoute.matchedPercent}% geometric match; connecting paths are separate.{" "}
+          {OFFICIAL_CYCLING_ATTRIBUTION}. Published closures checked{" "}
+          {new Date(route.officialRoute.closuresCheckedAt).toLocaleString("en-CH")}; recheck before
+          travel. This is not a safety or traffic-free guarantee.
+        </p>
+      )}
       <p className="cycle-caption">
         {route.pace
           ? `Estimated at ${paceDescription(route.pace)}. Time is calculated along the elevation profile; downhill speed is capped at 45 km/h.`

@@ -10,7 +10,8 @@
     "test": "node --test src/*.test.ts",
     "check:unused": "knip",
     "format": "prettier --write \"src/**/*.tsx\"",
-    "format:check": "prettier --check \"src/**/*.tsx\""
+    "format:check": "prettier --check \"src/**/*.tsx\"",
+    "prebuild": "node scripts/generate-third-party-notices.mjs --check && node scripts/render-source-register.mjs --check"
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.1",

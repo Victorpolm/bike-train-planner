@@ -290,3 +290,21 @@ button:disabled { cursor: default; opacity: .55; }
 .search-timing caption { text-align: left; margin-bottom: 6px; }
 .search-timing th, .search-timing td { padding: 6px 4px; border-bottom: 1px solid var(--line); text-align: left; }
 .search-timing td { white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* Official routes are checked on demand, after the ordinary journey search. */
+.official-cycling-panel { padding: 1rem; background: #f3f8f5; border: 1px solid #a9c7ba; border-radius: 12px; margin: .7rem 0; }
+.official-cycling-panel label { display: grid; gap: .35rem; margin: .6rem 0; }
+.official-cycling-panel select { width: 100%; max-width: 100%; }
+.official-route-options { list-style: none; padding: 0; display: grid; gap: .65rem; }
+.official-route-options li, .official-route-preview { background: white; border: 1px solid #c6d8cd; border-radius: 8px; padding: .75rem; }
+.official-route-options p, .official-route-preview p { margin: .45rem 0; }
+.official-cycling-panel .source-note { font-size: .78rem; line-height: 1.5; }
+.official-route-evidence { border-left: 3px solid #20786d; padding-left: .65rem; font-size: .85rem; }
+.privacy-link { font-size: .8rem; }
+.privacy-notice { width: min(850px, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); padding: 1.25rem; border: 1px solid #b7c5bc; border-radius: 12px; color: #18392f; line-height: 1.5; }
+.privacy-notice::backdrop { background: #10291dd0; }
+.privacy-notice h3 { margin-top: 1.6rem; }
+.privacy-table { overflow-x: auto; }
+.privacy-table table { border-collapse: collapse; width: 100%; font-size: .85rem; }
+.privacy-table th, .privacy-table td { text-align: left; vertical-align: top; border-bottom: 1px solid #d4ded7; padding: .6rem; }
+.privacy-table td:first-child { width: 30%; }
+@media (max-width: 500px) { .privacy-link { max-width: 100px; line-height: 1.25; } }

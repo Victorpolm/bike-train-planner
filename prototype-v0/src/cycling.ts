@@ -3,6 +3,7 @@ import { haversineKm, type Point } from "./routing.ts";
 import { analyseCyclingTerrain, type TerrainSection } from "./cyclingTerrain.ts";
 import type { TopoCheck } from "./swisstopo.ts";
 import type { RoutePreference } from "./cyclingPreferences.ts";
+import type { OfficialRouteEvidence } from "./officialCycling.ts";
 
 export type CyclePoint = Point & { elevationM: number | null; distanceM: number };
 export type Surface = "Paved" | "Asphalt" | "Compacted" | "Gravel" | "Earth" | "Rock" | "Other unpaved" | "Unknown";
@@ -20,6 +21,7 @@ export type CyclingRoute = {
   source: "BRouter" | "OSRM" | "same place"; fetchedAt: number; pace?: CyclingPace;
   pushingSeconds?: number; carryingSeconds?: number; blocked?: boolean; topoCheck?: TopoCheck; terrainBaseSeconds?: number;
   turnCount?: number; preference?: RoutePreference; alternativesChecked?: number; preferenceNote?: string;
+  officialRoute?: OfficialRouteEvidence;
 };
 export const CYCLING_PROFILE = "trekking";
 const MAX_CYCLING_SPEED_KMH = 25;

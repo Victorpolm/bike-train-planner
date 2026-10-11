@@ -118,6 +118,26 @@ export class CyclingClient {
     return next;
   }
   getCached(a: Located, b: Located) { return cachedCycling(this.routes, a, b); }
+  /** Explicit official-route check. One bounded request; never fall back to an unrelated path. */
+  guidedRoute(points: readonly Point[]): Promise<CyclingRoute> {
+    const task = this.queue.then(async () => {
+      this.signal.throwIfAborted();
+      if (points.length < 2 || points.length > 50 || points.some(p => !Number.isFinite(p.lat) || !Number.isFinite(p.lon))) throw new Error("Invalid route guides.");
+      if (this.requests >= CYCLING_LIMITS.requests) throw new Error("Cycling request limit reached.");
+      await waitFor(Math.max(0, this.gapMs - (Date.now() - this.lastRequest), this.cooldown - Date.now()), this.signal);
+      this.lastRequest = Date.now(); this.requests++;
+      const params = new URLSearchParams({ lonlats: points.map(p => `${p.lon.toFixed(6)},${p.lat.toFixed(6)}`).join("|"),
+        profile: CYCLING_PROFILE, alternativeidx: "0", format: "geojson", timode: "2", "profile:processUnusedTags": "1",
+        "profile:allow_steps": "0", "profile:allow_ferries": "0", "profile:allow_motorways": "0", "profile:considerTurnRestrictions": "1",
+        "profile:maxSpeed": String(maxCyclingSpeed(this.pace)), "profile:waypointCatchingRange": "60" });
+      const raw = await fetchJson<unknown>("https://brouter.de/brouter?" + params, this.signal, 25000, this.fetcher);
+      const route = await this.terrainCheck(parseCyclingRoute(raw, points[0], points.at(-1)!, Date.now(), this.pace));
+      this.signal.throwIfAborted();
+      if (route.blocked) throw new Error("The mapped path is not suitable for the current bicycle profile.");
+      return route;
+    });
+    this.queue = task.catch(() => undefined); return task;
+  }
   route(a: Located, b: Located): Promise<CyclingRoute | null> {
     if (this.signal.aborted) return Promise.reject(this.signal.reason);
     if (samePlace(a, b)) return Promise.resolve(zeroCycling(a, b));

@@ -1,14 +1,18 @@
 import { cachedMapData } from "./mapDataCache.ts";
+import { facilityReuseAllowed, FACILITY_REUSE_NOTICE } from "./sourcePolicy.ts";
 import { validFacilityData, type FacilityData, type FacilityJob, type FacilityLoad } from "./facilitySources.ts";
 
 // Independent results and a small request pool: a failed page/station never hides
 // successful records from another source. No route coordinates leave the client.
 export async function loadFacilityJobs(jobs: readonly FacilityJob[], signal: AbortSignal,
-  update: (load: FacilityLoad) => void, fetcher: typeof fetch = fetch) {
+  update: (load: FacilityLoad) => void, fetcher: typeof fetch = fetch, isSourceLicensed = facilityReuseAllowed) {
   let next = 0;
   const worker = async () => {
     while (!signal.aborted && next < jobs.length) {
       const job = jobs[next++]; update({ ...job, status: "loading" });
+      if (!isSourceLicensed(job.provider)) {
+        update({ ...job, status: "error", error: FACILITY_REUSE_NOTICE }); continue;
+      }
       try {
         const load = async () => {
         const response = await fetcher(job.path, { signal: AbortSignal.any([...(fetcher === fetch ? [] : [signal]), AbortSignal.timeout(job.provider === "swisstlm3d" ? 90000 : 35000)]),

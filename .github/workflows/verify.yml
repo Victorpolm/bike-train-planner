@@ -41,4 +41,5 @@ jobs:
       - run: node scripts/check-facility-presentation.mjs
       - run: node scripts/check-continuity-presentation.mjs
       - run: node scripts/check-quality-presentation.mjs
+      - run: node scripts/check-source-presentation.mjs
       - run: npm run build

@@ -5,7 +5,7 @@ import { build } from "vite";
 // Embed the small compiled frontend so the Worker needs no extra asset binding.
 // Only dist is read: source, environment files and credentials cannot be bundled.
 const assets = {};
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon" };
+const types = { ".txt": "text/plain; charset=utf-8", ".json": "application/json; charset=utf-8", ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon" };
 async function collect(directory, prefix = "") {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     if (entry.name === "server" || entry.name.startsWith(".")) continue;

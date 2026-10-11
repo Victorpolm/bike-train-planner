@@ -1,5 +1,9 @@
 # Experiments and golden journeys
 
+## 2026-10-11 — official route geometry and source safeguards
+
+The current release adds a recorded Zürich Route 32 section: a 5.0006 km official line matches a 5.283 km routed path at 100% under the corridor metric, while an endpoint chord fails. Live direct-source check took 12.318 seconds and returned no intersecting published closure; terrain service was excluded. Tests cover fixed trains, whole-journey bounds, closure uncertainty, stale previews, source suppression and disabled fare quotes. [Contract, test counts, limitations and live evidence](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).
+
 ## 2026-10-11 — saved itinerary and parked-bicycle continuity
 
 614 JavaScript tests, 13 Python tests, 32 React panels and 288 unchanged-routing comparisons pass. Golden transfer: arrival minute 20, seven-minute visit, three-minute boarding; departure 23 is rejected and departure 30/arrival 50 retained. Deadline 45 rejects the journey. A pre-train ten-minute ride plus seven-minute visit and three-minute boarding correctly yields latest origin departure minute 10 for the minute-30 train. Tests cover snapshots, invalid/blocked storage, visit completion/order, zero-cycling passenger continuation, real walking acquisition, both solver modes and arrival constraints. Browser/phone interaction remains unverified. [Evidence and reproduction](JOURNEY_CONTINUITY_2026-10-11.md).

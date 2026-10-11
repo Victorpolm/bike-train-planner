@@ -4,6 +4,7 @@ import { fareRequest, fareTripRequest, fareTrips, matchingFareTrip, parseFare, r
 import { MAX_FARE_REQUEST_BYTES, verifyFareSources } from "./retainedFare.ts";
 import type { FareQuery, OnlineFare } from "../src/onlineFare.ts";
 import { providerFailure } from "./providerFailure.ts";
+import { EXPERIMENTAL_FARES_ENABLED, EXPERIMENTAL_FARE_NOTICE } from "../src/sourcePolicy.ts";
 
 export type FareEnvironment = QuotaEnvironment & { OJP_FARE_API_KEY?: string; OJP_API_KEY?: string };
 const FARE_ENDPOINT = "https://api.opentransportdata.swiss/ojpfare";
@@ -147,4 +148,7 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, ti
     } finally { pending.delete(id); }
   };
 }
-export const handleFare = createFareHandler();
+const experimentalHandler = createFareHandler();
+export const handleFare: ReturnType<typeof createFareHandler> = (request, env) =>
+  EXPERIMENTAL_FARES_ENABLED ? experimentalHandler(request, env)
+    : Promise.resolve(json({ error: EXPERIMENTAL_FARE_NOTICE }, 503));

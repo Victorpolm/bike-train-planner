@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import PrivacyNotice from "../PrivacyNotice";
 
 export default function AppHeader({ profile }: { profile: ReactNode }) {
   return (
@@ -12,7 +13,10 @@ export default function AppHeader({ profile }: { profile: ReactNode }) {
           <small>Bike + public transport</small>
         </span>
       </a>
-      <div className="header-actions">{profile}</div>
+      <div className="header-actions">
+        <PrivacyNotice />
+        {profile}
+      </div>
     </header>
   );
 }

@@ -9,9 +9,17 @@ export function useBikeParking(enabled: boolean) {
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (!enabled) return;
+    const refresh = () => { if (document.visibilityState === "visible") setAttempt(n => n + 1); };
+    const timer = setInterval(refresh, 30 * 60_000);
+    document.addEventListener("visibilitychange", refresh);
+    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
+  }, [enabled]);
+  useEffect(() => {
+    if (!enabled) return;
     const controller = new AbortController();
     for (const provider of providers) {
-      if (loads[provider].status === "ready") continue;
+      const data = loads[provider].data, ttl = provider === "official" ? 30 * 60_000 : 86400000;
+      if (loads[provider].status === "ready" && data && !data.stale && Date.now() - Date.parse(data.fetchedAt) < ttl) continue;
       setLoads(current => ({ ...current, [provider]: { ...current[provider], status: "loading", error: undefined } }));
       void loadParkingSource(provider, controller.signal, fetch, { onUpdate: data => setLoads(current => ({ ...current, [provider]: { data, status: "ready" } })) }).then(data => {
         if (!controller.signal.aborted) setLoads(current => ({ ...current, [provider]: { data, status: "ready" } }));

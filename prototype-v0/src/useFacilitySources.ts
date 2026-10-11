@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FACILITY_JOBS, type FacilityLoad, type FacilityProvider } from "./facilitySources.ts";
 import { loadFacilityJobs } from "./facilityClient.ts";
+import { facilityReuseAllowed } from "./sourcePolicy.ts";
 const EMPTY_LOADS: FacilityLoad[] = [];
 
 function useProvider(provider: FacilityProvider, enabled: boolean) {
+  enabled = enabled && facilityReuseAllowed(provider);
   const [loads, setLoads] = useState<FacilityLoad[]>(() => FACILITY_JOBS.filter(j => j.provider === provider).map(j => ({ ...j, status: "idle" })));
   const current = useRef(loads); current.current = loads;
   const [attempt, setAttempt] = useState(0);

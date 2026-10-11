@@ -22,7 +22,7 @@ export async function loadParkingSource(provider: ParkingProvider, signal: Abort
   if (fetcher === fetch) return cachedMapData(`parking-v4:${provider}`, signal,
     (data): data is ParkingData => !!data && typeof data === "object" && Array.isArray((data as ParkingData).facilities)
       && (data as ParkingData).provider === provider && Number.isFinite(Date.parse((data as ParkingData).fetchedAt)),
-    () => fetchParkingSource(provider, new AbortController().signal, fetcher, options), options.onUpdate);
+    () => fetchParkingSource(provider, new AbortController().signal, fetcher, options), options.onUpdate, provider === "official" ? 30 * 60_000 : 86400000);
   return fetchParkingSource(provider, signal, fetcher, options);
 }
 async function fetchParkingSource(provider: ParkingProvider, signal: AbortSignal, fetcher: typeof fetch,

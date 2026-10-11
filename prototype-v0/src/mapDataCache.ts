@@ -49,13 +49,14 @@ export function createMapDataCache(store: MapCacheStore = persistent, now = Date
   const memory = new Map<string, RecordData>();
   const pending = new Map<string, Promise<RecordData>>();
   return async function cached<T extends RecordData>(key: string, signal: AbortSignal,
-    valid: (value: unknown) => value is T, load: () => Promise<T>, onUpdate?: (data: T) => void): Promise<T> {
+    valid: (value: unknown) => value is T, load: () => Promise<T>, onUpdate?: (data: T) => void,
+    freshnessMs = DAY): Promise<T> {
     signal.throwIfAborted();
     let stored: unknown = memory.get(key);
     if (!stored) try { stored = await untilAborted(store.get(key), signal); } catch { signal.throwIfAborted(); }
     const age = valid(stored) ? now() - Date.parse(stored.fetchedAt) : Infinity;
     const usable = valid(stored) && age >= 0 && age <= 7 * DAY ? stored : undefined;
-    if (usable && age < DAY && !usable.stale) { memory.set(key, usable); return usable; }
+    if (usable && age < freshnessMs && !usable.stale) { memory.set(key, usable); return usable; }
     let request = pending.get(key) as Promise<T> | undefined;
     if (!request) {
       // The bounded source request may finish after its first viewer unmounts:
@@ -77,3 +78,16 @@ export function createMapDataCache(store: MapCacheStore = persistent, now = Date
   };
 }
 export const cachedMapData = createMapDataCache();
+
+/** Retire the disabled source even when an older release persisted it. */
+export async function purgeRestrictedFacilityCache(): Promise<void> {
+  const db = await openDatabase(); if (!db) return;
+  await new Promise<void>(resolve => {
+    try {
+      const tx = db.transaction("datasets", "readwrite"), cursor = tx.objectStore("datasets").openCursor();
+      cursor.onsuccess = () => { const c = cursor.result; if (!c) return;
+        if (/^facility-v1:(sbb|graubuenden)\//.test(String(c.key))) c.delete(); c.continue(); };
+      tx.oncomplete = tx.onerror = tx.onabort = () => resolve();
+    } catch { resolve(); }
+  });
+}

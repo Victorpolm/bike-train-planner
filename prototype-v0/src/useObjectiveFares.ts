@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { FareProfile } from "./fares.ts";
 import type { OnlineFare } from "./onlineFare.ts";
 import { requestOnlineFare } from "./onlineFareClient.ts";
+import { EXPERIMENTAL_FARES_ENABLED } from "./sourcePolicy.ts";
 import { objectiveFareRequests, type ObjectiveJourneyPool } from "./objectiveFares.ts";
 
 export function useObjectiveFares(pools: ObjectiveJourneyPool[], profile: FareProfile, enabled: boolean) {
+  enabled = enabled && EXPERIMENTAL_FARES_ENABLED;
   const requests = objectiveFareRequests(pools, profile);
   const key = enabled ? JSON.stringify(requests.keys) : "";
   const [quotes, setQuotes] = useState<Map<string, OnlineFare>>(new Map());

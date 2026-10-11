@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-11T16:41:28.522Z",
+  "status": "passed",
+  "route": {
+    "number": 32,
+    "title": "Rhein–Hirzel–Linth (Zürich - Pfäffikon SZ)",
+    "url": "https://schweizmobil.ch/en/cycling-in-switzerland/route-32/stage-2",
+    "sectionKm": 5.000597499859441,
+    "matchedPercent": 100,
+    "checkedAt": "2026-10-11T16:41:28.521Z",
+    "closuresCheckedAt": "2026-10-11T16:41:28.518Z"
+  },
+  "minutes": 18,
+  "km": 5.283,
+  "elapsedMs": 12318,
+  "requests": 1,
+  "scope": "direct source smoke check; terrain service excluded",
+  "bounds": [
+    8.48,
+    47.3,
+    8.58,
+    47.42
+  ]
+}

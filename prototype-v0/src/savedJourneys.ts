@@ -3,6 +3,7 @@ import { validateOptions, type Options } from "./model.ts";
 import { validateRequiredStops } from "./requiredVisits.ts";
 import type { BikeParking } from "./bikeParking.ts";
 import type { Place, Point, TransitLeg } from "./routing.ts";
+import { validOfficialEvidence } from "./officialCycling.ts";
 
 export const JOURNEY_STORAGE_KEY = "reroute-journeys-v1";
 export const MAX_SAVED_JOURNEYS = 12;
@@ -17,6 +18,7 @@ const point = (p: unknown): p is Point => !!p && typeof p === "object" && Number
 const place = (p: unknown): p is Place => point(p) && typeof (p as Place).label === "string" && !!(p as Place).label.trim();
 const number = (v: unknown) => typeof v === "number" && Number.isFinite(v) && v >= 0;
 function route(r: any) {
+  if (r?.officialRoute !== undefined && !validOfficialEvidence(r.officialRoute)) throw new Error("Invalid saved official-route evidence");
   if (!r || !point(r.from) || !point(r.to) || !number(r.minutes) || !number(r.distanceKm) || !Array.isArray(r.points) || !r.points.every(point))
     throw new Error("Invalid saved path");
 }

@@ -1,3 +1,11 @@
+# Current status — 11 October 2026
+
+**The SBB Trafimage/INSA and tourism-page Graubünden enrichments described below are disabled.** Their public display/caching/redistribution rights have not been confirmed for this exact integration. The production API rejects these sources before cache or upstream access; clients suppress old source records and remove their public-data cache entries. The Zürich HB station-plan floor/grid enrichment has also been removed. Independently licensed OSM, swisstopo and separate open transport datasets remain available. The older implementation record below is retained as history, not a statement that these integrations are currently enabled or cleared.
+
+See [current launch review and unsent permission request](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md), [source register](DATA_SOURCE_REGISTER.md).
+
+---
+
 # Three facility sources and implementation audit
 
 _30 September 2026. User-authorised implementation, published as version 40; no new ETH-specific work._
@@ -61,3 +69,4 @@ The audit compares [APP_ROADMAP.md](APP_ROADMAP.md), the parking/useful-stop pro
 | Deliberately deferred | Indoor turn-by-turn navigation, measured road-safety ranking, live bicycle occupancy/booking and park-and-ride bicycle custody | Separate product/data decisions; these are not regressions in this release. |
 
 The agreed overall order remains parking → useful services → broader UI. Within the current useful-stop work, **rural refill precision comes before adding more categories or city connectors**. ETH-specific expansion is excluded from the next work; its prior labelled report is simply retained.
+

@@ -6,7 +6,6 @@ export type ReviewedAmenityEntry = {
 } & ({ kind: "addition"; facility: Amenity; replacesOsmIds?: string[] }
   | { kind: "location-details"; osmIds: string[] });
 
-const stationPlan = "https://company.sbb.ch/content/dam/infrastruktur/trafimage/bahnhofplaene/plan-zuerich-hb-a4.pdf";
 const report = "https://github.com/Victorpolm/bike-train-planner/blob/main/docs/APP_ROADMAP.md#30-september-proposal-keep-facility-coverage-manageable";
 
 // Small reviewed inventory. Source review is distinct from an on-site visit.
@@ -28,14 +27,7 @@ export const REVIEWED_AMENITIES: readonly ReviewedAmenityEntry[] = [
         note: "Building centre used only as an approximate map reference." },
     ],
   },
-  {
-    id: "zurich-hb-hygienecenter", kind: "location-details", osmIds: ["osm:node/4424615154", "osm:node/4833061590"],
-    location: { building: "Zürich HB", floorLabel: "Zwischengeschoss (intermediate floor)", zone: "Official station plan: grid L7",
-      directions: "Follow signs for Hygienecenter / WC. Use the station plan to find grid L7; follow current signs during building works.",
-      planUrl: stationPlan, planLabel: "Open Zürich HB station plan (PDF)" },
-    evidence: [{ kind: "document", label: "Location source: SBB station plan", url: stationPlan, date: "2026-09-30",
-      note: "Plan dated December 2025; floor and grid reviewed, no on-site entrance or accessibility check." }],
-  },
+
 ];
 
 export function withReviewedAmenities(facilities: readonly Amenity[], categories: readonly AmenityCategory[],

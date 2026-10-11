@@ -1,0 +1,61 @@
+{
+  "checkedAt": "2026-10-11T16:59:29.421Z",
+  "passed": true,
+  "observations": [
+    {
+      "path": "/",
+      "status": 200,
+      "elapsedMs": 5906
+    },
+    {
+      "path": "/data-source-register.json",
+      "status": 200,
+      "elapsedMs": 1275
+    },
+    {
+      "path": "/data-source-register.html",
+      "status": 200,
+      "elapsedMs": 69
+    },
+    {
+      "path": "/third-party-notices.txt",
+      "status": 200,
+      "elapsedMs": 71
+    },
+    {
+      "path": "/api/facilities/v1/sbb/8503000",
+      "status": 451,
+      "elapsedMs": 60
+    },
+    {
+      "path": "/api/facilities/v1/graubuenden/crestasee",
+      "status": 451,
+      "elapsedMs": 4890
+    },
+    {
+      "path": "/api/fares/quote",
+      "status": 503,
+      "elapsedMs": 4743
+    },
+    {
+      "path": "/api/official-cycling",
+      "status": 200,
+      "elapsedMs": 6264
+    },
+    {
+      "path": "/api/official-cycling",
+      "status": 200,
+      "elapsedMs": 5328
+    },
+    {
+      "path": "/api/official-cycling",
+      "status": 400,
+      "elapsedMs": 68
+    }
+  ],
+  "routeCount": 9,
+  "routeDataPartial": false,
+  "closureCount": 11,
+  "closureDataPartial": false,
+  "browserInteraction": "not-tested"
+}

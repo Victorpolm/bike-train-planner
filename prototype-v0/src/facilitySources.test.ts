@@ -68,8 +68,8 @@ it("SBB retains hours and validity without promising arrival-time opening", () =
 it("cross-source enrichment requires a reviewed identity and cannot erase restrictions or negative evidence", () => {
   const base = parseOsmAmenities({ elements: [{ type: "node", id: 1, lat: 46.798032, lon: 9.272311,
     tags: { amenity: "drinking_water", access: "private", drinking_water: "no", level: "1" } }] }).facilities;
-  assert.equal(mergeFacilitySources(base, rural(), ["water"]).length, 2); // Same coordinates are insufficient.
-  const [external] = rural(); external.provenance!.referenceOsmIds = [base[0].id];
+  assert.equal(mergeFacilitySources(base, rural(), ["water"]).length, 1); // Unlicensed page enrichment is suppressed.
+  const [external] = rural(); external.id = "swisstlm3d:synthetic"; external.provenance!.provider = "swisstlm3d"; external.provenance!.referenceOsmIds = [base[0].id];
   const [merged] = mergeFacilitySources(base, [external], ["water"]);
   assert.equal(merged.id, base[0].id); assert.equal(merged.tags.access, "private"); assert.equal(merged.tags.level, "1");
   assert.equal(merged.potable, "no"); assert.equal(closestAmenity([merged], merged, "water"), null);
@@ -132,21 +132,21 @@ it("the hosted TLM layer serves the dated prepared index without waiting for the
   const data = await response.json(); assert.equal(data.fetchedAt, TLM_WATER_SNAPSHOT.fetchedAt);
 });
 
-it("facility requests use fixed URLs, coalesce/cache work and isolate a failed station", async () => {
-  const handle = createFacilityHandler(), seen: string[] = [];
+it("facility requests cache permitted feeds and block INSA before fetching", async () => {
+  const handle = createFacilityHandler({ isSourceLicensed: p => p !== "sbb" }), seen: string[] = [];
   const fetcher = async (url: RequestInfo | URL) => { seen.push(String(url)); return String(url).includes('graubuenden.ch') ? new Response(ruralPage) : new Response('down', { status: 503 }); };
   const [a, b] = await Promise.all([handle(request(), fetcher), handle(request(), fetcher)]);
   assert.equal(a.status, 200); assert.equal(b.status, 200); assert.equal(seen.length, 1);
-  assert.equal((await handle(request(FACILITY_JOBS.find(j => j.provider === 'sbb')!.path), fetcher)).status, 503);
-  assert.equal((await handle(request(), fetcher)).status, 200); assert.equal(seen.length, 2);
+  assert.equal((await handle(request(FACILITY_JOBS.find(j => j.provider === 'sbb')!.path), fetcher)).status, 451);
+  assert.equal((await handle(request(), fetcher)).status, 200); assert.equal(seen.length, 1);
   assert.equal((await handle(request(ruralJob.path + '?url=https://example.com'), fetcher)).status, 404);
   assert.equal((await handle(request('/api/facilities/v1/sbb/3000'), fetcher)).status, 404);
   assert.equal((await handle(new Request(request(), { method: 'POST' }), fetcher)).status, 405);
-  assert.equal(seen.length, 2);
+  assert.equal(seen.length, 1);
 });
 
 it("facility stale fallback is labelled, bounded and cooled down", async () => {
-  let now = Date.parse(DATE), calls = 0; const handle = createFacilityHandler({ now: () => now });
+  let now = Date.parse(DATE), calls = 0; const handle = createFacilityHandler({ now: () => now, isSourceLicensed: () => true });
   const fetcher = async () => ++calls === 1 ? new Response(ruralPage) : new Response('down', { status: 503 });
   assert.equal((await handle(request(), fetcher)).status, 200);
   now += 86400001; const old = await (await handle(request(), fetcher)).json(); assert.equal(old.stale, true); assert.equal(old.fetchedAt, DATE.replace('Z', '.000Z'));
@@ -161,7 +161,7 @@ it("the client keeps partial successes, bounds concurrency, validates responses 
     await new Promise(resolve => setTimeout(resolve, 5)); active--;
     const job = jobs.find(j => j.path === url)!;
     return job === jobs[1] ? new Response('down', { status: 503 }) : Response.json(facilityData(job, parseRuralWater(ruralPage, job.key.split('/')[1], DATE), DATE));
-  });
+  }, () => true);
   assert.equal(maximum, 2); assert.equal([...updates.values()].filter(l => l.status === 'ready').length, 3);
   assert.equal(updates.get(jobs[1].key)?.status, 'error');
   const controller = new AbortController(); controller.abort();

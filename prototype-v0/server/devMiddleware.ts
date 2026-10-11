@@ -7,6 +7,7 @@ import { handleTimetable, type TimetableEnvironment } from "./timetableHandler.t
 import type { Plugin } from "vite";
 import { handleOjp } from "./ojpHandler.ts";
 import { handleFare } from "./fareHandler.ts";
+import { handleOfficialCycling } from "./officialCyclingHandler.ts";
 
 export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {}, fareKey?: string): Plugin {
   return { name: "server-only-ojp", configureServer(server) {
@@ -17,6 +18,13 @@ export function ojpDevelopment(key?: string, timetable: TimetableEnvironment = {
       const amenities = path === "/api/amenities/v1";
       const services = path.startsWith("/api/services/");
       const facilities = path.startsWith("/api/facilities/");
+      if (path === "/api/official-cycling") {
+        const chunks: Buffer[] = []; let size = 0;
+        for await (const chunk of incoming) { size += chunk.length; if (size > 1024) { outgoing.writeHead(413); outgoing.end(); return; } chunks.push(Buffer.from(chunk)); }
+        const response = await handleOfficialCycling(new Request("http://localhost/api/official-cycling", { method: incoming.method,
+          body: incoming.method === "POST" ? Buffer.concat(chunks) : undefined }));
+        outgoing.writeHead(response.status, Object.fromEntries(response.headers)); outgoing.end(await response.text()); return;
+      }
       if (!incoming.url?.startsWith("/api/ojp/") && !incoming.url?.startsWith("/api/fares/") && !incoming.url?.startsWith("/api/timetable/") && !stationTransfers && !parking && !amenities && !services && !facilities && incoming.url !== "/api/terrain") return next();
       try {
         const chunks: Buffer[] = []; let size = 0;

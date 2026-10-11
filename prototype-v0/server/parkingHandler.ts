@@ -1,7 +1,7 @@
 import { parseBikeParking, PARKING_DOWNLOAD, type ParkingData, type ParkingProvider } from "../src/bikeParking.ts";
 import { OSM_PARKING_API, OSM_PARKING_QUERY, parseOsmParking } from "../src/osmParking.ts";
 
-const TTL = 24 * 60 * 60_000, STALE_TTL = 7 * TTL, MAX_BYTES = 16 * 1024 * 1024;
+const DAY = 24 * 60 * 60_000, STALE_TTL = 7 * DAY, MAX_BYTES = 16 * 1024 * 1024;
 async function boundedJson(response: Response): Promise<unknown> {
   if (!response.ok || !response.body || Number(response.headers.get("Content-Length")) > MAX_BYTES) throw new Error("Parking source unavailable");
   const reader = response.body.getReader(), decoder = new TextDecoder();
@@ -28,6 +28,7 @@ export function createParkingHandler(options: { now?: () => number; cache?: Cach
       ? url.pathname.slice("/api/parking/v3/".length) : url.searchParams.get("source") ?? "official";
     if (source !== "official" && source !== "osm") return Response.json({ error: "Unknown parking source" }, { status: 400 });
     const provider: ParkingProvider = source;
+    const TTL = provider === "official" ? 30 * 60_000 : DAY;
     const edge = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
     // Cache only public parking data, under a versioned, source-specific key.
     const cacheUrl = new URL(`/api/parking-cache/v4/${provider}`, url.origin);
@@ -45,7 +46,7 @@ export function createParkingHandler(options: { now?: () => number; cache?: Cach
           }
         } catch { /* A cache outage must not prevent a source request. */ }
       }
-      if (age() <= TTL) return;
+      if (age() < TTL) return;
       if ((retryAfter[provider] ?? 0) > now()) throw new Error("Parking retry cooling down");
       try {
         const response = provider === "osm"
@@ -66,11 +67,11 @@ export function createParkingHandler(options: { now?: () => number; cache?: Cach
       }
     };
     try {
-      if (age() > TTL) {
+      if (age() >= TTL) {
         pending[provider] ??= load().finally(() => { delete pending[provider]; });
         try { await pending[provider]; } catch { if (age() > STALE_TTL) throw new Error("Parking unavailable"); }
       }
-      return Response.json({ ...cached[provider], stale: age() > TTL },
+      return Response.json({ ...cached[provider], stale: age() >= TTL },
         { headers: { "Cache-Control": "private, no-store", "X-Parking-Source": provider, "X-Parking-Schema": "3", "X-Content-Type-Options": "nosniff" } });
     } catch {
       return Response.json({ error: `${provider === "osm" ? "OpenStreetMap" : "Official"} parking could not be loaded. Your journey search is unaffected.` },

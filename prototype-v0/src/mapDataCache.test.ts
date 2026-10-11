@@ -50,3 +50,9 @@ it("cancels one viewer without cancelling another viewer's shared dataset", asyn
   await assert.rejects(first, { name: "AbortError" });
   resolve(data()); assert.deepEqual(await second, data()); assert.equal(calls, 1);
 });
+it("official parking freshness can follow the publisher's half-hour interval without changing OSM reuse", async () => {
+  const disk = store(); disk.values.set("official", data(31 * 60000)); disk.values.set("osm", data(31 * 60000));
+  let calls = 0; const cache = createMapDataCache(disk, () => NOW), load = async () => { calls++; return data(); };
+  const old = await cache("official", signal(), valid, load, undefined, 30 * 60000); assert.equal(old.stale, true);
+  assert.equal((await cache("osm", signal(), valid, load)).stale, undefined); assert.equal(calls, 1);
+});

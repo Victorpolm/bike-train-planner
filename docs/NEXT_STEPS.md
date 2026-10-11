@@ -1,14 +1,16 @@
-# Next steps after journey continuity
+# Next steps after official cycling and source review
 
 _Consolidated 11 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
-## Owner's three next priorities — 10 October
+## Owner's three next priorities — updated 11 October
 
-1. **Design proposals:** Discover compromises and scenic/interesting-place Bikepacking routes remain design work. The owner’s subsequent feedback now authorizes custom cycling minimum/maximum and Extra-category regrouping; these are delivered in the [preference release](PREFERENCE_CONTROLS_2026-10-10.md).
-2. **Before wider access:** Shared per-key D1 quotas and maintained 2026/2027 transfer refresh are now implemented. Confirm the issued-key allowance and peak demand before wider access; the Site remains owner-private. This is a project task, not a scheduled reminder.
+1. **Design proposals:** Discover compromises, target-duration sports loops and reviewed interesting-place itineraries remain design work. Bounded official SwitzerlandMobility cycling sections are now implemented. The owner’s subsequent feedback now authorizes custom cycling minimum/maximum and Extra-category regrouping; these are delivered in the [preference release](PREFERENCE_CONTROLS_2026-10-10.md).
+2. **Before wider access:** Shared per-key D1 quotas and maintained 2026/2027 transfer refresh are now implemented. Complete the [launch review](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md): operator/contact, hosting retention/countries, data and service rights, provider capacity, trademark/software licensing, counsel review and phone acceptance. The Site remains owner-private. This is a project task, not a scheduled reminder.
 3. **Europe:** scope a later expansion with country/provider coverage, bicycle-carriage rules, fares, station transfers and data licensing. Current delivery remains Switzerland-first and owner-private; no European coverage is claimed.
 
 ## Requested work now delivered
+
+**11 October official cycling and launch safeguards:** Official SwitzerlandMobility cycling sections can now be checked and applied from Map without adding work to the initial search. Unlicensed Trafimage/INSA and tourism-page enrichments are disabled; integration fare quotes are hidden. Privacy/source notices, a 16-source register, component licences and stricter official-parking refresh are included. External launch remains blocked on owner identity/contact, hosting facts, service rights, name/software-licence decisions and legal/manual acceptance. [Behaviour, evidence and remaining decisions](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).
 
 **11 October quotas and data quality:** [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md). Bicycle day-pass caps now cover reviewed PostBus/RhB services; published standard fares beat test quotes, known invalid products are filtered, missing reservation notes are distinguished from conflicts, and a downloadable report gathers exact failing cases. The remaining provider/field dependencies are listed in the release record.
 
@@ -24,11 +26,11 @@ The owner explicitly authorized synchronization, facility-stop insertion and use
 
 ## Search speed — next technical follow-up
 
-Steps 1–3 are delivered: local stage timing, unchanged-result reuse and early rejection of impossible connections. Use **Search timings** on a representative slow journey, cold and warm, to separate remaining solver time from provider/queue work. Browser Web Worker execution remains a separate proposal for responsiveness on the user's device; it does not require buying remote computation. The sports target-duration/marked-route collection and later ride-sharing ideas remain design proposals. [Measurements and proposed sequence](PERFORMANCE_PASS_2026-10-10.md).
+Steps 1–3 are delivered: local stage timing, unchanged-result reuse and early rejection of impossible connections. Use **Search timings** on a representative slow journey, cold and warm, to separate remaining solver time from provider/queue work. Browser Web Worker execution remains a separate proposal for responsiveness on the user's device; it does not require buying remote computation. A target-duration sports-loop planner and later ride sharing remain design proposals; explicit official-route sections are now delivered. [Measurements and proposed sequence](PERFORMANCE_PASS_2026-10-10.md).
 
 ## Confirmed starting point
 
-**Current: version 71**, published privately 11 October 2026 at 13:49:25 UTC, Site source `c4b420bf17777d70cd9c016f86f5587ffa485fba`, GitHub implementation `83af0963866d473ce44aa30249e63151b60786c1`. All 309 app files match the publication. Shared quota storage and both annual transfer feeds are live;634 JavaScript/16 Python tests and 37 rendered panels pass. [Release and live evidence](DATA_QUALITY_AND_QUOTAS_2026-10-11.md).
+**Previous: version 71**, published privately 11 October 2026 at 13:49:25 UTC, Site source `c4b420bf17777d70cd9c016f86f5587ffa485fba`, GitHub implementation `83af0963866d473ce44aa30249e63151b60786c1`. All 309 app files match the publication. Shared quota storage and both annual transfer feeds are live;634 JavaScript/16 Python tests and 37 rendered panels pass. [Release and live evidence](DATA_QUALITY_AND_QUOTAS_2026-10-11.md).
 
 The following starting-point records are historical:
 
@@ -100,7 +102,7 @@ The feed-refresh task is now implemented as a scheduled GitHub Actions workflow;
 | Item | Decision or work still needed |
 |---|---|
 | Discover compromises | Define a small set of useful intermediate trade-offs and test them against fixed candidates and rider choices |
-| Scenic/interesting-place Bikepacking routes | Define reviewed places, access/visit evidence and a detour budget; the implemented less-traffic objective does not provide this capability |
+| Sports loops and interesting-place itineraries | Official cycling-route portions are delivered; target-duration loops and reviewed places still need a bounded design and evidence |
 | Prefilled SBB handoff and further fare products | Check supported parameters and exact journey/profile semantics before adding behaviour |
 | Reusable investigation / implementation / review procedures | The three written workflow procedures were proposed earlier; automatic test/build CI is already implemented. Branch protection and policy changes remain separate decisions |
 

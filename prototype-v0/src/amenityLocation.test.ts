@@ -47,15 +47,15 @@ test("HG is one approximate reported location and remains usable without an OSM 
   assert.equal(withReviewedAmenities([], ["toilets"]).length, 0);
 });
 
-test("HB enrichment preserves OSM identity, restricted access, coordinates and raw floor evidence", () => {
+test("disabled SBB plan enrichment leaves independently sourced OSM evidence unchanged", () => {
   const data = parseOsmAmenities({ elements: [raw({ amenity: "toilets", level: "-1", access: "private", name: "McClean" }, 4424615154)] }, date);
   const before = structuredClone(data.facilities);
   const result = withReviewedAmenities(data.facilities, ["toilets"]), hb = result[0];
   assert.deepEqual(data.facilities, before); assert.equal(result.length, 1); assert.equal(hb.id, before[0].id);
   assert.equal(hb.lat, before[0].lat); assert.equal(hb.tags.level, "-1");
-  assert.match(hb.location?.zone ?? "", /L7/); assert.match(amenityLocationLinks(hb)[0].href, /plan-zuerich-hb-a4.pdf$/);
+  assert.deepEqual(hb, before[0]); assert.equal(amenityLocationLinks(hb).length, 0);
   assert.ok(amenitySourceLinks(hb).some(s => s.label.includes("OpenStreetMap")));
-  assert.ok(amenitySourceLinks(hb).some(s => s.label.includes("SBB")));
+  assert.ok(!amenitySourceLinks(hb).some(s => s.label.includes("SBB")));
   assert.equal(closestAmenity(result, hb, "toilets"), null);
   assert.deepEqual(withReviewedAmenities(result, ["toilets"]), result);
 });

@@ -1,6 +1,7 @@
 import { facilityStopSteps } from "./facilityStops";
 import RefillCoverage from "./RefillCoverage";
 import CyclingEditor from "./CyclingEditor";
+import OfficialCyclingPanel from "./OfficialCyclingPanel";
 import ParkingChoices from "./ParkingChoices";
 import { parkingDetourTarget, parkingInformation, parkingVisitAllowed } from "./parkingSuitability";
 import { hoursAt } from "./facilityHours";
@@ -216,6 +217,31 @@ export default function MapView({
     cycling?.stops,
   ]);
   const [editorScope, setEditorScope] = useState<string | null>(null);
+  const [officialScope, setOfficialScope] = useState<string | null>(null);
+  const [officialPreview, setOfficialPreview] = useState<readonly (readonly Point[])[]>([]);
+  const officialOpen = officialScope === detourScope && !editingDisabled;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !officialOpen || !officialPreview.length) return;
+    const layer = L.layerGroup().addTo(map);
+    for (const points of officialPreview)
+      L.polyline(
+        points.map((p) => [p.lat, p.lon]),
+        {
+          color: "#20786d",
+          weight: 6,
+          dashArray: "9 5",
+          interactive: false,
+        },
+      ).addTo(layer);
+    const bounds = L.latLngBounds(
+      officialPreview.flatMap((points) => points.map((p) => [p.lat, p.lon] as [number, number])),
+    );
+    if (bounds.isValid()) fitMap(map, bounds);
+    return () => {
+      layer.remove();
+    };
+  }, [officialPreview, officialOpen]);
   const routeEditing = editorScope === detourScope && !editingDisabled;
   const editContext = useMemo<EditContext | null>(
     () =>
@@ -239,6 +265,7 @@ export default function MapView({
       if (editingDisabled || !stages.length || facility.unavailable) return;
       mapRef.current?.closePopup();
       setEditorScope(null);
+      setOfficialScope(null);
       setDetourRoutes(null);
       setDetour({ scope: detourScope, facility });
     },
@@ -564,7 +591,7 @@ export default function MapView({
       attributionControl: true,
     }).setView([46.8182, 8.2275], 8);
     L.control.zoom({ position: "bottomright" }).addTo(map);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19,
     }).addTo(map);
@@ -1131,10 +1158,24 @@ export default function MapView({
             onClick={() => {
               setDetour(null);
               setDetourRoutes(null);
+              setOfficialScope(null);
               setEditorScope(routeEditing ? null : detourScope);
             }}
           >
             {routeEditing ? "Close cycling editor" : "Edit cycling path"}
+          </button>
+          <button
+            type="button"
+            disabled={editingDisabled}
+            aria-pressed={officialOpen}
+            onClick={() => {
+              setDetour(null);
+              setDetourRoutes(null);
+              setEditorScope(null);
+              setOfficialScope(officialOpen ? null : detourScope);
+            }}
+          >
+            Official cycling routes
           </button>
           {onRestoreCycling && (
             <button type="button" disabled={editingDisabled} onClick={onRestoreCycling}>
@@ -1154,6 +1195,19 @@ export default function MapView({
             setEditorScope(null);
           }}
           onClose={() => setEditorScope(null)}
+        />
+      )}
+      {officialOpen && editContext && (
+        <OfficialCyclingPanel
+          key={detourScope}
+          stages={stages}
+          context={editContext}
+          onPreview={setOfficialPreview}
+          onClose={() => setOfficialScope(null)}
+          onApply={(edit) => {
+            onApplyCycling(edit);
+            setOfficialScope(null);
+          }}
         />
       )}
       <details className="map-filter-menu">

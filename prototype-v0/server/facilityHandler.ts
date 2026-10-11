@@ -2,14 +2,18 @@ import { FACILITY_JOBS, ruralWaterUrl, validFacilityData, type FacilityData } fr
 import { facilityData, parseRuralWater, parseStationFacilities } from "./facilityParsers.ts";
 import { readBounded } from "./tlmWater.ts";
 import { TLM_WATER_SNAPSHOT } from "./tlmSnapshot.ts";
+import { facilityReuseAllowed, FACILITY_REUSE_NOTICE } from "../src/sourcePolicy.ts";
 
 const DAY = 86400000, STALE = 7 * DAY;
-export function createFacilityHandler(options: { now?: () => number; cache?: Cache } = {}) {
+export function createFacilityHandler(options: { now?: () => number; cache?: Cache; isSourceLicensed?: (provider: string) => boolean } = {}) {
   const now = options.now ?? Date.now, records = new Map<string, FacilityData>(), pending = new Map<string, Promise<FacilityData>>(), cooldown = new Map<string, number>();
   return async (request: Request, fetcher: typeof fetch = fetch): Promise<Response> => {
     if (request.method !== "GET") return new Response("Method not allowed", { status: 405 });
     const url = new URL(request.url), job = FACILITY_JOBS.find(j => j.path === url.pathname);
     if (!job || url.search) return new Response("Not found", { status: 404 });
+    // Enforce before every cache or upstream read, including calls from old tabs.
+    if (!(options.isSourceLicensed ?? facilityReuseAllowed)(job.provider)) return Response.json({ error: FACILITY_REUSE_NOTICE },
+      { status: 451, headers: { "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
     if (job.provider === "swisstlm3d") return Response.json(TLM_WATER_SNAPSHOT,
       { headers: { "Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff" } });
     const cache = options.cache ?? (globalThis.caches as (CacheStorage & { default?: Cache }) | undefined)?.default;
