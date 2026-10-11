@@ -7,6 +7,7 @@ import { interpretBicycleAttributes, carriageForLeg } from "./bicycleCarriage.ts
 import { transferEndpointKey, transferEndpointQuery } from "./staticTransfers.ts";
 import { parseOjpConnections } from "./ojp.ts";
 import { journeyDataReport } from "./journeyDataQuality.ts";
+import { zeroCycling } from "./cycling.ts";
 import { onlineFareRequest } from "./onlineFareClient.ts";
 import type { TransitLeg, Journey } from "./routing.ts";
 import type { OnlineFare } from "./onlineFare.ts";
@@ -36,6 +37,14 @@ it("keeps unknown reservation requirements, prohibited bicycles and interrupted 
   b.bicycleEvidence!.permission="prohibited";assert.equal(fareSummary([leg(),b],DEFAULT_FARE_PROFILE,quote).totalChf,null);
   const stop={...leg(),mode:"stop" as const,departure:new Date("2026-10-11T09:00:00Z"),arrival:new Date("2026-10-11T09:05:00Z")};
   assert.equal(fareSummary([leg(),stop,bus()],DEFAULT_FARE_PROFILE,quote).reservationChf,null);
+  for (const mode of ["bike", "unknown"] as const) {
+    const incomplete={...stop,mode,departure:null,arrival:null};
+    assert.equal(fareSummary([leg(),incomplete,bus()],DEFAULT_FARE_PROFILE,quote).reservationChf,null);
+  }
+  const point={lat:46.85,lon:9.53};
+  const stationary={...stop,mode:"bike" as const,fromId:"8509000",toId:"8509000",arrival:stop.departure,cyclingRoute:zeroCycling(point,point)};
+  assert.equal(fareSummary([leg(),stationary,bus()],DEFAULT_FARE_PROFILE,quote).reservationChf,2);
+  stationary.toId="8509001";assert.equal(fareSummary([leg(),stationary,bus()],DEFAULT_FARE_PROFILE,quote).reservationChf,null);
 });
 it("supports ordinaryRhB pass coverage without claiming an unreviewed reservation price or replacement permission",()=>{
   const rhb=condition(leg({operator:"RhB",category:"RE",service:"RE13"}),"not-required");

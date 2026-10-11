@@ -51,8 +51,12 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
   const singleDayPass = !!first && !!last && (lastWall.slice(0, 10) === firstDay || lastWall.slice(0, 10) === nextDate && lastWall.slice(11) < "05:00");
   const required = takeBikeOnTransit ? rules.filter(r => r.bikeReservation === "required").length : 0;
   const unknown = takeBikeOnTransit ? rules.filter(r => r.bikeReservation === "unknown").length : 0;
+  const stationary = (l: TransitLeg) => !!l.departure && !!l.arrival && +l.departure === +l.arrival
+    && l.cyclingRoute?.minutes === 0 && l.cyclingRoute.distanceKm === 0
+    && (!!l.fromId && l.fromId === l.toId || !!l.fromPoint && !!l.toPoint
+      && l.fromPoint.lat === l.toPoint.lat && l.fromPoint.lon === l.toPoint.lon);
   const hasCyclingBreak = legs.slice(legs.findIndex(l => l.mode === "transit") + 1,
-    legs.reduce((n, l, i) => l.mode === "transit" ? i : n, -1)).some(l => l.mode === "stop" || l.mode === "bike" && (+l.arrival! > +l.departure! || (l.cyclingRoute?.distanceKm ?? 0) > 0));
+    legs.reduce((n, l, i) => l.mode === "transit" ? i : n, -1)).some(l => l.mode === "unknown" || l.mode === "stop" || l.mode === "bike" && !stationary(l));
   const reservationCovered = covered && transit.every((l, i) => rules[i].bikeReservation !== "required" || ["SBB", "PAG"].includes(operatorCode(l.operator)));
   // SBB and PostBus explicitly charge once for a through booking, including
   // connecting modes. An interrupted journey needs a separate booking check.
