@@ -713,6 +713,8 @@ export default function App() {
     !!navigation.following || (compactLayout ? mobileView === "journey" : detailView === "journey"),
     selectedSource?.options.boardingMinutes,
     selectedSource?.options.arriveBy,
+    selectedSource?.options.fareProfile,
+    selectedSource?.options.takeBikeOnTransit !== false,
   );
   const selectedTiming = useMemo(
     () =>

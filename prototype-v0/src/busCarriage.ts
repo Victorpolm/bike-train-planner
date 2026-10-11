@@ -1,5 +1,6 @@
 import { normalizeCode as normalize, operatorCode } from "./normalization.ts";
 import type { TransitLeg } from "./routing.ts";
+import { localOperatorBicycleRule, localPolicy } from "./localTransport.ts";
 
 export type BusPreference = "known-rules" | "include-unknown" | "no-buses";
 export type BusCarriage = {
@@ -48,6 +49,10 @@ export function busCarriage(leg: TransitLeg): BusCarriage | null {
   // Replacement vehicles must not inherit an operator's ordinary bus policy.
   if (["EV", "SEV"].includes(normalize(leg.category))) return { ...unknown,
     instructions: ["This is a replacement service. Confirm bicycle carriage directly for this departure; ordinary operator rules may not apply."] };
+  const local = localOperatorBicycleRule(leg);
+  if (local) return { ...unknown, operator: localPolicy(leg)!.name,
+    permission: local.permission === "allowed" ? "conditional" : local.permission === "prohibited" ? "not-allowed" : "unknown",
+    verifiesPermission: local.permission === "allowed", ticket: "required", source: local.source, instructions: local.instructions };
   // Unlike the reviewed city-wide policies, PostBus publishes line-specific
   // prohibitions and seasonal reservation exceptions. Generic space guidance
   // cannot verify the chosen departure; keep unknown until dated evidence.

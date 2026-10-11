@@ -1,0 +1,4964 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-11",
+  "purpose": "Human-reviewed Zone10 membership evidence, not ordered trip patterns or automatic fare authority",
+  "attribution": "Source: Transports publics genevois (tpg). Independent derived dataset; join and filtering performed by this project.",
+  "sourceTerms": "https://opendata.tpg.ch/terms/terms-and-conditions/",
+  "stopSource": {
+    "url": "https://opendata.tpg.ch/api/explore/v2.1/catalog/datasets/arrets/exports/json",
+    "metadataUrl": "https://opendata.tpg.ch/api/explore/v2.1/catalog/datasets/arrets",
+    "sha256": "97e3d14637939ed7cba7600bb51188062b97e44e1161120bd1f680999c6ec433",
+    "dataUpdatedAt": "2026-10-04T22:30:36.584000+00:00",
+    "totalPlatformRecords": 4659,
+    "identifierDefinition": "codedidoc is the unique public transport stop identifier assigned by OFT, per TPG dataset metadata"
+  },
+  "zoneAuthority": "https://www.unireso.com/wp-content/uploads/2026/06/CGV-unireso-Juin-2026-1.pdf",
+  "zoneAuthoritySections": [
+    "1.1",
+    "2.1.1",
+    "10.1"
+  ],
+  "limits": [
+    "CH country alone does not prove Zone10; the TPG dataset includes Vaud.",
+    "The fare authority covers Geneva except Celigny; no bounding-box inference is used.",
+    "Every line/direction platform is joined; endpoints alone do not prove arbitrary line coverage.",
+    "These are complete published line-page membership lists, not an OJP-trip-specific stop sequence.",
+    "Raw JSON object order, repeated DIDOK values, and null time values cannot establish Saut-de-puce eligibility.",
+    "Compare OJP operator, line, date and exact official stop IDs; do not fuzzy-match names.",
+    "Review route changes and service exceptions before extending validity."
+  ],
+  "lines": [
+    {
+      "line": "1",
+      "url": "https://www.tpg.ch/fr/lignes/1",
+      "pageSha256": "f95aefda273d5e42a40e532584f9873814af2b7bdecfffd512909df5a49f000b",
+      "validityText": [
+        "Valable du 30.04.2026 au 12.12.2026"
+      ],
+      "directions": {
+        "aller": {
+          "platforms": [
+            {
+              "linePageObjectKey": "2560",
+              "platformCode": "HTCH02",
+              "linePageName": "Thônex, Hôpital Trois-Chêne",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593113",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2563",
+              "platformCode": "BLID00",
+              "linePageName": "Thônex, Belle-Idée-Centre",
+              "linePageTime": 1,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593107",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2566",
+              "platformCode": "BISA00",
+              "linePageName": "Thônex, Belle-Idée-Réception",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592714",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2572",
+              "platformCode": "PBAL05",
+              "linePageName": "Chêne-Bourg, Petit-Bel-Air",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592711",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "4192",
+              "platformCode": "PBOC01",
+              "linePageName": "Thônex, Pont-Bochet",
+              "linePageTime": 4,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593109",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "4195",
+              "platformCode": "JMEL01",
+              "linePageName": "Thônex, Jumelles",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593114",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7065",
+              "platformCode": "BTPA01",
+              "linePageName": "Thônex, Belle-Terre-Place-de-l'Araire",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8509321",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7069",
+              "platformCode": "BTTT01",
+              "linePageName": "Thônex, Belle-Terre-Place-du-Traité-de-Turin",
+              "linePageTime": 9,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8509319",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7073",
+              "platformCode": "BTEC01",
+              "linePageName": "Thônex, Belle-Terre école",
+              "linePageTime": 10,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8509315",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2569",
+              "platformCode": "PBAL00",
+              "linePageName": "Chêne-Bourg, Petit-Bel-Air",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592711",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2575",
+              "platformCode": "SEYM00",
+              "linePageName": "Chêne-Bougeries, Seymaz",
+              "linePageTime": 13,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592700",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2578",
+              "platformCode": "MGNE00",
+              "linePageName": "Chêne-Bougeries, Montagne",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592697",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2581",
+              "platformCode": "CAST00",
+              "linePageName": "Chêne-Bougeries, Castan",
+              "linePageTime": 16,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12"
+              ],
+              "didok": "8592693",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2587",
+              "platformCode": "FOUR00",
+              "linePageName": "Chêne-Bougeries, Fourches",
+              "linePageTime": 18,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12"
+              ],
+              "didok": "8592695",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2590",
+              "platformCode": "CEPR00",
+              "linePageName": "Chêne-Bougeries, Rigaud",
+              "linePageTime": 20,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592703",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8121",
+              "platformCode": "GRDL06",
+              "linePageName": "Chêne-Bougerie, Gradelle",
+              "linePageTime": 22,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8587384",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1969",
+              "platformCode": "PRPI01",
+              "linePageName": "Cologny, Pré-Picot",
+              "linePageTime": 24,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8507355",
+              "municipality": "COLOGNY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1972",
+              "platformCode": "GEVV02",
+              "linePageName": "Genève-Eaux-Vives, gare/Vadier",
+              "linePageTime": 27,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8507347",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1975",
+              "platformCode": "GEVB00",
+              "linePageName": "Genève-Eaux-Vives, gare/Bloch",
+              "linePageTime": 29,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592865",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1978",
+              "platformCode": "31DC00",
+              "linePageName": "Genève, 31-Décembre",
+              "linePageTime": 30,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592773",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2599",
+              "platformCode": "TRSI02",
+              "linePageName": "Genève, Terrassière",
+              "linePageTime": 32,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592910",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2050",
+              "platformCode": "TRAN00",
+              "linePageName": "Genève, Tranchées",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592912",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2602",
+              "platformCode": "FLRI00",
+              "linePageName": "Genève, Florissant",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592824",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2605",
+              "platformCode": "CLAP00",
+              "linePageName": "Genève, Place Claparède",
+              "linePageTime": 38,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592805",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2608",
+              "platformCode": "HOPI03",
+              "linePageName": "Genève, Hôpital",
+              "linePageTime": 41,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592837",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2611",
+              "platformCode": "PHIL00",
+              "linePageName": "Genève, Philosophes",
+              "linePageTime": 43,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592881",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2614",
+              "platformCode": "PLPA04",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 46,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2617",
+              "platformCode": "CIRQ01",
+              "linePageName": "Genève, Cirque",
+              "linePageTime": 48,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592804",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2620",
+              "platformCode": "STND02",
+              "linePageName": "Genève, Stand",
+              "linePageTime": 51,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592906",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2623",
+              "platformCode": "GOUL00",
+              "linePageName": "Genève, Goulart",
+              "linePageTime": 52,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592831",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2626",
+              "platformCode": "CVIN14",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 53,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2629",
+              "platformCode": "MOTU00",
+              "linePageName": "Genève, Monthoux",
+              "linePageTime": 56,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592866",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2632",
+              "platformCode": "NAVI00",
+              "linePageName": "Genève, Navigation",
+              "linePageTime": 58,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592871",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2635",
+              "platformCode": "GAUT00",
+              "linePageName": "Genève, Gautier",
+              "linePageTime": 60,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592830",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2638",
+              "platformCode": "CBRI00",
+              "linePageName": "Genève, De-Chateaubriand",
+              "linePageTime": null,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592803",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2641",
+              "platformCode": "SECH01",
+              "linePageName": "Genève, Perle du Lac",
+              "linePageTime": null,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592902",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2644",
+              "platformCode": "JARB00",
+              "linePageName": "Genève, Jardin Botanique",
+              "linePageTime": null,
+              "pdfValidityKeys": [],
+              "didok": "8592843",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8507347",
+            "8507355",
+            "8509315",
+            "8509319",
+            "8509321",
+            "8587057",
+            "8587384",
+            "8587907",
+            "8592693",
+            "8592695",
+            "8592697",
+            "8592700",
+            "8592703",
+            "8592711",
+            "8592714",
+            "8592773",
+            "8592803",
+            "8592804",
+            "8592805",
+            "8592824",
+            "8592830",
+            "8592831",
+            "8592837",
+            "8592843",
+            "8592865",
+            "8592866",
+            "8592871",
+            "8592881",
+            "8592902",
+            "8592906",
+            "8592910",
+            "8592912",
+            "8593107",
+            "8593109",
+            "8593113",
+            "8593114"
+          ],
+          "repeatedDidok": {
+            "8592711": 2
+          }
+        },
+        "retour": {
+          "platforms": [
+            {
+              "linePageObjectKey": "2644",
+              "platformCode": "JARB00",
+              "linePageName": "Genève, Jardin Botanique",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592843",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2647",
+              "platformCode": "JARB04",
+              "linePageName": "Genève, Jardin Botanique",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592843",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2650",
+              "platformCode": "SECH00",
+              "linePageName": "Genève, Perle du Lac",
+              "linePageTime": 4,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592902",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2653",
+              "platformCode": "CBRI01",
+              "linePageName": "Genève, De-Chateaubriand",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592803",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2656",
+              "platformCode": "GAUT01",
+              "linePageName": "Genève, Gautier",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592830",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2659",
+              "platformCode": "NAVI01",
+              "linePageName": "Genève, Navigation",
+              "linePageTime": 13,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592871",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2662",
+              "platformCode": "MOTU01",
+              "linePageName": "Genève, Monthoux",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592866",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2665",
+              "platformCode": "ALPE00",
+              "linePageName": "Genève, Alpes",
+              "linePageTime": 16,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592777",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2668",
+              "platformCode": "CVIN15",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2671",
+              "platformCode": "ISAM02",
+              "linePageName": "Genève, Mercier",
+              "linePageTime": 22,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592841",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2674",
+              "platformCode": "STND00",
+              "linePageName": "Genève, Stand",
+              "linePageTime": 24,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592906",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2677",
+              "platformCode": "CIRQ00",
+              "linePageName": "Genève, Cirque",
+              "linePageTime": 26,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592804",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2680",
+              "platformCode": "EMED00",
+              "linePageName": "Genève, Ecole-de-Médecine",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592819",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2683",
+              "platformCode": "PTAR02",
+              "linePageName": "Genève, Pont-d'Arve",
+              "linePageTime": 30,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592887",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2686",
+              "platformCode": "LOMB00",
+              "linePageName": "Genève, Lombard",
+              "linePageTime": 32,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592848",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2689",
+              "platformCode": "HOPI01",
+              "linePageName": "Genève, Hôpital",
+              "linePageTime": 34,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592837",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2692",
+              "platformCode": "CLAP02",
+              "linePageName": "Genève, Place Claparède",
+              "linePageTime": 35,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592805",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2695",
+              "platformCode": "GCHP02",
+              "linePageName": "Genève-Champel, gare/Peschier",
+              "linePageTime": 37,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592878",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2152",
+              "platformCode": "CTMI00",
+              "linePageName": "Genève, Contamines",
+              "linePageTime": 39,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592810",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2155",
+              "platformCode": "MUSE00",
+              "linePageName": "Genève, Muséum",
+              "linePageTime": 41,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592870",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2698",
+              "platformCode": "TRSI03",
+              "linePageName": "Genève, Terrassière",
+              "linePageTime": 43,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592910",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1819",
+              "platformCode": "31DC01",
+              "linePageName": "Genève, 31-Décembre",
+              "linePageTime": 47,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592773",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1822",
+              "platformCode": "GEVB01",
+              "linePageName": "Genève-Eaux-Vives, gare/Bloch",
+              "linePageTime": 49,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592865",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1825",
+              "platformCode": "GEVV01",
+              "linePageName": "Genève-Eaux-Vives, gare/Vadier",
+              "linePageTime": 51,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8507347",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1828",
+              "platformCode": "PRPI00",
+              "linePageName": "Cologny, Pré-Picot",
+              "linePageTime": 53,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8507355",
+              "municipality": "COLOGNY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8122",
+              "platformCode": "GRDL07",
+              "linePageName": "Chêne-Bougerie, Gradelle",
+              "linePageTime": 56,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8587384",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2707",
+              "platformCode": "CEPR01",
+              "linePageName": "Chêne-Bougeries, Rigaud",
+              "linePageTime": 58,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592703",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2710",
+              "platformCode": "FOUR01",
+              "linePageName": "Chêne-Bougeries, Fourches",
+              "linePageTime": 59,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12"
+              ],
+              "didok": "8592695",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2716",
+              "platformCode": "CAST01",
+              "linePageName": "Chêne-Bougeries, Castan",
+              "linePageTime": 62,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12"
+              ],
+              "didok": "8592693",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2719",
+              "platformCode": "MGNE01",
+              "linePageName": "Chêne-Bougeries, Montagne",
+              "linePageTime": 63,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592697",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2722",
+              "platformCode": "SEYM01",
+              "linePageName": "Chêne-Bougeries, Seymaz",
+              "linePageTime": 64,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592700",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3490",
+              "platformCode": "PBAL03",
+              "linePageName": "Chêne-Bourg, Petit-Bel-Air",
+              "linePageTime": 66,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592711",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7053",
+              "platformCode": "BTEC00",
+              "linePageName": "Thônex, Belle-Terre école",
+              "linePageTime": 68,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8509315",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7057",
+              "platformCode": "BTTT00",
+              "linePageName": "Thônex, Belle-Terre-Place-du-Traité-de-Turin",
+              "linePageTime": 69,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8509319",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7061",
+              "platformCode": "BTPA00",
+              "linePageName": "Thônex, Belle-Terre-Place-de-l'Araire",
+              "linePageTime": 70,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8509321",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "4228",
+              "platformCode": "JMEL00",
+              "linePageName": "Thônex, Jumelles",
+              "linePageTime": 71,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593114",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "4231",
+              "platformCode": "PBOC00",
+              "linePageName": "Thônex, Pont-Bochet",
+              "linePageTime": 72,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593109",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7909",
+              "platformCode": "HTCH03",
+              "linePageName": "Thônex, Hôpital Trois-Chêne",
+              "linePageTime": 74,
+              "pdfValidityKeys": [],
+              "didok": "8593113",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2725",
+              "platformCode": "PBAL04",
+              "linePageName": "Chêne-Bourg, Petit-Bel-Air",
+              "linePageTime": null,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592711",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2728",
+              "platformCode": "BISA01",
+              "linePageName": "Thônex, Belle-Idée-Réception",
+              "linePageTime": null,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8592714",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2731",
+              "platformCode": "BLID01",
+              "linePageName": "Thônex, Belle-Idée-Centre",
+              "linePageTime": null,
+              "pdfValidityKeys": [
+                "2026-04-30,2026-12-12",
+                "2026-02-02,2026-12-12"
+              ],
+              "didok": "8593107",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8507347",
+            "8507355",
+            "8509315",
+            "8509319",
+            "8509321",
+            "8587057",
+            "8587384",
+            "8592693",
+            "8592695",
+            "8592697",
+            "8592700",
+            "8592703",
+            "8592711",
+            "8592714",
+            "8592773",
+            "8592777",
+            "8592803",
+            "8592804",
+            "8592805",
+            "8592810",
+            "8592819",
+            "8592830",
+            "8592837",
+            "8592841",
+            "8592843",
+            "8592848",
+            "8592865",
+            "8592866",
+            "8592870",
+            "8592871",
+            "8592878",
+            "8592887",
+            "8592902",
+            "8592906",
+            "8592910",
+            "8593107",
+            "8593109",
+            "8593113",
+            "8593114"
+          ],
+          "repeatedDidok": {
+            "8592843": 2,
+            "8592711": 2
+          }
+        }
+      }
+    },
+    {
+      "line": "10",
+      "url": "https://www.tpg.ch/fr/lignes/10",
+      "pageSha256": "73077e4bd326755dac58d5cae193d2142524b745e06947322a042601a5468d41",
+      "validityText": [
+        "Valable du 14.12.2025 au 12.12.2026"
+      ],
+      "directions": {
+        "aller": {
+          "platforms": [
+            {
+              "linePageObjectKey": "3340",
+              "platformCode": "AERO00",
+              "linePageName": "Genève-Aéroport, Terminal",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592775",
+              "municipality": "LE GRAND-SACONNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1414",
+              "platformCode": "WTC00",
+              "linePageName": "Genève-Aéroport, WTC",
+              "linePageTime": 1,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592929",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1417",
+              "platformCode": "TOCO00",
+              "linePageName": "Genève-Aéroport, Tour-de-Contrôle",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8593021",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3343",
+              "platformCode": "JVIL00",
+              "linePageName": "Meyrin, De-Joinville",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8595027",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8118",
+              "platformCode": "VACA00",
+              "linePageName": "Vernier, Avanchets-Casaï",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8593158",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3349",
+              "platformCode": "PAIL00",
+              "linePageName": "Vernier, Balexert-Pailly",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8593165",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3352",
+              "platformCode": "BOHT03",
+              "linePageName": "Vernier, Bouchet",
+              "linePageTime": 9,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592791",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3355",
+              "platformCode": "FRAN00",
+              "linePageName": "Genève, Franchises",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592826",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3358",
+              "platformCode": "GUYE01",
+              "linePageName": "Genève, Guye",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592835",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3361",
+              "platformCode": "CHRM01",
+              "linePageName": "Genève, Charmilles",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592802",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3364",
+              "platformCode": "DOLE01",
+              "linePageName": "Genève, Dôle",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592818",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3367",
+              "platformCode": "PRRI01",
+              "linePageName": "Genève, Prairie",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592890",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3370",
+              "platformCode": "CVIN09",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3373",
+              "platformCode": "COUT00",
+              "linePageName": "Genève, Coutance",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592812",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2743",
+              "platformCode": "BAIR04",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2827",
+              "platformCode": "BAIR05",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 31,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2830",
+              "platformCode": "MLRD03",
+              "linePageName": "Genève, Molard",
+              "linePageTime": 32,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592862",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2833",
+              "platformCode": "RIVE06",
+              "linePageName": "Genève, Rive",
+              "linePageTime": 34,
+              "pdfValidityKeys": [],
+              "didok": "8587061",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587057",
+            "8587061",
+            "8587387",
+            "8592775",
+            "8592791",
+            "8592802",
+            "8592812",
+            "8592818",
+            "8592826",
+            "8592835",
+            "8592862",
+            "8592890",
+            "8592929",
+            "8593021",
+            "8593158",
+            "8593165",
+            "8595027"
+          ],
+          "repeatedDidok": {
+            "8587387": 2
+          }
+        },
+        "retour": {
+          "platforms": [
+            {
+              "linePageObjectKey": "3376",
+              "platformCode": "RIVE01",
+              "linePageName": "Genève, Rive",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8587061",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1981",
+              "platformCode": "PLEV00",
+              "linePageName": "Genève, Place des Eaux-Vives",
+              "linePageTime": 4,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592883",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2161",
+              "platformCode": "METR00",
+              "linePageName": "Genève, Métropole",
+              "linePageTime": 6,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592856",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2740",
+              "platformCode": "MLRD00",
+              "linePageName": "Genève, Molard",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592862",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3379",
+              "platformCode": "BAIR00",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 11,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3382",
+              "platformCode": "COUT01",
+              "linePageName": "Genève, Coutance",
+              "linePageTime": 14,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592812",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3385",
+              "platformCode": "CVIN18",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3388",
+              "platformCode": "PRRI00",
+              "linePageName": "Genève, Prairie",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592890",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3391",
+              "platformCode": "DOLE00",
+              "linePageName": "Genève, Dôle",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592818",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3394",
+              "platformCode": "CHRM00",
+              "linePageName": "Genève, Charmilles",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592802",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3397",
+              "platformCode": "GUYE00",
+              "linePageName": "Genève, Guye",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592835",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3400",
+              "platformCode": "FRAN01",
+              "linePageName": "Genève, Franchises",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592826",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3403",
+              "platformCode": "BOHT00",
+              "linePageName": "Vernier, Bouchet",
+              "linePageTime": 31,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592791",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3406",
+              "platformCode": "PAIL01",
+              "linePageName": "Vernier, Balexert-Pailly",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8593165",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8119",
+              "platformCode": "VACA01",
+              "linePageName": "Vernier, Avanchets-Casaï",
+              "linePageTime": 34,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8593158",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3412",
+              "platformCode": "JVIL01",
+              "linePageName": "Meyrin, De-Joinville",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8595027",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1489",
+              "platformCode": "TOCO01",
+              "linePageName": "Genève-Aéroport, Tour-de-Contrôle",
+              "linePageTime": 38,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8593021",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1492",
+              "platformCode": "WTC01",
+              "linePageName": "Genève-Aéroport, WTC",
+              "linePageTime": 39,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2024-12-15,2025-12-13"
+              ],
+              "didok": "8592929",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7081",
+              "platformCode": "AERO09",
+              "linePageName": "Genève-Aéroport, Terminal",
+              "linePageTime": 40,
+              "pdfValidityKeys": [],
+              "didok": "8592775",
+              "municipality": "LE GRAND-SACONNEX",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587057",
+            "8587061",
+            "8587387",
+            "8592775",
+            "8592791",
+            "8592802",
+            "8592812",
+            "8592818",
+            "8592826",
+            "8592835",
+            "8592856",
+            "8592862",
+            "8592883",
+            "8592890",
+            "8592929",
+            "8593021",
+            "8593158",
+            "8593165",
+            "8595027"
+          ],
+          "repeatedDidok": {}
+        }
+      }
+    },
+    {
+      "line": "12",
+      "url": "https://www.tpg.ch/fr/lignes/12",
+      "pageSha256": "7c0a97a3554eb7477be4260c8f81cbff146fc941e06dfedacb58cc1f985dca40",
+      "validityText": [
+        "Valable du 14.12.2025 au 12.12.2026"
+      ],
+      "directions": {
+        "aller": {
+          "platforms": [
+            {
+              "linePageObjectKey": "3769",
+              "platformCode": "BHET08",
+              "linePageName": "Lancy-Bachet, gare",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587075",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3772",
+              "platformCode": "STAL00",
+              "linePageName": "Grand-Lancy, De-Staël",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592670",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3775",
+              "platformCode": "CRGE00",
+              "linePageName": "Carouge, Rondeau",
+              "linePageTime": 4,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587437",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3778",
+              "platformCode": "ANCI00",
+              "linePageName": "Carouge, Ancienne",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592668",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3781",
+              "platformCode": "CAMA00",
+              "linePageName": "Carouge, Marché",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592677",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3784",
+              "platformCode": "ARME00",
+              "linePageName": "Carouge, Armes",
+              "linePageTime": 9,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592669",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3787",
+              "platformCode": "BLAN00",
+              "linePageName": "Genève, Blanche",
+              "linePageTime": 10,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592789",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3790",
+              "platformCode": "AUGS00",
+              "linePageName": "Genève, Augustins",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592780",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3793",
+              "platformCode": "PTAR00",
+              "linePageName": "Genève, Pont-d'Arve",
+              "linePageTime": 14,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592887",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3796",
+              "platformCode": "PLPA00",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3235",
+              "platformCode": "PNEV02",
+              "linePageName": "Genève, Place de Neuve",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592885",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2827",
+              "platformCode": "BAIR05",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 20,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2830",
+              "platformCode": "MLRD03",
+              "linePageName": "Genève, Molard",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592862",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3238",
+              "platformCode": "RIVE00",
+              "linePageName": "Genève, Rive",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587061",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3241",
+              "platformCode": "TRSI00",
+              "linePageName": "Genève, Terrassière",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592910",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3244",
+              "platformCode": "VILL00",
+              "linePageName": "Genève, Villereuse",
+              "linePageTime": 26,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592924",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3247",
+              "platformCode": "GAEV03",
+              "linePageName": "Genève-Eaux-Vives, gare",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592829",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3250",
+              "platformCode": "AMDO00",
+              "linePageName": "Genève, Amandolier",
+              "linePageTime": 29,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592778",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3253",
+              "platformCode": "GCAN00",
+              "linePageName": "Chêne-Bougeries, Grange-Canal",
+              "linePageTime": 31,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592833",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3256",
+              "platformCode": "GRAN00",
+              "linePageName": "Chêne-Bougeries, Grangettes",
+              "linePageTime": 32,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592694",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3259",
+              "platformCode": "GFAQ00",
+              "linePageName": "Chêne-Bougeries, Grange-Falquet",
+              "linePageTime": 34,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592706",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3262",
+              "platformCode": "FAVR00",
+              "linePageName": "Chêne-Bourg, Place Favre",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592713",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3265",
+              "platformCode": "PEIL00",
+              "linePageName": "Chêne-Bourg, Peillonnex",
+              "linePageTime": 37,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592709",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3268",
+              "platformCode": "GSON00",
+              "linePageName": "Thônex, Graveson",
+              "linePageTime": 38,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8593112",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6298",
+              "platformCode": "MOIL01",
+              "linePageName": "Thônex, Moillesulaz",
+              "linePageTime": 40,
+              "pdfValidityKeys": [],
+              "didok": "8593118",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587061",
+            "8587075",
+            "8587387",
+            "8587437",
+            "8587907",
+            "8592668",
+            "8592669",
+            "8592670",
+            "8592677",
+            "8592694",
+            "8592706",
+            "8592709",
+            "8592713",
+            "8592778",
+            "8592780",
+            "8592789",
+            "8592829",
+            "8592833",
+            "8592862",
+            "8592885",
+            "8592887",
+            "8592910",
+            "8592924",
+            "8593112",
+            "8593118"
+          ],
+          "repeatedDidok": {}
+        },
+        "retour": {
+          "platforms": [
+            {
+              "linePageObjectKey": "6731",
+              "platformCode": "MOIL02",
+              "linePageName": "Thônex, Moillesulaz",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8593118",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3298",
+              "platformCode": "GSON01",
+              "linePageName": "Thônex, Graveson",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8593112",
+              "municipality": "THÔNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3301",
+              "platformCode": "PEIL01",
+              "linePageName": "Chêne-Bourg, Peillonnex",
+              "linePageTime": 4,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592709",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3304",
+              "platformCode": "FAVR01",
+              "linePageName": "Chêne-Bourg, Place Favre",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592713",
+              "municipality": "CHÊNE-BOURG",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3307",
+              "platformCode": "GFAQ01",
+              "linePageName": "Chêne-Bougeries, Grange-Falquet",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592706",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3310",
+              "platformCode": "GRAN01",
+              "linePageName": "Chêne-Bougeries, Grangettes",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592694",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3313",
+              "platformCode": "GCAN01",
+              "linePageName": "Chêne-Bougeries, Grange-Canal",
+              "linePageTime": 10,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592833",
+              "municipality": "CHÊNE-BOUGERIES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3316",
+              "platformCode": "AMDO01",
+              "linePageName": "Genève, Amandolier",
+              "linePageTime": 11,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592778",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3319",
+              "platformCode": "GAEV04",
+              "linePageName": "Genève-Eaux-Vives, gare",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592829",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3322",
+              "platformCode": "VILL01",
+              "linePageName": "Genève, Villereuse",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592924",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3325",
+              "platformCode": "TRSI01",
+              "linePageName": "Genève, Terrassière",
+              "linePageTime": 16,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2026-07-04,2026-07-19",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592910",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3328",
+              "platformCode": "RIVE08",
+              "linePageName": "Genève, Rive",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587061",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3331",
+              "platformCode": "MLRD04",
+              "linePageName": "Genève, Molard",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592862",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3334",
+              "platformCode": "BAIR06",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3337",
+              "platformCode": "PNEV03",
+              "linePageName": "Genève, Place de Neuve",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2026-07-21,2026-08-16",
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592885",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3829",
+              "platformCode": "PLPA02",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3832",
+              "platformCode": "PTAR01",
+              "linePageName": "Genève, Pont-d'Arve",
+              "linePageTime": 26,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592887",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3835",
+              "platformCode": "AUGS01",
+              "linePageName": "Genève, Augustins",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592780",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3838",
+              "platformCode": "BLAN01",
+              "linePageName": "Genève, Blanche",
+              "linePageTime": 29,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592789",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3841",
+              "platformCode": "ARME01",
+              "linePageName": "Carouge, Armes",
+              "linePageTime": 31,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592669",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3844",
+              "platformCode": "CAMA01",
+              "linePageName": "Carouge, Marché",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592677",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3847",
+              "platformCode": "ANCI01",
+              "linePageName": "Carouge, Ancienne",
+              "linePageTime": 35,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592668",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3850",
+              "platformCode": "CRGE01",
+              "linePageName": "Carouge, Rondeau",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8587437",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3853",
+              "platformCode": "STAL01",
+              "linePageName": "Grand-Lancy, De-Staël",
+              "linePageTime": 38,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12",
+                "2025-12-06,2025-12-13"
+              ],
+              "didok": "8592670",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7016",
+              "platformCode": "BHET07",
+              "linePageName": "Lancy-Bachet, gare",
+              "linePageTime": 40,
+              "pdfValidityKeys": [],
+              "didok": "8587075",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587061",
+            "8587075",
+            "8587387",
+            "8587437",
+            "8587907",
+            "8592668",
+            "8592669",
+            "8592670",
+            "8592677",
+            "8592694",
+            "8592706",
+            "8592709",
+            "8592713",
+            "8592778",
+            "8592780",
+            "8592789",
+            "8592829",
+            "8592833",
+            "8592862",
+            "8592885",
+            "8592887",
+            "8592910",
+            "8592924",
+            "8593112",
+            "8593118"
+          ],
+          "repeatedDidok": {}
+        }
+      }
+    },
+    {
+      "line": "14",
+      "url": "https://www.tpg.ch/fr/lignes/14",
+      "pageSha256": "5a44be41304f67fba9e8cdfacec629d6baf424859043371bd07d5c84fd891859",
+      "validityText": [
+        "Valable du 14.12.2025 au 12.12.2026"
+      ],
+      "directions": {
+        "aller": {
+          "platforms": [
+            {
+              "linePageObjectKey": "6911",
+              "platformCode": "VALY02",
+              "linePageName": "Bernex, Vailly",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508134",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6916",
+              "platformCode": "ROBH01",
+              "linePageName": "Bernex, Hainard",
+              "linePageTime": 1,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508128",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6921",
+              "platformCode": "LUCH01",
+              "linePageName": "Bernex, Luchepelet",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508130",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6926",
+              "platformCode": "PRMA01",
+              "linePageName": "Bernex, Pré-Marais",
+              "linePageTime": 4,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508132",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6931",
+              "platformCode": "PRBE02",
+              "linePageName": "Bernex, P+R",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592660",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3019",
+              "platformCode": "CRCO01",
+              "linePageName": "Confignon, croisée",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587386",
+              "municipality": "CONFIGNON",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3022",
+              "platformCode": "DODE01",
+              "linePageName": "Confignon, La Dode",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592758",
+              "municipality": "CONFIGNON",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3025",
+              "platformCode": "ONEX01",
+              "linePageName": "Onex, Salle communale",
+              "linePageTime": 9,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587080",
+              "municipality": "ONEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3028",
+              "platformCode": "BNDL01",
+              "linePageName": "Onex, Bandol",
+              "linePageTime": 11,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593027",
+              "municipality": "ONEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3031",
+              "platformCode": "ESRT01",
+              "linePageName": "Petit-Lancy, Les Esserts",
+              "linePageTime": 13,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587418",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3034",
+              "platformCode": "PTLA01",
+              "linePageName": "Petit-Lancy, place",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587082",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3037",
+              "platformCode": "QUID01",
+              "linePageName": "Petit-Lancy, Quidort",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592995",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2332",
+              "platformCode": "JOCT01",
+              "linePageName": "Genève, Jonction",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587062",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2335",
+              "platformCode": "PLDI01",
+              "linePageName": "Genève, Palladium",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592874",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2338",
+              "platformCode": "STND01",
+              "linePageName": "Genève, Stand",
+              "linePageTime": 26,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592906",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3040",
+              "platformCode": "BAIR01",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3043",
+              "platformCode": "COUT03",
+              "linePageName": "Genève, Coutance",
+              "linePageTime": 30,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592812",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3046",
+              "platformCode": "CVIN04",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3049",
+              "platformCode": "LYON01",
+              "linePageName": "Genève, Lyon",
+              "linePageTime": 35,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592850",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3052",
+              "platformCode": "POTE01",
+              "linePageName": "Genève, Poterie",
+              "linePageTime": 37,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592889",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3055",
+              "platformCode": "SERV01",
+              "linePageName": "Genève, Servette",
+              "linePageTime": 39,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592903",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3058",
+              "platformCode": "VIUS01",
+              "linePageName": "Genève, Vieusseux",
+              "linePageTime": 40,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592922",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3061",
+              "platformCode": "BOHT01",
+              "linePageName": "Vernier, Bouchet",
+              "linePageTime": 42,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592791",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3064",
+              "platformCode": "BALX00",
+              "linePageName": "Vernier, Balexert",
+              "linePageTime": 44,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593141",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3067",
+              "platformCode": "AVAN00",
+              "linePageName": "Vernier, Avanchets-Etang",
+              "linePageTime": 45,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593139",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3070",
+              "platformCode": "BLDO00",
+              "linePageName": "Vernier, Blandonnet",
+              "linePageTime": 47,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587924",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3073",
+              "platformCode": "JALP00",
+              "linePageName": "Meyrin, Jardin-Alpin-Vivarium",
+              "linePageTime": 49,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593015",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1510",
+              "platformCode": "FORU00",
+              "linePageName": "Meyrin, Forumeyrin",
+              "linePageTime": 51,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593010",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3076",
+              "platformCode": "VAUD00",
+              "linePageName": "Meyrin, Vaudagne",
+              "linePageTime": 52,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593022",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3079",
+              "platformCode": "GRVI01",
+              "linePageName": "Meyrin, Gravière",
+              "linePageTime": 54,
+              "pdfValidityKeys": [],
+              "didok": "8594961",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8508128",
+            "8508130",
+            "8508132",
+            "8508134",
+            "8587057",
+            "8587062",
+            "8587080",
+            "8587082",
+            "8587386",
+            "8587387",
+            "8587418",
+            "8587924",
+            "8592660",
+            "8592758",
+            "8592791",
+            "8592812",
+            "8592850",
+            "8592874",
+            "8592889",
+            "8592903",
+            "8592906",
+            "8592922",
+            "8592995",
+            "8593010",
+            "8593015",
+            "8593022",
+            "8593027",
+            "8593139",
+            "8593141",
+            "8594961"
+          ],
+          "repeatedDidok": {}
+        },
+        "retour": {
+          "platforms": [
+            {
+              "linePageObjectKey": "3079",
+              "platformCode": "GRVI01",
+              "linePageName": "Meyrin, Gravière",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8594961",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3082",
+              "platformCode": "VAUD01",
+              "linePageName": "Meyrin, Vaudagne",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593022",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "1564",
+              "platformCode": "FORU01",
+              "linePageName": "Meyrin, Forumeyrin",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593010",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3085",
+              "platformCode": "JALP01",
+              "linePageName": "Meyrin, Jardin-Alpin-Vivarium",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593015",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3088",
+              "platformCode": "BLDO03",
+              "linePageName": "Vernier, Blandonnet",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587924",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3091",
+              "platformCode": "AVAN01",
+              "linePageName": "Vernier, Avanchets-Etang",
+              "linePageTime": 10,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593139",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3094",
+              "platformCode": "BALX01",
+              "linePageName": "Vernier, Balexert",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593141",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3097",
+              "platformCode": "BOHT02",
+              "linePageName": "Vernier, Bouchet",
+              "linePageTime": 14,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592791",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3100",
+              "platformCode": "VIUS00",
+              "linePageName": "Genève, Vieusseux",
+              "linePageTime": 16,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592922",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3103",
+              "platformCode": "SERV00",
+              "linePageName": "Genève, Servette",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592903",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3106",
+              "platformCode": "POTE00",
+              "linePageName": "Genève, Poterie",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592889",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3109",
+              "platformCode": "LYON00",
+              "linePageName": "Genève, Lyon",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592850",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3112",
+              "platformCode": "CVIN10",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3115",
+              "platformCode": "COUT02",
+              "linePageName": "Genève, Coutance",
+              "linePageTime": 26,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592812",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3118",
+              "platformCode": "BAIR02",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2212",
+              "platformCode": "STND03",
+              "linePageName": "Genève, Stand",
+              "linePageTime": 29,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592906",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2215",
+              "platformCode": "PLDI00",
+              "linePageName": "Genève, Palladium",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592874",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2218",
+              "platformCode": "JOCT00",
+              "linePageName": "Genève, Jonction",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587062",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3121",
+              "platformCode": "QUID00",
+              "linePageName": "Petit-Lancy, Quidort",
+              "linePageTime": 39,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592995",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3124",
+              "platformCode": "PTLA00",
+              "linePageName": "Petit-Lancy, place",
+              "linePageTime": 40,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587082",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3127",
+              "platformCode": "ESRT00",
+              "linePageName": "Petit-Lancy, Les Esserts",
+              "linePageTime": 42,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587418",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3130",
+              "platformCode": "BNDL00",
+              "linePageName": "Onex, Bandol",
+              "linePageTime": 43,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593027",
+              "municipality": "ONEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3133",
+              "platformCode": "ONEX00",
+              "linePageName": "Onex, Salle communale",
+              "linePageTime": 45,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587080",
+              "municipality": "ONEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3136",
+              "platformCode": "DODE00",
+              "linePageName": "Confignon, La Dode",
+              "linePageTime": 46,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592758",
+              "municipality": "CONFIGNON",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3139",
+              "platformCode": "CRCO00",
+              "linePageName": "Confignon, croisée",
+              "linePageTime": 47,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587386",
+              "municipality": "CONFIGNON",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3016",
+              "platformCode": "PRBE01",
+              "linePageName": "Bernex, P+R",
+              "linePageTime": 49,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592660",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6936",
+              "platformCode": "PRMA00",
+              "linePageName": "Bernex, Pré-Marais",
+              "linePageTime": 50,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508132",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6941",
+              "platformCode": "LUCH00",
+              "linePageName": "Bernex, Luchepelet",
+              "linePageTime": 51,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508130",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6946",
+              "platformCode": "ROBH00",
+              "linePageName": "Bernex, Hainard",
+              "linePageTime": 52,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8508128",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6911",
+              "platformCode": "VALY02",
+              "linePageName": "Bernex, Vailly",
+              "linePageTime": 54,
+              "pdfValidityKeys": [],
+              "didok": "8508134",
+              "municipality": "BERNEX",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8508128",
+            "8508130",
+            "8508132",
+            "8508134",
+            "8587057",
+            "8587062",
+            "8587080",
+            "8587082",
+            "8587386",
+            "8587387",
+            "8587418",
+            "8587924",
+            "8592660",
+            "8592758",
+            "8592791",
+            "8592812",
+            "8592850",
+            "8592874",
+            "8592889",
+            "8592903",
+            "8592906",
+            "8592922",
+            "8592995",
+            "8593010",
+            "8593015",
+            "8593022",
+            "8593027",
+            "8593139",
+            "8593141",
+            "8594961"
+          ],
+          "repeatedDidok": {}
+        }
+      }
+    },
+    {
+      "line": "15",
+      "url": "https://www.tpg.ch/fr/lignes/15",
+      "pageSha256": "d57e0c741be4c6f94a3983297951e27d9239c4fd1ac8516985a780029babbb0e",
+      "validityText": [
+        "Valable du 14.12.2025 au 12.12.2026"
+      ],
+      "directions": {
+        "aller": {
+          "platforms": [
+            {
+              "linePageObjectKey": "8009",
+              "platformCode": "ZIPL10",
+              "linePageName": "Plan-les-Ouates, ZIPLO",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593073",
+              "municipality": "PLAN-LES-OUATES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8010",
+              "platformCode": "LERO10",
+              "linePageName": "Plan-les-Ouates, Le Rolliet",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592984",
+              "municipality": "PLAN-LES-OUATES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8011",
+              "platformCode": "BAUD10",
+              "linePageName": "Grand-Lancy, Curé-Baud",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592982",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7705",
+              "platformCode": "PALE02",
+              "linePageName": "Grand-Lancy, Palettes",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592988",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3145",
+              "platformCode": "PICY01",
+              "linePageName": "Grand-Lancy, Lancy Piscine",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592991",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3148",
+              "platformCode": "GDLA01",
+              "linePageName": "Grand-Lancy, Place du 1er-Août",
+              "linePageTime": 10,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592983",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3151",
+              "platformCode": "LAMA01",
+              "linePageName": "Grand-Lancy, Mairie de Lancy",
+              "linePageTime": 11,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587902",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3154",
+              "platformCode": "ETOI03",
+              "linePageName": "Lancy-Pont-Rouge, gare/Etoile",
+              "linePageTime": 14,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592679",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3157",
+              "platformCode": "PITH01",
+              "linePageName": "Carouge, Pictet-Thellusson",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592842",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3160",
+              "platformCode": "INDT01",
+              "linePageName": "Genève, Industrielle",
+              "linePageTime": 16,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592839",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3163",
+              "platformCode": "ACAC01",
+              "linePageName": "Genève, Acacias",
+              "linePageTime": 18,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592774",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3166",
+              "platformCode": "UNIM02",
+              "linePageName": "Genève, Uni-Mail",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592915",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3169",
+              "platformCode": "PLPA03",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2617",
+              "platformCode": "CIRQ01",
+              "linePageName": "Genève, Cirque",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592804",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2620",
+              "platformCode": "STND02",
+              "linePageName": "Genève, Stand",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592906",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2623",
+              "platformCode": "GOUL00",
+              "linePageName": "Genève, Goulart",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592831",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2626",
+              "platformCode": "CVIN14",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 31,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3172",
+              "platformCode": "MOLE00",
+              "linePageName": "Genève, Môle",
+              "linePageTime": 32,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592863",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3175",
+              "platformCode": "BTNI00",
+              "linePageName": "Genève, Butini",
+              "linePageTime": 34,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592795",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3178",
+              "platformCode": "MAPA00",
+              "linePageName": "Genève, Maison de la Paix",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592825",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "10172",
+              "platformCode": "NATI96",
+              "linePageName": "Genève, Nations",
+              "linePageTime": 37,
+              "pdfValidityKeys": [],
+              "didok": "8587058",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587057",
+            "8587058",
+            "8587902",
+            "8587907",
+            "8592679",
+            "8592774",
+            "8592795",
+            "8592804",
+            "8592825",
+            "8592831",
+            "8592839",
+            "8592842",
+            "8592863",
+            "8592906",
+            "8592915",
+            "8592982",
+            "8592983",
+            "8592984",
+            "8592988",
+            "8592991",
+            "8593073"
+          ],
+          "repeatedDidok": {}
+        },
+        "retour": {
+          "platforms": [
+            {
+              "linePageObjectKey": "10173",
+              "platformCode": "NATI97",
+              "linePageName": "Genève, Nations",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587058",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3190",
+              "platformCode": "MAPA01",
+              "linePageName": "Genève, Maison de la Paix",
+              "linePageTime": 1,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592825",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3193",
+              "platformCode": "BTNI01",
+              "linePageName": "Genève, Butini",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592795",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3196",
+              "platformCode": "MOLE01",
+              "linePageName": "Genève, Môle",
+              "linePageTime": 6,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592863",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2668",
+              "platformCode": "CVIN15",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2671",
+              "platformCode": "ISAM02",
+              "linePageName": "Genève, Mercier",
+              "linePageTime": 11,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592841",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "2674",
+              "platformCode": "STND00",
+              "linePageName": "Genève, Stand",
+              "linePageTime": 13,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592906",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3199",
+              "platformCode": "CIRQ02",
+              "linePageName": "Genève, Cirque",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592804",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3202",
+              "platformCode": "PLPA07",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3205",
+              "platformCode": "UNIM01",
+              "linePageName": "Genève, Uni-Mail",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592915",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3208",
+              "platformCode": "ACAC00",
+              "linePageName": "Genève, Acacias",
+              "linePageTime": 20,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592774",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3211",
+              "platformCode": "INDT00",
+              "linePageName": "Genève, Industrielle",
+              "linePageTime": 22,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592839",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3214",
+              "platformCode": "PITH00",
+              "linePageName": "Carouge, Pictet-Thellusson",
+              "linePageTime": 23,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592842",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3217",
+              "platformCode": "ETOI02",
+              "linePageName": "Lancy-Pont-Rouge, gare/Etoile",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592679",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3220",
+              "platformCode": "LAMA00",
+              "linePageName": "Grand-Lancy, Mairie de Lancy",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587902",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3223",
+              "platformCode": "GDLA00",
+              "linePageName": "Grand-Lancy, Place du 1er-Août",
+              "linePageTime": 29,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592983",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3226",
+              "platformCode": "PICY00",
+              "linePageName": "Grand-Lancy, Lancy Piscine",
+              "linePageTime": 30,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592991",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3142",
+              "platformCode": "PALE01",
+              "linePageName": "Grand-Lancy, Palettes",
+              "linePageTime": 31,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592988",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8012",
+              "platformCode": "BAUD11",
+              "linePageName": "Grand-Lancy, Curé-Baud",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592982",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "8013",
+              "platformCode": "LERO11",
+              "linePageName": "Plan-les-Ouates, Le Rolliet",
+              "linePageTime": 35,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592984",
+              "municipality": "PLAN-LES-OUATES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "10149",
+              "platformCode": "ZIPL11",
+              "linePageName": "Plan-les-Ouates, ZIPLO",
+              "linePageTime": 38,
+              "pdfValidityKeys": [],
+              "didok": "8593073",
+              "municipality": "PLAN-LES-OUATES",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587057",
+            "8587058",
+            "8587902",
+            "8587907",
+            "8592679",
+            "8592774",
+            "8592795",
+            "8592804",
+            "8592825",
+            "8592839",
+            "8592841",
+            "8592842",
+            "8592863",
+            "8592906",
+            "8592915",
+            "8592982",
+            "8592983",
+            "8592984",
+            "8592988",
+            "8592991",
+            "8593073"
+          ],
+          "repeatedDidok": {}
+        }
+      }
+    },
+    {
+      "line": "18",
+      "url": "https://www.tpg.ch/fr/lignes/18",
+      "pageSha256": "5c61170c166478425688a5526b7879ec84640b0844f6444e936d198d50bf42bc",
+      "validityText": [
+        "Valable du 14.12.2025 au 12.12.2026"
+      ],
+      "directions": {
+        "aller": {
+          "platforms": [
+            {
+              "linePageObjectKey": "7702",
+              "platformCode": "PALE09",
+              "linePageName": "Grand-Lancy, Palettes",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592988",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6289",
+              "platformCode": "PONT01",
+              "linePageName": "Grand-Lancy, Pontets",
+              "linePageTime": 2,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592992",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6292",
+              "platformCode": "TRBL00",
+              "linePageName": "Plan-les-Ouates, Trèfle-Blanc",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593070",
+              "municipality": "PLAN-LES-OUATES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6295",
+              "platformCode": "BHET00",
+              "linePageName": "Lancy-Bachet, gare",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587075",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3772",
+              "platformCode": "STAL00",
+              "linePageName": "Grand-Lancy, De-Staël",
+              "linePageTime": 7,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592670",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3775",
+              "platformCode": "CRGE00",
+              "linePageName": "Carouge, Rondeau",
+              "linePageTime": 9,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587437",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3778",
+              "platformCode": "ANCI00",
+              "linePageName": "Carouge, Ancienne",
+              "linePageTime": 10,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592668",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3781",
+              "platformCode": "CAMA00",
+              "linePageName": "Carouge, Marché",
+              "linePageTime": 12,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592677",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3784",
+              "platformCode": "ARME00",
+              "linePageName": "Carouge, Armes",
+              "linePageTime": 14,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592669",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3787",
+              "platformCode": "BLAN00",
+              "linePageName": "Genève, Blanche",
+              "linePageTime": 15,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592789",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3790",
+              "platformCode": "AUGS00",
+              "linePageName": "Genève, Augustins",
+              "linePageTime": 17,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592780",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3793",
+              "platformCode": "PTAR00",
+              "linePageName": "Genève, Pont-d'Arve",
+              "linePageTime": 19,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592887",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3796",
+              "platformCode": "PLPA00",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 20,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3235",
+              "platformCode": "PNEV02",
+              "linePageName": "Genève, Place de Neuve",
+              "linePageTime": 22,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592885",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3040",
+              "platformCode": "BAIR01",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3043",
+              "platformCode": "COUT03",
+              "linePageName": "Genève, Coutance",
+              "linePageTime": 27,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592812",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3046",
+              "platformCode": "CVIN04",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 30,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3049",
+              "platformCode": "LYON01",
+              "linePageName": "Genève, Lyon",
+              "linePageTime": 32,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592850",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3052",
+              "platformCode": "POTE01",
+              "linePageName": "Genève, Poterie",
+              "linePageTime": 34,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592889",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3055",
+              "platformCode": "SERV01",
+              "linePageName": "Genève, Servette",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592903",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3058",
+              "platformCode": "VIUS01",
+              "linePageName": "Genève, Vieusseux",
+              "linePageTime": 37,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592922",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3061",
+              "platformCode": "BOHT01",
+              "linePageName": "Vernier, Bouchet",
+              "linePageTime": 39,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592791",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3064",
+              "platformCode": "BALX00",
+              "linePageName": "Vernier, Balexert",
+              "linePageTime": 41,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593141",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3067",
+              "platformCode": "AVAN00",
+              "linePageName": "Vernier, Avanchets-Etang",
+              "linePageTime": 42,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593139",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3070",
+              "platformCode": "BLDO00",
+              "linePageName": "Vernier, Blandonnet",
+              "linePageTime": 44,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587924",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3073",
+              "platformCode": "JALP00",
+              "linePageName": "Meyrin, Jardin-Alpin-Vivarium",
+              "linePageTime": 47,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593015",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3799",
+              "platformCode": "BOLA00",
+              "linePageName": "Meyrin, Bois-du-Lan",
+              "linePageTime": 48,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8594933",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3802",
+              "platformCode": "MYRN00",
+              "linePageName": "Meyrin, village",
+              "linePageTime": 50,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593026",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3805",
+              "platformCode": "HTOU00",
+              "linePageName": "Meyrin, Hôpital de La Tour",
+              "linePageTime": 51,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593013",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3808",
+              "platformCode": "MAIX00",
+              "linePageName": "Meyrin, Maisonnex",
+              "linePageTime": 53,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593018",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3811",
+              "platformCode": "CERN00",
+              "linePageName": "Meyrin, CERN",
+              "linePageTime": 53,
+              "pdfValidityKeys": [],
+              "didok": "8587918",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587057",
+            "8587075",
+            "8587387",
+            "8587437",
+            "8587907",
+            "8587918",
+            "8587924",
+            "8592668",
+            "8592669",
+            "8592670",
+            "8592677",
+            "8592780",
+            "8592789",
+            "8592791",
+            "8592812",
+            "8592850",
+            "8592885",
+            "8592887",
+            "8592889",
+            "8592903",
+            "8592922",
+            "8592988",
+            "8592992",
+            "8593013",
+            "8593015",
+            "8593018",
+            "8593026",
+            "8593070",
+            "8593139",
+            "8593141",
+            "8594933"
+          ],
+          "repeatedDidok": {}
+        },
+        "retour": {
+          "platforms": [
+            {
+              "linePageObjectKey": "3814",
+              "platformCode": "CERN01",
+              "linePageName": "Meyrin, CERN",
+              "linePageTime": 0,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587918",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3817",
+              "platformCode": "MAIX01",
+              "linePageName": "Meyrin, Maisonnex",
+              "linePageTime": 1,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593018",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3820",
+              "platformCode": "HTOU01",
+              "linePageName": "Meyrin, Hôpital de La Tour",
+              "linePageTime": 3,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593013",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3823",
+              "platformCode": "MYRN01",
+              "linePageName": "Meyrin, village",
+              "linePageTime": 5,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593026",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3826",
+              "platformCode": "BOLA01",
+              "linePageName": "Meyrin, Bois-du-Lan",
+              "linePageTime": 6,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8594933",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3085",
+              "platformCode": "JALP01",
+              "linePageName": "Meyrin, Jardin-Alpin-Vivarium",
+              "linePageTime": 8,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593015",
+              "municipality": "MEYRIN",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3088",
+              "platformCode": "BLDO03",
+              "linePageName": "Vernier, Blandonnet",
+              "linePageTime": 11,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587924",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3091",
+              "platformCode": "AVAN01",
+              "linePageName": "Vernier, Avanchets-Etang",
+              "linePageTime": 13,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593139",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3094",
+              "platformCode": "BALX01",
+              "linePageName": "Vernier, Balexert",
+              "linePageTime": 14,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593141",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3097",
+              "platformCode": "BOHT02",
+              "linePageName": "Vernier, Bouchet",
+              "linePageTime": 16,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592791",
+              "municipality": "VERNIER",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3100",
+              "platformCode": "VIUS00",
+              "linePageName": "Genève, Vieusseux",
+              "linePageTime": 18,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592922",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3103",
+              "platformCode": "SERV00",
+              "linePageName": "Genève, Servette",
+              "linePageTime": 20,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592903",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3106",
+              "platformCode": "POTE00",
+              "linePageName": "Genève, Poterie",
+              "linePageTime": 21,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592889",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3109",
+              "platformCode": "LYON00",
+              "linePageName": "Genève, Lyon",
+              "linePageTime": 24,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592850",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3112",
+              "platformCode": "CVIN10",
+              "linePageName": "Genève, gare Cornavin",
+              "linePageTime": 25,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587057",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3115",
+              "platformCode": "COUT02",
+              "linePageName": "Genève, Coutance",
+              "linePageTime": 28,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592812",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3118",
+              "platformCode": "BAIR02",
+              "linePageName": "Genève, Bel-Air",
+              "linePageTime": 30,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587387",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3337",
+              "platformCode": "PNEV03",
+              "linePageName": "Genève, Place de Neuve",
+              "linePageTime": 33,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592885",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3829",
+              "platformCode": "PLPA02",
+              "linePageName": "Genève, Plainpalais",
+              "linePageTime": 34,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587907",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3832",
+              "platformCode": "PTAR01",
+              "linePageName": "Genève, Pont-d'Arve",
+              "linePageTime": 36,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592887",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3835",
+              "platformCode": "AUGS01",
+              "linePageName": "Genève, Augustins",
+              "linePageTime": 37,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592780",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3838",
+              "platformCode": "BLAN01",
+              "linePageName": "Genève, Blanche",
+              "linePageTime": 39,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592789",
+              "municipality": "GENÈVE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3841",
+              "platformCode": "ARME01",
+              "linePageName": "Carouge, Armes",
+              "linePageTime": 41,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592669",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3844",
+              "platformCode": "CAMA01",
+              "linePageName": "Carouge, Marché",
+              "linePageTime": 42,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592677",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3847",
+              "platformCode": "ANCI01",
+              "linePageName": "Carouge, Ancienne",
+              "linePageTime": 44,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592668",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3850",
+              "platformCode": "CRGE01",
+              "linePageName": "Carouge, Rondeau",
+              "linePageTime": 46,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587437",
+              "municipality": "CAROUGE",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3853",
+              "platformCode": "STAL01",
+              "linePageName": "Grand-Lancy, De-Staël",
+              "linePageTime": 48,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592670",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "3856",
+              "platformCode": "BHET01",
+              "linePageName": "Lancy-Bachet, gare",
+              "linePageTime": 49,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8587075",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6301",
+              "platformCode": "TRBL01",
+              "linePageName": "Plan-les-Ouates, Trèfle-Blanc",
+              "linePageTime": 51,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8593070",
+              "municipality": "PLAN-LES-OUATES",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "6304",
+              "platformCode": "PONT03",
+              "linePageName": "Grand-Lancy, Pontets",
+              "linePageTime": 52,
+              "pdfValidityKeys": [
+                "2025-12-14,2026-12-12"
+              ],
+              "didok": "8592992",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            },
+            {
+              "linePageObjectKey": "7702",
+              "platformCode": "PALE09",
+              "linePageName": "Grand-Lancy, Palettes",
+              "linePageTime": 54,
+              "pdfValidityKeys": [],
+              "didok": "8592988",
+              "municipality": "LANCY",
+              "country": "CH",
+              "active": "Y"
+            }
+          ],
+          "distinctDidokMembership": [
+            "8587057",
+            "8587075",
+            "8587387",
+            "8587437",
+            "8587907",
+            "8587918",
+            "8587924",
+            "8592668",
+            "8592669",
+            "8592670",
+            "8592677",
+            "8592780",
+            "8592789",
+            "8592791",
+            "8592812",
+            "8592850",
+            "8592885",
+            "8592887",
+            "8592889",
+            "8592903",
+            "8592922",
+            "8592988",
+            "8592992",
+            "8593013",
+            "8593015",
+            "8593018",
+            "8593026",
+            "8593070",
+            "8593139",
+            "8593141",
+            "8594933"
+          ],
+          "repeatedDidok": {}
+        }
+      }
+    }
+  ]
+}

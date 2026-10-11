@@ -1,5 +1,7 @@
-import { transferEndpointKey, transferEndpointQuery } from "./staticTransfers.ts";
+import { domesticSwissLeg } from "./transitScope.ts";
+export { domesticSwissLeg } from "./transitScope.ts";
 import { normalizeCode as norm, operatorCode } from "./normalization.ts";
+import { localOperatorBicycleRule } from "./localTransport.ts";
 import type { TransitLeg } from "./routing.ts";
 
 export const SOB_BICYCLES = { title: "SOB bicycle carriage", url: "https://unterwegs.sob.ch/de/stories/velotransport", checked: "2026-09-24" };
@@ -39,18 +41,6 @@ const RHB_BICYCLES: RuleSource = { title: "RhB Rail & Bike",
   url: "https://www.rhb.ch/en/transport/rail-bike/", checked: "2026-09-25" };
 export function isSbb(leg: TransitLeg) {
   return operatorCode(leg.operator) === "SBB";
-}
-export function domesticSwissLeg(leg: TransitLeg) {
-  const mapped = (end: "arrival" | "departure", id: string | undefined) => {
-    if (/^85\d{5}$/.test(id ?? "")) return true;
-    const endpoint = end === "arrival" ? leg.stationArrival : leg.stationDeparture;
-    // Use the imported original_stop_id/DIDOK mapping. SLOID's ch prefix
-    // alone does not establish Swiss territory (it also covers foreign stops).
-    return !!endpoint && ["matched", "station"].includes(endpoint.status)
-      && endpoint.key === transferEndpointKey(transferEndpointQuery(leg, end))
-      && /^85\d{5}$/.test(endpoint.stationId ?? "");
-  };
-  return mapped("departure", leg.fromId) && mapped("arrival", leg.toId);
 }
 const ruleDateFormat = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" });
 const ruleDateCache = new Map<number, { year: number; month: number; day: number; hour: number; weekday: number }>();
@@ -124,6 +114,8 @@ export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null
   if (leg.mode !== "transit" || !leg.departure || !Number.isFinite(leg.departure.getTime())) return null;
   const category = norm(leg.category), operator = operatorCode(leg.operator);
   if (["EV", "SEV"].includes(category) || /replacement|ersatz|remplacement/i.test(`${leg.service} ${leg.serviceName ?? ""}`)) return null;
+  const local = localOperatorBicycleRule(leg);
+  if (local) return local;
   if (["SZU", "SZU-SZU", "SIHLTAL ZÜRICH UETLIBERG BAHN"].includes(operator)
     && /^S\s*10$/.test(norm(leg.service)) && leg.from !== leg.to
     && [leg.from, leg.to].some(name => /^(Uetliberg|Ringlikon)$/.test(name ?? "")))

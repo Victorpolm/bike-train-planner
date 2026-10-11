@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { tariffHealth } from "../tariffSources";
+import { monitoredHealth } from "../monitoredSources";
 type Health = {
   checkedAt: string | null;
   sourceCheckStale: boolean;
@@ -13,7 +13,7 @@ type Health = {
   canary: { state: string; reason: string };
 };
 export default function TariffHealth() {
-  const entries = tariffHealth(),
+  const entries = monitoredHealth(),
     [health, setHealth] = useState<Health | null>(null),
     [error, setError] = useState("");
   async function load() {
@@ -35,13 +35,14 @@ export default function TariffHealth() {
         if (e.currentTarget.open && !health && !error) void load();
       }}
     >
-      <summary>Tariff coverage and renewal dates</summary>
+      <summary>Fare and bicycle-rule renewal dates</summary>
       <p>
-        Prices use reviewed date ranges. Renewals are monitored; a changed source is reviewed before
-        new prices are activated.
+        Fares, bicycle rules and local route coverage have review dates. Automatic checks retrieve
+        source documents before these dates; changed documents need review before new rules or
+        prices are activated. A review boundary is not necessarily the publisher's expiry date.
       </p>
       <ul>
-        {entries.map(({ source, state, daysRemaining }) => (
+        {entries.map(({ source, state, daysRemaining, urgency }) => (
           <li key={source.id}>
             <a href={source.url} target="_blank" rel="noreferrer">
               {source.title}
@@ -50,7 +51,7 @@ export default function TariffHealth() {
             {state === "expired"
               ? "reviewed coverage expired"
               : state === "review-due"
-                ? `renewal review due · ${daysRemaining} days of coverage left`
+                ? `renewal review due · ${daysRemaining} days of coverage left · ${urgency}`
                 : "within reviewed coverage"}
           </li>
         ))}

@@ -2,13 +2,15 @@ import type { TransitLeg } from "./routing.ts";
 
 export type TransitRealtime = {
   checkedAt: string;
+  /** False when only the local retrieval clock was available. */
+  providerTimestampVerified?: boolean;
   estimatedDeparture: string | null; estimatedArrival: string | null;
   departurePlatform: string | null; arrivalPlatform: string | null;
   cancelled: boolean; departureCancelled: boolean; arrivalCancelled: boolean;
   undefinedDelay: boolean;
 };
 export const realtimeUnavailable = (leg: TransitLeg) => !!(leg.realtime?.cancelled || leg.realtime?.departureCancelled || leg.realtime?.arrivalCancelled);
-export const realtimeStale = (value: TransitRealtime, now = Date.now()) => !Number.isFinite(Date.parse(value.checkedAt))
+export const realtimeStale = (value: TransitRealtime, now = Date.now()) => value.providerTimestampVerified === false || !Number.isFinite(Date.parse(value.checkedAt))
   || now - Date.parse(value.checkedAt) > 120_000 || Date.parse(value.checkedAt) - now > 60_000;
 function effectiveTime(leg: TransitLeg, end: "departure" | "arrival"): Date | null {
   const estimate = end === "departure" ? leg.realtime?.estimatedDeparture : leg.realtime?.estimatedArrival;

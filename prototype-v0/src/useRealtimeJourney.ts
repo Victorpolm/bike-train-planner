@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { checkOjpTripInfo } from "./ojpClient.ts";
 import { platformChanged, realtimeKey, type TransitRealtime } from "./realtime.ts";
 import { realtimeJourney, type RealtimePlatforms } from "./realtimeJourney.ts";
+import { applyRealtimeService } from "./realtimeService.ts";
+import type { TravelProfile } from "./travelProfile.ts";
 import type { Journey } from "./routing.ts";
 
 const EMPTY_UPDATES = new Map<string, TransitRealtime>();
 const EMPTY_PLATFORMS: RealtimePlatforms = new Map();
 const swissDay = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit" });
-export function useRealtimeJourney(journey: Journey | null, enabled: boolean, boardingMinutes = 3, arriveBy?: string) {
+export function useRealtimeJourney(journey: Journey | null, enabled: boolean, boardingMinutes = 3, arriveBy?: string, profile?: TravelProfile, takeBikeOnTransit = true) {
   const key = journey ? JSON.stringify([journey.id, journey.transitLegs.map(realtimeKey)]) : "";
   const current = useRef(journey); current.current = journey;
   const [attempt, retry] = useState(0);
@@ -36,13 +38,14 @@ export function useRealtimeJourney(journey: Journey | null, enabled: boolean, bo
           try {
             const details = await checkOjpTripInfo(leg.ojp!, controller.signal);
             if (!details.realtime) throw new Error("No realtime response");
-            const updated = { ...leg, realtime: details.realtime };
+            const updated = applyRealtimeService(leg, details);
             if (platformChanged(updated, "arrival") || platformChanged(updated, "departure")) {
               const network = emptyNetwork(); network.edges.set("selected", { id: "selected", from: leg.fromId ?? "", to: leg.toId ?? "", leg: updated });
               await transfers.hydrate(network, controller.signal);
             }
             if (!disposed) setState(old => ({ ...old, key, updates: new Map(old.updates).set(realtimeKey(leg), details.realtime!),
-              platforms: new Map(old.platforms).set(realtimeKey(leg), { stationArrival: updated.stationArrival, stationDeparture: updated.stationDeparture }), now: Date.now() }));
+              platforms: new Map(old.platforms).set(realtimeKey(leg), { stationArrival: updated.stationArrival, stationDeparture: updated.stationDeparture,
+                bicycleEvidence: updated.bicycleEvidence, bicycleAttributes: updated.bicycleAttributes }), now: Date.now() }));
           } catch { if (!disposed) failed = true; }
         }
       };
@@ -55,8 +58,8 @@ export function useRealtimeJourney(journey: Journey | null, enabled: boolean, bo
     document.addEventListener("visibilitychange", refresh);
     return () => { disposed = true; controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
   }, [key, enabled, active, attempt]);
-  const evaluated = useMemo(() => journey ? realtimeJourney(journey, records, boardingMinutes, arriveBy, platforms, state.now) : null,
-    [journey, records, platforms, boardingMinutes, arriveBy, state.now]);
+  const evaluated = useMemo(() => journey ? realtimeJourney(journey, records, boardingMinutes, arriveBy, platforms, state.now, profile, takeBikeOnTransit) : null,
+    [journey, records, platforms, boardingMinutes, arriveBy, state.now, profile, takeBikeOnTransit]);
   return { feasibility:evaluated?.feasibility??"unknown", journey: evaluated?.journey ?? null, issues: evaluated?.issues ?? [], active, loading: state.key === key && state.loading,
     failed: state.key === key && state.failed, now: state.now, refresh: () => retry(n => n + 1) };
 }

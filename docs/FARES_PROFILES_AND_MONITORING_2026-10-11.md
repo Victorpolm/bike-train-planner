@@ -1,5 +1,7 @@
 # Fares, bicycle profiles and automatic renewal monitoring — 11 October 2026
 
+**Follow-up:** The [public-data reliability release](PUBLIC_TRANSPORT_RELIABILITY_2026-10-11.md) extends this implementation. Its 24-source bounded monitor, rotating canary and public-tariff strategy supersede the five-source/fixed-corridor and blanket production-feed dependency descriptions below. The version-73 evidence remains historical.
+
 ## Delivered behaviour
 
 One profile represents one person and one bicycle. Age is the age on the travel date, not a stored birth date. Adult pricing is explicitly assumed if it is blank. The profile now records passenger class, GA class, travelcard validity, qualifying child cards/accompaniment, organized groups, an existing dated/day/multiple-day/annual or formally issued mobility bicycle pass, and unverified regional-pass name/operator/zones/validity. The mobility entitlement is never inferred from disability or bicycle type.

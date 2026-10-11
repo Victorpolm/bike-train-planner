@@ -3,17 +3,20 @@ import { arrivalTime, departureTime, moveAfter, realtimeKey, realtimeUnavailable
 import { boardingCheck } from "./transferTimes.ts";
 import type { Journey, TransitLeg } from "./routing.ts";
 import { visitHours } from "./facilityHours.ts";
+import { bicyclePermission } from "./bicyclePermission.ts";
+import type { TravelProfile } from "./travelProfile.ts";
 
 /** Re-evaluate the selected path without changing its scheduled service/fare IDs
  * or silently replacing it when a cancellation makes it impossible. */
-export type RealtimePlatforms = ReadonlyMap<string, Pick<TransitLeg, "stationArrival" | "stationDeparture">>;
-export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, TransitRealtime>, boardingMinutes = 3, arriveBy?: string, platforms?: RealtimePlatforms, now=Date.now()) {
+export type RealtimePlatforms = ReadonlyMap<string, Pick<TransitLeg, "stationArrival" | "stationDeparture" | "bicycleEvidence" | "bicycleAttributes">>;
+export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, TransitRealtime>, boardingMinutes = 3, arriveBy?: string, platforms?: RealtimePlatforms, now=Date.now(), profile?: TravelProfile, takeBikeOnTransit = true) {
   const legs: TransitLeg[] = [], issues: string[] = [];
   let ready = +raw.startTime + (raw.legsIncludeEndpoints ? 0 : raw.originStation.bikeMinutes * 60_000);
   for (const original of raw.transitLegs) {
     const update = updates.get(realtimeKey(original));
     const leg = moveAfter({ ...original, ...(update ? { realtime: update } : {}), ...platforms?.get(realtimeKey(original)) }, ready);
     if (leg.mode === "transit") {
+      if (takeBikeOnTransit && bicyclePermission(leg, profile) === "prohibited") issues.push(`${leg.service}: bicycle carriage is prohibited for your configuration. Choose another journey or leave the bicycle off public transport.`);
       if (realtimeUnavailable(leg)) issues.push(`${leg.service}: ${leg.realtime?.cancelled ? "service cancelled" : "your boarding or arrival stop is not served"}. Choose another journey.`);
       const check = boardingCheck(legs, leg, ready, boardingMinutes, raw.originStation.cyclingRoute?.to ?? raw.originStation);
       const incoming = [...legs].reverse().find(l => l.mode === "transit");
@@ -32,7 +35,7 @@ export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, Trans
   const arrival = new Date(ready), end = ready + (raw.legsIncludeEndpoints ? 0 : raw.destinationStation.bikeMinutes * 60_000);
   if (arriveBy && end > Date.parse(arriveBy)) issues.push("The latest estimated arrival is after your requested arrival time.");
   const transit=legs.filter(l=>l.mode==="transit");
-  const broken=issues.some(s=>/no longer feasible|service cancelled|stop is not served/.test(s));
+  const broken=issues.some(s=>/no longer feasible|service cancelled|stop is not served|bicycle carriage is prohibited/.test(s));
   const risk=issues.some(s=>/platform changed|unknown duration|after your requested|opening hours/.test(s));
   const known=transit.length>0 && transit.every(l=>l.realtime && !realtimeStale(l.realtime,now) && l.realtime.estimatedDeparture && l.realtime.estimatedArrival);
   const late=transit.some(l=>l.realtime && (l.realtime.estimatedArrival && l.arrival && Date.parse(l.realtime.estimatedArrival)>+l.arrival || l.realtime.estimatedDeparture&&l.departure&&Date.parse(l.realtime.estimatedDeparture)>+l.departure));

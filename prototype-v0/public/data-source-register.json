@@ -224,13 +224,31 @@
       "source": "SBB / PostBus / RhB / other operators and fare associations — reviewed fares and bicycle rules",
       "licence": "Short factual tariff/policy summaries with links. No blanket licence to copy websites, images or tariff publications asserted.",
       "attribution": "Per-rule original publisher URL, checked date and validity dates.",
-      "caching": "Reviewed dated constants/catalogues; changes require source review. Future or unsupported tariff coverage stays unknown.",
+      "caching": "Reviewed dated constants/catalogues; source monitoring retrieves private review candidates before renewal. Prices and rule validity are never extended just because a document was downloaded.",
       "redistribution": "No full tariff documents, photographs or website prose redistributed. App estimates and operator purchase offers are distinguished.",
       "limits": "Bicycle permissions, ticket entitlement, reservation requirement and available space are separate. Normal day-pass prices do not establish every operator/reservation charge.",
-      "status": "Enabled within reviewed scope; future tariff changes need review.",
+      "status": "Enabled for reviewed national and local scopes. Operator-specific sources take precedence over conflicting generic summaries; unresolved peak hours, trailer fares and group conditions remain explicit.",
       "links": [
         "https://www.sbb.ch/en/offers/bike-day-pass",
-        "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike"
+        "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike",
+        "https://www.bernmobil.ch/de/unternehmen/faq",
+        "https://www.tpf.ch/fr/abos-et-billets/mobilite-combinee/velos",
+        "https://www.unireso.com/titres-de-transport/"
+      ]
+    },
+    {
+      "id": "tpg-open-stops",
+      "source": "Transports publics genevois (tpg) — open stop catalogue and reviewed line membership",
+      "licence": "TPG open-data conditions permit extraction, adaptation and commercial reuse with source and last-update attribution; service access and formal tariff rules remain separate.",
+      "attribution": "Source: tpg, stop dataset updated 4 October 2026; line pages reviewed 11 October 2026. Independent Re.route extraction. No TPG endorsement or branding implied.",
+      "caching": "A compact, dated catalogue for lines 1, 10, 12, 14, 15 and 18 is bundled. The private monitor watches line pages and dataset edition metadata; changed membership requires a reviewed rejoin.",
+      "redistribution": "Only derived factual stop membership and provenance are shipped, with source/update date and independent-extraction attribution. No timetable PDFs, logos or complete operator webpages are redistributed.",
+      "limits": "Published open-data service limit: 10,000 requests/day. No runtime bulk stop requests; at most eight total source-monitor downloads per day. These six wholly reviewed Geneva lines establish only their Zone 10 scope; no short-hop stop count or cross-border inference.",
+      "status": "Enabled for reviewed Zone 10 fare mapping; current local review boundary 12 December 2026, subject to earlier route changes.",
+      "links": [
+        "https://opendata.tpg.ch/explore/dataset/arrets/",
+        "https://opendata.tpg.ch/terms/terms-and-conditions/",
+        "https://www.unireso.com/wp-content/uploads/2026/06/CGV-unireso-Juin-2026-1.pdf"
       ]
     }
   ]

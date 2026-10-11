@@ -1,0 +1,1488 @@
+{
+  "source": "https://lindas.admin.ch/query",
+  "publisher_documentation": "https://opentransportdata.swiss/de/cookbook/alpha-linked-open-data-versuch-mit-nova-daten-und-haltestellen/",
+  "graph": "https://lindas.admin.ch/sbb/nova",
+  "status": "research_only_not_activated_for_travel_prices",
+  "results": {
+    "lod-precomputed-tables": {
+      "retrieved_at_utc": "2026-10-11T20:54:28.736979+00:00",
+      "bindings": [
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048536003",
+          "name": "LEX Preistabelle Alpbus Abo Rabatt T71",
+          "rows": "32"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048546002",
+          "name": "LEX Preistabelle Alpbus Abo Rabatt T72",
+          "rows": "12"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048536005",
+          "name": "LEX Preistabelle Alpbus Abo Rabatt T74",
+          "rows": "20"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048536002",
+          "name": "LEX Preistabelle Alpbus Abo T71",
+          "rows": "32"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048546001",
+          "name": "LEX Preistabelle Alpbus Abo T72",
+          "rows": "12"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048544002",
+          "name": "LEX Preistabelle Alpbus Abo T74",
+          "rows": "20"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-657562163211",
+          "name": "LEX Preistabelle Alpbus Einzel Rabatt T74",
+          "rows": "20"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048536001",
+          "name": "LEX Preistabelle Alpbus Einzel T71",
+          "rows": "32"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048544001",
+          "name": "LEX Preistabelle Alpbus Einzel T72",
+          "rows": "12"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-91048536004",
+          "name": "LEX Preistabelle Alpbus Einzel T74",
+          "rows": "20"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056179",
+          "name": "LEX Preistabelle DV Abo",
+          "rows": "432"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056852",
+          "name": "LEX Preistabelle DV Abo (Cevared)",
+          "rows": "432"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056182",
+          "name": "LEX Preistabelle TER A Abo",
+          "rows": "1160"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056186",
+          "name": "LEX Preistabelle TER A Einzel",
+          "rows": "1200"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14708184002",
+          "name": "LEX Preistabelle TER B Abo",
+          "rows": "1160"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14708184001",
+          "name": "LEX Preistabelle TER B Einzel",
+          "rows": "1200"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056190",
+          "name": "LEX Preistabelle Transalis Abo",
+          "rows": "20"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-238412879001",
+          "name": "SNCF Chamonix TK PREIS",
+          "rows": "3"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-65512680001",
+          "name": "TER SNCF Alsace EB PREIS",
+          "rows": "8"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-192091332001",
+          "name": "TER_BFC_ABO 421.02 SNCF_BFC KILOMETER",
+          "rows": "20"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14059199001",
+          "name": "TER_BFC_ABO Transval/Interval PREIS",
+          "rows": "24"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-192091332002",
+          "name": "TER_BFC_EB 421.02 SNCF_BFC PREIS",
+          "rows": "36"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056194",
+          "name": "TILO Preistabelle Abo",
+          "rows": "72"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056192",
+          "name": "TILO Preistabelle Einzel",
+          "rows": "144"
+        },
+        {
+          "table": "https://lod.opentransportdata.swiss/preistabelle/ids-14056196",
+          "name": "TILO Preistabelle Einzel Zuschlag",
+          "rows": "8"
+        }
+      ]
+    },
+    "lod-zone-prices": {
+      "retrieved_at_utc": "2026-10-11T20:55:40.013573+00:00",
+      "bindings": [
+        {
+          "type": "https://lod.opentransportdata.swiss/vocab/Tarifwertpreisauspraegung",
+          "n": "6131"
+        },
+        {
+          "type": "https://lod.opentransportdata.swiss/vocab/ZoningPriceCharacteristic",
+          "n": "23812"
+        }
+      ]
+    },
+    "lod-zvv-plan-fields": {
+      "retrieved_at_utc": "2026-10-11T20:56:43.361342+00:00",
+      "bindings": [
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "o": "https://lod.opentransportdata.swiss/vocab/ZoningPlan"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "ZVV Abo &amp; Billett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/alliance",
+          "o": "https://lod.opentransportdata.swiss/alliance/zvv"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/111"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/112"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/113"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/114"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/115"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/116"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/117"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/118"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/120"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/121"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/122"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/123"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/124"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/130"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/131"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/132"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/133"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/134"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/135"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/140"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/141"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/142"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/143"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/150"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/151"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/152"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/153"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/154"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/155"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/156"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/160"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/161"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/162"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/163"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/164"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/170"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/171"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/172"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/173"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/180"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/181"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/182"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/183"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/zone",
+          "o": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/184"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9tk-allezonen"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9uhr-jabo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9uhr-jabo-uebertragbar"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9uhr-moabo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9uhr-moabo-uebertragbar"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9uhr-multi"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-ab-eb"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-ab-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-an-tk-tag"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-eb"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-grubi-eb"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-grubi-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-jabo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-jabo-erm-pers-110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-jabo-mod"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-jabo-unpers"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-eb"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-eb-ud"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-mfk-kurz"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-mfk-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-tk-ud"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-mabo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-mabo-erm-pers-110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-mabo-mod"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-mabo-unpers"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-mfk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-raw-eb"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-ra-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-tk-tag"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-twk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-zvvbonus"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-actionspass"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-ferienpass"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9tk-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-9tk-velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-eb-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-eb-velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-tk-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-tk-velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-zvvbonus-flabo-100"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-schule-flexi-10-lokal"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-tk-tag-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-tk-tag-velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-ab-eb-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-card-72h"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-an-tk-tag-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-card-24h"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-schule-flexi-40"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-ab-tk-hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-schule-flexi-10"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-schule-flexi-40-lokal"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-schule-tk"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-klw-tag"
+        }
+      ]
+    },
+    "lod-zvv-eb-fields": {
+      "retrieved_at_utc": "2026-10-11T20:57:15.880038+00:00",
+      "bindings": [
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "o": "https://lod.opentransportdata.swiss/vocab/Tarif"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "http://schema.org/identifier",
+          "o": "490_EB"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "ZVV Einzelbillett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "http://schema.org/provider",
+          "o": "https://lod.opentransportdata.swiss/provider/490"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/lokalnetz"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/kurzstrecke"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/alle-zonen"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-6"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-5"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-3"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-4"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-7"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "o": "https://lod.opentransportdata.swiss/vocab/Tarif"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "http://schema.org/identifier",
+          "o": "490_EB_VELO"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "ZVV Einzelbillett Velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "http://schema.org/provider",
+          "o": "https://lod.opentransportdata.swiss/provider/490"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/lokalnetz"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/kurzstrecke"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/alle-zonen"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-5"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-7"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-3"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-4"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/490-eb-velo",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-6"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "o": "https://lod.opentransportdata.swiss/vocab/Zone"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "http://schema.org/identifier",
+          "o": "110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "Zürich"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "http://schema.org/provider",
+          "o": "https://lod.opentransportdata.swiss/provider/490"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/zoningPlan",
+          "o": "https://lod.opentransportdata.swiss/zoningplan/zvv/zvv-abo-amp-billett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/alliance",
+          "o": "https://lod.opentransportdata.swiss/alliance/zvv"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-9uhr-jabo/zonen-agglo-zuerich"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-9uhr-jabo-uebertragbar/zonen-agglo-zuerich"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-9uhr-moabo/zonen-agglo-zuerich"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-9uhr-moabo-uebertragbar/zonen-agglo-zuerich"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-jabo-erm-pers-110/zone-110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-mabo-erm-pers-110/zone-110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-card-72h/zonen-110-111-121-140-150-154-155"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-jabo-mod/zone-110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-mabo-mod/zone-110"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "https://lod.opentransportdata.swiss/paylevel/490-card-24h/zonen-110-111-121-140-150-154-155"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/zone/zvv/zvv-abo-amp-billett/110",
+          "p": "https://lod.opentransportdata.swiss/vocab/zoningPriceFactor",
+          "o": "2"
+        }
+      ]
+    },
+    "lod-zvv-paylevel": {
+      "retrieved_at_utc": "2026-10-11T20:58:18.932687+00:00",
+      "bindings": [
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "o": "https://lod.opentransportdata.swiss/vocab/PayLevel"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zonen"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zones"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zone"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zones"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-eb"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "STUFE_1-2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/reportingCode",
+          "o": "2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevelType",
+          "o": "ZONENWERT"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/periodOfValidity",
+          "o": "1"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/periodOfValidityUnit",
+          "o": "STUNDEN"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/travelTimeTolerance",
+          "o": "60"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/typeOfDrive",
+          "o": "60"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/levelFrom",
+          "o": "1"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/levelTo",
+          "o": "2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "o": "https://lod.opentransportdata.swiss/vocab/PayLevel"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zonen"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zones"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zone"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "http://www.w3.org/2000/01/rdf-schema#label",
+          "o": "1-2 Zones"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif",
+          "o": "https://lod.opentransportdata.swiss/tarif/490-eb-velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel",
+          "o": "STUFE_1-2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/reportingCode",
+          "o": "2"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevelType",
+          "o": "ZONENWERT"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/periodOfValidity",
+          "o": "1"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/periodOfValidityUnit",
+          "o": "STUNDEN"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/travelTimeTolerance",
+          "o": "60"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/typeOfDrive",
+          "o": "60"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/levelFrom",
+          "o": "1"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/paylevel/490-eb-velo/stufe-1-2",
+          "p": "https://lod.opentransportdata.swiss/vocab/levelTo",
+          "o": "2"
+        }
+      ]
+    },
+    "lod-zoningprice-links": {
+      "retrieved_at_utc": "2026-10-11T20:58:19.287071+00:00",
+      "bindings": []
+    },
+    "lod-price-predicates": {
+      "retrieved_at_utc": "2026-10-11T20:58:19.596962+00:00",
+      "bindings": [
+        {
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          "rows": "23859"
+        },
+        {
+          "p": "http://schema.org/price",
+          "rows": "23812"
+        },
+        {
+          "p": "http://schema.org/currency",
+          "rows": "23812"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/class",
+          "rows": "23050"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/frequencyCode",
+          "rows": "12919"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/customerSegment",
+          "rows": "1075"
+        }
+      ]
+    },
+    "lod-tarif-price-validity": {
+      "retrieved_at_utc": "2026-10-11T20:58:20.009801+00:00",
+      "bindings": [
+        {
+          "p": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        },
+        {
+          "p": "http://schema.org/price"
+        },
+        {
+          "p": "http://schema.org/currency"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/class"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/frequencyCode"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/customerSegment"
+        },
+        {
+          "p": "http://schema.org/identifier"
+        },
+        {
+          "p": "http://www.w3.org/2000/01/rdf-schema#label"
+        },
+        {
+          "p": "http://schema.org/provider"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevel"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/alliance"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/zone"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/tarif"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/reportingCode"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/payLevelType"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/periodOfValidity"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/periodOfValidityUnit"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/routeDescription"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/travelTimeTolerance"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/typeOfDrive"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/localNetwork"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/routeType"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/screenTermText"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/printTermText"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/levelFrom"
+        },
+        {
+          "p": "https://lod.opentransportdata.swiss/vocab/levelTo"
+        }
+      ]
+    },
+    "lod-prices-graph": {
+      "retrieved_at_utc": "2026-10-11T21:00:23.219613+00:00",
+      "bindings": [
+        {
+          "g": "https://lindas.admin.ch/sbb/nova"
+        }
+      ]
+    },
+    "lod-prices-graph-inbound": {
+      "retrieved_at_utc": "2026-10-11T21:00:23.099216+00:00",
+      "bindings": []
+    },
+    "lod-price-count-and-links": {
+      "retrieved_at_utc": "2026-10-11T21:00:24.091743+00:00",
+      "bindings": [
+        {
+          "priceRecords": "23812",
+          "inboundLinks": "0"
+        }
+      ]
+    },
+    "lod-unireso-mobilis-tarifs": {
+      "retrieved_at_utc": "2026-10-11T21:00:23.229604+00:00",
+      "bindings": [
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-eb-ge",
+          "label": "Unireso Einzelbillett Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-grubi-eb-tg",
+          "label": "Unireso Gruppenbillet Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-mfk-tg",
+          "label": "Unireso fiktiver MFK-Tarif nicht für Produkt verwenden"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-raw-eb",
+          "label": "Unireso RailAway Einzelbillett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-eb",
+          "label": "Mobilis Einzelbillett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-raw-eb",
+          "label": "Mobilis RailAway Einzelbillett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-9tk-ge",
+          "label": "Unireso Tageskarte 9 Uhr Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-clip",
+          "label": "Unireso Clip-Ticket"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-grubi-tk-9uhr-tg",
+          "label": "Unireso Gruppentageskarte 9 Uhr Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-grubi-tk-tg",
+          "label": "Unireso Gruppentageskarte Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-klw-tg",
+          "label": "Unireso Klassenwechsel Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-raw-tk",
+          "label": "Unireso RailAway Tageskarte"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-tk-ge",
+          "label": "Unireso Tageskarte Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-fam-ge2",
+          "label": "Unireso Jahresabo Tout Genève Famille"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-ge",
+          "label": "Unireso Jahresabo Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-ge-ai",
+          "label": "Unireso Jahresabo IV"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-ge-mod",
+          "label": "Unireso Tout Genève Modulabo Jahr"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-unpers",
+          "label": "Unireso Jahresabo übertragbar"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-fam-ge2",
+          "label": "Unireso Monatsabo Tout Genève Famille"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-ge",
+          "label": "Unireso Monatsabo Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-ge-ai",
+          "label": "Unireso Monatsabo IV"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-ge-fam-hg",
+          "label": "Unireso Monatsabo Familie Tout Genève Hospiz"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-ge-hg",
+          "label": "Unireso Monatsabo Tout Genève Hospiz"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-ge-mod",
+          "label": "Unireso Tout Genève Modulabo Monat"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-unpers",
+          "label": "Unireso Monatsabo übertragbar"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-woabo-ge",
+          "label": "Unireso Wochenabo Tout Genève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-woabo-ge-iv",
+          "label": "Unireso Wochenabo Tout Genève IV"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-woabo-unpers",
+          "label": "Unireso Wochenabo übertragbar"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-ab",
+          "label": "Mobilis Anschlussbillett"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-gr-eb",
+          "label": "Mobilis Gruppen Einzel"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-gr-tk",
+          "label": "Mobilis Gruppen Tageskarte"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-klw",
+          "label": "Mobilis Klassenwechsel"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-mtk",
+          "label": "Mobilis Multitageskarte"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-raw-tk",
+          "label": "Mobilis RailAway Tageskarte"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-tk",
+          "label": "Mobilis Tageskarte"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-flabo-104",
+          "label": "Mobilis FlexiAbo 104"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-flabo-156",
+          "label": "Mobilis FlexiAbo 156"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-hajabo-schueler",
+          "label": "Mobilis Halbjahresabo Schüler"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-jabo-mod",
+          "label": "Mobilis Modulabo Jahr"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-jabo-schueler-spez",
+          "label": "Mobilis Jahresabo Schüler Spezial"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-jahresabo-unpers",
+          "label": "Mobilis Jahresabo unpers."
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-klw-moba",
+          "label": "Mobilis Monatsklassenwechsel"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-mabo-evam",
+          "label": "Mobilis Montasabo EVAM"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-mabo-mod",
+          "label": "Mobilis Modulabo Monat"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-moabo-hund",
+          "label": "Mobilis Monatsabo Hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-monatsabo-unpers",
+          "label": "Mobilis Monatsabo unpers."
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-woabo",
+          "label": "Mobilis Wochenabo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-wochenabo-unpers",
+          "label": "Mobilis Wochenabo unpers."
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-zt-72478",
+          "label": "Mobilis Monatsabo SwissPass"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-zt-72484",
+          "label": "Mobilis Jahresabo SwissPass"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-weekend-m-abo",
+          "label": "Mobilis Week-End mit Abo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/450-weekend-o-abo",
+          "label": "Mobilis Week-End ohne Abo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-eb-partner",
+          "label": "Mobilis Einzelbillett Gratis"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-tk-partner",
+          "label": "Mobilis Tageskarte Gratis"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-ge-hg",
+          "label": "Unireso Jahresabo Tout Genève Hospiz"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-duo-tk",
+          "label": "Mobilis Duo Tageskarte"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-eb-hund",
+          "label": "unireso Einzelbillett Hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-eb-velo",
+          "label": "unireso Einzelbillett Velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-eb-hund",
+          "label": "Mobilis Einzelbillett Hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-eb-velo",
+          "label": "Mobilis Einzelbillett Velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-9tk-hund",
+          "label": "unireso 9-Uhr-Tageskarte Hunde"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-9tk-velo",
+          "label": "unireso 9-Uhr-Tageskarte Velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-tk-hund",
+          "label": "unireso Tageskarte Hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-tk-velo",
+          "label": "unireso Tageskarte Velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-tk-hund",
+          "label": "Mobilis Tageskarte Hund"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-tk-velo",
+          "label": "Mobilis Tageskarte Velo"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-vaud-pass-13-tage",
+          "label": "Mobilis Vaud Pass 13 Tage"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-vaud-pass-6-tage",
+          "label": "Mobilis Vaud Pass 6 Tage"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-billet-forfaitaire",
+          "label": "unireso Billet Forfaitaire"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-9tk-ge-saleve",
+          "label": "unireso 9-Uhr-Tageskarte inkl. Seilbahn Salève"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-tk-p-r-2",
+          "label": "unireso Tageskarte P+Rail 2 bis 4 Personen"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/439-tk-p-r",
+          "label": "unireso Tageskarte P+Rail 1 Person"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-jabo-p-r",
+          "label": "unireso Jahresabo P+Rail"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/447-mabo-p-r",
+          "label": "unireso Monatsabo P+Rail"
+        },
+        {
+          "s": "https://lod.opentransportdata.swiss/tarif/449-19tk",
+          "label": "Mobilis Abendkarte"
+        }
+      ]
+    }
+  }
+}

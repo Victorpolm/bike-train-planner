@@ -77,6 +77,39 @@ export default function FareDetails({
           .
         </p>
       )}
+      {fare.localGuidance.length > 0 && (
+        <details>
+          <summary>Local operator tickets and conditions</summary>
+          {fare.localGuidance.map((rule) => (
+            <div key={rule.id}>
+              <p>
+                <strong>{rule.name}</strong> · {rule.ticket}
+              </p>
+              <ul>
+                {rule.instructions.map((instruction) => (
+                  <li key={instruction}>{instruction}</li>
+                ))}
+              </ul>
+              {!rule.current && (
+                <p>Outside our reviewed dates: confirm the current rules before travel.</p>
+              )}
+              <p>
+                <a href={rule.source.url} target="_blank" rel="noreferrer">
+                  Official conditions
+                </a>{" "}
+                · reviewed {rule.source.checked}.
+              </p>
+            </div>
+          ))}
+        </details>
+      )}
+      {fare.published?.source.id === "unireso" && (
+        <p>
+          Zone matching uses TPG stop data updated 4 October 2026 and line pages reviewed 11 October
+          2026. This is an independent Re.route extraction. The 60-minute fare covers the checked
+          journey; a qualifying short-hop ticket may cost less.
+        </p>
+      )}
       {!online.quote && online.message && <p>{online.message}</p>}
       <p>
         Permission, a valid ticket, a required reservation and remaining space are separate. This

@@ -8,6 +8,7 @@ import { travelProfileKey, type TravelProfile } from "./travelProfile.ts";
 import { normalizeName as normalized } from "./normalization.ts";
 import { applicableBicycleEvidence, bicyclePermission, permissionInputs, type BicycleEvidence } from "./bicyclePermission.ts";
 import { busCarriage } from "./busCarriage.ts";
+import { localChildBikeConcession } from "./localTransport.ts";
 import type { TransitLeg } from "./routing.ts";
 import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB_IR_BICYCLES, operatorBicycleRule, isSbb } from "./operatorBicycleRules.ts";
 
@@ -73,7 +74,7 @@ export function evaluateCarriageForLeg(leg: TransitLeg, profile?: TravelProfile)
     ? requirements.bikeTicket : sbb || sob || operatorRule?.ticket === "required" || policy?.ticket === "required" ? "required" : "unknown";
   const date=leg.departure?swissDateTimeInput(leg.departure).slice(0,10):"";
   const childFree=!!profile && childBikeFree(profile) && validPassOn(profile,date) && domesticSwissLeg(leg) && date>=tariffSource("t600").validFrom && date<=tariffSource("t600").validThrough &&
-    (["SBB","BLS","RHB","SOB"].includes(operatorCode(leg.operator))&&["IC","IR","RE","S","R","EC","ICE","RJX","PE"].includes(normalizeCode(leg.category)) || ["VBZ","VBG","VZO","STBW","PAG"].includes(operatorCode(leg.operator)));
+    (["SBB","BLS","RHB","SOB"].includes(operatorCode(leg.operator))&&["IC","IR","RE","S","R","EC","ICE","RJX","PE"].includes(normalizeCode(leg.category)) || ["VBZ","VBG","VZO","STBW","PAG"].includes(operatorCode(leg.operator)) || localChildBikeConcession(leg));
   const childGuidance=childFree?["An eligible child bicycle travels free under the saved accompaniment/travelcard conditions. Children aged 6–15 still need a bicycle reservation where compulsory."]:[];
   const ticketSource = requirements?.ticketSource ?? (operatorRule?.source ?? (sbb ? SBB_BICYCLES : policy?.source));
   return {
@@ -85,7 +86,7 @@ export function evaluateCarriageForLeg(leg: TransitLeg, profile?: TravelProfile)
     permissionSource: operatorRule?.permission === "prohibited" || !evidence || evidence.permission === "unknown" ? operatorPermissionSource : undefined,
     ticketSource,
     bookingUrl: requirements?.bookingUrl ?? ticketSource?.url,
-    guidance: childGuidance.length ? [...specific.guidance,...childGuidance] : specific.guidance.length ? specific.guidance : operatorRule ? operatorRule.instructions : sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
+    guidance: specific.guidance.length || childGuidance.length ? [...new Set([...specific.guidance,...childGuidance,...(operatorRule?.instructions??policy?.instructions??[])])] : operatorRule ? operatorRule.instructions : sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
       "Bicycle spaces on these SOB trains cannot be reserved. Carriage depends on space; follow the crew’s instructions."] : sbbIR ? [
       "For a standard bicycle up to two metres long: load and unload it yourself and use the designated bicycle area.",
       "Take a bicycle ticket or pass. Carriage depends on space; keep doors and aisles clear and follow staff instructions.",

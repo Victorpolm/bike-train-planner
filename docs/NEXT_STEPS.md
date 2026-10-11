@@ -1,6 +1,6 @@
 # Next steps after official cycling and source review
 
-**Latest delivered scope:** Fare/bicycle profiles, qualified prices/times, onward recovery and automatic expiry/live-data monitoring are implemented in version 73. [Release and renewal runbook](FARES_PROFILES_AND_MONITORING_2026-10-11.md). Next: investigate the SBB day-pass automated-download failure; review source candidates before 12 December; obtain production fare feeds and precise local operator exceptions; complete browser/phone acceptance. Monitoring is scheduled; outreach and new tariff activation are not automatic.
+**Latest delivered scope — private version 74:** Public local bicycle rules/ticket guidance, verified Geneva Zone 10 standard fares, live bicycle-rule refresh and 24-source renewal monitoring. The [current reliability note](PUBLIC_TRANSPORT_RELIABILITY_2026-10-11.md) is the prioritized remaining-work list and links the nationwide public-data research. Public standard tariffs can be implemented without a ticket-sales API; remaining work includes exact route/zone mapping, unimplemented local exceptions, narrow source conflicts, matched SBB comparisons, the first complete scheduled baseline and device acceptance. Owner-private access is retained. See the note for final publication evidence.
 
 _Consolidated 11 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 

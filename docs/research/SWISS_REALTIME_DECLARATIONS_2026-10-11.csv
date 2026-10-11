@@ -1,0 +1,182 @@
+sboid;descriptionEn;abbreviationEn;vdvBetreiberId;source;siriVDV;etAUS;ptREFAUS;complete;comment
+ch:1:sboid:100610;Autobus AG Liestal;AAGL;85:811;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100611;Auto AG Rothenburg;AAGR;85:812;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100640;Auto AG Schwyz;AAGS;85:841;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100615;Auto AG Uri;AAGU;85:816;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100007;Appenzeller Bahnen (ab);AB-ab;85:22;AB/CUS;VDV;yes;yes;yes;without line 26 
+ch:1:sboid:100546;Automobildienst Appenzeller Bahnen;AB Auto;85:744;SIP;VDV;yes;yes;no;without line 841
+ch:1:sboid:100557;Autobusbetrieb Freienbach;ABF;85:755;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100661;Autolinee Bleniesi;ABl;85:862;SIGE;VDV;yes;yes;yes;
+ch:1:sboid:100612;AFA Bus AG;AFA;85:813;SIP;VDV;yes;yes;no;without lines 289, M45
+ch:1:sboid:100538;Autolinea Mendrisiense SA;AMSA;85:736;SIGE;VDV;yes;yes;yes;
+ch:1:sboid:100618;Automobil Rottal AG;ARAG;85:819;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100657;Autolinee Regionali Luganesi;ARL;85:858;SIGE;VDV;yes;yes;yes;
+ch:1:sboid:100655;Autobetrieb Sernftal;AS;85:856;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100514;Autoservizi Silvestri Livigno;ASL;85:712;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100020;Aare Seeland mobil (bti);ASM-bti;85:38;SIP/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100037;Aare Seeland mobil (rvo);ASM-rvo;85:56;SIP/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100060;Aare Seeland mobil (snb);ASM-snb;85:81;SIP/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100669;Automobildienste Aare Seeland mobil;ASM Auto;85:870;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100698;Aargau Verkehr AG;AVA/Autwm;85:899;SIP;VDV;yes;yes;no;without lines N31, N32
+ch:1:sboid:100013;Aargau Verkehr AG;AVA-bd;85:31;AVA/CUS;VDV;yes;yes;yes;
+ch:1:sboid:101815;Aargau Verkehr AG;AVA-ltb;85:41;ZVV;VDV;yes;yes;yes;
+ch:1:sboid:100525;Aargau Verkehr AG;AVA/rbz;85:723;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100073;Aargau Verkehr AG;AVA-wsb;85:96;AVA/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100533;Autotransports de la Vallée de Joux;AVJ;85:731;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100631;Autobetrieb Weesen-Amden;AWA;85:832;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100579;Bamert Bus;Bamert;85:777;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100639;Busbetrieb Aarau;BBA;85:840;SIP;VDV;yes;yes;no;without line N23
+ch:1:sboid:100693;Busbetrieb Grenchen und Umgebung;BGU;85:894;SIP;VDV;yes;yes;no;without line 27
+ch:1:sboid:100670;Busland AG;BLAG;85:871;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100609;Busbetrieb Lichtensteig-Wattwil-Ebnat-Kappel;BLWE;85:810;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100015;BLS AG (bls);BLS-bls;85:33;CUS;VDV;yes;yes;yes;
+ch:1:sboid:100019;Baselland Transport;BLT-blt;85:37;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100543;Bus Nyon-Prangins;BNP;85:741;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100017;Berner Oberland-Bahnen;BOB;85:35;JB/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100621;Busbetrieb BOB;BOB Auto;85:822;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100595;Busbetrieb Olten-Gösgen-Gäu;BOGG;85:793;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100111;Bus Ostschweiz (Rheintal);BOS/rtb;85:138;SIP;VDV;yes;yes;no;without line 351
+ch:1:sboid:100574;Busbetrieb Rapperswil-Eschenbach-Rüti ZH;BRER;85:772;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100516;Bus Sierrois;BS;85:714;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100682;Busbetrieb Solothurn und Umgebung;BSU;85:883;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100568;Bus und Service AG (Chur);BuS/cb;85:766;SIP;VDV;yes;yes;yes;
+ch:1:sboid:101712;Bus und Service AG (Engadin);BuS/eb;85:815;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100622;Basler Verkehrsbetriebe;BVB;85:823;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100024;Chemins de fer du Jura;CJ;85:43;SIP/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100632;Automobiles CJ;CJ Auto;85:833;SIP;VDV;yes;yes;no;without lines 936, 937
+ch:1:sboid:100030;Ferrovie Autolinee Regionali Ticinesi;FART;85:49;FART/CUS;VDV;yes;no;yes;only AUS
+ch:1:sboid:100616;Autolinee FART;FART Auto;85:817;SIGE;VDV;yes;yes;no;without lines 8, 370
+ch:1:sboid:100027;Forchbahn;FB;85:46;ZVV;VDV;yes;no;yes;
+ch:1:sboid:101182;Förderverein Region Gantrisch;FRG;85:7049;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100028;Lugano-Ponte Tresa;FLP;85:47;SIGE;VDV;yes;yes;yes;
+ch:1:sboid:101706;Gemeinde Luzein;GDLZ;85:7094;SIP;VDV;yes;yes;yes;seasonal operation
+ch:1:sboid:100095;Gornergratbahn;GGB;85:121;MGB;VDV;yes;no;yes;
+ch:1:sboid:100098;Jungfraubahn;JB;85:124;JB/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100036;Lausanne-Echallens-Bercher;LEB;85:55;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100654;Auto Leuk-Leukerbad;LLB;85:855;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100012;Transports de la région Morges-Bière-Cossonay;MBC;85:29;GM;SIRI;yes;yes;yes;
+ch:1:sboid:100566;Automobiles MBC;MBC Auto;85:764;GM;SIRI;yes;yes;no;
+ch:1:sboid:100650;Automobildienst Matterhorn Gotthard Bahn (fo auto);MGB/Autofo;85:851;MGB;VDV;yes;yes;yes;
+ch:1:sboid:100070;Matterhorn Gotthard Bahn (bvz);MGB-bvz;85:93;MGB;VDV;yes;yes;yes;
+ch:1:sboid:100029;Matterhorn Gotthard Bahn (fo);MGB-fo;85:48;MGB;VDV;yes;yes;yes;
+ch:1:sboid:100045;Montreux-Oberland Bernois;MOB;85:64;MOB;VDV;yes;no;yes;
+ch:1:sboid:100023;Montreux-Vevey-Riviera (cev);MVR-cev;85:42;MOB;VDV;yes;no;yes;
+ch:1:sboid:100104;Montreux-Vevey-Riviera (mtgn);MVR-mtgn;85:131;MOB;VDV;yes;no;yes;
+ch:1:sboid:100158;Mouettes genevoises SA;Mgsa;85:199;RIV;VDV;yes;no;yes;
+ch:1:sboid:100047;Nyon-St-Cergue-Morez;NStCM;85:66;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100518;Ortsbus St. Moritz;OBSM;85:716;SIP;VDV;yes;yes;yes;seasonal operation
+ch:1:sboid:101218;Ortsbus der Gemeinde Silvaplana / Gemeinde Silvaplana;OGS;85:7085;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100602;PostBus Ltd;PAG;85:801;ZVV;VDV;yes;yes;no;only certain lines in the ZVV area
+ch:1:sboid:100602;PostBus Ltd;PAG;85:801;SIP;VDV;yes;yes;no;only certain lines
+ch:1:sboid:100602;PostBus Ltd;PAG;85:801;SIGE;VDV;yes;yes;no;only certain Ticino lines
+ch:1:sboid:100567;PostAuto AG (Bus Commune Sion);PAG/BCS;85:765;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100055;Regionalps;RA;85:74;TMR/CUS;VDV;yes;yes;yes;
+ch:1:sboid:101711;RegionAlps Bus;RA/bus;85:814;FELA;VDV;yes;yes;yes;
+ch:1:sboid:100672;Regionalbus Lenzburg;RBL;85:873;SIP;VDV;yes;yes;no;without lines N82, N90, N94
+ch:1:sboid:100066;Regionalverkehr Bern-Solothurn;RBS;85:88;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100649;Autobusbetrieb RBS;RBS Auto;85:850;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100695;Regiobus Gossau SG;REGO;85:896;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100664;Autoverkehr RhB;RhB Auto;85:865;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100053;Rhätische Bahn;RhB;85:72;RHB/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100685;Regionale Verkehrsbetriebe Baden-Wettingen;RVBW;85:886;SIP;VDV;yes;yes;no;without lines 13, N33
+ch:1:sboid:100308;SBB GmbH (Grenzverkehr);SBB GmbH;85:351;CUS;VDV;yes;yes;n.a.;
+ch:1:sboid:100599;Stadtbus Frauenfeld;SBF;85:797;SIP;VDV;yes;yes;no;without line NT
+ch:1:sboid:100001;Swiss Federal Railways SBB;SBB;85:11;CUS;VDV;yes;yes;yes;
+ch:1:sboid:100681;Stadtbus Winterthur;SBW;85:882;ZVV;VDV;yes;yes;yes;
+ch:1:sboid:100115;Sierre-Montana-Crans;SMC;85:142;SIP;VDV;yes;yes;no;without line 2225 (FUN)
+ch:1:sboid:100539;Servizio d'automobili;SNL Auto;85:737;SIGE;VDV;yes;yes;yes;
+ch:1:sboid:100061;Schweizerische Südostbahn (sob);SOB-sob;85:82;CUS;VDV;yes;yes;yes;
+ch:1:sboid:100118;STI Bus AG;STI;85:146;SIP;VDV;yes;yes;yes;SIP only line M40
+ch:1:sboid:101781;STI Bus AG;STI Berg;85:605;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100658;STI Bus AG;STI-gwb;85:859;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100626;Städtische Verkehrsbetriebe Bern;SVB Auto;85:827;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100058;Sihltal-Zürich-Uetliberg-Bahn;SZU/CUS;85:78;SZU;VDV;yes;yes;yes;
+ch:1:sboid:100606;Automobildienst SZU;SZU Auto;85:807;ZVV;VDV;yes;yes;no;without line 137
+ch:1:sboid:100046;THURBO;THURBO;85:65;CUS;VDV;yes;yes;yes;
+ch:1:sboid:100122;Transports Publics de la Région Lausannoise sa;TL;85:151;TL;SIRI;yes;yes;no;without line m2
+ch:1:sboid:100042;Transports de Martigny et Régions (mc);TMR-mc;85:61;TMR;SIRI;yes;yes;yes;
+ch:1:sboid:100634;Service d'automobiles TMR;TMR Auto;85:835;TMR;SIRI;yes;yes;no;only lines 210, 211, 271, 272, 273
+ch:1:sboid:100074;Transports Vallée de Joux-Yverdon-Ste-Croix;TRAVYS;85:97;RIV;VDV;yes;yes;yes;
+ch:1:sboid:101756;Transports Vallée de Joux-Yverdon-Ste-Croix (oc/bus);TRAVYS/oc;85:9020;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100694;Transports Vallée de Joux-Yverdon-Ste-Croix;TRAVYSAuto;85:895;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100008;Transports Publics du Chablais;TPC;85:23;RIV;VDV;yes;no;yes;
+ch:1:sboid:100617;Transports Publics du Chablais (Bus);TPC Auto;85:818;RIV;VDV;yes;yes;no;only certain lines
+ch:1:sboid:100034;Transports publics fribourgeois;TPF;85:53;TPF/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100633;Service d'automobiles TPF;TPF Auto;85:834;TPF;SIRI;yes;yes;yes;
+ch:1:sboid:100680;Transports Publics Genevois;TPG;85:881;RIV;VDV;yes;yes;no;without lines 54, A1, A2, A3, A4, A5, A6
+ch:1:sboid:100754;Trasporti Pubblici Luganesi SA;TPL;85:955;SIGE;VDV;yes;yes;yes;
+ch:1:sboid:100540;Transports Publics de la Région Nyonnaise;TPN;85:738;RIV;VDV;yes;yes;yes;
+ch:1:sboid:100025;Transports Publics Neuchâtelois SA (cmn);TRN-cmn;85:44;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100054;Transports Publics Neuchâtelois SA (rvt);TRN-rvt;85:73;CUS;VDV;yes;yes;yes;
+ch:1:sboid:100124;Transports Publics Neuchâtelois SA (tn);TRN-tn;85:153;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100127;Service d'automobiles TRN (vr);TRN/Autovr;85:156;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100598;Service d'automobiles TRN (rvt Auto);TRN/Autrvt;85:796;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100594;Transports Publics Neuchâtelois SA (tc);TRN/tc;85:792;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100652;Theytaz Excursions Sion;TSD-asdt;85:853;FELA;VDV;yes;yes;no;without lines 373, 374
+ch:1:sboid:100688;Verkehrsbetriebe Biel;VB;85:889;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100542;Verkehrsbetrieb der Landschaft Davos;VBD;85:740;SIP;VDV;yes;no;no;without lines WEF-Gelb, WEF-Rot
+ch:1:sboid:100575;Verkehrsbetriebe Glattal;VBG;85:773;ZVV;VDV;yes;yes;no;without lines 640, 657, E
+ch:1:sboid:100601;Verkehrsbetriebe Herisau;VBH;85:799;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100529;Verkehrsbetriebe Kreuzlingen;VSK-bkk;85:727;FELA;VDV;yes;yes;yes;
+ch:1:sboid:100619;Verkehrsbetriebe Luzern AG;VBL;85:820;SIP;VDV;yes;yes;no;without lines 27, 2510 (FUN)
+ch:1:sboid:100684;Verkehrsbetriebe der Stadt St.Gallen;VBSG;85:885;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100635;Verkehrsbetriebe Schaffhausen;VBSH;85:836;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100645;Verkehrsbetriebe Schaffhausen;VBSH-rv;85:846;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100648;Verkehrsbetriebe Zürich;VBZ;85:849;ZVV;VDV;yes;yes;no;without line 23 (FUN)
+ch:1:sboid:101130;Verkehrsbetriebe Zürich INFO+;VBZ Fpl;85:3849;ZVV;VDV;yes;yes;yes;
+ch:1:sboid:100604;Verkehrsbetrieb LIECHTENSTEINmobil;VLM;85:805;SIP;VDV;yes;yes;no;some buses not equipped for data generation
+ch:1:sboid:100675;Transports publics Vevey-Montreux-Chillon-Villeneuve;VMCV;85:876;GM;SIRI;yes;yes;yes;
+ch:1:sboid:100637;Verkehrsbetriebe Zürichsee und Oberland;VZO;85:838;ZVV;VDV;yes;yes;no;without lines 871, 878
+ch:1:sboid:100128;Wengernalpbahn;WAB;85:157;JB;VDV;yes;yes;yes;
+ch:1:sboid:101183;ZB Bus Fahrplanbedürfnisse;ZB Bus Fpl;85:7050;SIP;VDV;yes;yes;yes;
+ch:1:sboid:100064;Zentralbahn;ZB;85:86;ZB/CUS;VDV;yes;yes;yes;
+ch:1:sboid:100638;Zugerland Verkehrsbetriebe;ZVB;85:839;SIP;VDV;yes;yes;yes;
+ch:1:sboid:1100058;Appenzeller Bahnen Ersatzverkehr;AB-EV;85:7252;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100053;Aare Seeland mobil Ersatzverkehr;ASM-EV;85:7136;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100054;Aargau Verkehr AG Ersatzverkehr;AVA-EV;85:7244;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:101836;BLS Netz AG Ersatzverkehr;BLS-EV;85:7230;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100055;Berner Oberland-Bahnen Ersatzverkehr;BOB-EV;85:7245;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100074;Chemins de fer du Jura Ersatzverkehr;CJ-EV;85:7259;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100059;Ferrovie Autolinee Regionali Ticinesi Ersatzverkehr;FART-EV;85:7240;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100056;Forchbahn Ersatzverkehr;FB-EV;85:7248;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100079;Lausanne-Echallens-Bercher Ersatzverkehr;LEB-EV;85:7263;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100078;Lugano-Ponte Tresa Ersatzverkehr;FLP-EV;85:7274;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100071;Transports de la région Morges-Bière-Cossonay Ersatzverkehr;MBC-EV;85:7256;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100060;Matterhorn Gotthard Bahn Ersatzverkehr;MGB-EV;85:7249;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100057;Montreux-Oberland Bernois Ersatzverkehr;MOB-EV;85:7040;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100073;Nyon-St-Cergue-Morez Ersatzverkehr;NStCM;85:7258;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100061;Regionalps Ersatzverkehr;RA-EV;85:7247;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100062;Regionalverkehr Bern-Solothurn Ersatzverkehr;RBS-EV;85:7246;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100063;Rhätische Bahn Ersatzverkehr;RhB-EV;85:7250;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100021;SBB Infrastruktur AG Bahnersatz;SBB-EV;85:7231;n.a.;;n.a.;no;n.a.;replacement services
+ch:1:sboid:1100023;Schweizerische Südostbahn AG Ersatzverkehr;SOB-EV;85:7232;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100064;Sihltal-Zürich-Uetliberg-Bahn Ersatzverkehr;SZU-EV;85:7251;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100024;Thurbo AG Ersatzverkehr;THB-EV;85:7233;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100072;Transports de Martigny et Régions Ersatzverkehr;TMR-EV;85:7257;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100065;Transports Publics du Chablais Ersatzverkehr;TPC-EV;85:7253;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:101810;Transports publics fribourgeois Ersatzverkehr;TPF-EV;85:7223;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100066;Transports Vallée de Joux-Yverdon-Ste-Croix Ersatzverkehr;TRAVYS-EV;85:7254;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100067;Transport Publics Neuchâtelois SA Ersatzverkehr;TRN-EV;85:7255;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:sboid:1100025;Zentralbahn AG Ersatzverkehr;ZB-EV;85:7234;n.a.;;n.a.;n.a.;n.a.;replacement services
+ch:1:Organisation:850065;THURBO Deutschland;THURBO;85:850065;CUS;;yes;no;n.a.;foreign & border traffic
+ch:1:Organisation:06____;DB Regio;DB Regio AG;80:06____;DBRIS;;yes;no;n.a.;foreign & border traffic
+ch:1:Organisation:07____;DB Regio;DB Regio AG;80:07____;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:80____;DB Fernverkehr AG;DB;80:80____;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:800631;DB Regio AG Baden-Württemberg;DB Regio;80:800631;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:800647;DB Regio AG Baden-Württemberg;DB Regio;80:800647;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:800693;DB Regio AG Baden-Württemberg;DB Regio;80:800693;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:800694;DB Regio AG Baden-Württemberg;DB Regio;80:800694;DBRIS;;no;yes;n.a.;foreign & border traffic
+ch:1:Organisation:8006C4;DB Regio AG Baden-Württemberg;DB Regio;80:8006C4;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:8006C5;DB Regio AG Baden-Württemberg;DB Regio;80:8006C5;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:8006D6;DB Regio AG Baden-Württemberg;DB Regio;80:8006D6;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:8006E3;DB Regio AG Baden-Württemberg;DB Regio;80:8006E3;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:L7____;SBB GmbH;SBB;80:L7____;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:NZ____;DB Fernverkehr AG;DB;80:NZ____;DBRIS;;yes;no;n.a.;foreign & border traffic
+ch:1:Organisation:81____;Österreichische Bundesbahnen;ÖBB;81:81____;DBRIS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:817000;NeTS Planung ÖBB;NeTS-ÖBB;81:817000;CUS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:327000;TreNord;TN;83:327000;CUS;;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:87_LEX;Société Nationale des Chemins de fer Français;SNCF;87:87_LEX;SNCF;SIRI;yes;yes;n.a.;foreign & border traffic
+ch:1:Organisation:87____;Société Nationale des Chemins de fer Français;SNCF;87:87____;SNCF;SIRI;no;no;n.a.;foreign & border traffic
+ch:1:sboid:100143;CGN SA;CGN;85:184;RIV;VDV;yes;no;yes;project in progress - go-live date unknown
+ch:1:sboid:100186;Luftseilbahn Kandersteg-Sunnbüel (Gemmi) AG;LKS;85:228;LKS;SIRI;no;yes;yes;
+ch:1:Organisation:87_TAC;Transports Publics de l'agglomération d'Annemasse;TAC;87:87_TAC;TAC;SIRI;yes;yes;yes;project in progress - go-live date unknown

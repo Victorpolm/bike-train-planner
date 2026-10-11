@@ -221,7 +221,11 @@ export default function PersonalSettingsFields({
             >
               <option value="unfolded">Unfolded</option>
               {bike.kind === "folding" && <option value="folded">Folded before boarding</option>}
-              <option value="bagged">Wheel removed, correctly packed in bicycle bag</option>
+              <option value="bagged">
+                {bike.kind === "folding"
+                  ? "Folded small and fully enclosed in a bicycle bag"
+                  : "Wheel removed, correctly packed in bicycle bag"}
+              </option>
             </select>
           </label>
           <label>

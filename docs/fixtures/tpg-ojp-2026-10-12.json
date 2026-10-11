@@ -1,0 +1,510 @@
+{
+  "source": "Private deployed OJP adapter, retrieved 2026-10-11; public test journey for 2026-10-12",
+  "connections": {
+    "checked": "2026-10-11T21:25:54.916Z",
+    "warnings": [],
+    "legs": [
+      {
+        "realtime": {
+          "checkedAt": "2026-10-11T21:25:57.334Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:87907",
+          "name": "Genève, Plainpalais",
+          "lat": 46.19809,
+          "lon": 6.14305
+        },
+        "to": {
+          "id": "ch:1:sloid:93118",
+          "name": "Thônex, Moillesulaz",
+          "lat": 46.1924,
+          "lon": 6.20669
+        },
+        "departure": "2026-10-12T08:03:00.000Z",
+        "arrival": "2026-10-12T08:26:00.000Z",
+        "service": "Tram 12",
+        "transferRules": [],
+        "serviceName": "12",
+        "category": "Tram",
+        "operator": "ojp:881",
+        "direction": "Thônex, Moillesulaz",
+        "departurePlatform": "E",
+        "arrivalPlatform": "A",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100680:HAS-26-12-10-Lun-Ven-35075745",
+          "operatingDay": "2026-10-12",
+          "fromRef": "ch:1:sloid:87907:0:104748",
+          "toRef": "ch:1:sloid:93118:0:1850",
+          "fromOrder": 1,
+          "toOrder": 16,
+          "departure": "2026-10-12T08:03:00.000Z",
+          "arrival": "2026-10-12T08:26:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        }
+      },
+      {
+        "realtime": {
+          "checkedAt": "2026-10-11T21:25:57.334Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [
+          {
+            "point": {
+              "lat": 46.19806,
+              "lon": 6.14302
+            },
+            "toRef": "ch:1:sloid:87907:0:272553",
+            "seconds": 60,
+            "departure": "2026-10-12T08:06:00.000Z",
+            "operatingDay": "2026-10-12",
+            "checked": "2026-10-11T21:25:55.787Z"
+          },
+          {
+            "point": {
+              "lat": 46.19806,
+              "lon": 6.14302
+            },
+            "toRef": "ch:1:sloid:87907:0:272553",
+            "seconds": 60,
+            "departure": "2026-10-12T08:06:00.000Z",
+            "operatingDay": "2026-10-12",
+            "checked": "2026-10-11T21:25:57.334Z"
+          }
+        ],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:87907",
+          "name": "Genève, Plainpalais",
+          "lat": 46.19809,
+          "lon": 6.14305
+        },
+        "to": {
+          "id": "ch:1:sloid:93118",
+          "name": "Thônex, Moillesulaz",
+          "lat": 46.1924,
+          "lon": 6.20669
+        },
+        "departure": "2026-10-12T08:06:00.000Z",
+        "arrival": "2026-10-12T08:29:00.000Z",
+        "service": "Tram 17",
+        "transferRules": [],
+        "serviceName": "17",
+        "category": "Tram",
+        "operator": "ojp:881",
+        "direction": "Annemasse, Parc Montessuit",
+        "departurePlatform": "C",
+        "arrivalPlatform": "D",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100680:HAS-26-17-10-Lun-Ven-35076174",
+          "operatingDay": "2026-10-12",
+          "fromRef": "ch:1:sloid:87907:0:272553",
+          "toRef": "ch:1:sloid:93118:0:435432",
+          "fromOrder": 1,
+          "toOrder": 16,
+          "departure": "2026-10-12T08:06:00.000Z",
+          "arrival": "2026-10-12T08:29:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        }
+      },
+      {
+        "realtime": {
+          "checkedAt": "2026-10-11T21:25:57.334Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:87907",
+          "name": "Genève, Plainpalais",
+          "lat": 46.19809,
+          "lon": 6.14305
+        },
+        "to": {
+          "id": "ch:1:sloid:93118",
+          "name": "Thônex, Moillesulaz",
+          "lat": 46.1924,
+          "lon": 6.20669
+        },
+        "departure": "2026-10-12T08:08:00.000Z",
+        "arrival": "2026-10-12T08:31:00.000Z",
+        "service": "Tram 12",
+        "transferRules": [],
+        "serviceName": "12",
+        "category": "Tram",
+        "operator": "ojp:881",
+        "direction": "Thônex, Moillesulaz",
+        "departurePlatform": "E",
+        "arrivalPlatform": "B",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100680:HAS-26-12-10-Lun-Ven-35075805",
+          "operatingDay": "2026-10-12",
+          "fromRef": "ch:1:sloid:87907:0:104748",
+          "toRef": "ch:1:sloid:93118:0:11534",
+          "fromOrder": 1,
+          "toOrder": 16,
+          "departure": "2026-10-12T08:08:00.000Z",
+          "arrival": "2026-10-12T08:31:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        }
+      },
+      {
+        "realtime": {
+          "checkedAt": "2026-10-11T21:25:57.334Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:87907",
+          "name": "Genève, Plainpalais",
+          "lat": 46.19809,
+          "lon": 6.14305
+        },
+        "to": {
+          "id": "ch:1:sloid:93118",
+          "name": "Thônex, Moillesulaz",
+          "lat": 46.1924,
+          "lon": 6.20669
+        },
+        "departure": "2026-10-12T08:14:00.000Z",
+        "arrival": "2026-10-12T08:37:00.000Z",
+        "service": "Tram 12",
+        "transferRules": [],
+        "serviceName": "12",
+        "category": "Tram",
+        "operator": "ojp:881",
+        "direction": "Thônex, Moillesulaz",
+        "departurePlatform": "E",
+        "arrivalPlatform": "A",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100680:HAS-26-12-10-Lun-Ven-35075792",
+          "operatingDay": "2026-10-12",
+          "fromRef": "ch:1:sloid:87907:0:104748",
+          "toRef": "ch:1:sloid:93118:0:1850",
+          "fromOrder": 1,
+          "toOrder": 16,
+          "departure": "2026-10-12T08:14:00.000Z",
+          "arrival": "2026-10-12T08:37:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        }
+      }
+    ]
+  },
+  "hydratedResults": [
+    {
+      "service": "Tram 12",
+      "operator": "ojp:881",
+      "fromId": "ch:1:sloid:87907",
+      "toId": "ch:1:sloid:93118",
+      "stationDeparture": {
+        "key": "[\"ch:1:sloid:87907:0:104748\",\"ch:1:sloid:87907\",\"E\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:87907:0:104748",
+        "stationId": "8587907",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "stationArrival": {
+        "key": "[\"ch:1:sloid:93118:0:1850\",\"ch:1:sloid:93118\",\"A\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:93118:0:1850",
+        "stationId": "8593118",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "passenger": 3,
+      "bike": 2,
+      "reservation": 0,
+      "total": 5
+    },
+    {
+      "service": "Tram 17",
+      "operator": "ojp:881",
+      "fromId": "ch:1:sloid:87907",
+      "toId": "ch:1:sloid:93118",
+      "stationDeparture": {
+        "key": "[\"ch:1:sloid:87907:0:272553\",\"ch:1:sloid:87907\",\"C\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:87907:0:272553",
+        "stationId": "8587907",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "stationArrival": {
+        "key": "[\"ch:1:sloid:93118:0:435432\",\"ch:1:sloid:93118\",\"D\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:93118:0:435432",
+        "stationId": "8593118",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "passenger": null,
+      "bike": null,
+      "reservation": 0,
+      "total": null
+    },
+    {
+      "service": "Tram 12",
+      "operator": "ojp:881",
+      "fromId": "ch:1:sloid:87907",
+      "toId": "ch:1:sloid:93118",
+      "stationDeparture": {
+        "key": "[\"ch:1:sloid:87907:0:104748\",\"ch:1:sloid:87907\",\"E\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:87907:0:104748",
+        "stationId": "8587907",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "stationArrival": {
+        "key": "[\"ch:1:sloid:93118:0:11534\",\"ch:1:sloid:93118\",\"B\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:93118:0:11534",
+        "stationId": "8593118",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "passenger": 3,
+      "bike": 2,
+      "reservation": 0,
+      "total": 5
+    },
+    {
+      "service": "Tram 12",
+      "operator": "ojp:881",
+      "fromId": "ch:1:sloid:87907",
+      "toId": "ch:1:sloid:93118",
+      "stationDeparture": {
+        "key": "[\"ch:1:sloid:87907:0:104748\",\"ch:1:sloid:87907\",\"E\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:87907:0:104748",
+        "stationId": "8587907",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "stationArrival": {
+        "key": "[\"ch:1:sloid:93118:0:1850\",\"ch:1:sloid:93118\",\"A\",false,\"2026-10-12\"]",
+        "status": "matched",
+        "id": "ch:1:sloid:93118:0:1850",
+        "stationId": "8593118",
+        "minimums": {},
+        "feed": {
+          "version": "20260930",
+          "validFrom": "2025-12-14",
+          "validThrough": "2026-12-12",
+          "publisher": "SBB",
+          "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+          "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+          "stopCount": 104297,
+          "generalRules": 109116,
+          "totalRows": 1112959,
+          "generalRows": 109116,
+          "excludedScopedRows": 1003843
+        }
+      },
+      "passenger": 3,
+      "bike": 2,
+      "reservation": 0,
+      "total": 5
+    }
+  ]
+}

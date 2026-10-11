@@ -71,7 +71,7 @@ function ojpLegKey(leg: OjpLeg) {
     leg.reference?.fromRef ?? leg.from.id, leg.reference?.toRef ?? leg.to.id, leg.departure, leg.arrival, leg.operator]);
 }
 
-function realtime(service: Xml, board: Xml, alight: Xml, checkedAt: string): TransitRealtime {
+function realtime(service: Xml, board: Xml, alight: Xml, checkedAt: string, providerTimestampVerified = true): TransitRealtime {
   const yes = (value: unknown) => text(value) === "true" || text(value) === "1";
   const estimate = (call: Xml, event: string) => {
     const planned = instant(call[event]?.TimetabledTime), estimated = instant(call[event]?.EstimatedTime);
@@ -81,7 +81,7 @@ function realtime(service: Xml, board: Xml, alight: Xml, checkedAt: string): Tra
   const dep = estimatedDeparture ?? instant(board.ServiceDeparture?.TimetabledTime);
   const arr = estimatedArrival ?? instant(alight.ServiceArrival?.TimetabledTime);
   if (dep && arr && Date.parse(arr) < Date.parse(dep)) { estimatedDeparture = null; estimatedArrival = null; }
-  return { checkedAt, estimatedDeparture, estimatedArrival,
+  return { checkedAt, providerTimestampVerified, estimatedDeparture, estimatedArrival,
     departurePlatform: text(board.EstimatedQuay) || null, arrivalPlatform: text(alight.EstimatedQuay) || null,
     cancelled: yes(service.Cancelled), departureCancelled: yes(board.NotServicedStop) || yes(board.NoBoardingAtStop),
     arrivalCancelled: yes(alight.NotServicedStop) || yes(alight.NoAlightingAtStop), undefinedDelay: yes(service.UndefinedDelay) };
@@ -142,7 +142,7 @@ export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[
         }] : [];
         const accessRules: StationAccessRule[] = !previousRide && access && sameRef(access.toRef, fromRef)
           ? [{ ...access, toRef: fromRef, departure, operatingDay, checked: instant(data.ResponseTimestamp) ?? undefined }] : [];
-        const parsed: OjpLeg = { realtime: realtime(service, board, alight, instant(data.ResponseTimestamp) ?? new Date().toISOString()), accessRules, mode: "transit", from, to, departure, arrival, service: serviceLabel, transferRules,
+        const parsed: OjpLeg = { realtime: realtime(service, board, alight, instant(data.ResponseTimestamp) ?? new Date().toISOString(), !!instant(data.ResponseTimestamp)), accessRules, mode: "transit", from, to, departure, arrival, service: serviceLabel, transferRules,
           serviceName: text(service.PublishedServiceName) || null, category,
           operator: ojpOperator(text(service.OperatorRef)), direction: text(service.DestinationText) || null,
           departurePlatform: text(board.PlannedQuay) || null, arrivalPlatform: text(alight.PlannedQuay) || null,
@@ -204,7 +204,7 @@ export function parseOjpDetails(xml: string, ref: OjpReference): OjpDetails {
   if (from < 0 || to <= from) throw new Error("Service details do not identify the boarded segment");
   const checked = instant(data.ResponseTimestamp) ?? new Date().toISOString();
   return { rule: interpretBicycleAttributes([...attributes(service, "service"), ...calls.slice(from, to + 1).flatMap(c => attributes(c, "stop"))]),
-    checked, realtime: realtime(service, calls[from], calls[to], checked) };
+    checked, realtime: realtime(service, calls[from], calls[to], checked, !!instant(data.ResponseTimestamp)) };
 }
 
 export function parseOjpTripInfo(xml: string, ref: OjpReference): CarriageRule { return parseOjpDetails(xml, ref).rule; }

@@ -62,4 +62,11 @@ assert.match(broken,/Connection no longer feasible/);assert.doesNotMatch(broken,
 const {default:TransitTime}=await import('../src/ui/TransitTime.tsx');
 const early=render(TransitTime,{timing:{at:new Date('2026-10-11T08:16:00Z'),scheduled:new Date('2026-10-11T08:20:00Z'),basis:'estimated',freshness:'stale',delayMinutes:-4,cancelled:false,undefinedDelay:false}});panels++;
 assert.match(early,/-4/);assert.match(early,/out of date/);assert.match(early,/Scheduled/);
+const local={...train,from:'Genève, Plainpalais',to:'Genève, Rive',fromId:'8587907',toId:'8587061',operator:'TPG',category:'T',service:'12'};
+const geneva=render(FareDetails,{journey:{transitLegs:[local]},profile:DEFAULT_FARE_PROFILE});panels++;
+assert.match(geneva,/CHF 5.00/);assert.match(geneva,/Local operator tickets and conditions/);
+assert.match(geneva,/independent Re.route extraction/);assert.match(geneva,/60 minutes/);assert.match(geneva,/short-hop/);
+const {default:TariffHealth}=await import('../src/ui/TariffHealth.tsx');
+const renewal=render(TariffHealth,{});panels++;
+assert.match(renewal,/TPG Zone 10 line 12/);assert.match(renewal,/BERNMOBIL/);assert.match(renewal,/not necessarily the publisher/);
 console.log(JSON.stringify({panels,status:'passed',browserInteraction:'not-tested'}));

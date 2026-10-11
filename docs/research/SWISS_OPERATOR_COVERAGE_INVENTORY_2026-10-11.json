@@ -1,0 +1,29 @@
+{
+  "atlas_source": "https://data.opentransportdata.swiss/dataset/business-organisation-v2/permalink",
+  "atlas_bytes": 424338,
+  "atlas_sha256": "1b6742b91450fbb6d2214b1ada5876c9dbd32488a6396ffe12ec6ea42d313a9f",
+  "atlas_rows": 1286,
+  "realtime_source": "https://data.opentransportdata.swiss/dataset/go-realtime/permalink",
+  "realtime_resource": "https://data.opentransportdata.swiss/dataset/27aba9bd-59ed-4d7c-bc71-a3813d1d1799/resource/83b8b8d0-e345-453b-857e-1192d48c4c64/download/go-realtime.csv",
+  "realtime_publisher_last_updated": "2026-07-09T11:45:49+02:00",
+  "realtime_sha256": "84a0a3b185a9525c654b06511486ce08b9d7a75278eeda649071fa57fba8f7fa",
+  "realtime_rows": 181,
+  "inventory_rows": 1308,
+  "realtime_not_in_atlas_rows": 20,
+  "inventory_status_counts": {
+    "not_listed_in_realtime_inventory": 1127,
+    "estimates_declared_complete": 98,
+    "estimates_declared_partial_or_qualified": 49,
+    "future_project_not_live": 2,
+    "no_estimates_declared": 3,
+    "estimates_declared_complete_with_notes": 2,
+    "replacement_only_conditional": 27
+  },
+  "scope_note": "Atlas business organisations include operating divisions, tariff organisations, accounting/internal entries and foreign entities. Not a count of unique Swiss operating companies or proof of realtime correctness. No live estimates or operator bike/fare rules were validated by this join.",
+  "generated_at_utc": "2026-10-11T20:57:48.799505+00:00",
+  "atlas_retrieval_completed_at_utc": "2026-10-11T20:56:36.159683+00:00",
+  "realtime_retrieval_completed_at_utc": "2026-10-11T20:55:53.306319+00:00",
+  "inventory_distinct_sboids": 1306,
+  "realtime_distinct_sboids": 179,
+  "join_note": "Left join by SBOID, preserving multiple real-time declarations: PostBus has 3 delivery partners (ZVV, SIP, SIGE). 20 realtime-only foreign/special identifiers appended. No matching by ambiguous organisationNumber."
+}

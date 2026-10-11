@@ -3,6 +3,8 @@ import { it } from "node:test";
 import { parseOjpDetails, ojpTripInfoRequest, ojpTripRequest, type OjpReference } from "./ojp.ts";
 import { arrivalTime, departureTime, effectivePlatform, realtimeKey, realtimeStale, type TransitRealtime } from "./realtime.ts";
 import { realtimeJourney } from "./realtimeJourney.ts";
+import { applyRealtimeService } from "./realtimeService.ts";
+import { carriageForLeg } from "./bicycleCarriage.ts";
 import { DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
 import { solveWaypoints } from "./waypoints.ts";
 import { boardingCheck } from "./transferTimes.ts";
@@ -38,6 +40,23 @@ it("distinguishes cancellation, skipped boarding, unknown delay and absent estim
   assert.equal(skipped.departureCancelled, true); assert.equal(skipped.estimatedDeparture, null); assert.equal(skipped.estimatedArrival, null);
   assert.equal(parseOjpDetails(xml("", "malformed", time(9).toISOString()), ref).realtime!.estimatedArrival, null);
   assert.equal(realtimeStale(update(), +time(3)), true); assert.equal(realtimeStale(update(), +time(1)), false);
+});
+it("never calls estimates fresh when the provider omitted its response timestamp",()=>{
+ const details=parseOjpDetails(xml().replace(`<ResponseTimestamp>${stamp}</ResponseTimestamp>`,""),ref);
+ assert.equal(details.realtime!.providerTimestampVerified,false);
+ assert.equal(realtimeStale(details.realtime!,Date.parse(details.realtime!.checkedAt)),true);
+});
+it("refreshes bicycle restrictions and reservation requirements on the selected dated service",()=>{
+ const f=fixture(),raw=solve(f.network,f.origin,f.destination,time(0),f.options,"baseline").journeys[0];
+ const leg=raw.transitLegs[0],originalEvidence=leg.bicycleEvidence;
+ const details=parseOjpDetails(xml(),ref);
+ const changed=applyRealtimeService(leg,{...details,rule:{...details.rule,permission:"prohibited",bikeReservation:"required",notes:["Bicycle carriage suspended"]}});
+ assert.equal(carriageForLeg(changed).permission,"prohibited");assert.equal(carriageForLeg(changed).bikeReservation,"required");
+ const updates=new Map([[realtimeKey(leg),{bicycleEvidence:changed.bicycleEvidence,bicycleAttributes:changed.bicycleAttributes}]]);
+ const checked=realtimeJourney(raw,new Map(),3,undefined,updates,+time(0));
+ assert.equal(checked.feasibility,"broken");assert.match(checked.issues.join(" "),/bicycle carriage is prohibited/);
+ assert.notEqual(realtimeJourney(raw,new Map(),3,undefined,updates,+time(0),undefined,false).feasibility,"broken");
+ assert.equal(leg.bicycleEvidence,originalEvidence);assert.equal(changed.departure,leg.departure);assert.equal(changed.ojp,leg.ojp);
 });
 it("uses late and early estimates in both solvers and excludes cancelled services in every scope", () => {
   const f = fixture(), first = f.network.edges.get("first")!.leg;

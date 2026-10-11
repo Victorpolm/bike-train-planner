@@ -2,11 +2,13 @@ import { tariffSource } from "./tariffSources.ts";
 import { swissDateTimeInput } from "./departure.ts";
 import { isSbb, sobMainlineRule } from "./operatorBicycleRules.ts";
 import type { TransitLeg } from "./routing.ts";
+import { tpgZone10Leg } from "./tpgZone10.ts";
 
 const ZVV_FARES = tariffSource("zvv"), ZPASS_FARES = tariffSource("zpass");
 const FARE_VALID_FROM = ZVV_FARES.validFrom, FARE_VALID_TO = ZVV_FARES.validThrough;
 export type PublishedFare = { passengerFull: number; passengerHalf: number; bicycle: number; zones: string[];
-  paidZones: number; validMinutes: number; source: typeof ZVV_FARES; from: string; to: string; validFrom: string; validTo: string };
+  paidZones: number; validMinutes: number; source: typeof ZVV_FARES; from: string; to: string; validFrom: string; validTo: string;
+  passengerProduct?:string; bicycleMinimumVerified?:boolean; conditions?:string[] };
 // Audited rail corridors, not a nationwide fare engine. Each edge includes the
 // zones traversed, even where the service does not stop. Boundary stop Dietikon
 // can use 154 eastwards; continuing to Killwangen requires 184 and 570 too.
@@ -31,6 +33,13 @@ function routeFare(legs: TransitLeg[], checkDates = true): PublishedFare | null 
   const departure = transit[0].departure, arrival = transit.at(-1)!.arrival;
   if (!departure || !arrival || !Number.isFinite(departure.getTime()) || !Number.isFinite(arrival.getTime())) return null;
   const date = swissDateTimeInput(departure).slice(0, 10), endDate = swissDateTimeInput(arrival).slice(0, 10);
+  const unireso=tariffSource("unireso");
+  if(transit.every(l=>tpgZone10Leg(l,checkDates)) && date===endDate && +arrival>=+departure && +arrival-+departure<=3600000) {
+    return {passengerFull:3,passengerHalf:2,bicycle:2,zones:["10"],paidZones:1,validMinutes:60,source:unireso,
+      from:transit[0].from??transit[0].fromId!,to:transit.at(-1)!.to??transit.at(-1)!.toId!,validFrom:unireso.validFrom,validTo:unireso.validThrough,
+      passengerProduct:"unireso Tout Genève · 60 minutes",bicycleMinimumVerified:false,
+      conditions:["One Zone 10 ticket covers these checked services within 60 minutes; do not buy one per leg.","A qualifying three-stop, ten-minute journey may have a cheaper Saut de puce ticket; that product is not evaluated."]};
+  }
   if (checkDates && (date < FARE_VALID_FROM || date > FARE_VALID_TO) || endDate !== date) return null;
   const covered = transit.map(zonesForLeg);
   if (covered.some(z => z === null) || transit.some((l, i) => i > 0 && transit[i - 1].toId !== l.fromId)) return null;
