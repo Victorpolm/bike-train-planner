@@ -2,6 +2,7 @@
 """Refresh compact current/next-year GTFS transfer indexes on a trusted CI runner.
 Bulk ZIPs remain temporary. A failed download/import never changes the manifest.
 """
+import html.parser
 import argparse, base64, datetime, gzip, hashlib, importlib.util, json, pathlib, re, tempfile, urllib.parse, urllib.request
 
 spec = importlib.util.spec_from_file_location('import_transfers', pathlib.Path(__file__).with_name('import-station-transfers.py'))
@@ -29,6 +30,16 @@ def resource(metadata, year):
     if not candidates: raise ValueError(f'No official GTFS archive for {year}')
     return max(candidates)
 
+def catalogue_resources(page):
+    class Links(html.parser.HTMLParser):
+        def __init__(self): super().__init__(); self.resources=[]
+        def handle_starttag(self, tag, attrs):
+            href=dict(attrs).get('href', '')
+            if tag == 'a' and '.zip' in href.lower():
+                self.resources.append({'url':urllib.parse.urljoin(f'https://{HOST}',href)})
+    parser=Links();parser.feed(page)
+    return {'result':{'resources':parser.resources}}
+
 def refresh(output, today):
     old = json.loads((output / 'index.json').read_text()) if (output / 'index.json').exists() else {'feeds': []}
     feeds = {entry['year']: entry for entry in old['feeds']}
@@ -38,8 +49,8 @@ def refresh(output, today):
         for year in [today.year, today.year + 1]:
             meta = directory / f'{year}.json'
             try:
-                retrieve(f'https://{HOST}/api/3/action/package_show?id=timetable-{year}-gtfs2020', meta, 5_000_000)
-                edition, url = resource(json.loads(meta.read_text()), year)
+                retrieve(f'https://{HOST}/en/dataset/timetable-{year}-gtfs2020', meta, 5_000_000)
+                edition, url = resource(catalogue_resources(meta.read_text()), year)
             except urllib.error.HTTPError as error:
                 if year > today.year and error.code == 404: continue
                 raise
