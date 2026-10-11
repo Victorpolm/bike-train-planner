@@ -1,0 +1,23 @@
+{
+  "siteVersion": 71,
+  "sourceCommit": "c4b420bf17777d70cd9c016f86f5587ffa485fba",
+  "githubImplementation": "83af0963866d473ce44aa30249e63151b60786c1",
+  "applicationFilesMatched": 309,
+  "javascriptTests": 634,
+  "pythonTests": 16,
+  "renderedPanels": 37,
+  "build": true,
+  "format": true,
+  "knip": true,
+  "browserInteraction": false,
+  "liveEvidence": "data-quality-live-2026-10-11.json",
+  "githubCi": {
+    "runId": 38144626264,
+    "conclusion": "success"
+  },
+  "refreshCi": {
+    "runId": 38144304662,
+    "conclusion": "success"
+  },
+  "liveEvidenceSiteVersion": 70
+}

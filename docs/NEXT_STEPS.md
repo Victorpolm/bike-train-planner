@@ -28,6 +28,10 @@ Steps 1–3 are delivered: local stage timing, unchanged-result reuse and early 
 
 ## Confirmed starting point
 
+**Current: version 71**, published privately 11 October 2026 at 13:49:25 UTC, Site source `c4b420bf17777d70cd9c016f86f5587ffa485fba`, GitHub implementation `83af0963866d473ce44aa30249e63151b60786c1`. All 309 app files match the publication. Shared quota storage and both annual transfer feeds are live;634 JavaScript/16 Python tests and 37 rendered panels pass. [Release and live evidence](DATA_QUALITY_AND_QUOTAS_2026-10-11.md).
+
+The following starting-point records are historical:
+
 GitHub main contains implementation commit `16e41247befee481ab20cdda7912601e48670ed6`. All **288 application files** match the published Site source by Git blob hash. [Implementation CI run 38086502123](https://github.com/Victorpolm/bike-train-planner/actions/runs/38086502123) completed successfully, including JavaScript/Python tests, both React render checks, formatting, unused-code analysis and production builds. The subsequent release-record confirmation changes documentation only.
 
 Owner-private **version 68** published successfully on **10 October 2026 at 21:06:33 UTC** (23:06:33 Europe/Zurich), environment revision **3**, from Site source `b133828038eba6bdce4b17ede3dc1ae61764b5d3`. The exact pushed source and matching frontend/server-Worker archive were deployed. **593 JavaScript tests in 11 suites**, **13 Python tests**, **25 rendered panels** and **864 previous-release comparisons** pass, together with TypeScript/frontend/Worker builds, formatting and unused-code analysis. Stage timings, guarded result reuse and early connection rejection are delivered. The controlled CPU benchmark is 2.2–2.6× faster per solve; live whole-search and phone timing remain unmeasured. Re.route, the existing URL, runtime bindings and owner-only audience are preserved. [Release evidence](PERFORMANCE_PASS_2026-10-10.md).
@@ -83,9 +87,9 @@ Parking suitability is the priority, not live occupancy. Map proximity does not 
 
 ## Technical maintenance and data gaps already tracked
 
-- **Scale before wider access:** verify the issued-key allowance and observed peak/daily demand. The11October implementation coordinates per-key quotas through D1 across Worker isolates; calls using the same key outside Re.route remain unobservable. Record full cold/warm live-search timing and obtain the original 376-station fixture if an exact reproduction is required. [Speed/scale evidence](SPEED_AND_SCALE_2026-10-10.md).
+- **Scale before wider access:** verify the issued-key allowance and observed peak/daily demand. The 11 October implementation coordinates per-key quotas through D1 across Worker isolates; calls using the same key outside Re.route remain unobservable. Record full cold/warm live-search timing and obtain the original 376-station fixture if an exact reproduction is required. [Speed/scale evidence](SPEED_AND_SCALE_2026-10-10.md).
 
-- **Station transfers:** validate a familiar station on phone/desktop; correctly match service/route/calendar exceptions; verify the new maintained annual-feed refresh in operation; both2026 and2027 compact editions have been acquired and validated. Entrances, lifts, stairs and bicycle passage remain unverified. [Current integration and remaining work](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+- **Station transfers:** validate a familiar station on phone/desktop; correctly match service/route/calendar exceptions; verify the new maintained annual-feed refresh in operation; both 2026 and 2027 compact editions have been acquired and validated. Entrances, lifts, stairs and bicycle passage remain unverified. [Current integration and remaining work](STATION_TRANSFER_RUNTIME_2026-10-06.md).
 - **Fares and acquisition:** investigate demonstrated city/itinerary quote gaps, including unsupported through fares across cycling breaks. Measure bounded discovery, runtime and truncation on fixed cases; do not describe eight sampled fare queries as a global cheapest-fare search.
 - **Cycling estimates:** retain elevation/road evidence and calibrate riding, pushing and carrying times against observations. No traffic-volume or safety guarantee follows from the mapped traffic proxy.
 

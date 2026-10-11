@@ -1,0 +1,123 @@
+{
+  "checkedAt": "2026-10-11T13:39:44.360Z",
+  "passed": true,
+  "observations": [
+    {
+      "path": "/api/station-transfers/v1",
+      "status": 200,
+      "ms": 7092
+    },
+    {
+      "path": "/api/station-transfers/v1",
+      "status": 200,
+      "ms": 1238
+    },
+    {
+      "path": "/api/ojp/status",
+      "status": 200,
+      "ms": 63
+    },
+    {
+      "path": "/api/ojp/connections",
+      "status": 200,
+      "ms": 11206
+    },
+    {
+      "path": "/api/station-transfers/v1",
+      "status": 200,
+      "ms": 5665
+    },
+    {
+      "path": "/api/fares/quote",
+      "status": 200,
+      "ms": 3274
+    }
+  ],
+  "feeds": [
+    {
+      "serviceDate": "2026-12-12",
+      "feed": {
+        "version": "20260930",
+        "validFrom": "2025-12-14",
+        "validThrough": "2026-12-12",
+        "publisher": "SBB",
+        "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+        "zipSha256": "170cbc1648b12b8f6adf51200c7cef80b56726a522671327f48ee8c584c1bc22",
+        "stopCount": 104297,
+        "generalRules": 109116,
+        "totalRows": 1112959,
+        "generalRows": 109116,
+        "excludedScopedRows": 1003843
+      },
+      "minimumSeconds": 420
+    },
+    {
+      "serviceDate": "2026-12-13",
+      "feed": {
+        "version": "20261007",
+        "validFrom": "2026-12-13",
+        "validThrough": "2027-12-11",
+        "publisher": "SBB",
+        "source": "https://opentransportdata.swiss/en/cookbook/timetable-cookbook/gtfs/",
+        "zipSha256": "0a4f3b38fdbd494aa1819d2e2e25c38ecee43cd39f833691963d7b31d0a2271c",
+        "stopCount": 80286,
+        "generalRules": 66828,
+        "totalRows": 220091,
+        "generalRows": 66828,
+        "excludedScopedRows": 153263
+      },
+      "minimumSeconds": 420
+    }
+  ],
+  "warnings": [],
+  "services": [
+    {
+      "service": "IC3",
+      "operator": "ojp:11",
+      "from": "Zürich HB",
+      "to": "Chur",
+      "fromId": "ch:1:sloid:3000",
+      "toId": "ch:1:sloid:9000",
+      "departure": "2026-10-12T08:38:00.000Z",
+      "arrival": "2026-10-12T09:52:00.000Z",
+      "permission": "confirmed",
+      "reservation": "not-required"
+    },
+    {
+      "service": "B 81",
+      "operator": "ojp:801",
+      "from": "Chur, Postautostation",
+      "to": "Laax GR, posta",
+      "fromId": "ch:1:sloid:75112",
+      "toId": "ch:1:sloid:9786",
+      "departure": "2026-10-12T09:58:00.000Z",
+      "arrival": "2026-10-12T10:48:00.000Z",
+      "permission": "confirmed",
+      "reservation": "required"
+    }
+  ],
+  "quote": {
+    "status": "quoted",
+    "passenger": {
+      "chf": 45.8,
+      "productId": "84004",
+      "product": "Sparbillett"
+    },
+    "bicycle": {
+      "chf": 29.6,
+      "productId": "40245",
+      "product": "Velobillett"
+    },
+    "checked": "2026-10-11T13:39:41.283Z",
+    "environment": "test",
+    "itinerarySource": "retained"
+  },
+  "fare": {
+    "bikeChf": 15,
+    "bikeProduct": "Bike Day Pass",
+    "passengerChf": 45.8,
+    "reservationChf": 2,
+    "knownBikeTotal": 17,
+    "totalChf": 62.8
+  }
+}
