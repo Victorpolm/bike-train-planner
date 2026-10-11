@@ -12,6 +12,7 @@ const OPERATOR_ALIASES: Readonly<Record<string, string>> = {
   SBB: "SBB", "SBB CFF FFS": "SBB", CFF: "SBB", FFS: "SBB", "OJP:11": "SBB",
   BLS: "BLS", "BLS-BLS": "BLS", "BLS AG": "BLS", "OJP:33": "BLS",
   RHB: "RHB", "RHB-RHB": "RHB", "RHÄTISCHE BAHN": "RHB", "RHÄTISCHE BAHN AG": "RHB", "OJP:72": "RHB",
+  PAG: "PAG", POSTAUTO: "PAG", "POSTAUTO AG": "PAG", POSTBUS: "PAG", "OJP:801": "PAG",
 };
 // Exact reviewed aliases; no substring/fuzzy matching that could confer access
 // on an unrelated operator or a replacement service.

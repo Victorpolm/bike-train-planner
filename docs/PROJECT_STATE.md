@@ -1,5 +1,7 @@
 # Re.route — project state
 
+**11 October implementation update:** Shared D1 quotas, maintained 2026/2027 transfer feeds, the Zürich–Laax bike-day-pass correction, authoritative tariff precedence, permission-evidence fixes and downloadable journey reports are implemented. [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md). Production fare access, scoped GTFS exception matching and physical entrance/cycling calibration remain data dependencies.
+
 **Current publication:** Owner-private **version 69** published successfully on **10 October 2026 at 22:16:11 UTC** (11 October 00:16:11 Europe/Zurich), environment revision **3**, from Site source `1ed8d30fc77ff1d024df9617d77df2ee7132a658`. The exact pushed source and matching frontend/server-Worker archive were deployed. **614 JavaScript tests in 11 suites**, **13 Python tests**, **32 rendered panels** and **288 previous-release comparisons** pass, together with formatting, unused-code analysis and production builds. Device-local saved itineraries, unfinished-visit replanning and explicit park/return/collect are delivered. Re.route, the existing URL, runtime bindings and owner-only audience are preserved. Interactive browser/physical-phone acceptance remains unverified. [Release evidence](JOURNEY_CONTINUITY_2026-10-11.md).
 
 Saved version: `appgprj_6a9bdfc1819481918c7085729f869ca9~appgver_2d7d095d35708191a3369d87af7589ad`; deployment: `appgdep_6acab916a364819189e38b5971319399` (`succeeded`). Access was rechecked: one owner, no groups or external visitors.

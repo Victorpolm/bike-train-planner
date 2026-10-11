@@ -5,18 +5,21 @@ export type TransferFeed = {
   version: string; validFrom: string; validThrough: string; zipSha256: string; source: string;
   generalRules: number; excludedScopedRows: number;
 };
-export type TransferEndpointQuery = { ref: string; stopId?: string; platform?: string; platformChanged?: boolean };
+export type TransferEndpointQuery = { ref: string; stopId?: string; platform?: string; platformChanged?: boolean; serviceDate?: string };
 export type StaticTransferEndpoint = {
   key: string; status: "matched" | "station" | "unmapped" | "ambiguous" | "unavailable";
+  reason?: string;
   id?: string; minimums?: Record<string, number>; feed?: TransferFeed;
   stationId?: string; stationMaximumSeconds?: number;
 };
 export function transferEndpointQuery(leg: TransitLeg, end: "arrival" | "departure"): TransferEndpointQuery {
   const arrival = end === "arrival", stopId = arrival ? leg.toId : leg.fromId;
   return { ref: (arrival ? leg.ojp?.toRef : leg.ojp?.fromRef) ?? stopId ?? "", stopId,
+    serviceDate: serviceDay(leg, end) || undefined,
     platform: effectivePlatform(leg, end) ?? undefined, ...(platformChanged(leg, end) ? { platformChanged: true } : {}) };
 }
 export function transferEndpointKey(query: TransferEndpointQuery): string {
+  if (query.serviceDate) return JSON.stringify([query.ref, query.stopId ?? "", query.platform ?? "", !!query.platformChanged, query.serviceDate]);
   const ref = query.ref, stop = query.stopId ?? "", platform = query.platform ?? "";
   // This key is also a v1 wire field. Preserve JSON's exact escaping for old
   // open tabs, while avoiding the serializer for ordinary stop/platform IDs.
@@ -42,15 +45,17 @@ function serviceDay(leg: TransitLeg, end: "arrival" | "departure") {
 export function staticTransfer(incoming: TransitLeg, next: TransitLeg): { seconds?: number; feed?: TransferFeed; basis?: "platform-pair" | "station-maximum"; reason: string } {
   const from = incoming.stationArrival, to = next.stationDeparture;
   if (!from || !to) return { reason: "The station transfer table was not available for both stops." };
-  if (from.key !== transferEndpointKey(transferEndpointQuery(incoming, "arrival")) || to.key !== transferEndpointKey(transferEndpointQuery(next, "departure")))
-    return { reason: "The platform changed after the station transfer lookup." };
   if (!["matched", "station"].includes(from.status) || !["matched", "station"].includes(to.status))
-    return { reason: "The station transfer table could not uniquely match both platforms." };
+    return { reason: from.reason ?? to.reason ?? "The station transfer table could not uniquely match both platforms." };
   const feed = from.feed;
   if (!feed || feed.zipSha256 !== to.feed?.zipSha256) return { reason: "Station transfer editions do not match." };
   const days = [serviceDay(incoming, "arrival"), serviceDay(next, "departure")];
   if (days.some(day => !day || day < feed.validFrom || day > feed.validThrough))
     return { reason: `The station transfer table is valid ${feed.validFrom} to ${feed.validThrough}; this connection is outside that period.` };
+  const keyMatches = (key: string, query: TransferEndpointQuery) => key === transferEndpointKey(query)
+    || key === transferEndpointKey({ ...query, serviceDate: undefined }); // Existing saved journeys/open tabs.
+  if (!keyMatches(from.key, transferEndpointQuery(incoming, "arrival")) || !keyMatches(to.key, transferEndpointQuery(next, "departure")))
+    return { reason: "The platform or operating date changed after the station transfer lookup." };
   const seconds = to.id && from.status === "matched" && to.status === "matched" ? from.minimums?.[to.id] : undefined;
   if (typeof seconds === "number" && Number.isFinite(seconds) && seconds >= 0)
     return { seconds, feed, basis: "platform-pair", reason: "" };

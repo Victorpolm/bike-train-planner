@@ -5,10 +5,12 @@ _Consolidated 11 October 2026, Europe/Zurich. This is the current checklist of o
 ## Owner's three next priorities — 10 October
 
 1. **Design proposals:** Discover compromises and scenic/interesting-place Bikepacking routes remain design work. The owner’s subsequent feedback now authorizes custom cycling minimum/maximum and Extra-category regrouping; these are delivered in the [preference release](PREFERENCE_CONTROLS_2026-10-10.md).
-2. **Before wider access:** implement global API quota control across Worker isolates, confirm actual provider allowances and refresh the station-transfer feed before **12 December 2026**. Local concurrency/cache bounds do not supply a global quota. This is a project task, not a scheduled reminder.
+2. **Before wider access:** Shared per-key D1 quotas and maintained 2026/2027 transfer refresh are now implemented. Confirm the issued-key allowance and peak demand before wider access; the Site remains owner-private. This is a project task, not a scheduled reminder.
 3. **Europe:** scope a later expansion with country/provider coverage, bicycle-carriage rules, fares, station transfers and data licensing. Current delivery remains Switzerland-first and owner-private; no European coverage is claimed.
 
 ## Requested work now delivered
+
+**11 October quotas and data quality:** [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md). Bicycle day-pass caps now cover reviewed PostBus/RhB services; published standard fares beat test quotes, known invalid products are filtered, missing reservation notes are distinguished from conflicts, and a downloadable report gathers exact failing cases. The remaining provider/field dependencies are listed in the release record.
 
 **11 October journey continuity:** Save and reopen exact dated itineraries on this device; Plan again uses current timetable acquisition with the saved stops and routing preferences. Navigation recalculation retains unfinished facility visits and their duration. Record an actual parked bicycle, continue with walking/passenger transport, plan a return to its recorded point and explicitly confirm collection. **614 JavaScript tests**, **13 Python tests**, **32 rendered panels** and **288 unchanged-routing comparisons** pass. Browser/phone interaction remains unverified; cross-device sync, automatic parking-site optimization and rental handling are not included. [Evidence](JOURNEY_CONTINUITY_2026-10-11.md).
 
@@ -81,13 +83,13 @@ Parking suitability is the priority, not live occupancy. Map proximity does not 
 
 ## Technical maintenance and data gaps already tracked
 
-- **Scale before wider access:** verify the actual key allowance and observed peak/daily demand, then coordinate global per-key quotas across Worker isolates. Version 64 bounds work only inside each isolate; a short shared cache alone does not enforce a quota. Record full cold/warm live-search timing and obtain the original 376-station fixture if an exact reproduction is required. [Speed/scale evidence](SPEED_AND_SCALE_2026-10-10.md).
+- **Scale before wider access:** verify the issued-key allowance and observed peak/daily demand. The11October implementation coordinates per-key quotas through D1 across Worker isolates; calls using the same key outside Re.route remain unobservable. Record full cold/warm live-search timing and obtain the original 376-station fixture if an exact reproduction is required. [Speed/scale evidence](SPEED_AND_SCALE_2026-10-10.md).
 
-- **Station transfers:** validate a familiar station on phone/desktop; correctly match service/route/calendar exceptions; establish a maintained feed refresh before the imported feed's **12 December 2026** validity boundary. Entrances, lifts, stairs and bicycle passage remain unverified. [Current integration and remaining work](STATION_TRANSFER_RUNTIME_2026-10-06.md).
+- **Station transfers:** validate a familiar station on phone/desktop; correctly match service/route/calendar exceptions; verify the new maintained annual-feed refresh in operation; both2026 and2027 compact editions have been acquired and validated. Entrances, lifts, stairs and bicycle passage remain unverified. [Current integration and remaining work](STATION_TRANSFER_RUNTIME_2026-10-06.md).
 - **Fares and acquisition:** investigate demonstrated city/itinerary quote gaps, including unsupported through fares across cycling breaks. Measure bounded discovery, runtime and truncation on fixed cases; do not describe eight sampled fare queries as a global cheapest-fare search.
 - **Cycling estimates:** retain elevation/road evidence and calibrate riding, pushing and carrying times against observations. No traffic-volume or safety guarantee follows from the mapped traffic proxy.
 
-The feed-refresh item is a roadmap task; this document does not create a scheduled job or reminder.
+The feed-refresh task is now implemented as a scheduled GitHub Actions workflow; no separate chat reminder was created. [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md).
 
 ## Discussed design items, not implemented commitments
 

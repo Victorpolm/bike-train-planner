@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { setImmediate as nextTurn } from "node:timers/promises";
 import { it } from "node:test";
-import { createOjpHandler } from "../server/ojpHandler.ts";
+import { createOjpHandler as quotaAwarecreateOjpHandler } from "../server/ojpHandler.ts";
+const createOjpHandler = (...args: Parameters<typeof quotaAwarecreateOjpHandler>) => quotaAwarecreateOjpHandler(args[0], args[1], args[2], async () => {});
 import { OjpClient } from "./ojpClient.ts";
 import { parseOjpConnections } from "./ojp.ts";
 

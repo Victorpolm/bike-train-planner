@@ -12,7 +12,7 @@ import { haversineKm } from './routing.ts';
 
 it('keeps enriched stop requests within the OJP boundary and retains exact fare evidence', async () => {
   const xml = readFileSync(new URL('./fixtures/ojp-2026-09-24/rail-off.xml', import.meta.url), 'utf8');
-  const server = createOjpHandler(async () => new Response(xml), 0);
+  const server = createOjpHandler(async () => new Response(xml), 0, undefined, async () => {});
   let bytes = 0;
   const client = new OjpClient(new AbortController().signal, async (_url, init) => {
     bytes = new TextEncoder().encode(String(init?.body)).length;

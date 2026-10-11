@@ -1,10 +1,11 @@
+import { claimApiCall, coolDownApi, QuotaError, quotaResponse, type QuotaEnvironment, type QuotaGate } from "./apiQuota.ts";
 import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpDetails,
   type OjpQuery, type OjpReference } from "../src/ojp.ts";
 import { providerFailure } from "./providerFailure.ts";
 import { retainedConnections } from "./retainedFare.ts";
 import { waitFor } from "../src/http.ts";
 
-export type OjpEnvironment = { OJP_API_KEY?: string };
+export type OjpEnvironment = QuotaEnvironment & { OJP_API_KEY?: string };
 const ENDPOINT = "https://api.opentransportdata.swiss/ojp20";
 const MAX_RESPONSE = 8_000_000;
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), {
@@ -57,18 +58,20 @@ async function subscribe(work: OjpWork, signal: AbortSignal) {
   }
 }
 
-export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds = 1500, timeoutMs = 30_000) {
+export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds = 1500, timeoutMs = 30_000, quota: QuotaGate = claimApiCall) {
   // Bounded, short-lived caches contain timetable responses only. The secret
   // stays in runtime env and is never part of a response, cache key or log.
   const cache = new Map<string, { expires: number; data: unknown }>();
   const pending = new Map<string, OjpWork>();
   let queue: Promise<unknown> = Promise.resolve(), lastCall = 0, blockedUntil = 0, activeKey = "";
-  const requestOjp = (payload: string, key: string, signal: AbortSignal) => {
+  const requestOjp = (payload: string, key: string, signal: AbortSignal, env: OjpEnvironment) => {
     const task = queue.then(async () => {
       signal.throwIfAborted();
       if (Date.now() < blockedUntil) throw new Error("OJP temporarily unavailable");
       const pause = Math.max(0, paceMilliseconds - (Date.now() - lastCall));
       await waitFor(pause, signal);
+      signal.throwIfAborted();
+      await quota(env, key, signal);
       signal.throwIfAborted();
       lastCall = Date.now();
       const controller = new AbortController(), timer = setTimeout(() => controller.abort(new DOMException("OJP provider timed out", "TimeoutError")), 15_000);
@@ -82,6 +85,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
         if (!response.ok) {
           console.warn("OJP upstream HTTP failure", response.status);
           if (!signal.aborted && activeKey === key && [401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
+          if ([401, 403, 429].includes(response.status)) await coolDownApi(env, key);
           await response.body?.cancel();
           throw new Error("OJP request failed");
         }
@@ -143,14 +147,14 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
       const checked = new Date().toISOString();
       let data: unknown;
       if (isConnections) {
-        const unfiltered = await retainedConnections(await requestOjp(ojpTripRequest(body, false, checked), key, signal), false, key);
+        const unfiltered = await retainedConnections(await requestOjp(ojpTripRequest(body, false, checked), key, signal, env), false, key);
         let filtered: Awaited<ReturnType<typeof retainedConnections>> = { legs: [], sources: [] }, warnings: string[] = [];
-        try { filtered = await retainedConnections(await requestOjp(ojpTripRequest(body, true, checked), key, signal), true, key); }
+        try { filtered = await retainedConnections(await requestOjp(ojpTripRequest(body, true, checked), key, signal, env), true, key); }
         catch { signal.throwIfAborted(); warnings = ["The bicycle-filtered search could not finish. Unverified services remain unknown."]; }
         data = { legs: mergeOjpConnections(unfiltered.legs, filtered.legs), checked, warnings,
           fareSources: [...new Map([...unfiltered.sources, ...filtered.sources].map(s => [s.id, s])).values()] };
       } else {
-        data = parseOjpDetails(await requestOjp(ojpTripInfoRequest(body, checked), key, signal), body);
+        data = parseOjpDetails(await requestOjp(ojpTripInfoRequest(body, checked), key, signal, env), body);
       }
       signal.throwIfAborted();
       if (cache.size >= 32) cache.delete(cache.keys().next().value!);
@@ -165,6 +169,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
       pending.set(cacheKey, work);
       return json(await subscribe(work, request.signal));
     } catch (error) {
+      if (error instanceof QuotaError) return quotaResponse(error);
       if (request.signal.aborted || error instanceof Error && error.name === "AbortError") return json({ error: "Journey check cancelled. Please retry if needed." }, 499);
       if (error instanceof Error && error.name === "TimeoutError") return json({ error: "The journey service timed out. Please try again shortly." }, 504);
       console.warn("OJP journey or service check failed");

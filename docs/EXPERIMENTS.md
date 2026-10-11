@@ -932,3 +932,8 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 **Results:** 552 JavaScript regressions in 11 suites, 13 Python checks, six actual React panel render checks, production builds, formatting and Knip pass. The first full run identified the expected internal parking-cache version assertion; updating it to the intentionally bumped v4 namespace restored the suite. The public parking v3 URL remains compatible. New enriched records no longer reuse older persistent/edge cache entries.
 
 **Boundaries:** Fixed services are not replaced; physical entrances, complex/holiday opening and actual availability remain unverified. Five visits maximum, current-search persistence only; replanning unfinished timed visits is explicitly blocked. Browser/phone interaction and physical acceptance remain pending. [Full evidence and release record](FACILITY_STOPS_AND_CHOICES_2026-10-10.md).
+
+
+## 11 October 2026 — Zürich–Laax fare and annual transfer boundary regressions
+
+Synthetic dated SBB IC3 + PostBus B81 with OJP bicycle CHF29 now selects the reviewed CHF15 pass and one CHF2 through reservation. Lower ticket, annual pass, GA separation, unknown/prohibited services, interrupted booking, RhB, replacements,13December CHF16 and05:00 expiry are covered. Exact SLOID mapping and cache invalidation, numeric OJP operators, product2361, tariff precedence, data-report privacy, SQL quota concurrency/rolling budgets/cancellation/failure and12/13December feed selection/corruption/outage tests are added. Actual scheduled import acquired both annual feeds; final gates/publication are recorded in the release report. [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md)

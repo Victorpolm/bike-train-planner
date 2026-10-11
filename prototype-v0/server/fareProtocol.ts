@@ -170,7 +170,7 @@ export function fareRequest(trip: FareTrip, profile: "full" | "half-fare" | "bic
   if (!id) throw new Error("Missing trip id"); raw[id] = "farequote";
   const tripXml = new XMLBuilder({ ignoreAttributes: false }).build({ [trip.name]: { ...trip.namespaces, ...raw } });
   const entitlement = profile === "half-fare" ? "<EntitlementProduct><FareAuthorityRef>ch:1:NOVA</FareAuthorityRef><EntitlementProductRef>HTA</EntitlementProductRef><EntitlementProductName>Halbtax-Abonnement</EntitlementProductName></EntitlementProduct>" : "";
-  return envelope(`<OJPFareRequest><siri:RequestTimestamp>${new Date().toISOString()}</siri:RequestTimestamp><TripFareRequest>${tripXml}</TripFareRequest><Params><FareAuthorityFilter>ch:1:NOVA</FareAuthorityFilter><FareClass>secondClass </FareClass><Traveller><Age>25</Age><PassengerCategory>${profile === "bicycle" ? "Bicycle" : "Adult"}</PassengerCategory><EntitlementProducts>${entitlement}</EntitlementProducts></Traveller></Params></OJPFareRequest>`);
+  return envelope(`<OJPFareRequest><siri:RequestTimestamp>${new Date().toISOString()}</siri:RequestTimestamp><TripFareRequest>${tripXml}</TripFareRequest><Params><FareAuthorityFilter>ch:1:NOVA</FareAuthorityFilter><FareClass>secondClass</FareClass><Traveller><Age>25</Age><PassengerCategory>${profile === "bicycle" ? "Bicycle" : "Adult"}</PassengerCategory><EntitlementProducts>${entitlement}</EntitlementProducts></Traveller></Params></OJPFareRequest>`);
 }
 export function parseFare(xml: string, trip: FareTrip, profile: "full" | "half-fare" | "bicycle"): FareOffer | null {
   const document = parse(xml), service = field(field(field(document, "OJP"), "OJPResponse"), "ServiceDelivery");
@@ -186,7 +186,7 @@ export function parseFare(xml: string, trip: FareTrip, profile: "full" | "half-f
         const cards = list<Xml | string>(field(product, "RequiredCard")).map(c => typeof c === "string" ? c : text(field(c, "EntitlementProductRef")));
         if (!price || !Number.isFinite(chf) || chf < 0 || text(field(product, "Currency")) !== "CHF"
           || !(text(field(product, "FareClass")) === "secondClass" || profile === "bicycle" && !text(field(product, "FareClass")))
-          || text(field(product, "ProtoProduct")) === "true"
+          || text(field(product, "ProtoProduct")) === "true" || productId === "2361"
           || cards.some(c => c !== "HTA" || profile !== "half-fare")) continue;
         offers.push({ chf, productId, product: text(field(product, "FareProductName")) || productId });
       }

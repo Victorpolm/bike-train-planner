@@ -184,3 +184,12 @@ The TripInfo script and manual workflow inspect one dated service; they do not c
 `node scripts/benchmark-permissions.mjs` measures a small synthetic local workload. `python scripts/motis-pilot.py --motis /absolute/path/to/motis` runs the optional pinned 2.11.3 engine comparison entirely on localhost. Neither is a full Swiss routing benchmark. See the [review report](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/REVIEW_IMPLEMENTATION_2026-09-30.md).
 
 Map location selection supports click/tap or keyboard: focus the map, pan with arrow keys, and press Enter to open choices at its centre. A completed cycling detour is framed automatically; it does not repeatedly recenter while you pan.
+
+
+### Shared quotas and transfer maintenance (11 October 2026)
+
+Production OJP and OJP Fare requests require the Sites-managed D1 `DB` binding declared in `.openai/hosting.json`; schema-only migrations are under `drizzle/`. Missing storage fails closed. Both handlers meter each upstream request by the actual key; no raw key or journey is stored. Independent test handlers explicitly inject their fixture gate; SQL and handler integration coverage is in `src/apiQuota.test.ts`.
+
+The repository's `Refresh official station transfer data` workflow maintains `data/transfers/index.json` and hashed compact yearly assets using official catalogue downloads. The Worker validates and selects the feed by operating day, with bundled2026 fallback and explicit uncovered-date warnings. Current/future indexes do not bundle bulkGTFS or turn service-specific exceptions into general rules. Run `python3 -m unittest discover -s scripts -p 'test_*.py'` and `node scripts/check-quality-presentation.mjs` along with the existing test/build gates.
+
+Fare, permission, quota and feed regressions are documented in `docs/DATA_QUALITY_AND_QUOTAS_2026-10-11.md` in the GitHub repository. Production fare access and field evidence remain separate dependencies; journey details can export a bounded data report without automatic submission.

@@ -545,3 +545,9 @@ button:disabled { cursor: default; opacity: .65; }
 .saved-journey-list small { display: block; line-height: 1.5; color: #425c52; }
 .saved-journey-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 9px; }
 .saved-journeys button, .bicycle-status button { min-height: 40px; white-space: normal; }
+
+.journey-data-quality { margin: 1rem 0; padding: .9rem; border: 1px solid var(--line, #d4ddd8); border-radius: .7rem; }
+.journey-data-quality summary { cursor: pointer; font-weight: 600; }
+.journey-data-quality label { display: block; margin: .7rem 0 .3rem; }
+.journey-data-quality textarea { width: 100%; box-sizing: border-box; font: inherit; padding: .6rem; }
+.journey-data-quality input { max-width: 8rem; padding: .4rem; }

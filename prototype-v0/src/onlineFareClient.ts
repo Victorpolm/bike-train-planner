@@ -1,3 +1,4 @@
+import { publishedRouteFare } from "./fareCatalog.ts";
 import { fareQuery, type OnlineFare } from "./onlineFare.ts";
 import type { TransitLeg } from "./routing.ts";
 import type { FareProfile } from "./fares.ts";
@@ -9,7 +10,7 @@ let queue: Promise<unknown> = Promise.resolve();
 export function onlineFareRequest(legs: TransitLeg[], profile: FareProfile, takeBikeOnTransit = true, now = Date.now()) {
   const query = fareQuery(legs, profile, takeBikeOnTransit);
   const past = !!query && query.segments.some(segment => Date.parse(segment.departure) <= now);
-  return { key: query && !past && !(profile.passenger === "ga" && !query.bicycle) ? JSON.stringify(query) : "", past };
+  return { key: query && !publishedRouteFare(legs) && !past && !(profile.passenger === "ga" && !query.bicycle) ? JSON.stringify(query) : "", past };
 }
 // Cards and objective comparison share one bounded, serialized request cache.
 export function requestOnlineFare(key: string, fetcher: typeof fetch = fetch): Promise<OnlineFareState> {
@@ -20,8 +21,10 @@ export function requestOnlineFare(key: string, fetcher: typeof fetch = fetch): P
         const quote = await fetchJson<OnlineFare>("/api/fares/quote", undefined, 60000, fetcher,
           { method: "POST", headers: { "Content-Type": "application/json" }, body: key });
         return { quote, message: quote.passenger || quote.bicycle ? "OJP test fare estimate · confirm before purchase" : quote.reason ?? "No online fare returned." };
-      } catch (error) { return { message: error instanceof HttpError && error.status === 503
-        ? "Online fares are not connected yet." : "Online fare unavailable; operator quote needed." }; }
+      } catch (error) { return { message: error instanceof HttpError && error.status === 429
+        ? "The shared fare allowance is busy or exhausted. Try again later; operator quote needed."
+        : error instanceof HttpError && error.status === 503 ? "Online fares are temporarily unavailable; operator quote needed."
+        : "Online fare unavailable; operator quote needed." }; }
     });
     queue = promise.catch(() => {});
     if (cache.size >= 64) cache.delete(cache.keys().next().value!);

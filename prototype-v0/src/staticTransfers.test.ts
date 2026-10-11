@@ -85,7 +85,7 @@ it("rejects a two-minute missing-platform transfer in both solvers and counts th
     const walk = { ...leg("Walk", interchange, interchange, 10, 12), mode: "walk" as const };
     assert.equal(boardingCheck([first, walk], next, +at(12), 3).readyAt, +at(13));
     next.departurePlatform = "2";
-    assert.match(boardingCheck([first], next, +at(10), 3).note, /platform changed/);
+    assert.match(boardingCheck([first], next, +at(10), 3).note, /platform.*changed/);
     next.departurePlatform = null; first.arrival = new Date("2026-12-13T08:00:00Z"); next.departure = new Date("2026-12-13T08:03:00Z");
     assert.match(boardingCheck([first], next, +first.arrival, 3).note, /outside that period/);
   }
@@ -145,7 +145,7 @@ it("checks Swiss dates against feed validity and rejects changed platform identi
   const expired = boardingCheck([first], next, +first.arrival, 3);
   assert.equal(expired.source, "swiss-default"); assert.match(expired.note, /outside that period/);
   first.arrival = at(10); next.departure = at(17); next.departurePlatform = "999";
-  assert.match(boardingCheck([first], next, +at(10), 3).note, /platform changed/);
+  assert.match(boardingCheck([first], next, +at(10), 3).note, /platform.*changed/);
 });
 it("bounds endpoint batches, caches successes and recovers failed lookups on a new action", async () => {
   const network = emptyNetwork();

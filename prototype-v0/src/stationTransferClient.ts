@@ -25,7 +25,10 @@ export class StationTransferClient {
         const data = await response.json() as { endpoints: StaticTransferEndpoint[] };
         if (!Array.isArray(data.endpoints) || data.endpoints.length !== batch.length || data.endpoints.some((e, i) => e.key !== transferEndpointKey(batch[i])))
           throw new Error("Incomplete station transfer response");
-        data.endpoints.forEach(e => this.cache.set(e.key, e));
+        data.endpoints.forEach(e => {
+          this.cache.set(e.key, e);
+          if (e.status === "unavailable" && e.reason) this.warnings.add(e.reason + " Exact OJP times and labelled fallback allowances remain in use.");
+        });
       } catch {
         signal.throwIfAborted(); this.failed = true;
         this.warnings.add("The station transfer table could not be loaded. Exact OJP times remain in use; other connections show a timetable default or estimated allowance.");

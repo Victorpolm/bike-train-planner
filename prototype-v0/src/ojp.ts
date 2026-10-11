@@ -1,3 +1,4 @@
+import { operatorCode } from "./normalization.ts";
 import type { TransitRealtime } from "./realtime.ts";
 import { mergeAccessRules, mergeTransferRules, type StationAccessRule, type StationTransferRule } from "./transferTimes.ts";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
@@ -86,6 +87,13 @@ function realtime(service: Xml, board: Xml, alight: Xml, checkedAt: string): Tra
     arrivalCancelled: yes(alight.NotServicedStop) || yes(alight.NoAlightingAtStop), undefinedDelay: yes(service.UndefinedDelay) };
 }
 
+function ojpOperator(ref: string): string | null {
+  // OJP2 emits numeric OperatorRef as well as the older ojp namespace.
+  // Translate only already-reviewed operator codes; opaque unknowns stay exact.
+  const namespaced = "ojp:" + ref;
+  return /^\d+$/.test(ref) && operatorCode(namespaced) !== namespaced.toUpperCase() ? namespaced : ref || null;
+}
+
 export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[] {
   const data = delivery(xml, "OJPTripDelivery"), stops = places(data.TripResponseContext);
   const legs: OjpLeg[] = [];
@@ -136,7 +144,7 @@ export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[
           ? [{ ...access, toRef: fromRef, departure, operatingDay, checked: instant(data.ResponseTimestamp) ?? undefined }] : [];
         const parsed: OjpLeg = { realtime: realtime(service, board, alight, instant(data.ResponseTimestamp) ?? new Date().toISOString()), accessRules, mode: "transit", from, to, departure, arrival, service: serviceLabel, transferRules,
           serviceName: text(service.PublishedServiceName) || null, category,
-          operator: text(service.OperatorRef) || null, direction: text(service.DestinationText) || null,
+          operator: ojpOperator(text(service.OperatorRef)), direction: text(service.DestinationText) || null,
           departurePlatform: text(board.PlannedQuay) || null, arrivalPlatform: text(alight.PlannedQuay) || null,
           reference: { journeyRef, operatingDay, fromRef, toRef, fromOrder, toOrder, departure, arrival, bikeFiltered, attributes: scoped },
           rule: interpretBicycleAttributes(scoped, bikeFiltered),

@@ -15,6 +15,8 @@ export type BicycleEvidence = {
   prerequisites?: {
     bikeTicket: "required" | "not-required" | "unknown";
     bikeReservation: "required" | "not-required" | "unknown";
+    /** True only when the adapter found no reservation condition at all. */
+    reservationUnspecified?: boolean;
     ticketSource?: { title: string; url: string; checked: string };
     bookingUrl?: string;
   };
@@ -49,6 +51,10 @@ export function permissionInputs(leg: TransitLeg): unknown[] {
   // fields/conditions and point mutations must all invalidate a cached verdict.
   // Keep these dependencies aligned whenever a permission rule is extended.
   return [leg.mode, leg.category, leg.operator, leg.service, leg.serviceName, leg.from, leg.to,
+    leg.stationArrival?.status, leg.stationArrival?.key, leg.stationArrival?.stationId,
+    leg.stationDeparture?.status, leg.stationDeparture?.key, leg.stationDeparture?.stationId,
+    leg.ojp?.fromRef, leg.ojp?.toRef, leg.ojp?.operatingDay, leg.departurePlatform, leg.arrivalPlatform,
+    leg.realtime?.departurePlatform, leg.realtime?.arrivalPlatform,
     leg.fromId, leg.toId, leg.departure?.getTime(), leg.arrival?.getTime(),
     leg.fromPoint?.lat, leg.fromPoint?.lon, leg.toPoint?.lat, leg.toPoint?.lon,
     !!e, e?.permission, e?.fromId, e?.toId, e?.departure, e?.service, e?.operator,

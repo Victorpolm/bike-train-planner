@@ -42,7 +42,7 @@ def catalogue_resources(page):
 
 def refresh(output, today):
     old = json.loads((output / 'index.json').read_text()) if (output / 'index.json').exists() else {'feeds': []}
-    feeds = {entry['year']: entry for entry in old['feeds']}
+    feeds = {entry['year']: entry for entry in old['feeds'] if today.year - 1 <= entry['year'] <= today.year + 1}
     pending = []
     with tempfile.TemporaryDirectory() as temporary:
         directory = pathlib.Path(temporary)
@@ -76,11 +76,16 @@ def refresh(output, today):
             raise ValueError('No transfer edition covers today')
         if today.month == 12 and today.day >= 1 and not any(f['year'] > today.year for f in feeds.values()):
             raise ValueError('Next-year feed missing before timetable rollover')
-        if pending:
+        if pending or len(feeds) != len(old['feeds']):
             output.mkdir(parents=True, exist_ok=True)
             for name, packed in pending: (output / name).write_bytes(packed)
             manifest = {'version':1, 'checked':today.isoformat(), 'feeds': sorted(feeds.values(), key=lambda f:f['year'])}
-            (output / 'index.json').write_text(json.dumps(manifest, indent=2)+'\n')
+            temporary_manifest=output / 'index.pending'
+            temporary_manifest.write_text(json.dumps(manifest, indent=2)+'\n')
+            temporary_manifest.replace(output / 'index.json')
+            retained={entry['file'] for entry in feeds.values()}
+            for file in output.glob('????-????????.json'):
+                if file.name not in retained: file.unlink()
         print(json.dumps({'checked':today.isoformat(), 'updated':len(pending), 'feeds':list(feeds.values())}))
 
 if __name__ == '__main__':

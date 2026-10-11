@@ -9,6 +9,7 @@ export type CarriageRule = {
   permission: "allowed" | "unknown" | "prohibited";
   basis: "ojp-filter" | "service-rule" | "unassessed";
   bikeReservation: "required" | "not-required" | "unknown";
+  reservationUnspecified?: boolean;
   notes: string[];
   attributes: BicycleAttribute[];
 };
@@ -45,6 +46,7 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
     // Contradictory reservation notes require confirmation; do not silently
     // select the less restrictive reading.
     bikeReservation: reservation && noReservation ? "unknown" : reservation ? "required" : noReservation ? "not-required" : "unknown",
+    reservationUnspecified: !relevant.some(a => /reserv/i.test(a.text) || a.code === "A__VR"),
     notes: [...new Set(notes)], attributes: relevant,
   };
 }
@@ -56,7 +58,7 @@ export function evaluateCarriageForLeg(leg: TransitLeg) {
   const sbbIR = sbbInterRegioRule(leg);
   const operatorPermissionSource = operatorRule && operatorRule.permission !== "unknown" ? operatorRule.source : sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
   // An explicitly unresolved dated requirement cannot become a generic "not required".
-  const reservationFallback = requirements?.bikeReservation === undefined
+  const reservationFallback = (requirements?.bikeReservation === undefined || requirements.reservationUnspecified === true)
     && !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && !!operatorRule;
   const sbb = isSbb(leg);
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
@@ -86,7 +88,7 @@ export function carriageForLeg(leg: TransitLeg) {
   const source = requirements?.ticketSource;
   // Permission inputs cover operator/date/segment/condition mutations. Retain
   // source values too: bookingUrl may have been derived from a mutable URL.
-  const inputs = [...permissionInputs(leg), evidence, requirements?.bikeTicket, requirements?.bikeReservation,
+  const inputs = [...permissionInputs(leg), evidence, requirements?.bikeTicket, requirements?.bikeReservation, requirements?.reservationUnspecified,
     source, source?.title, source?.url, source?.checked, requirements?.bookingUrl];
   const cached = carriageCache.get(leg);
   if (cached && cached.inputs.length === inputs.length && inputs.every((value, i) => Object.is(value, cached.inputs[i]))) return cached.value;
@@ -124,6 +126,7 @@ export function withTripInfoRule(evidence: BicycleEvidence, rule: CarriageRule, 
     conditions,
     source: { title: "OJP service and stop conditions", url: "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptripinforequest-2-0/", checked },
     prerequisites: { bikeTicket: evidence.prerequisites?.bikeTicket ?? "unknown", ...evidence.prerequisites,
+      reservationUnspecified: !conflict && rule.reservationUnspecified === true && (evidence.prerequisites === undefined || evidence.prerequisites.reservationUnspecified === true),
       bikeReservation: conflict ? "unknown" : rule.bikeReservation === "unknown" ? previousReservation : rule.bikeReservation },
   };
 }

@@ -1,9 +1,11 @@
+import { claimApiCall, coolDownApi, QuotaError, quotaResponse, type QuotaEnvironment, type QuotaGate } from "./apiQuota.ts";
+import { waitFor } from "../src/http.ts";
 import { fareRequest, fareTripRequest, fareTrips, matchingFareTrip, parseFare, retainedFareTrip, type FareTrip } from "./fareProtocol.ts";
 import { MAX_FARE_REQUEST_BYTES, verifyFareSources } from "./retainedFare.ts";
 import type { FareQuery, OnlineFare } from "../src/onlineFare.ts";
 import { providerFailure } from "./providerFailure.ts";
 
-export type FareEnvironment = { OJP_FARE_API_KEY?: string; OJP_API_KEY?: string };
+export type FareEnvironment = QuotaEnvironment & { OJP_FARE_API_KEY?: string; OJP_API_KEY?: string };
 const FARE_ENDPOINT = "https://api.opentransportdata.swiss/ojpfare";
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status,
   headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" } });
@@ -28,16 +30,17 @@ async function boundedText(response: Response | Request, max: number) {
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
   return new TextDecoder().decode(bytes);
 }
-export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, timeoutMs = 50_000) {
+export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, timeoutMs = 50_000, quota: QuotaGate = claimApiCall) {
   const cache = new Map<string, { expires: number; data: OnlineFare }>();
   const pending = new Map<string, Promise<OnlineFare>>();
   let queue: Promise<unknown> = Promise.resolve(), lastCall = 0, blockedUntil = 0;
-  const post = (xml: string, key: string, signal: AbortSignal, endpoint = FARE_ENDPOINT) => {
+  const post = (xml: string, key: string, signal: AbortSignal, env: FareEnvironment, endpoint = FARE_ENDPOINT) => {
     const job = queue.then(async () => {
       signal.throwIfAborted();
       if (Date.now() < blockedUntil) throw new Error("Fare service cooling down");
       const pause = Math.max(0, pace - (Date.now() - lastCall));
-      if (pause) await new Promise(resolve => setTimeout(resolve, pause));
+      await waitFor(pause, signal);
+      await quota(env, key, signal);
       signal.throwIfAborted(); lastCall = Date.now();
       const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 15000);
       let phase = "request";
@@ -47,6 +50,7 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, ti
           headers: { Authorization: "Bearer " + key, "Content-Type": "application/xml", Accept: "application/xml" }, body: xml });
         if (!response.ok) { console.warn("Fare upstream HTTP failure", endpoint === FARE_ENDPOINT ? "ojpfare" : "ojp20", response.status);
           if ([401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
+          if ([401, 403, 429].includes(response.status)) await coolDownApi(env, key);
           await response.body?.cancel(); throw new Error("Fare service request failed"); }
         phase = "response-body";
         return (await boundedText(response, 8_000_000)).split(key).join("[REDACTED]");
@@ -86,7 +90,9 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, ti
     }
     const id = JSON.stringify([query.segments, query.passenger, query.bicycle, query.sources?.map(s => s.id)]), cached = cache.get(id);
     if (cached && cached.expires > Date.now()) return json(cached.data);
-    if (pending.has(id)) return json(await pending.get(id));
+    if (pending.has(id)) {
+      try { return json(await pending.get(id)); } catch (error) { if (error instanceof QuotaError) return quotaResponse(error); throw error; }
+    }
     // Bound queue growth when several cards or visitors request prices at once.
     if (pending.size >= 4 || Date.now() < blockedUntil) {
       const response = json({ error: "Fare service busy; try again shortly." }, 429);
@@ -107,21 +113,22 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, ti
         } else {
           // Compatibility for public-timetable/older results without OJP data.
           // Never fall back here after retained data failed validation.
-          const trips = fareTrips(await post(fareTripRequest(query.segments), tripKey || key, signal,
+          const trips = fareTrips(await post(fareTripRequest(query.segments), tripKey || key, signal, env,
             tripKey ? "https://api.opentransportdata.swiss/ojp20" : FARE_ENDPOINT));
           trip = matchingFareTrip(trips, query.segments); data.itinerarySource = "lookup";
         }
         if (!trip) return { ...data, reason: "No exact itinerary match; no substitute route was priced." };
         if (query.passenger !== "ga") {
-          try { data.passenger = parseFare(await post(fareRequest(trip, query.passenger), key, signal), trip, query.passenger); } catch { /* Preserve a possible bicycle quote. */ }
+          try { data.passenger = parseFare(await post(fareRequest(trip, query.passenger), key, signal, env), trip, query.passenger); } catch (error) { if (error instanceof QuotaError) throw error; /* Preserve a possible bicycle quote. */ }
         }
         if (query.bicycle) {
-          try { data.bicycle = parseFare(await post(fareRequest(trip, "bicycle"), key, signal), trip, "bicycle"); } catch { /* Unknown remains explicit. */ }
+          try { data.bicycle = parseFare(await post(fareRequest(trip, "bicycle"), key, signal, env), trip, "bicycle"); } catch (error) { if (error instanceof QuotaError) throw error; /* Unknown remains explicit. */ }
         }
         const complete = (query.passenger === "ga" || data.passenger) && (!query.bicycle || data.bicycle);
         data.status = complete ? "quoted" : data.passenger || data.bicycle ? "partial" : "unavailable";
         if (!complete) data.reason = "No eligible fare covering the whole transit itinerary was returned for every traveller.";
-      } catch {
+      } catch (error) {
+        if (error instanceof QuotaError) throw error;
         console.warn("Fare itinerary lookup failed");
         data.reason = "The online fare service could not complete this check.";
       }
@@ -134,6 +141,9 @@ export function createFareHandler(fetcher: typeof fetch = fetch, pace = 1500, ti
       if (cache.size >= 64) cache.delete(cache.keys().next().value!);
       cache.set(id, { expires: Date.now() + (data.status === "unavailable" ? 30_000 : 300_000), data });
       return json(data);
+    } catch (error) {
+      if (error instanceof QuotaError) return quotaResponse(error);
+      return json({ error: "Online fare unavailable." }, 502);
     } finally { pending.delete(id); }
   };
 }

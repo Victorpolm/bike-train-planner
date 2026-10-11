@@ -1,4 +1,11 @@
-import { BIKE_DAY_SOURCE, RESERVATION_PRICE_SOURCE, fareRows, type FareProfile } from "./fares";
+import JourneyDataQuality from "./JourneyDataQuality";
+import {
+  BIKE_DAY_SOURCE,
+  RESERVATION_PRICE_SOURCE,
+  POSTBUS_TICKET_SOURCE,
+  fareRows,
+  type FareProfile,
+} from "./fares";
 import type { Journey } from "./routing";
 import { useOnlineFare } from "./useOnlineFare";
 
@@ -47,11 +54,11 @@ export default function FareDetails({
       {fare.totalChf !== null && (
         <p>
           <strong>
-            {fare.online ? "Estimated additional cost" : "Additional cost"}: CHF{" "}
+            {fare.estimated ? "Estimated additional cost" : "Additional cost"}: CHF{" "}
             {fare.totalChf.toFixed(2)}
           </strong>
           .{" "}
-          {fare.online
+          {fare.estimated
             ? "Includes OJP test fare data; confirm the purchase price with the operator."
             : !takeBikeOnTransit
               ? "Passenger fare only."
@@ -60,7 +67,7 @@ export default function FareDetails({
                 : "Day-pass option; a bicycle route ticket may cost less."}
         </p>
       )}
-      {fare.online ? (
+      {fare.estimated && fare.online ? (
         <p>
           <a
             href="https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojp-fare/"
@@ -91,11 +98,16 @@ export default function FareDetails({
           passenger {takeBikeOnTransit ? "and reduced bicycle fare" : "fare"} from the operator.
         </p>
       )}
+      {fare.published && fare.online && (
+        <p>
+          Reviewed standard tariffs take priority over experimental online quotes for this route.
+        </p>
+      )}
       {!fare.online && online.message && <p>{online.message}</p>}
       {fare.reservationChf === 2 && (
         <p>
           CHF 2 is a separate bicycle reservation, not part of the bicycle ticket. Book all
-          connecting trains together. This app does not reserve a place.
+          connecting services together. This app does not reserve a place.
         </p>
       )}
       {takeBikeOnTransit && !fare.singleDayPass && !profile.annualBikePass && (
@@ -117,9 +129,19 @@ export default function FareDetails({
           <a href={RESERVATION_PRICE_SOURCE.url} target="_blank" rel="noreferrer">
             Reservation instructions and prices
           </a>{" "}
+          ·{" "}
+          <a href={POSTBUS_TICKET_SOURCE.url} target="_blank" rel="noreferrer">
+            PostBus pass coverage and reservations
+          </a>
           · reviewed {BIKE_DAY_SOURCE.checked}
         </p>
       )}
+      <JourneyDataQuality
+        journey={journey}
+        profile={profile}
+        quote={online.quote}
+        takeBikeOnTransit={takeBikeOnTransit}
+      />
       <a href="https://www.sbb.ch/en" target="_blank" rel="noreferrer">
         Get the current {takeBikeOnTransit ? "passenger and bicycle" : "passenger"} ticket offer at
         SBB ↗

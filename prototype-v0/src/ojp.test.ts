@@ -7,7 +7,8 @@ import { mergeOjpConnections, parseOjpConnections, parseOjpTripInfo, ojpTripRequ
 import { addOjpConnections, OjpClient } from "./ojpClient.ts";
 import { DEFAULT_OPTIONS, emptyNetwork } from "./model.ts";
 import { plan, updateBicycleEvidence } from "./api.ts";
-import { createOjpHandler } from "../server/ojpHandler.ts";
+import { createOjpHandler as quotaAwarecreateOjpHandler } from "../server/ojpHandler.ts";
+const createOjpHandler = (...args: Parameters<typeof quotaAwarecreateOjpHandler>) => quotaAwarecreateOjpHandler(args[0], args[1], args[2], async () => {});
 
 const fixture = (name: string) => readFileSync(new URL(`./fixtures/ojp-2026-09-24/${name}.xml`, import.meta.url), "utf8");
 const checked = "2026-09-24T17:32:00Z";

@@ -1,3 +1,4 @@
+import { transferEndpointKey, transferEndpointQuery } from "./staticTransfers.ts";
 import { normalizeCode as norm, operatorCode } from "./normalization.ts";
 import type { TransitLeg } from "./routing.ts";
 
@@ -21,7 +22,7 @@ export function sbbInterRegioRule(leg: TransitLeg) {
   // to international trains, peak-hour S-Bahn/RE restrictions or replacements.
   return leg.mode === "transit" && Number.isFinite(leg.departure?.getTime()) && norm(leg.category) === "IR"
     && operatorCode(leg.operator) === "SBB"
-    && /^85\d{5}$/.test(leg.fromId ?? "") && /^85\d{5}$/.test(leg.toId ?? "");
+    && domesticSwissLeg(leg);
 }
 
 type RuleSource = { title: string; url: string; checked: string };
@@ -40,7 +41,16 @@ export function isSbb(leg: TransitLeg) {
   return operatorCode(leg.operator) === "SBB";
 }
 export function domesticSwissLeg(leg: TransitLeg) {
-  return /^85\d{5}$/.test(leg.fromId ?? "") && /^85\d{5}$/.test(leg.toId ?? "");
+  const mapped = (end: "arrival" | "departure", id: string | undefined) => {
+    if (/^85\d{5}$/.test(id ?? "")) return true;
+    const endpoint = end === "arrival" ? leg.stationArrival : leg.stationDeparture;
+    // Use the imported original_stop_id/DIDOK mapping. SLOID's ch prefix
+    // alone does not establish Swiss territory (it also covers foreign stops).
+    return !!endpoint && ["matched", "station"].includes(endpoint.status)
+      && endpoint.key === transferEndpointKey(transferEndpointQuery(leg, end))
+      && /^85\d{5}$/.test(endpoint.stationId ?? "");
+  };
+  return mapped("departure", leg.fromId) && mapped("arrival", leg.toId);
 }
 const ruleDateFormat = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hourCycle: "h23" });
 const ruleDateCache = new Map<number, { year: number; month: number; day: number; hour: number; weekday: number }>();
