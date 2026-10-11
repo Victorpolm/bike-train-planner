@@ -46,7 +46,20 @@ for (const takeBikeOnTransit of [true,false]) {
 }
 for(const passenger of ['full','half-fare','ga']) {
   const html=render(FareDetails,{journey:{transitLegs:[train]},profile:{...DEFAULT_FARE_PROFILE,passenger}});panels++;
-  assert.match(html,/published tariff|Covered by your valid GA/);assert.match(html,/Published standard fare/);
+  assert.match(html,/Published tariff/);assert.match(html,/Published standard fare/);
   assert.match(html,/Data quality and corrections/);assert.doesNotMatch(html,/Estimated additional cost/);
 }
+const {default: PriceValue}=await import('../src/ui/PriceValue.tsx');
+const {knownPrice,unknownPrice}=await import('../src/priced.ts');
+const source={title:'Official tariff',url:'https://example.test',checked:'2026-10-11'};
+const restricted=render(PriceValue,{price:knownPrice(12,'Sparbillett',source,{flexibility:'train-bound',environment:'test'})});panels++;
+assert.match(restricted,/Only on the quoted train/);assert.match(restricted,/limited availability/);assert.match(restricted,/test fare estimate/);
+const denied=render(PriceValue,{price:unknownPrice('Carriage prohibited','prohibited')});panels++;
+assert.doesNotMatch(denied,/CHF/);assert.match(denied,/Not permitted/);
+const {default:TimeSummary}=await import('../src/ui/JourneyTimeSummary.tsx');
+const broken=render(TimeSummary,{timing:{journey:{realtimeStatus:{state:'broken'}}},requestedStart:new Date()});panels++;
+assert.match(broken,/Connection no longer feasible/);assert.doesNotMatch(broken,/Arrive <b>|Leave <b>|[0-9]{2}:[0-9]{2}/);
+const {default:TransitTime}=await import('../src/ui/TransitTime.tsx');
+const early=render(TransitTime,{timing:{at:new Date('2026-10-11T08:16:00Z'),scheduled:new Date('2026-10-11T08:20:00Z'),basis:'estimated',freshness:'stale',delayMinutes:-4,cancelled:false,undefinedDelay:false}});panels++;
+assert.match(early,/-4/);assert.match(early,/out of date/);assert.match(early,/Scheduled/);
 console.log(JSON.stringify({panels,status:'passed',browserInteraction:'not-tested'}));

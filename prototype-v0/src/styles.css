@@ -551,3 +551,17 @@ button:disabled { cursor: default; opacity: .65; }
 .journey-data-quality label { display: block; margin: .7rem 0 .3rem; }
 .journey-data-quality textarea { width: 100%; box-sizing: border-box; font: inherit; padding: .6rem; }
 .journey-data-quality input { max-width: 8rem; padding: .4rem; }
+
+/* Price/time provenance remains legible in compact cards and on phones. */
+.qualified-price, .qualified-time { display:inline-flex; flex-direction:column; gap:.25rem; overflow-wrap:anywhere; }
+.qualified-price > span, .qualified-time small, .time-basis { font-size:.8rem; line-height:1.4; color:var(--muted,#45545d); }
+.tariff-health, .onward-recovery, .recovery-history { margin-block:1rem; padding:1rem; border:1px solid var(--line,#ccd6dd); border-radius:.7rem; background:var(--panel,#fff); }
+.tariff-health li { margin-block:.55rem; }
+.onward-recovery label { display:grid; gap:.4rem; margin-block:.8rem; }
+.onward-recovery .check-row { display:flex; align-items:flex-start; }
+.check-row input[type=checkbox] { width:auto; flex:none; margin-top:.2rem; }
+.onward-recovery button { margin:.3rem .5rem .3rem 0; min-height:44px; }
+.onward-choice { border-top:1px solid var(--line,#ccd6dd); padding-block:1rem; }
+.broken-journey { color:#943616; background:#fff4ec; padding:.6rem; border-radius:.4rem; }
+.profile-transport { margin-block:.8rem; padding:.75rem; border:1px solid var(--line,#ccd6dd); border-radius:.5rem; }
+.profile-transport label { margin-block:.65rem; }

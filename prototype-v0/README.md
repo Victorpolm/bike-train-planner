@@ -193,3 +193,8 @@ Production OJP and OJP Fare requests require the Sites-managed D1 `DB` binding d
 The repository's `Refresh official station transfer data` workflow maintains `data/transfers/index.json` and hashed compact yearly assets using official catalogue downloads. The Worker validates and selects the feed by operating day, with bundled2026 fallback and explicit uncovered-date warnings. Current/future indexes do not bundle bulkGTFS or turn service-specific exceptions into general rules. Run `python3 -m unittest discover -s scripts -p 'test_*.py'` and `node scripts/check-quality-presentation.mjs` along with the existing test/build gates.
 
 Fare, permission, quota and feed regressions are documented in `docs/DATA_QUALITY_AND_QUOTAS_2026-10-11.md` in the GitHub repository. Production fare access and field evidence remain separate dependencies; journey details can export a bounded data report without automatic submission.
+
+
+## 11 October fare/profile and monitoring update
+
+Profiles now feed passenger/bicycle fares and eligibility; prices and live times carry their conditions. Broken connections have bounded onward recovery. The owner-private maintenance endpoints retrieve source candidates and watch expiry/live estimates; they never extend tariff dates automatically. See the [implementation and maintenance runbook](https://github.com/Victorpolm/bike-train-planner/blob/main/docs/FARES_PROFILES_AND_MONITORING_2026-10-11.md).

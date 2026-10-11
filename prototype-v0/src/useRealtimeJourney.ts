@@ -55,9 +55,9 @@ export function useRealtimeJourney(journey: Journey | null, enabled: boolean, bo
     document.addEventListener("visibilitychange", refresh);
     return () => { disposed = true; controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", refresh); };
   }, [key, enabled, active, attempt]);
-  const evaluated = useMemo(() => journey ? realtimeJourney(journey, records, boardingMinutes, arriveBy, platforms) : null,
-    [journey, records, platforms, boardingMinutes, arriveBy]);
-  return { journey: evaluated?.journey ?? null, issues: evaluated?.issues ?? [], active, loading: state.key === key && state.loading,
+  const evaluated = useMemo(() => journey ? realtimeJourney(journey, records, boardingMinutes, arriveBy, platforms, state.now) : null,
+    [journey, records, platforms, boardingMinutes, arriveBy, state.now]);
+  return { feasibility:evaluated?.feasibility??"unknown", journey: evaluated?.journey ?? null, issues: evaluated?.issues ?? [], active, loading: state.key === key && state.loading,
     failed: state.key === key && state.failed, now: state.now, refresh: () => retry(n => n + 1) };
 }
 export type RealtimeJourneyState = ReturnType<typeof useRealtimeJourney>;

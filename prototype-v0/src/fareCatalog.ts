@@ -1,10 +1,10 @@
+import { tariffSource } from "./tariffSources.ts";
 import { swissDateTimeInput } from "./departure.ts";
 import { isSbb, sobMainlineRule } from "./operatorBicycleRules.ts";
 import type { TransitLeg } from "./routing.ts";
 
-const ZVV_FARES = { title: "ZVV published single tickets", url: "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html", checked: "2026-09-27" };
-const ZPASS_FARES = { title: "Z-Pass A-Welle–ZVV published single tickets", url: "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html", checked: "2026-09-27" };
-const FARE_VALID_FROM = "2025-12-14", FARE_VALID_TO = "2026-12-12";
+const ZVV_FARES = tariffSource("zvv"), ZPASS_FARES = tariffSource("zpass");
+const FARE_VALID_FROM = ZVV_FARES.validFrom, FARE_VALID_TO = ZVV_FARES.validThrough;
 export type PublishedFare = { passengerFull: number; passengerHalf: number; bicycle: number; zones: string[];
   paidZones: number; validMinutes: number; source: typeof ZVV_FARES; from: string; to: string; validFrom: string; validTo: string };
 // Audited rail corridors, not a nationwide fare engine. Each edge includes the
@@ -25,13 +25,13 @@ function zonesForLeg(leg: TransitLeg): string[] | null {
   const [stops, edges] = corridor, a = stops.indexOf(leg.fromId ?? ""), b = stops.indexOf(leg.toId ?? "");
   return a < 0 || b < 0 || a === b ? null : edges.slice(Math.min(a, b), Math.max(a, b)).flat();
 }
-export function publishedRouteFare(legs: TransitLeg[]): PublishedFare | null {
+function routeFare(legs: TransitLeg[], checkDates = true): PublishedFare | null {
   const transit = legs.filter(l => l.mode === "transit");
   if (!transit.length || legs.some(l => l.mode === "unknown")) return null;
   const departure = transit[0].departure, arrival = transit.at(-1)!.arrival;
   if (!departure || !arrival || !Number.isFinite(departure.getTime()) || !Number.isFinite(arrival.getTime())) return null;
   const date = swissDateTimeInput(departure).slice(0, 10), endDate = swissDateTimeInput(arrival).slice(0, 10);
-  if (date < FARE_VALID_FROM || date > FARE_VALID_TO || endDate !== date) return null;
+  if (checkDates && (date < FARE_VALID_FROM || date > FARE_VALID_TO) || endDate !== date) return null;
   const covered = transit.map(zonesForLeg);
   if (covered.some(z => z === null) || transit.some((l, i) => i > 0 && transit[i - 1].toId !== l.fromId)) return null;
   const zones = [...new Set(covered.flat() as string[])].sort();
@@ -43,4 +43,10 @@ export function publishedRouteFare(legs: TransitLeg[]): PublishedFare | null {
   return { passengerFull: price[0], passengerHalf: price[1], bicycle: price[1], zones, paidZones, validMinutes,
     source: isZpass ? ZPASS_FARES : ZVV_FARES, from: transit[0].from ?? transit[0].fromId!, to: transit.at(-1)!.to ?? transit.at(-1)!.toId!,
     validFrom: FARE_VALID_FROM, validTo: FARE_VALID_TO };
+}
+
+export const publishedRouteFare = (legs: TransitLeg[]) => routeFare(legs);
+export function routeTariffProblem(legs: TransitLeg[]): string | null {
+  const covered=routeFare(legs,false); if(!covered || routeFare(legs)) return null;
+  return `The reviewed ${covered.source.title} table covers ${covered.validFrom} through ${covered.validTo}; the journey date is outside that period.`;
 }

@@ -7,7 +7,7 @@ import type { TransitLeg } from "./routing.ts";
 const leg: TransitLeg = { mode: "transit", from: "City A", to: "City B", fromId: "8587346", toId: "8591388",
   departure: new Date("2026-10-08T08:00:00Z"), arrival: new Date("2026-10-08T08:10:00Z"), service: "T4", category: "T", operator: "Test city",
   departurePlatform: null, arrivalPlatform: null, serviceName: null, direction: null };
-const quote: OnlineFare = { status: "partial", passenger: { chf: 4.7, product: "City single ticket", productId: "city-ticket" },
+const quote: OnlineFare = { status: "partial", passenger: { chf: 4.7, product: "City single ticket", productId: "city-ticket", flexibility:"flexible" },
   bicycle: null, checked: "2026-10-07T12:00:00Z", environment: "test" };
 const prohibited = (): TransitLeg => ({ ...leg, bicycleEvidence: { permission: "prohibited", fromId: leg.fromId!, toId: leg.toId!,
   departure: leg.departure!.toISOString(), service: leg.service, operator: leg.operator!, conditions: [],
@@ -17,7 +17,7 @@ it("shows a returned city passenger price even when the bicycle ticket or reserv
   const fare = fareSummary([leg], DEFAULT_FARE_PROFILE, quote);
   assert.equal(fare.passengerChf, 4.7); assert.equal(fare.totalChf, null);
   assert.match(fareCardSummary([leg], DEFAULT_FARE_PROFILE, quote).price, /^Passenger · CHF 4.70 estimated$/);
-  const withBike = { ...quote, status: "quoted" as const, bicycle: { chf: 3.3, product: "City bicycle", productId: "city-bike" } };
+  const withBike = { ...quote, status: "quoted" as const, bicycle: { chf: 3.3, product: "City bicycle", productId: "city-bike", flexibility:"flexible" as const } };
   assert.equal(fareSummary([leg], DEFAULT_FARE_PROFILE, withBike).reservationChf, null);
   assert.match(fareCardSummary([leg], DEFAULT_FARE_PROFILE, withBike).price, /^Passenger · CHF 4.70/);
 });

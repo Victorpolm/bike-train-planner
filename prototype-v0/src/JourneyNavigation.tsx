@@ -1,3 +1,5 @@
+import TransitTime from "./ui/TransitTime";
+import { arrivalTiming } from "./realtime";
 import InlineHelp from "./ui/InlineHelp";
 import type { JourneyNavigation as Navigation } from "./useJourneyNavigation";
 import type { RealtimeJourneyState } from "./useRealtimeJourney";
@@ -180,20 +182,11 @@ export default function JourneyNavigation({
             {ride.service} → {ride.to}
           </strong>
           <p>
-            {arrivalTime(ride)
-              ? `Arrival ${clock.format(arrivalTime(ride)!)}`
-              : "Arrival time unknown"}
+            Arrival <TransitTime timing={arrivalTiming(ride, nav.now)} />
             {effectivePlatform(ride, "arrival")
               ? ` · Platform ${effectivePlatform(ride, "arrival")}`
               : " · Platform unknown"}
           </p>
-          {ride.realtime?.estimatedArrival && ride.arrival && (
-            <small>
-              {Math.round((+new Date(ride.realtime.estimatedArrival) - +ride.arrival) / 60000) > 0
-                ? `+${Math.round((+new Date(ride.realtime.estimatedArrival) - +ride.arrival) / 60000)} min arrival delay`
-                : "Arrival estimate updated"}
-            </small>
-          )}
           {realtimeUnavailable(ride) && (
             <p className="navigation-warning">
               Service or stop cancelled. Check the onboard information.

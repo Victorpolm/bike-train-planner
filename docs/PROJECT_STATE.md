@@ -1,8 +1,10 @@
 # Re.route — project state
 
+**11 October fares, bicycle profiles and monitoring — version 73:** Passenger/child/class/pass validity and bicycle type/packing/dimensions/trailers now affect fares and eligibility. Prices/times keep their conditions; broken connections have bounded onward recovery. Automatic source retrieval, 60-day expiry alerts and a weekday live-data canary are enabled. The live sample captured 34 estimate fields across seven parsed services. Four source downloads succeeded; the SBB day-pass download is flagged for retry. **666 JavaScript tests, 16 Python tests and 47 rendered panels** pass. [Behaviour, automatic renewal and operator collaboration](FARES_PROFILES_AND_MONITORING_2026-10-11.md).
+
 **11 October official cycling and launch safeguards:** Official SwitzerlandMobility cycling sections can now be checked and applied from Map without adding work to the initial search. Unlicensed Trafimage/INSA and tourism-page enrichments are disabled; integration fare quotes are hidden. Privacy/source notices, a 16-source register, component licences and stricter official-parking refresh are included. External launch remains blocked on owner identity/contact, hosting facts, service rights, name/software-licence decisions and legal/manual acceptance. [Behaviour, evidence and remaining decisions](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).
 
-**Current publication:** Exact deployment and GitHub synchronization evidence is maintained in the [current release record](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md). Owner-private access is retained. Browser/phone interaction remains unverified.
+**Previous publication:** Exact deployment and GitHub synchronization evidence is maintained in the [current release record](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md). Owner-private access is retained. Browser/phone interaction remains unverified.
 
 **Previous release — version 71:** Shared D1 quotas, maintained 2026/2027 transfer feeds, published bicycle-tariff precedence and data-quality reports were delivered. [Previous evidence](DATA_QUALITY_AND_QUOTAS_2026-10-11.md). Integration fare quotes enabled at that release are now disabled pending production arrangements.
 

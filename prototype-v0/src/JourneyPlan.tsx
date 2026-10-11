@@ -1,3 +1,5 @@
+import TransitTime from "./ui/TransitTime";
+import { departureTiming, arrivalTiming, type Timing } from "./realtime";
 import { arrivalTime, effectivePlatform, realtimeStale, type TransitRealtime } from "./realtime";
 import type { RealtimeJourneyState } from "./useRealtimeJourney";
 import { boardingCheck } from "./transferTimes";
@@ -21,36 +23,6 @@ const day = new Intl.DateTimeFormat("en-GB", {
   month: "short",
   year: "numeric",
 });
-
-function PlanTime({
-  date,
-  start,
-  scheduled,
-  realtime,
-}: {
-  date: Date | null;
-  start: Date;
-  scheduled?: Date | null;
-  realtime?: TransitRealtime;
-}) {
-  if (!date) return <span className="plan-missing">Time unavailable</span>;
-  return (
-    <time dateTime={date.toISOString()}>
-      {clock.format(date)}
-      {scheduled &&
-        realtime &&
-        (realtime.estimatedDeparture || realtime.estimatedArrival) &&
-        +scheduled !== +date && (
-          <small>
-            Scheduled {clock.format(scheduled)} ·{" "}
-            {Math.round((+date - +scheduled) / 60000) > 0 ? "+" : ""}
-            {Math.round((+date - +scheduled) / 60000)} min
-          </small>
-        )}
-      {day.format(date) !== day.format(start) && <small>{day.format(date)}</small>}
-    </time>
-  );
-}
 
 export default function JourneyPlan({
   id,
@@ -194,11 +166,19 @@ export default function JourneyPlan({
               {extraServiceName && <p className="plan-service">Service {leg.serviceName}</p>}
               {leg?.operator && <p className="plan-service">Operator {leg.operator}</p>}
               <div className="plan-stop">
-                <PlanTime
-                  date={step.departure}
-                  scheduled={leg?.departure}
-                  realtime={leg?.realtime}
-                  start={journey.startTime}
+                <TransitTime
+                  timing={
+                    leg
+                      ? departureTiming(leg, realtime?.now)
+                      : ({
+                          at: step.departure,
+                          scheduled: step.departure,
+                          basis: "planned",
+                          freshness: "unknown",
+                          cancelled: false,
+                          undefinedDelay: false,
+                        } satisfies Timing)
+                  }
                 />
                 <div>
                   <span className="plan-stop-label">
@@ -220,11 +200,19 @@ export default function JourneyPlan({
                 </div>
               </div>
               <div className="plan-stop">
-                <PlanTime
-                  date={step.arrival}
-                  scheduled={leg?.arrival}
-                  realtime={leg?.realtime}
-                  start={journey.startTime}
+                <TransitTime
+                  timing={
+                    leg
+                      ? arrivalTiming(leg, realtime?.now)
+                      : ({
+                          at: step.arrival,
+                          scheduled: step.arrival,
+                          basis: "planned",
+                          freshness: "unknown",
+                          cancelled: false,
+                          undefinedDelay: false,
+                        } satisfies Timing)
+                  }
                 />
                 <div>
                   <span className="plan-stop-label">
@@ -348,7 +336,7 @@ export default function JourneyPlan({
                   {leg.departure && clock.format(leg.departure)} ·{" "}
                   {leg.operator ?? "Operator not supplied"}
                 </p>
-                <BicycleCarriageDetails leg={leg} onEvidence={onEvidence} />
+                <BicycleCarriageDetails profile={fareProfile} leg={leg} onEvidence={onEvidence} />
               </section>
             ))}
         </section>

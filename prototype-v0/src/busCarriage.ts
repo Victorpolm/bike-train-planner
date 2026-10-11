@@ -48,6 +48,9 @@ export function busCarriage(leg: TransitLeg): BusCarriage | null {
   // Replacement vehicles must not inherit an operator's ordinary bus policy.
   if (["EV", "SEV"].includes(normalize(leg.category))) return { ...unknown,
     instructions: ["This is a replacement service. Confirm bicycle carriage directly for this departure; ordinary operator rules may not apply."] };
+  // Unlike the reviewed city-wide policies, PostBus publishes line-specific
+  // prohibitions and seasonal reservation exceptions. Generic space guidance
+  // cannot verify the chosen departure; keep unknown until dated evidence.
   if (isBus(leg) && postbus.has(operator)) return { ...unknown, operator: "PostBus", permission: "conditional", ticket: "required",
     reservation: "check-service", source: POSTBUS, instructions: [
       "Check this departure in the official timetable: some routes prohibit bicycles. Selected tourist routes require a bike reservation from May to October.",

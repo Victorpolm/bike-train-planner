@@ -1,5 +1,9 @@
 # Decisions
 
+## 11 October 2026 — implement reviewed fares, bicycle profiles and expiry monitoring
+
+The owner authorizes implementation of the attached fare/permission audit and value-with-conditions proposal, richer traveller/bicycle profiles, and automatic source retrieval before expiry. Apply primary-source corrections to the ideas: child accompaniment/GA conditions matter; ZVV accepts national bike passes; the IC all-year rule is corridor-specific. Keep test fares disabled. Add qualified values, conservative unknowns, explicit onward-position confirmation, persistent automatic monitoring and local-operator question exports. Do not send provider messages or silently promote downloaded documents into tariffs. Retain the private audience. [Decision, evidence and runbook](FARES_PROFILES_AND_MONITORING_2026-10-11.md).
+
 ## 11 October 2026 — official cycling sections and conservative launch safeguards
 
 The owner authorizes official SwitzerlandMobility cycling geometry shown on swisstopo and resolution of the listed source/privacy/licensing risks. Implement a bounded, explicit route-section action with road matching, closure checks and fixed-journey feasibility. Disable the exact unlicensed INSA and tourism-page integrations; retain separately licensed datasets. Hide integration-system fare quotes. Publish factual private-beta notices and preserve third-party licences, but do not invent an operator/contact, choose a software licence, claim trademark/patent clearance, invite external users or send provider/counsel correspondence. Owner input and professional review remain explicit launch gates. [Full decision and verification](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).

@@ -1,3 +1,4 @@
+import type { FareProfile } from "./fares";
 import InfoDisclosure from "./InfoDisclosure";
 import { useEffect, useRef, useState } from "react";
 import { carriageForLeg, withTripInfoRule } from "./bicycleCarriage";
@@ -17,8 +18,10 @@ const requirement = (value: string) =>
 export default function BicycleCarriageDetails({
   leg,
   onEvidence,
+  profile,
 }: {
   leg: TransitLeg;
+  profile?: FareProfile;
   onEvidence?: EvidenceUpdate;
 }) {
   const [detail, setDetail] = useState<OjpDetails | null>(null);
@@ -70,7 +73,7 @@ export default function BicycleCarriageDetails({
           bicycleEvidence: withTripInfoRule(leg.bicycleEvidence, detail.rule, detail.checked),
         }
       : leg;
-  const rule = carriageForLeg(displayLeg),
+  const rule = carriageForLeg(displayLeg, profile),
     prohibited = rule.permission === "prohibited";
   const notes = [
     ...new Set(

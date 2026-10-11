@@ -1,6 +1,8 @@
 # Re.route — website access and development
 
-**Current publication:** See the [official cycling and launch release record](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md) for exact version, source, deployment, GitHub and CI evidence. The existing owner-private URL and access policy are preserved.
+**Current publication:** Owner-private version 73, deployed 11 October 2026 at 19:27:57 UTC. [Exact source, deployment, monitor readback and verification](FARES_PROFILES_AND_MONITORING_2026-10-11.md). Weekday tariff/live-data monitoring is enabled. The existing URL and owner-only audience are preserved.
+
+**Previous publication:** See the [official cycling and launch release record](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md) for exact version, source, deployment, GitHub and CI evidence. The existing owner-private URL and access policy are preserved.
 
 **Previous publication:** Owner-private **version 68** published successfully on **10 October 2026 at 21:06:33 UTC** (23:06:33 Europe/Zurich), environment revision **3**, from Site source `b133828038eba6bdce4b17ede3dc1ae61764b5d3`. The exact pushed source and matching frontend/server-Worker archive were deployed. **593 JavaScript tests in 11 suites**, **13 Python tests**, **25 rendered panels** and **864 previous-release comparisons** pass, together with TypeScript/frontend/Worker builds, formatting and unused-code analysis. Stage timings, guarded result reuse and early connection rejection are delivered. The controlled CPU benchmark is 2.2–2.6× faster per solve; live whole-search and phone timing remain unmeasured. Re.route, the existing URL, runtime bindings and owner-only audience are preserved. [Release evidence](PERFORMANCE_PASS_2026-10-10.md).
 

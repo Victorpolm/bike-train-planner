@@ -24,6 +24,16 @@ export default function JourneyTimeSummary({
   details?: boolean;
 }) {
   const { departure, arrival } = timing;
+  const state = timing.journey.realtimeStatus?.state ?? "scheduled";
+  if (state === "broken")
+    return (
+      <span className="journey-time-summary broken-journey" role="status">
+        <strong>Connection no longer feasible</strong>
+        <span>
+          Original arrival and journey duration are no longer achievable. Find an onward option.
+        </span>
+      </span>
+    );
   return (
     <span className="journey-time-summary">
       <span className="journey-time-range">
@@ -33,6 +43,17 @@ export default function JourneyTimeSummary({
         {day.format(arrival) !== day.format(departure) && ` · ${day.format(arrival)}`}
       </span>
       <strong>{formatMinutes(timing.journeyMinutes)} journey</strong>
+      <span className="time-basis">
+        {state === "scheduled"
+          ? "Timetable and estimated cycling times · no live confirmation"
+          : state === "unknown"
+            ? "Live estimates incomplete or stale · arrival is provisional"
+            : state === "at-risk"
+              ? "Connection at risk · check the warnings"
+              : state === "late"
+                ? "Includes reported delays"
+                : "Includes fresh provider estimates"}
+      </span>
       {!arriveBy && timing.beforeDepartureMinutes >= 1 && (
         <span className="departure-wait">
           {formatMinutes(timing.beforeDepartureMinutes)} before leaving, from your requested{" "}

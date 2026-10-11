@@ -104,6 +104,9 @@ export function sbbIcReservation(leg: TransitLeg): "required" | "not-required" |
   const category = norm(leg.category), line = norm(leg.service).replace(/\s/g, "");
   if (["EC", "ICE", "RJX"].includes(category)) return "required";
   if (category !== "IC") return "not-required";
+  // The published all-year exception concerns the international IC corridor, not every service labelled IC4.
+  const corridor = new Set(["8503000", "8503006", "8503400"]);
+  if (isSbb(leg) && domesticSwissLeg(leg) && corridor.has(leg.fromId ?? "") && corridor.has(leg.toId ?? "") && leg.fromId !== leg.toId && (leg.fromId === "8503400" || leg.toId === "8503400")) return "required";
   // IC without a Swiss line identifier could be the year-round international IC.
   // Never infer an exemption merely because both boarded stops are in Switzerland.
   if (!/^IC(?:1|2|3|5|6|8|21|51|61|81)$/.test(line)) return "unknown";

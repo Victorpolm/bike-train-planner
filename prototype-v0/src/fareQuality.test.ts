@@ -55,7 +55,7 @@ it("supports ordinaryRhB pass coverage without claiming an unreviewed reservatio
 it("uses the dated15/16 pass change and refuses a single pass after05:00 the following day",()=>{
   for(const [day,amount] of [["2026-12-12",15],["2026-12-13",16]] as const){
     const l=condition(leg({departure:new Date(day+"T08:00:00Z"),arrival:new Date(day+"T09:00:00Z")}),"required");
-    assert.equal(fareSummary([l],DEFAULT_FARE_PROFILE,quote).knownBikeTotal,amount+2);
+    assert.equal(fareSummary([l],DEFAULT_FARE_PROFILE,quote).knownBikeTotal,day<="2026-12-12"?amount+2:null);
   }
   const l=leg({departure:new Date("2026-10-11T20:00:00Z"),arrival:new Date("2026-10-12T02:59:00Z")});
   assert.equal(fareSummary([l],DEFAULT_FARE_PROFILE,quote).bikeChf,15);

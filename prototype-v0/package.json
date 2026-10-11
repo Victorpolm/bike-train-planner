@@ -11,7 +11,8 @@
     "check:unused": "knip",
     "format": "prettier --write \"src/**/*.tsx\"",
     "format:check": "prettier --check \"src/**/*.tsx\"",
-    "prebuild": "node scripts/generate-third-party-notices.mjs --check && node scripts/render-source-register.mjs --check"
+    "prebuild": "node scripts/generate-third-party-notices.mjs --check && node scripts/render-source-register.mjs --check",
+    "check:tariffs": "node scripts/check-tariff-expiry.mjs"
   },
   "dependencies": {
     "fast-xml-parser": "^5.11.1",

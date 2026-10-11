@@ -1,3 +1,5 @@
+import { profileBikeRule } from "./bikeEligibility.ts";
+import { travelProfileKey, type TravelProfile } from "./travelProfile.ts";
 import { busCarriage, isBus, transitAllowed, type BusPreference } from "./busCarriage.ts";
 import type { TransitLeg } from "./routing.ts";
 import { operatorBicycleRule } from "./operatorBicycleRules.ts";
@@ -30,7 +32,7 @@ export function applicableBicycleEvidence(leg: TransitLeg): BicycleEvidence | un
 }
 // The uncached evaluator is also used by equivalence tests and the offline
 // benchmark. Permission remains distinct from tickets, reservations and space.
-export function evaluateBicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | "prohibited" {
+function baseBicyclePermission(leg: TransitLeg): "confirmed" | "uncertain" | "prohibited" {
   const policy = busCarriage(leg);
   if (policy?.permission === "not-allowed") return "prohibited";
   const operatorRule = operatorBicycleRule(leg);
@@ -40,6 +42,12 @@ export function evaluateBicyclePermission(leg: TransitLeg): "confirmed" | "uncer
   if (e?.conditions.some(note => note.includes("restricted to international travel"))) return "uncertain";
   if (!e || e.permission === "unknown") return operatorRule?.permission === "allowed" || policy?.verifiesPermission ? "confirmed" : "uncertain";
   return e.permission === "allowed" ? "confirmed" : "prohibited";
+}
+
+export function evaluateBicyclePermission(leg: TransitLeg, profile?: TravelProfile): "confirmed" | "uncertain" | "prohibited" {
+  const base = baseBicyclePermission(leg), specific = profileBikeRule(leg, profile, applicableBicycleEvidence(leg));
+  if (base === "prohibited" && !specific.handLuggage) return base;
+  return specific.permission ?? base;
 }
 
 type Permission = ReturnType<typeof evaluateBicyclePermission>;
@@ -60,24 +68,24 @@ export function permissionInputs(leg: TransitLeg): unknown[] {
     !!e, e?.permission, e?.fromId, e?.toId, e?.departure, e?.service, e?.operator,
     e?.source.title, e?.source.url, e?.source.checked, ...(e?.conditions ?? [])];
 }
-export function bicyclePermission(leg: TransitLeg): Permission {
-  const inputs = permissionInputs(leg), cached = permissionCache.get(leg);
+export function bicyclePermission(leg: TransitLeg, profile?: TravelProfile): Permission {
+  const inputs = [...permissionInputs(leg), travelProfileKey(profile)], cached = permissionCache.get(leg);
   if (cached && cached.inputs.length === inputs.length && inputs.every((value, i) => Object.is(value, cached.inputs[i]))) return cached.permission;
-  const permission = evaluateBicyclePermission(leg);
+  const permission = evaluateBicyclePermission(leg, profile);
   permissionCache.set(leg, { inputs, permission });
   return permission;
 }
-export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, scope: BicycleScope = "allow-uncertain") {
+export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, scope: BicycleScope = "allow-uncertain", profile?: TravelProfile) {
   if (leg.mode !== "transit") return true;
   if (scope === "all-transit") return preference !== "no-buses" || !isBus(leg);
-  const permission = bicyclePermission(leg);
+  const permission = bicyclePermission(leg, profile);
   if (permission === "prohibited") return false;
   if (permission === "confirmed") return preference !== "no-buses" || !isBus(leg);
   if (!transitAllowed(leg, preference)) return false;
   return scope === "allow-uncertain";
 }
-export const bicyclePermissionLabel = (leg: TransitLeg) => {
-  const permission = bicyclePermission(leg);
+export const bicyclePermissionLabel = (leg: TransitLeg, profile?: TravelProfile) => {
+  const permission = bicyclePermission(leg, profile);
   return permission === "confirmed" ? "Bicycle access verified for this service"
     : permission === "prohibited" ? "Bicycles not permitted" : "Bicycle permission uncertain for this service";
 };
@@ -92,11 +100,11 @@ export const bicycleScopeHelp: Record<BicycleScope, string> = {
   "allow-uncertain": "Include verified and unverified access. Exclude services that prohibit bicycles.",
   "all-transit": "Ignore bicycle-access restrictions when calculating routes. Services that prohibit bicycles are clearly marked; you cannot take your bicycle on those legs.",
 };
-export function bicycleExclusions(legs: Iterable<TransitLeg>, scope: BicycleScope) {
+export function bicycleExclusions(legs: Iterable<TransitLeg>, scope: BicycleScope, profile?: TravelProfile) {
   const result = { prohibited: 0, uncertain: 0 }, seen = new Set<string>();
   for (const leg of legs) {
     if (leg.mode !== "transit" || scope === "all-transit") continue;
-    const permission = bicyclePermission(leg);
+    const permission = bicyclePermission(leg, profile);
     if (permission === "confirmed" || permission === "uncertain" && scope !== "confirmed") continue;
     const key = JSON.stringify([leg.departure, leg.serviceName, leg.service, leg.operator]);
     if (seen.has(key)) continue;

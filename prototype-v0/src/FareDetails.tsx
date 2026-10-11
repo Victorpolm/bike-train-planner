@@ -1,14 +1,11 @@
+import { isSbb } from "./operatorBicycleRules";
+import { carriageForLeg } from "./bicycleCarriage";
 import JourneyDataQuality from "./JourneyDataQuality";
-import {
-  BIKE_DAY_SOURCE,
-  RESERVATION_PRICE_SOURCE,
-  POSTBUS_TICKET_SOURCE,
-  fareRows,
-  type FareProfile,
-} from "./fares";
+import { fareSummary, type FareProfile } from "./fares";
 import type { Journey } from "./routing";
 import { useOnlineFare } from "./useOnlineFare";
-
+import PriceValue from "./ui/PriceValue";
+import TariffHealth from "./ui/TariffHealth";
 export default function FareDetails({
   journey,
   profile,
@@ -19,133 +16,95 @@ export default function FareDetails({
   takeBikeOnTransit?: boolean;
 }) {
   const online = useOnlineFare(journey.transitLegs, profile, takeBikeOnTransit);
-  const { fare, rows } = fareRows(journey.transitLegs, profile, online.quote, takeBikeOnTransit);
+  const fare = fareSummary(journey.transitLegs, profile, online.quote, takeBikeOnTransit);
   return (
     <section className="fare-details">
       <h4>Tickets and price</h4>
-      {journey.transitLegs.some((l) => l.facilityVisit) && (
-        <p>
-          Transport prices describe this edited itinerary. Facility purchases and parking fees are
-          not included; an added stop between services may prevent a through-fare quote.
-        </p>
-      )}
       {fare.prohibited && (
         <p>
-          This comparison includes a bicycle ban. The passenger price can still be checked; buying a
-          ticket does not make bicycle carriage possible.
+          This bicycle cannot be carried on a selected service. A ticket or reservation does not
+          override the restriction.
         </p>
       )}
       {!takeBikeOnTransit && (
         <p>
-          Your bicycle stays off public transport. No bicycle ticket or bicycle reservation is
-          included.
+          Your bicycle stays off public transport. No bicycle ticket or reservation is included.
+        </p>
+      )}
+      {journey.transitLegs.some((l) => l.facilityVisit) && (
+        <p>
+          Prices describe the edited transport itinerary. Facility purchases and parking fees are
+          not included.
         </p>
       )}
       <dl>
-        {rows.map((row) => (
-          <div key={row.label}>
-            <dt>{row.label}</dt>
-            <dd>
-              <strong>{row.value}</strong> · {row.detail}
-            </dd>
-          </div>
-        ))}
+        <div>
+          <dt>Passenger</dt>
+          <dd>
+            <PriceValue price={fare.passengerPrice} />
+          </dd>
+        </div>
+        {takeBikeOnTransit && (
+          <>
+            <div>
+              <dt>Bicycle ticket</dt>
+              <dd>
+                <PriceValue price={fare.bicyclePrice} />
+              </dd>
+            </div>
+            <div>
+              <dt>Bicycle reservation</dt>
+              <dd>
+                <PriceValue price={fare.reservationPrice} />
+              </dd>
+            </div>
+          </>
+        )}
+        <div>
+          <dt>Complete additional cost</dt>
+          <dd>
+            <PriceValue price={fare.totalPrice} />
+          </dd>
+        </div>
       </dl>
-      {fare.totalChf !== null && (
-        <p>
-          <strong>
-            {fare.estimated ? "Estimated additional cost" : "Additional cost"}: CHF{" "}
-            {fare.totalChf.toFixed(2)}
-          </strong>
-          .{" "}
-          {fare.estimated
-            ? "Includes OJP test fare data; confirm the purchase price with the operator."
-            : !takeBikeOnTransit
-              ? "Passenger fare only."
-              : fare.minimumVerified
-                ? "Lowest of the reviewed standard bicycle ticket and day-pass options."
-                : "Day-pass option; a bicycle route ticket may cost less."}
-        </p>
-      )}
-      {fare.estimated && fare.online ? (
-        <p>
-          <a
-            href="https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojp-fare/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            OJP Fare beta
-          </a>{" "}
-          · test estimate for the matched transit itinerary, checked{" "}
-          {new Date(fare.online.checked).toLocaleString("en-CH")}. Supersaver (Sparbillett) products
-          have offer conditions and may be tied to a specific departure. This is not a ticket or
-          reservation.{fare.online.reason && " " + fare.online.reason}
-        </p>
-      ) : fare.published ? (
+      {fare.published && (
         <p>
           Published standard fare for {fare.published.from} → {fare.published.to}, zones{" "}
-          {fare.published.zones.join(", ")} ({fare.published.paidZones} paid zones), valid{" "}
-          {fare.published.validMinutes} minutes.{" "}
+          {fare.published.zones.join(", ")}, ticket valid {fare.published.validMinutes} minutes.{" "}
           <a href={fare.published.source.url} target="_blank" rel="noreferrer">
-            {fare.published.source.title}
-          </a>{" "}
-          · reviewed {fare.published.source.checked}. Valid tariff dates {fare.published.validFrom}–
-          {fare.published.validTo}. Supersaver offers are not included.
-        </p>
-      ) : (
-        <p>
-          {fare.passenger} This route is outside the reviewed local fare tables; request the current
-          passenger {takeBikeOnTransit ? "and reduced bicycle fare" : "fare"} from the operator.
-        </p>
-      )}
-      {fare.published && fare.online && (
-        <p>
-          Reviewed standard tariffs take priority over experimental online quotes for this route.
-        </p>
-      )}
-      {!fare.online && online.message && <p>{online.message}</p>}
-      {fare.reservationChf === 2 && (
-        <p>
-          CHF 2 is a separate bicycle reservation, not part of the bicycle ticket. Book all
-          connecting services together. This app does not reserve a place.
-        </p>
-      )}
-      {takeBikeOnTransit && !fare.singleDayPass && !profile.annualBikePass && (
-        <p>Check pass validity if your transit continues beyond 05:00 the next day.</p>
-      )}
-      {takeBikeOnTransit && (
-        <p>
-          One adult with one standard unfolded bicycle · 2nd class. An adult GA or Halbtax does not
-          replace the bicycle ticket. A Bike Day Pass is valid for its calendar day until 05:00 the
-          next day.
-        </p>
-      )}
-      {takeBikeOnTransit && (
-        <p className="carriage-source">
-          <a href={BIKE_DAY_SOURCE.url} target="_blank" rel="noreferrer">
-            Bike ticket options
-          </a>{" "}
-          ·{" "}
-          <a href={RESERVATION_PRICE_SOURCE.url} target="_blank" rel="noreferrer">
-            Reservation instructions and prices
-          </a>{" "}
-          ·{" "}
-          <a href={POSTBUS_TICKET_SOURCE.url} target="_blank" rel="noreferrer">
-            PostBus pass coverage and reservations
+            Published tariff
           </a>
-          · reviewed {BIKE_DAY_SOURCE.checked}
+          .
         </p>
       )}
+      {!online.quote && online.message && <p>{online.message}</p>}
+      <p>
+        Permission, a valid ticket, a required reservation and remaining space are separate. This
+        app sells no tickets and reserves no bicycle space. A day pass may cost more than an
+        unavailable reduced route ticket.
+      </p>
+      {fare.required > 0 &&
+        journey.transitLegs.some(
+          (l) => isSbb(l) && carriageForLeg(l, profile).bikeReservation === "required",
+        ) && (
+          <p>
+            Reserve before departure. SBB publishes a CHF 10 surcharge for missing a compulsory
+            bicycle reservation; it does not guarantee transport.
+          </p>
+        )}
+      {takeBikeOnTransit && (
+        <details>
+          <summary>Bicycle travel on several days</summary>
+          <PriceValue price={fare.multipleDayPrice} />
+        </details>
+      )}
+      <TariffHealth />
       <JourneyDataQuality
         journey={journey}
         profile={profile}
         quote={online.quote}
         takeBikeOnTransit={takeBikeOnTransit}
       />
-      <a href="https://www.sbb.ch/en" target="_blank" rel="noreferrer">
-        Get the current {takeBikeOnTransit ? "passenger and bicycle" : "passenger"} ticket offer at
-        SBB ↗
-      </a>
     </section>
   );
 }

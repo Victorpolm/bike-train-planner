@@ -1,3 +1,6 @@
+import OnwardRecovery, { type RecoveryRequest } from "./OnwardRecovery";
+import { readFareProfile } from "./fares";
+import { travelProfileKey } from "./travelProfile";
 import { cyclingAmountForPreset, cyclingDurationFits, type CyclingAmount } from "./cyclingDuration";
 import { currentLocation } from "./currentLocation";
 import type { SearchTimingReport } from "./searchTiming";
@@ -235,13 +238,15 @@ function JourneyCard({
     );
   const prohibited =
     takeBikeOnTransit &&
-    j.transitLegs.some((leg) => leg.mode === "transit" && bicyclePermission(leg) === "prohibited");
+    j.transitLegs.some(
+      (leg) => leg.mode === "transit" && bicyclePermission(leg, fareProfile) === "prohibited",
+    );
   const m = metrics(j);
   const timing = journeyTiming(j, boardingMinutes, requestedStart);
-  const busSummary = bicycleJourneySummary(j.transitLegs);
+  const busSummary = bicycleJourneySummary(j.transitLegs, fareProfile);
   const verified = j.transitLegs
     .filter((l) => l.mode === "transit")
-    .every((l) => bicyclePermission(l) === "confirmed");
+    .every((l) => bicyclePermission(l, fareProfile) === "confirmed");
   return (
     <button
       type="button"
@@ -390,7 +395,9 @@ export default function App() {
     travellers.library.profiles.find((p) => p.id === travellers.library.activeId) ??
     travellers.guest;
   const guest = useRef(travellers.guest);
-  const [fareProfile, setFareProfile] = useState<FareProfile>(initialTraveller.fare);
+  const [fareProfile, setFareProfile] = useState<FareProfile>(
+    readFareProfile({ ...initialTraveller.fare, age: initialTraveller.age }),
+  );
   const [age, setAge] = useState<number | null>(initialTraveller.age);
   const [mode, setMode] = useState<ModelMode>("baseline");
   const [ridingPreset, setRidingPreset] = useState<CyclingPreset | "custom">(
@@ -437,10 +444,13 @@ export default function App() {
   function applyPersonal(next: PersonalSettings) {
     if (
       next.pace.flatSpeedKmh !== cyclingPace.flatSpeedKmh ||
-      next.pace.electricAssist !== cyclingPace.electricAssist
+      next.pace.electricAssist !== cyclingPace.electricAssist ||
+      next.fare.passenger !== fareProfile.passenger ||
+      next.fare.annualBikePass !== fareProfile.annualBikePass ||
+      travelProfileKey({ ...next.fare, age: next.age }) !== travelProfileKey(fareProfile)
     )
       invalidate();
-    setFareProfile({ ...next.fare });
+    setFareProfile(readFareProfile({ ...next.fare, age: next.age }));
     setCyclingPace({ ...next.pace });
     setAge(next.age);
     setRidingPreset(next.ridingPreset);
@@ -503,6 +513,7 @@ export default function App() {
         cyclingAmount,
       ),
       objectives,
+      fareProfile,
     };
     return journeyLibrary.parked ? withoutBicycle({ ...base, maxWalkingMinutes }) : base;
   }, [
@@ -520,6 +531,7 @@ export default function App() {
     objectives,
     restoredOptions,
     journeyLibrary.parked,
+    fareProfile,
   ]);
   const [session, setSession] = useState<SearchSession | null>(null);
   const [laterBatches, setLaterBatches] = useState<
@@ -543,6 +555,7 @@ export default function App() {
     ? bicycleExclusions(
         [...session.network.edges.values()].map((e) => e.leg),
         session.options.bicycleScope ?? "allow-uncertain",
+        session.options.fareProfile,
       )
     : null;
   const confirmedSolution =
@@ -730,7 +743,13 @@ export default function App() {
   const bicycleAvailable =
     !selectedTrip || canFollowWithBicycle(selectedTrip, journeyLibrary.parked);
   function startNavigation() {
-    if (!selectedTrip || loading || !bicycleAvailable) return;
+    if (
+      !selectedTrip ||
+      loading ||
+      !bicycleAvailable ||
+      selectedTrip.journey?.realtimeStatus?.state === "broken"
+    )
+      return;
     setSelectedId(rawSelected?.id ?? BIKE_ONLY_ID);
     setCycleFocus(null);
     setRerouteMessage("");
@@ -761,6 +780,10 @@ export default function App() {
     }
   }
   function restoreRoutingOptions(next: Options) {
+    if (next.fareProfile) {
+      setFareProfile(readFareProfile(next.fareProfile));
+      setAge(next.fareProfile.age ?? null);
+    }
     setRestoredOptions(next);
     setTripPreset("personalized");
     setCyclingAmount(
@@ -907,6 +930,41 @@ export default function App() {
     setViaInputs([]);
     setDepartureMode("now");
     showMobileView("planning");
+  }
+  function acceptRecovery(result: SearchSession, journey: Journey, request: RecoveryRequest) {
+    if (loading || !bicycleAvailable || Date.now() - +request.start > 120000) return;
+    navigation.stop("Onward journey selected. Review it, then press Start.");
+    const attach = (j: Journey) => ({ ...j, recovery: request.recovery });
+    setSession({
+      ...result,
+      baseline: { ...result.baseline, journeys: result.baseline.journeys.map(attach) },
+      ...(result.extended
+        ? { extended: { ...result.extended, journeys: result.extended.journeys.map(attach) } }
+        : {}),
+    });
+    setFromInput({ text: request.origin.label, place: request.origin });
+    setToInput({ text: request.destination.label, place: request.destination });
+    setViaInputs(
+      request.waypoints.map((place) => ({
+        id: `via-${++nextViaId.current}`,
+        value: { text: place.label, place },
+      })),
+    );
+    restoreRoutingOptions(request.options);
+    setResumeStage(0);
+    setCustomJourneys([]);
+    setCustomCycling(null);
+    setLaterBatches([]);
+    setLaterNotices({});
+    setSelectedId(journey.id);
+    setCycleFocus(null);
+    setDepartureMode(request.options.arriveBy ? "arrival" : "now");
+    if (request.options.arriveBy)
+      setDepartureInput(swissDateTimeInput(new Date(request.options.arriveBy)));
+    setRerouteMessage(
+      `Onward journey from ${request.origin.label}. Previous tickets have not been assumed valid; review the new prices and reservations.`,
+    );
+    showMobileView("journey");
   }
   async function recalculateNavigation() {
     const active = navigation.following;
@@ -1965,7 +2023,11 @@ export default function App() {
                         </p>
                       )}
                       <JourneyCard
-                        proposal={proposal}
+                        proposal={
+                          selected?.id === j.id && realtime.journey
+                            ? { ...proposal, journey: realtime.journey }
+                            : proposal
+                        }
                         selected={selected?.id === j.id}
                         extraTimeMinutes={source.options.extraTimeMinutes}
                         hills={source.options.hills}
@@ -2089,13 +2151,41 @@ export default function App() {
           )}
           <JourneyNavigation
             navigation={navigation}
-            canStart={!!selectedTrip && bicycleAvailable}
+            canStart={
+              !!selectedTrip &&
+              bicycleAvailable &&
+              selectedTrip.journey?.realtimeStatus?.state !== "broken"
+            }
             busy={loading}
             realtime={realtime}
             onStart={startNavigation}
             onRecalculate={recalculateNavigation}
             onMap={() => showMobileView("map")}
           />
+          {selectedTrip?.journey?.realtimeStatus?.state === "broken" && !navigation.following && (
+            <OnwardRecovery
+              key={`${selectedTrip.key}:${selectedTrip.journey.id}:${JSON.stringify(selectedTrip.options)}`}
+              trip={selectedTrip}
+              disabled={loading || !bicycleAvailable}
+              onAccept={acceptRecovery}
+            />
+          )}
+          {selected?.recovery && (
+            <details className="recovery-history">
+              <summary>Completed sections retained from your original journey</summary>
+              <p>
+                Confirmed at {selected.recovery.from}. Displayed prices apply to the onward journey;
+                previous ticket validity needs a separate check.
+              </p>
+              <ol>
+                {selected.recovery.completed.map((s, i) => (
+                  <li key={i}>
+                    {s.from} → {s.to} · {s.title} · {Math.round(s.minutes)} min
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
           {rerouteMessage && (
             <p className="navigation-result" role="status">
               {rerouteMessage}

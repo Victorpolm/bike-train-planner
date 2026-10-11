@@ -1,3 +1,5 @@
+import { validTravelProfile } from "./travelProfile.ts";
+import type { FareProfile } from "./fares.ts";
 import { arrivalTime, departureTime, moveAfter, realtimeUnavailable } from "./realtime.ts";
 import { cyclingDurationFits, cyclingMinimumResource } from "./cyclingDuration.ts";
 import { boardingCheck, transferContextKey } from "./transferTimes.ts";
@@ -15,6 +17,7 @@ export type ModelMode = "baseline" | "extended";
 export type EndpointPreference = "none" | "start" | "end" | "both";
 export type CyclingPosition = "anywhere" | "start-only" | "end-only";
 export type Options = {
+  fareProfile?: FareProfile;
   /** Continuation while the bicycle is stored elsewhere. */
   walkingOnly?: boolean;
   objectives?: readonly JourneyObjective[];
@@ -63,7 +66,7 @@ export const endpointMinutes = (station: Station) => station.bikeMinutes + (stat
 export const endpointTravelLimit = (o: Options, direction: "access" | "egress") => endpointIsWalking(o, direction)
   ? o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : endpointCyclingLimit(o, direction);
 export const journeyLegAllowed = (leg: TransitLeg, o: Options) => !realtimeUnavailable(leg) && bicycleLegAllowed(leg, o.busPreference,
-  o.takeBikeOnTransit === false ? "all-transit" : o.bicycleScope);
+  o.takeBikeOnTransit === false ? "all-transit" : o.bicycleScope, o.takeBikeOnTransit === false ? undefined : o.fareProfile);
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
 export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
 export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge>; cycling?: Map<string, CyclingRoute | null>;
@@ -91,6 +94,7 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 };
 
 export function validateOptions(o: Options) {
+  if (o.fareProfile && (!validTravelProfile(o.fareProfile) || !["full","half-fare","ga"].includes(o.fareProfile.passenger) || typeof o.fareProfile.annualBikePass!=="boolean")) throw new Error("Invalid passenger or bicycle profile.");
   if (o.walkingOnly !== undefined && typeof o.walkingOnly !== "boolean") throw new Error("Invalid bicycle availability.");
   if (o.walkingOnly && (o.takeBikeOnTransit !== false || o.maxBikeMinutes !== 0 || (o.minBikeMinutes ?? 0) !== 0))
     throw new Error("A parked bicycle cannot be used before collection.");
@@ -228,7 +232,7 @@ export function categorize(journeys: Journey[], o: Options, fares?: ObjectiveFar
     add(winner, "Less traffic exposure", "Lowest mapped road-traffic exposure among checked alternatives. Uses road class, speed tags and cycling infrastructure, not live traffic or a safety guarantee; less cycling can also reduce exposure.");
   }
   if (wantsObjective(o, "fewer-reservations")) {
-    const r = (j: Journey) => reservationMetrics(j.transitLegs, o.takeBikeOnTransit !== false);
+    const r = (j: Journey) => reservationMetrics(j.transitLegs, o.takeBikeOnTransit !== false, o.fareProfile);
     const eligible = frontier.filter(j => !r(j).unknown && !r(j).prohibited);
     const winner = eligible.sort((a, b) => r(a).required - r(b).required || extraTime(a) - extraTime(b) || compare(["boardings", "active"])(a, b))[0];
     if (winner) add(winner, "Fewer mandatory bicycle reservations", o.takeBikeOnTransit === false

@@ -1,5 +1,7 @@
 # Next steps after official cycling and source review
 
+**Latest delivered scope:** Fare/bicycle profiles, qualified prices/times, onward recovery and automatic expiry/live-data monitoring are implemented in version 73. [Release and renewal runbook](FARES_PROFILES_AND_MONITORING_2026-10-11.md). Next: investigate the SBB day-pass automated-download failure; review source candidates before 12 December; obtain production fare feeds and precise local operator exceptions; complete browser/phone acceptance. Monitoring is scheduled; outreach and new tariff activation are not automatic.
+
 _Consolidated 11 October 2026, Europe/Zurich. This is the current checklist of outstanding work discussed with the owner; it does not authorize every proposed feature or replace dated evidence._
 
 ## Owner's three next priorities — updated 11 October

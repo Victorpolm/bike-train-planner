@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
 import { LocationWatch, ScreenAwake, usableFix, type LocationState } from "./locationTracking.ts";
-import { navigationTrip, advanceProgress, remainingPath, navigationConnection, navigationReplan, navigationRide, remainingMinutes } from "./navigation.ts";
+import { confirmedOnwardRequest, navigationTrip, advanceProgress, remainingPath, navigationConnection, navigationReplan, navigationRide, remainingMinutes } from "./navigation.ts";
 import { zeroCycling } from "./cycling.ts";
 import { DEFAULT_OPTIONS } from "./model.ts";
 import type { Journey, Point, TransitLeg } from "./routing.ts";
@@ -214,4 +214,17 @@ it("releases acquired wake locks on hide and supports reacquisition or rejection
   await controller.enable(); assert.equal(states.at(-1), "on"); controller.disable(); assert.equal(releases, 2);
   await new ScreenAwake(undefined, s => states.push(s)).enable(); assert.equal(states.at(-1), "unavailable");
   await new ScreenAwake(async () => { throw new Error("battery"); }, s => states.push(s)).enable(); assert.equal(states.at(-1), "unavailable");
+});
+
+it("recovers from an explicitly confirmed boarding stop with consumed budgets and retained history",()=>{
+ const trip=mixed();trip.options.fareProfile={passenger:"half-fare",annualBikePass:false,age:30};
+ assert.throws(()=>confirmedOnwardRequest(trip,1,false,now),/Confirm/);
+ const before=JSON.stringify(trip), next=confirmedOnwardRequest(trip,1,true,now);
+ assert.equal(next.origin.label,"B");assert.equal(next.options.maxBikeMinutes,80);assert.equal(next.options.maxAccessMinutes,50);
+ assert.deepEqual(next.options.fareProfile,trip.options.fareProfile);assert.deepEqual(next.waypoints,[]);
+ assert.equal(next.recovery.completed.length,1);assert.equal(next.recovery.originalPriceReusable,false);assert.equal(JSON.stringify(trip),before);
+ assert.throws(()=>confirmedOnwardRequest(trip,1,true,now+86400000),/another day/);
+ trip.options.takeBikeOnTransit=false;trip.options.cyclingPosition="start-only";
+ assert.equal(confirmedOnwardRequest(trip,1,true,now).options.walkingOnly,true);
+ trip.options.cyclingPosition="end-only";assert.throws(()=>confirmedOnwardRequest(trip,1,true,now),/bicycle/);
 });

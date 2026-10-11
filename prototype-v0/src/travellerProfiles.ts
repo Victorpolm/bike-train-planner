@@ -1,3 +1,4 @@
+import { travelProfileKey, validTravelProfile } from "./travelProfile.ts";
 import { readFareProfile, type FareProfile } from "./fares.ts";
 import { CYCLING_PRESETS, type CyclingPace, type CyclingPreset } from "./cyclingPace.ts";
 
@@ -12,6 +13,7 @@ export function guestSettings(legacyFare?: unknown): PersonalSettings {
 export function validPersonalSettings(value: PersonalSettings): boolean {
   return Number.isFinite(value.pace.flatSpeedKmh) && value.pace.flatSpeedKmh >= 8 && value.pace.flatSpeedKmh <= 35 &&
     typeof value.pace.electricAssist === "boolean" &&
+    validTravelProfile(value.fare) &&
     (value.age === null || (Number.isInteger(value.age) && value.age >= 0 && value.age <= 120));
 }
 export function parseTravellerLibrary(raw: string | null): TravellerLibrary {
@@ -33,10 +35,10 @@ export function parseTravellerLibrary(raw: string | null): TravellerLibrary {
   return { version: 1, profiles, activeId: ids.has(value.activeId) ? value.activeId : null };
 }
 export function personalSettings(value: PersonalSettings): PersonalSettings {
-  return { age: value.age, fare: { ...value.fare }, pace: { ...value.pace }, ridingPreset: value.ridingPreset };
+  return { age: value.age, fare: readFareProfile({ ...value.fare, age:value.age }), pace: { ...value.pace }, ridingPreset: value.ridingPreset };
 }
 export function samePersonalSettings(a: PersonalSettings, b: PersonalSettings): boolean {
-  return a.age === b.age && a.fare.passenger === b.fare.passenger && a.fare.annualBikePass === b.fare.annualBikePass &&
+  return a.age === b.age && a.fare.passenger === b.fare.passenger && a.fare.annualBikePass === b.fare.annualBikePass && travelProfileKey({...a.fare,age:a.age}) === travelProfileKey({...b.fare,age:b.age}) &&
     a.pace.flatSpeedKmh === b.pace.flatSpeedKmh && a.pace.electricAssist === b.pace.electricAssist && a.ridingPreset === b.ridingPreset;
 }
 export function loadTravellers(): { library: TravellerLibrary; guest: PersonalSettings; notice: string } {

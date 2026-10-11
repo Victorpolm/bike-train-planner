@@ -1,5 +1,7 @@
 # Re.route — Bike + Train Journey Planner
 
+**11 October fares, bicycle profiles and monitoring — version 73:** Passenger/child/class/pass validity and bicycle type/packing/dimensions/trailers now affect fares and eligibility. Prices/times keep their conditions; broken connections have bounded onward recovery. Automatic source retrieval, 60-day expiry alerts and a weekday live-data canary are enabled. The live sample captured 34 estimate fields across seven parsed services. Four source downloads succeeded; the SBB day-pass download is flagged for retry. **666 JavaScript tests, 16 Python tests and 47 rendered panels** pass. [Behaviour, automatic renewal and operator collaboration](docs/FARES_PROFILES_AND_MONITORING_2026-10-11.md).
+
 **11 October official cycling and launch safeguards:** Official SwitzerlandMobility cycling sections can now be checked and applied from Map without adding work to the initial search. Unlicensed Trafimage/INSA and tourism-page enrichments are disabled; integration fare quotes are hidden. Privacy/source notices, a 16-source register, component licences and stricter official-parking refresh are included. External launch remains blocked on owner identity/contact, hosting facts, service rights, name/software-licence decisions and legal/manual acceptance. [Behaviour, evidence and remaining decisions](docs/OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).
 
 11 October: [Shared quotas, maintained transfer feeds and fare/data-quality corrections](docs/DATA_QUALITY_AND_QUOTAS_2026-10-11.md).

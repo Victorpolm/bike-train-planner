@@ -43,6 +43,7 @@ export function validateSavedTrip(trip: NavigationInput) {
       if (s.cyclingRoute) route(s.cyclingRoute); if (s.walkingRoute) route(s.walkingRoute);
     }
     j.transitLegs.forEach(checkLeg);
+    if(j.recovery && (typeof j.recovery.originalJourneyId!=="string" || typeof j.recovery.from!=="string" || !Number.isFinite(Date.parse(j.recovery.confirmedAt)) || j.recovery.originalPriceReusable!==false || !Array.isArray(j.recovery.completed) || j.recovery.completed.length>100 || j.recovery.completed.some(s=>!s||!number(s.minutes)||typeof s.title!=="string"||typeof s.from!=="string"||typeof s.to!=="string"))) throw new Error("Invalid onward recovery history");
     if (j.waypoints && (!Array.isArray(j.waypoints) || !j.waypoints.every(v => place(v.place) && date(v.arrival)))) throw new Error("Invalid saved stops");
   }
   if (trip.cycling) {

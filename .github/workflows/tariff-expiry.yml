@@ -1,0 +1,24 @@
+name: Tariff expiry watch
+on:
+  schedule:
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'prototype-v0/src/tariffSources.ts'
+      - 'prototype-v0/scripts/check-tariff-expiry.mjs'
+      - '.github/workflows/tariff-expiry.yml'
+permissions:
+  contents: read
+jobs:
+  expiry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fail within 60 days of reviewed coverage expiry
+        working-directory: prototype-v0
+        run: node scripts/check-tariff-expiry.mjs

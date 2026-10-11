@@ -174,6 +174,10 @@ export function remainingNavigationStops(trip: NavigationTrip, index: number): P
 export function navigationReplan(trip: NavigationTrip, index: number, onboard: boolean, progress: RouteProgress | null,
   fix: LocationFix | null, now: number) {
   if (!usableFix(fix, now)) throw new Error("Wait for a fresh, accurate location before recalculating.");
+  return replanFromStage(trip,index,onboard,progress,{lat:fix.lat,lon:fix.lon,label:"Current location"},now);
+}
+function replanFromStage(trip: NavigationTrip,index:number,onboard:boolean,progress:RouteProgress|null,origin:Place,now:number) {
+  if(!Number.isInteger(index)||index<0||index>=trip.stages.length)throw new Error("Choose a valid remaining stage.");
   if (onboard || trip.stages[index]?.mode === "unknown") throw new Error("Confirm that you have alighted before recalculating from here.");
   const previous = trip.stages.slice(0, index);
   const boardings = previous.filter(s => s.mode === "transit").length;
@@ -208,6 +212,19 @@ export function navigationReplan(trip: NavigationTrip, index: number, onboard: b
     if ((options.minBikeMinutes ?? 0) > 0) throw new Error("Your remaining cycling minimum requires collecting your bicycle first.");
     options = { ...options, ...withoutBicycle(options) };
   }
-  return { origin: { lat: fix.lat, lon: fix.lon, label: "Current location" } as Place, destination: trip.destination,
+  return { origin, destination: trip.destination,
     waypoints: remainingNavigationStops(trip, index), options, start: new Date(now), mode: trip.mode, bikeOnly: !trip.journey };
+}
+
+/** Explicit station confirmation is distinct from a measured GPS fix. */
+export function confirmedOnwardRequest(trip:NavigationTrip,index:number,confirmed:boolean,now=Date.now()) {
+  if(!confirmed)throw new Error("Confirm your current stop and that preceding sections are completed.");
+  const stage=trip.stages[index],point=stage?.leg?.fromPoint;
+  if(stage?.mode!=="transit"||!point)throw new Error("Choose a known boarding stop.");
+  const currentDay=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Zurich"}).format(new Date(now));
+  if(new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Zurich"}).format(trip.start)!==currentDay)throw new Error("Use Plan again for a journey on another day.");
+  const request=replanFromStage(trip,index,false,null,{...point,label:stage.from,stopId:stage.leg?.fromId},now);
+  return {...request,options:{...request.options,horizonMinutes:Math.min(120,request.options.horizonMinutes)},
+    recovery:{originalJourneyId:trip.journey!.recovery?.originalJourneyId??trip.journey!.id,confirmedAt:new Date(now).toISOString(),from:stage.from,
+      originalPriceReusable:false as const,completed:[...(trip.journey?.recovery?.completed??[]),...trip.stages.slice(0,index).map(s=>({mode:s.mode,from:s.from,to:s.to,title:s.title,minutes:s.minutes,departure:s.leg?.departure?.toISOString(),arrival:s.leg?.arrival?.toISOString(),source:s.leg?.bicycleEvidence?.source}))].slice(-100)}};
 }

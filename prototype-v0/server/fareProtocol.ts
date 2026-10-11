@@ -188,7 +188,7 @@ export function parseFare(xml: string, trip: FareTrip, profile: "full" | "half-f
           || !(text(field(product, "FareClass")) === "secondClass" || profile === "bicycle" && !text(field(product, "FareClass")))
           || text(field(product, "ProtoProduct")) === "true" || productId === "2361"
           || cards.some(c => c !== "HTA" || profile !== "half-fare")) continue;
-        offers.push({ chf, productId, product: text(field(product, "FareProductName")) || productId });
+        offers.push({ chf, productId, product: text(field(product, "FareProductName")) || productId, flexibility: productId === "125" ? "flexible" : productId === "84004" ? "train-bound" : "unknown", availability: productId === "84004" ? "capacity-limited" : "unknown" });
       }
     }
   }

@@ -1,3 +1,4 @@
+import { handleMaintenance } from "./maintenanceHandler.ts";
 import { createTransferFeedLoader } from "./transferFeeds.ts";
 const transferFeed = createTransferFeedLoader();
 import { handleStationTransfers } from "./stationTransferHandler.ts";
@@ -14,6 +15,7 @@ import { handleOfficialCycling } from "./officialCyclingHandler.ts";
 export default {
   async fetch(request: Request, env: OjpEnvironment & TimetableEnvironment & FareEnvironment, context?: { waitUntil(task: Promise<unknown>): void }): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if (path.startsWith("/api/maintenance/")) return handleMaintenance(request, env);
     if (path === "/api/official-cycling") return handleOfficialCycling(request);
     if (path === "/api/station-transfers/v1") return handleStationTransfers(request, day => transferFeed(day, context ? task => context.waitUntil(task) : undefined));
     if (path === "/api/amenities/v1") return handleAmenities(request, fetch, context ? task => context.waitUntil(task) : undefined);

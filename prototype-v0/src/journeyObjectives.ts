@@ -1,3 +1,4 @@
+import { priceAmount } from "./priced.ts";
 import { carriageForLeg } from "./bicycleCarriage.ts";
 import { fareSummary, type FareProfile } from "./fares.ts";
 import { fareQuery, type OnlineFare } from "./onlineFare.ts";
@@ -13,16 +14,16 @@ export const objectiveLabels: Record<JourneyObjective, string> = {
   "fewer-reservations": "Fewer mandatory bicycle reservations", cheapest: "Lowest checked price",
 };
 export const BOARDING_COMPROMISE = { minutesPerBoarding: 30, maxTimeFactor: 1.25 } as const;
-export type ObjectiveOptions = { objectives?: readonly JourneyObjective[]; takeBikeOnTransit?: boolean };
+export type ObjectiveOptions = { objectives?: readonly JourneyObjective[]; takeBikeOnTransit?: boolean; fareProfile?: FareProfile };
 export const requestedObjectives = (options: ObjectiveOptions) => options.objectives ?? DEFAULT_OBJECTIVES;
 export const wantsObjective = (options: ObjectiveOptions, objective: JourneyObjective) => requestedObjectives(options).includes(objective);
 export function boardingAllowance(referenceMinutes: number) {
   return Math.max(0, referenceMinutes * (BOARDING_COMPROMISE.maxTimeFactor - 1));
 }
 
-export function reservationMetrics(legs: TransitLeg[], takeBikeOnTransit = true) {
+export function reservationMetrics(legs: TransitLeg[], takeBikeOnTransit = true, profile?: FareProfile) {
   if (!takeBikeOnTransit) return { required: 0, unknown: 0, prohibited: 0 };
-  const rules = legs.filter(l => l.mode === "transit").map(carriageForLeg);
+  const rules = legs.filter(l => l.mode === "transit").map(leg => carriageForLeg(leg, profile));
   return { required: rules.filter(r => r.bikeReservation === "required").length,
     unknown: rules.filter(r => r.bikeReservation === "unknown").length,
     prohibited: rules.filter(r => r.permission === "prohibited").length };
@@ -71,7 +72,7 @@ export function objectiveResources(legs: TransitLeg[], options: ObjectiveOptions
   endpoints: { route?: CyclingRoute; minutes: number }[] = []) {
   const values: number[] = [];
   if (wantsObjective(options, "fewer-reservations")) {
-    const r = reservationMetrics(legs, options.takeBikeOnTransit !== false);
+    const r = reservationMetrics(legs, options.takeBikeOnTransit !== false, options.fareProfile);
     values.push(r.required, r.unknown, r.prohibited);
   }
   if (wantsObjective(options, "less-traffic")) {
@@ -96,5 +97,5 @@ export function objectiveFareKey(journey: Journey, profile: FareProfile, takeBik
 export function checkedJourneyPrice(journey: Journey, options: ObjectiveOptions, context?: ObjectiveFareContext) {
   if (!context) return null;
   const key = objectiveFareKey(journey, context.profile, options.takeBikeOnTransit !== false);
-  return fareSummary(journey.transitLegs, context.profile, context.quotes.get(key), options.takeBikeOnTransit !== false).totalChf;
+  return priceAmount(fareSummary(journey.transitLegs, context.profile, context.quotes.get(key), options.takeBikeOnTransit !== false).totalPrice);
 }

@@ -93,7 +93,7 @@ function road(kind: "busy" | "quiet" | "unknown", minutes = 5): CyclingRoute {
     speedLimit: "Unknown", tags: kind === "busy" ? { highway: "primary", maxspeed: "80" } : kind === "quiet" ? { highway: "cycleway" } : {} }] };
 }
 function quote(passenger: number | null, bicycle: number | null = null): OnlineFare {
-  const offer = (chf: number | null) => chf === null ? null : { chf, product: "Fixture offer", productId: "test" };
+  const offer = (chf: number | null) => chf === null ? null : { chf, product: "Fixture offer", productId: "test", flexibility: "flexible" as const };
   return { status: passenger === null ? "unavailable" : "quoted", checked: start.toISOString(), environment: "test", passenger: offer(passenger), bicycle: offer(bicycle) };
 }
 

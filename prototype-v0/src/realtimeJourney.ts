@@ -1,3 +1,4 @@
+import { realtimeStale, type JourneyFeasibility } from "./realtime.ts";
 import { arrivalTime, departureTime, moveAfter, realtimeKey, realtimeUnavailable, platformChanged, type TransitRealtime } from "./realtime.ts";
 import { boardingCheck } from "./transferTimes.ts";
 import type { Journey, TransitLeg } from "./routing.ts";
@@ -6,7 +7,7 @@ import { visitHours } from "./facilityHours.ts";
 /** Re-evaluate the selected path without changing its scheduled service/fare IDs
  * or silently replacing it when a cancellation makes it impossible. */
 export type RealtimePlatforms = ReadonlyMap<string, Pick<TransitLeg, "stationArrival" | "stationDeparture">>;
-export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, TransitRealtime>, boardingMinutes = 3, arriveBy?: string, platforms?: RealtimePlatforms) {
+export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, TransitRealtime>, boardingMinutes = 3, arriveBy?: string, platforms?: RealtimePlatforms, now=Date.now()) {
   const legs: TransitLeg[] = [], issues: string[] = [];
   let ready = +raw.startTime + (raw.legsIncludeEndpoints ? 0 : raw.originStation.bikeMinutes * 60_000);
   for (const original of raw.transitLegs) {
@@ -30,7 +31,13 @@ export function realtimeJourney(raw: Journey, updates: ReadonlyMap<string, Trans
   }
   const arrival = new Date(ready), end = ready + (raw.legsIncludeEndpoints ? 0 : raw.destinationStation.bikeMinutes * 60_000);
   if (arriveBy && end > Date.parse(arriveBy)) issues.push("The latest estimated arrival is after your requested arrival time.");
-  return { journey: { ...raw, transitLegs: legs, departure: legs.length ? departureTime(legs[0])! : raw.departure,
+  const transit=legs.filter(l=>l.mode==="transit");
+  const broken=issues.some(s=>/no longer feasible|service cancelled|stop is not served/.test(s));
+  const risk=issues.some(s=>/platform changed|unknown duration|after your requested|opening hours/.test(s));
+  const known=transit.length>0 && transit.every(l=>l.realtime && !realtimeStale(l.realtime,now) && l.realtime.estimatedDeparture && l.realtime.estimatedArrival);
+  const late=transit.some(l=>l.realtime && (l.realtime.estimatedArrival && l.arrival && Date.parse(l.realtime.estimatedArrival)>+l.arrival || l.realtime.estimatedDeparture&&l.departure&&Date.parse(l.realtime.estimatedDeparture)>+l.departure));
+  const feasibility: JourneyFeasibility=broken?"broken":risk?"at-risk":!transit.some(l=>l.realtime)?"scheduled":!known?"unknown":late?"late":"estimated";
+  return { feasibility, journey: { ...raw, realtimeStatus:{state:feasibility,checkedAt:new Date(now).toISOString(),issues:[...new Set(issues)]}, transitLegs: legs, departure: legs.length ? departureTime(legs[0])! : raw.departure,
     arrival, totalMinutes: (end - +raw.startTime) / 60_000,
     trainMinutes: (ready - +(legs.length ? departureTime(legs[0])! : raw.departure)) / 60_000 } as Journey,
     issues: [...new Set(issues)] };

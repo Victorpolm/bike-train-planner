@@ -34,6 +34,8 @@ export type Station = Point & {
 };
 
 export type Journey = {
+  recovery?: { originalJourneyId:string; confirmedAt:string; from:string; originalPriceReusable:false; completed: {mode:TransitLeg["mode"];from:string;to:string;title:string;minutes:number;departure?:string;arrival?:string;source?:{title:string;url:string;checked:string}}[] };
+  realtimeStatus?: { state: import("./realtime.ts").JourneyFeasibility; checkedAt: string; issues: string[] };
   id: string;
   startTime: Date;
   originStation: Station;

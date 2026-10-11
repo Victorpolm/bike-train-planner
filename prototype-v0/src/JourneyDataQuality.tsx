@@ -20,7 +20,7 @@ export default function JourneyDataQuality({
     [observation, setObservation] = useState(""),
     [minutes, setMinutes] = useState("");
   const services = journey.transitLegs.filter((l) => l.mode === "transit"),
-    rules = services.map(carriageForLeg);
+    rules = services.map((leg) => carriageForLeg(leg, profile));
   const missing = services.filter((_, i) => rules[i].permission === "uncertain");
   const report = () => {
     const blob = new Blob(
@@ -60,8 +60,8 @@ export default function JourneyDataQuality({
         </p>
       )}
       <p>
-        Online passenger prices come from a test system. Reviewed standard tariffs take priority.
-        Missing prices stay unknown.
+        Experimental online quotes are disabled. Reviewed standard tariffs and explicit entitlements
+        are used. Missing prices stay unknown.
       </p>
       <p>
         Station transfer times do not verify lifts, stairs or bicycle access. Service-specific GTFS
@@ -88,6 +88,34 @@ export default function JourneyDataQuality({
         value={minutes}
         onChange={(e) => setMinutes(e.target.value)}
       />
+      <details>
+        <summary>Questions for the local transport operator</summary>
+        <p>
+          Share the exact service, date, direction and boarding section, plus bicycle dimensions and
+          packing. Ask for:
+        </p>
+        <ul>
+          <li>
+            Accepted bicycle and trailer types, vehicle/door limits and self-loading requirements.
+          </li>
+          <li>
+            Peak-hour and seasonal exclusions, reservation method, capacity limits and any
+            replacement-bus exceptions.
+          </li>
+          <li>
+            Passenger and bicycle fares by class, age, accompaniment, pass and zones; validity dates
+            and through-ticket rules.
+          </li>
+          <li>
+            A stable tariff/feed URL, change notices, a technical contact and permission to reuse
+            the data.
+          </li>
+        </ul>
+        <p>
+          Operator replies are evidence to review, with a source and effective dates. An unverified
+          reply does not automatically change a fare or access rule.
+        </p>
+      </details>
       <p>
         Download the service times, fare profile and data evidence, then share the file here with an
         SBB screenshot if useful. It contains your selected public-transport stops and observations.

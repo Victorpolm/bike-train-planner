@@ -1,0 +1,297 @@
+{
+  "run": {
+    "http": 200,
+    "data": {
+      "status": "completed",
+      "checkedAt": "2026-10-11T19:28:17.790Z",
+      "canary": {
+        "day": "2026-10-11",
+        "checkedAt": "2026-10-11T19:28:17.790Z",
+        "status": "estimates-observed",
+        "services": 7,
+        "estimatedTimes": 34,
+        "parsedEstimates": 7,
+        "fixtureSaved": true
+      },
+      "sources": [
+        {
+          "id": "zvv",
+          "url": "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "81185137d56b4356ccbde6bfb99e68107a2dd636911db5da4d69ea7b567c7cee",
+          "bytes": 117362,
+          "contentType": "text/html",
+          "candidateSaved": true
+        },
+        {
+          "id": "zpass",
+          "url": "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "c7089146004470c4f9b49a6c54e55ad6d26749ca47423770ab454ef82f203245",
+          "bytes": 120591,
+          "contentType": "text/html",
+          "candidateSaved": true
+        },
+        {
+          "id": "bike-day",
+          "url": "https://www.sbb.ch/en/offers/bike-day-pass",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "error",
+          "reason": "Source could not be downloaded or validated. Keep existing expiry; review the publisher URL manually."
+        },
+        {
+          "id": "t600",
+          "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=2666",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "90a9ebcf835c5c50bbb92a4e02c54354e8911cca3353ee34c5c7f6170e11de3a",
+          "bytes": 1499060,
+          "contentType": "application/pdf",
+          "candidateSaved": false
+        },
+        {
+          "id": "bike-coverage",
+          "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=21132",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "33a280f42fe7702ebbc8291e7050c57e0578a9e85ba6d5c4680d8c71e3d38a24",
+          "bytes": 1118739,
+          "contentType": "application/pdf",
+          "candidateSaved": false
+        }
+      ],
+      "alert": {
+        "state": "stale",
+        "reason": "No weekday canary has run yet."
+      },
+      "tariffs": [
+        {
+          "source": {
+            "id": "zvv",
+            "title": "ZVV published single tickets",
+            "url": "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html",
+            "checked": "2026-09-27",
+            "validFrom": "2025-12-14",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "html",
+            "scope": "Reviewed rail corridors and 2nd-class zone fares"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        },
+        {
+          "source": {
+            "id": "zpass",
+            "title": "Z-Pass A-Welle\u2013ZVV single tickets",
+            "url": "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html",
+            "checked": "2026-09-27",
+            "validFrom": "2025-12-14",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "html",
+            "scope": "Reviewed A-Welle/ZVV rail corridors"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        },
+        {
+          "source": {
+            "id": "bike-day",
+            "title": "SBB Bike Day Pass",
+            "url": "https://www.sbb.ch/en/offers/bike-day-pass",
+            "checked": "2026-10-11",
+            "validFrom": "2026-01-01",
+            "validThrough": "2027-12-11",
+            "reviewBy": "2026-12-01",
+            "format": "html",
+            "scope": "CHF 15 through 2026-12-12, CHF 16 from 2026-12-13; reviewed coverage ends 2027-12-11"
+          },
+          "state": "current",
+          "daysRemaining": 426
+        },
+        {
+          "source": {
+            "id": "t600",
+            "title": "Alliance SwissPass T600",
+            "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=2666",
+            "checked": "2026-10-11",
+            "validFrom": "2026-06-01",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "pdf",
+            "scope": "Child bicycle concessions; reservations; luggage; review at timetable change"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        },
+        {
+          "source": {
+            "id": "bike-coverage",
+            "title": "T600 participating operators",
+            "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=21132",
+            "checked": "2026-10-11",
+            "validFrom": "2026-06-01",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "pdf",
+            "scope": "Bicycle-pass operator acceptance; never vehicle capacity"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        }
+      ]
+    }
+  },
+  "readback": {
+    "http": 200,
+    "data": {
+      "checkedAt": "2026-10-11T19:28:17.790Z",
+      "sourceChecks": [
+        {
+          "id": "zvv",
+          "url": "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "81185137d56b4356ccbde6bfb99e68107a2dd636911db5da4d69ea7b567c7cee",
+          "bytes": 117362,
+          "contentType": "text/html",
+          "candidateSaved": true
+        },
+        {
+          "id": "zpass",
+          "url": "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "c7089146004470c4f9b49a6c54e55ad6d26749ca47423770ab454ef82f203245",
+          "bytes": 120591,
+          "contentType": "text/html",
+          "candidateSaved": true
+        },
+        {
+          "id": "bike-day",
+          "url": "https://www.sbb.ch/en/offers/bike-day-pass",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "error",
+          "reason": "Source could not be downloaded or validated. Keep existing expiry; review the publisher URL manually."
+        },
+        {
+          "id": "t600",
+          "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=2666",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "90a9ebcf835c5c50bbb92a4e02c54354e8911cca3353ee34c5c7f6170e11de3a",
+          "bytes": 1499060,
+          "contentType": "application/pdf",
+          "candidateSaved": false
+        },
+        {
+          "id": "bike-coverage",
+          "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=21132",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "baseline",
+          "sha256": "33a280f42fe7702ebbc8291e7050c57e0578a9e85ba6d5c4680d8c71e3d38a24",
+          "bytes": 1118739,
+          "contentType": "application/pdf",
+          "candidateSaved": false
+        }
+      ],
+      "canary": {
+        "state": "stale",
+        "reason": "No weekday canary has run yet."
+      },
+      "history": [
+        {
+          "day": "2026-10-11",
+          "checkedAt": "2026-10-11T19:28:17.790Z",
+          "status": "estimates-observed",
+          "services": 7,
+          "estimatedTimes": 34,
+          "parsedEstimates": 7,
+          "fixtureSaved": true
+        }
+      ],
+      "tariffs": [
+        {
+          "source": {
+            "id": "zvv",
+            "title": "ZVV published single tickets",
+            "url": "https://www.zvv.ch/de/abos-und-tickets/tickets/einzelbillette.html",
+            "checked": "2026-09-27",
+            "validFrom": "2025-12-14",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "html",
+            "scope": "Reviewed rail corridors and 2nd-class zone fares"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        },
+        {
+          "source": {
+            "id": "zpass",
+            "title": "Z-Pass A-Welle\u2013ZVV single tickets",
+            "url": "https://www.zvv.ch/de/abos-und-tickets/weitere-angebote/tarifverbund-z-pass/abo-und-billette.html",
+            "checked": "2026-09-27",
+            "validFrom": "2025-12-14",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "html",
+            "scope": "Reviewed A-Welle/ZVV rail corridors"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        },
+        {
+          "source": {
+            "id": "bike-day",
+            "title": "SBB Bike Day Pass",
+            "url": "https://www.sbb.ch/en/offers/bike-day-pass",
+            "checked": "2026-10-11",
+            "validFrom": "2026-01-01",
+            "validThrough": "2027-12-11",
+            "reviewBy": "2026-12-01",
+            "format": "html",
+            "scope": "CHF 15 through 2026-12-12, CHF 16 from 2026-12-13; reviewed coverage ends 2027-12-11"
+          },
+          "state": "current",
+          "daysRemaining": 426
+        },
+        {
+          "source": {
+            "id": "t600",
+            "title": "Alliance SwissPass T600",
+            "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=2666",
+            "checked": "2026-10-11",
+            "validFrom": "2026-06-01",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "pdf",
+            "scope": "Child bicycle concessions; reservations; luggage; review at timetable change"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        },
+        {
+          "source": {
+            "id": "bike-coverage",
+            "title": "T600 participating operators",
+            "url": "https://www.allianceswisspass.ch/de/asp/Downloads?download=21132",
+            "checked": "2026-10-11",
+            "validFrom": "2026-06-01",
+            "validThrough": "2026-12-12",
+            "reviewBy": "2026-11-12",
+            "format": "pdf",
+            "scope": "Bicycle-pass operator acceptance; never vehicle capacity"
+          },
+          "state": "current",
+          "daysRemaining": 62
+        }
+      ],
+      "sourceCheckStale": false,
+      "policy": "Changed documents are candidates for review. Published prices and validity dates are never extended automatically."
+    }
+  }
+}

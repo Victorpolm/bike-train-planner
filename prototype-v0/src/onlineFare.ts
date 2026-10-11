@@ -1,3 +1,4 @@
+import { readBicycle, DEFAULT_BICYCLE, validPassOn } from "./travelProfile.ts";
 import type { TransitLeg } from "./routing.ts";
 import type { FareProfile } from "./fares.ts";
 import { bicyclePermission } from "./bicyclePermission.ts";
@@ -8,7 +9,7 @@ export type FareSegment = { from: string; to: string; departure: string; arrival
 export type RetainedFareSource = { id: string; payload: string };
 export type FareQuery = { segments: FareSegment[]; passenger: FareProfile["passenger"]; bicycle: boolean;
   sources?: RetainedFareSource[] };
-export type FareOffer = { chf: number; product: string; productId: string };
+export type FareOffer = { chf: number; product: string; productId: string; flexibility?: "flexible" | "train-bound" | "unknown"; availability?: "capacity-limited" | "unknown" };
 export type OnlineFare = { status: "quoted" | "partial" | "unavailable"; checked: string;
   passenger: FareOffer | null; bicycle: FareOffer | null; reason?: string; environment: "test";
   itinerarySource?: "retained" | "assembled" | "lookup" };
@@ -33,6 +34,9 @@ function selectedSources(transit: TransitLeg[], walks: TransitLeg[]): RetainedFa
 }
 
 export function fareQuery(legs: TransitLeg[], profile: FareProfile, takeBikeOnTransit = true): FareQuery | null {
+  if (profile.travelClass === "first" || profile.age != null && profile.age < 16 || profile.otherPass?.name || profile.organizedGroup) return null;
+  if (JSON.stringify(readBicycle(profile.bicycle)) !== JSON.stringify(DEFAULT_BICYCLE) || profile.existingBikePass && profile.existingBikePass !== "none") return null;
+  if (legs.some(l=>l.departure && !validPassOn(profile,l.departure.toISOString().slice(0,10)))) return null;
   const first = legs.findIndex(l => l.mode === "transit");
   const last = legs.reduce((n, l, i) => l.mode === "transit" ? i : n, -1);
   // A cycle between trains interrupts the fare journey. Do not silently quote
@@ -53,5 +57,5 @@ export function fareQuery(legs: TransitLeg[], profile: FareProfile, takeBikeOnTr
     arrival: l.arrival!.toISOString(), fromName: l.from ?? undefined, toName: l.to ?? undefined,
     fromPoint: point(l.fromPoint), toPoint: point(l.toPoint), ...(l.ojp ? { journeyRef: l.ojp.journeyRef } : {}) })),
     passenger: profile.passenger, bicycle: takeBikeOnTransit && !profile.annualBikePass
-      && !transit.some(l => bicyclePermission(l) === "prohibited"), ...(sources ? { sources } : {}) };
+      && !transit.some(l => bicyclePermission(l, profile) === "prohibited"), ...(sources ? { sources } : {}) };
 }
