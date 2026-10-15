@@ -1,13 +1,9 @@
 name: Tariff expiry watch
+# 2026-10-15: automatic expiry notifications paused at the owner's request.
+# Manual checks remain available. Restore automatic triggers only when requested.
+# Previous daily schedule: '15 6 * * *' (UTC).
 on:
-  schedule:
-    - cron: '15 6 * * *'
   workflow_dispatch:
-  push:
-    paths:
-      - 'prototype-v0/src/tariffSources.ts'
-      - 'prototype-v0/scripts/check-tariff-expiry.mjs'
-      - '.github/workflows/tariff-expiry.yml'
 permissions:
   contents: read
 jobs:
