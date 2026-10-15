@@ -1,5 +1,9 @@
 # Decisions
 
+## 15 October 2026 — pause automatic GitHub expiry notifications
+
+At the owner's request, pause automatic notifications from Tariff expiry watch until they explicitly request reactivation. Remove its daily schedule and push triggers; keep workflow_dispatch and the existing expiry-check logic for deliberate manual checks. A manual run can still fail and notify through GitHub. The previous schedule was `15 6 * * *` UTC. No reactivation date is set. This supersedes automatic GitHub expiry alerts in the 11 October decision; it does not extend reviewed data validity or change the separate source/live-data maintenance automation, application behaviour, or other CI workflows.
+
 ## 11 October 2026 — implement reviewed fares, bicycle profiles and expiry monitoring
 
 The owner authorizes implementation of the attached fare/permission audit and value-with-conditions proposal, richer traveller/bicycle profiles, and automatic source retrieval before expiry. Apply primary-source corrections to the ideas: child accompaniment/GA conditions matter; ZVV accepts national bike passes; the IC all-year rule is corridor-specific. Keep test fares disabled. Add qualified values, conservative unknowns, explicit onward-position confirmation, persistent automatic monitoring and local-operator question exports. Do not send provider messages or silently promote downloaded documents into tariffs. Retain the private audience. [Decision, evidence and runbook](FARES_PROFILES_AND_MONITORING_2026-10-11.md).
