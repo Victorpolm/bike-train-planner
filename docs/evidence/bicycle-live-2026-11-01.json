@@ -1,0 +1,217 @@
+{
+  "query": {
+    "from": {
+      "id": "8503000",
+      "name": "Zürich HB",
+      "lat": 47.378176,
+      "lon": 8.540212
+    },
+    "to": {
+      "id": "8507000",
+      "name": "Bern",
+      "lat": 46.948831,
+      "lon": 7.439129
+    },
+    "departure": "2026-11-01T10:15:15.884577+00:00"
+  },
+  "checked": "2026-11-01T10:15:21.216Z",
+  "leg": {
+    "realtime": {
+      "checkedAt": "2026-11-01T10:15:23.954Z",
+      "providerTimestampVerified": true,
+      "estimatedDeparture": "2026-11-01T10:32:30.000Z",
+      "estimatedArrival": "2026-11-01T11:28:48.000Z",
+      "departurePlatform": "13",
+      "arrivalPlatform": "6",
+      "cancelled": false,
+      "departureCancelled": false,
+      "arrivalCancelled": false,
+      "undefinedDelay": false
+    },
+    "accessRules": [
+      {
+        "point": {
+          "lat": 47.37818,
+          "lon": 8.54021
+        },
+        "toRef": "ch:1:sloid:3000:7:13",
+        "seconds": 420,
+        "departure": "2026-11-01T10:32:00.000Z",
+        "operatingDay": "2026-11-01",
+        "checked": "2026-11-01T10:15:22.154Z"
+      },
+      {
+        "point": {
+          "lat": 47.37818,
+          "lon": 8.54021
+        },
+        "toRef": "ch:1:sloid:3000:7:13",
+        "seconds": 420,
+        "departure": "2026-11-01T10:32:00.000Z",
+        "operatingDay": "2026-11-01",
+        "checked": "2026-11-01T10:15:23.954Z"
+      }
+    ],
+    "mode": "transit",
+    "from": {
+      "id": "ch:1:sloid:3000",
+      "name": "Zürich HB",
+      "lat": 47.37907,
+      "lon": 8.5366
+    },
+    "to": {
+      "id": "ch:1:sloid:7000",
+      "name": "Bern",
+      "lat": 46.94856,
+      "lon": 7.43714
+    },
+    "departure": "2026-11-01T10:32:00.000Z",
+    "arrival": "2026-11-01T11:28:00.000Z",
+    "service": "IC",
+    "transferRules": [],
+    "serviceName": "IC",
+    "category": "IC",
+    "operator": "ojp:11",
+    "direction": "Genève-Aéroport",
+    "departurePlatform": "13",
+    "arrivalPlatform": "6",
+    "reference": {
+      "journeyRef": "ch:1:sjyid:100001:900-001",
+      "operatingDay": "2026-11-01",
+      "fromRef": "ch:1:sloid:3000:7:13",
+      "toRef": "ch:1:sloid:7000:3:6",
+      "fromOrder": 1,
+      "toOrder": 3,
+      "departure": "2026-11-01T10:32:00.000Z",
+      "arrival": "2026-11-01T11:28:00.000Z",
+      "bikeFiltered": true,
+      "attributes": [
+        {
+          "code": "A__FS",
+          "text": "Gratis-Internet mit der App SBB FreeSurf",
+          "scope": "service"
+        },
+        {
+          "code": "A__BZ",
+          "text": "Businesszone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A__NF",
+          "text": "Niederflureinstieg",
+          "scope": "service"
+        },
+        {
+          "code": "A__RZ",
+          "text": "Ruhezone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A___R",
+          "text": "Platzreservierung möglich",
+          "scope": "service"
+        },
+        {
+          "code": "A__FA",
+          "text": "Familienwagen mit Spielplatz",
+          "scope": "service"
+        },
+        {
+          "code": "A__WR",
+          "text": "Restaurant",
+          "scope": "service"
+        },
+        {
+          "code": "ojp9102HYR_InfoCall140_108276_1",
+          "text": "Aussteigeseite: Rechts",
+          "scope": "stop"
+        },
+        {
+          "code": "ojp9102HYR_InfoCall140_111055_1",
+          "text": "Aussteigeseite: Links",
+          "scope": "stop"
+        },
+        {
+          "code": "A__FS",
+          "text": "Gratis-Internet mit der App SBB FreeSurf",
+          "scope": "service"
+        },
+        {
+          "code": "A__BZ",
+          "text": "Businesszone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A__NF",
+          "text": "Niederflureinstieg",
+          "scope": "service"
+        },
+        {
+          "code": "A__RZ",
+          "text": "Ruhezone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A___R",
+          "text": "Platzreservierung möglich",
+          "scope": "service"
+        },
+        {
+          "code": "A__FA",
+          "text": "Familienwagen mit Spielplatz",
+          "scope": "service"
+        },
+        {
+          "code": "A__WR",
+          "text": "Restaurant",
+          "scope": "service"
+        },
+        {
+          "code": "ojp9102HYR_InfoCall140_108276_1",
+          "text": "Aussteigeseite: Rechts",
+          "scope": "stop"
+        },
+        {
+          "code": "ojp9102HYR_InfoCall140_111055_1",
+          "text": "Aussteigeseite: Links",
+          "scope": "stop"
+        }
+      ]
+    },
+    "rule": {
+      "permission": "allowed",
+      "basis": "ojp-filter",
+      "bikeReservation": "unknown",
+      "reservationUnspecified": true,
+      "notes": [],
+      "attributes": []
+    },
+    "fareSourceIds": [
+      "554c208514971a87ce77c48e8c8c851aadb0331f889577548446218bb4e9124c",
+      "40340b47fd8f6a291adec7853b6589960417a647b2ffb6f46b367d622eda255a"
+    ]
+  },
+  "details": {
+    "rule": {
+      "permission": "unknown",
+      "basis": "unassessed",
+      "bikeReservation": "unknown",
+      "reservationUnspecified": true,
+      "notes": [],
+      "attributes": []
+    },
+    "checked": "2026-11-01T10:15:31.011Z",
+    "realtime": {
+      "checkedAt": "2026-11-01T10:15:31.011Z",
+      "providerTimestampVerified": true,
+      "estimatedDeparture": "2026-11-01T10:32:30.000Z",
+      "estimatedArrival": "2026-11-01T11:28:48.000Z",
+      "departurePlatform": null,
+      "arrivalPlatform": null,
+      "cancelled": false,
+      "departureCancelled": false,
+      "arrivalCancelled": false,
+      "undefinedDelay": false
+    }
+  }
+}

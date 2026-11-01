@@ -35,3 +35,9 @@ Next: compare SBB symbols and our decisions for identical dated services across 
 Private version 76 deployed successfully on 1 November 2026. Site source `302142d519b0d292e00613a7c98f03bf40a5a5dc`; deployment `appgdep_6ae7108c8490819196fdfb52da111490`; runtime environment revision 3. URL: https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site
 
 GitHub synchronization includes the previously deployed version 75 application deltas and this change, while preserving main's later station-transfer dataset updates. Both the Site maintenance automation (observed disabled) and GitHub tariff-expiry notification schedule remain paused.
+
+### Hosted verification
+
+At 10:15 UTC / 11:15 Europe/Zurich on 1 November, the production OJP status endpoint reported connected. A Zürich HB–Bern search returned eight dated transit legs without warnings, and the exact-service TripInfo request succeeded with verified provider timestamps and live departure/arrival estimates. The selected IC had a +30-second departure and +48-second arrival estimate, both displayed as Delayed by 1 min under the existing minute-rounding convention, never On time. The status was fresh at the verification clock.
+
+The provider labelled that service only `IC` and supplied no bicycle reservation attribute; its bicycle-filtered search established permission but not the reservation rule. The shared UI status evaluator returned Bikes allowed · Reservation requirement not verified. This is a concrete remaining data gap: recover the actual IC line/international-service identity before applying a no-reservation fallback. Do not infer the line from the opaque journey reference. No SBB timetable comparison or formation lookup was performed in this check. [Parsed production evidence](evidence/bicycle-live-2026-11-01.json); no credentials or personal profile data are included.
