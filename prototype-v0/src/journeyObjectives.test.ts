@@ -53,7 +53,7 @@ it("retains required reservations through unrelated TripInfo notes, summaries an
     assert.equal(carriageForLeg(l).reservationSource, undefined, "A generic rule cannot contradict the dated requirement");
     assert.equal(reservationMetrics([l]).required, 1);
     if (code === "A__VN") assert.equal(carriageForLeg(l).permission, "prohibited");
-    else assert.match(bicycleJourneySummary([l])!, /bike reservation required/);
+    else assert.match(bicycleJourneySummary([l])!, /Reservation required/);
     const free = journey("no-reservation", 65, 1);
     free.transitLegs[0].bicycleEvidence!.prerequisites!.bikeReservation = "not-required";
     assert.equal(categorize([j, free], { ...options, objectives: ["fewer-reservations"] })[0].journey.id, free.id);
@@ -76,7 +76,7 @@ it("keeps conflicting or explicitly unknown dated reservations out of complete-p
     assert.equal(carriageForLeg(l).bikeReservation, "unknown");
     assert.equal(carriageForLeg(l).reservationSource, undefined);
     assert.match(l.bicycleEvidence.conditions.join(" "), /conflicting reservation/);
-    assert.match(bicycleJourneySummary([l])!, /requirements need checking/);
+    assert.match(bicycleJourneySummary([l])!, /requirement not verified/);
     assert.equal(categorize([j], { ...options, objectives: ["fewer-reservations"] }).length, 0);
     assert.equal(checkedJourneyPrice(j, options, { profile: DEFAULT_FARE_PROFILE, quotes: new Map([[objectiveFareKey(j, DEFAULT_FARE_PROFILE), quote(20, 10)]]) }), null);
   }

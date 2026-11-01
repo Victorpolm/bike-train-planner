@@ -1,4 +1,5 @@
 import type { Timing } from "../realtime";
+import { timingStatus } from "../realtime";
 const clock = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Zurich",
   hour: "2-digit",
@@ -17,22 +18,12 @@ export default function TransitTime({ timing }: { timing: Timing }) {
         }).format(timing.at)}
       </time>
       <small>
-        {timing.cancelled ? (
-          "Cancelled · original time"
-        ) : timing.undefinedDelay ? (
-          "Delay duration unknown"
-        ) : timing.basis === "planned" ? (
-          "Planned movement"
-        ) : timing.basis === "scheduled" ? (
-          "No live estimate · timetable"
-        ) : (
-          <>
-            {timing.scheduled && `Scheduled ${clock.format(timing.scheduled)} · `}
-            {(timing.delayMinutes ?? 0) >= 0 ? "+" : ""}
-            {timing.delayMinutes} min
-          </>
-        )}
+        {timingStatus(timing)}
+        {timing.basis === "estimated" &&
+          timing.scheduled &&
+          ` · Scheduled ${clock.format(timing.scheduled)}`}
         {timing.basis !== "planned" && timing.freshness === "stale" && " · out of date"}
+        {timing.refreshFailed && " · last live check failed"}
         {timing.basis === "estimated" && timing.freshness === "fresh" && " · fresh estimate"}
         {timing.checkedAt &&
           Number.isFinite(Date.parse(timing.checkedAt)) &&

@@ -795,3 +795,16 @@ The original report's large fixture was unavailable. Use committed deterministic
 ## 11 October 2026 — Shared quotas and evidence-led data correction
 
 Use shared D1 admission for actual OJP/OJP Fare calls; preserve owner-private access. Maintain dated compact GTFS indexes through public catalogue downloads and a bounded scheduled workflow. Separate bike-pass, GA and reservation coverage. Reviewed standard tariffs outrank integration quotes; unknown permissions remain unknown unless exact dated evidence or narrowly reviewed policies apply. Published Swiss cycling-route sections remain a bounded design proposal. [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md)
+
+
+## 1 November 2026 — Specific bicycle requirements and live-time labels
+
+**Authorization:** Apply the agreed bicycle-symbol/reservation and live-status changes and update Re.route.
+
+**Decision:** Treat explicit ordinary-bike provision as positive evidence, subject to exact-section restrictions and bike-profile compatibility. Keep required reservations, no reservation needed, missing requirements and contradictory requirements distinct. Use exact OJP service details and scoped published rules before leaving a particular question unresolved; never infer permission or an exemption just from an absent symbol. Generic passenger-seat R is separate from bicycle R.
+
+**Timing:** Display On time only for a fresh estimate equal to the scheduled event, Delayed by N min for a positive difference, early departures explicitly, and scheduled/stale/failed/indefinite/cancelled states separately. Departure and arrival have independent status; sub-minute delay is not rounded to On time.
+
+**Delivery:** Owner-private version 76, Site source `302142d519b0d292e00613a7c98f03bf40a5a5dc`. Recovered deployed version 75 source `cfe9bfa1b6681d4c802a125348c77fd243a021f9` and preserved its changes while synchronizing the application to main. Latest GitHub station-transfer data and paused notification triggers are retained. 702 JS tests, 16 Python tests, 61 rendered panels and production builds pass.
+
+**Limits:** No Formation API product key is configured, so separate formation retrieval remains pending. Positive provision interpretation is tested, but a newly observed production OJP VH field is not claimed. Browser preview infrastructure was unavailable. No claim of full SBB equivalence, capacity confirmation, booking or public access. [Evidence and next checks](BIKE_AND_LIVE_STATUS_2026-11-01.md).

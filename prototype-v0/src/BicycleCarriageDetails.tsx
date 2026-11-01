@@ -1,7 +1,10 @@
 import type { FareProfile } from "./fares";
 import InfoDisclosure from "./InfoDisclosure";
 import { useEffect, useRef, useState } from "react";
-import { carriageForLeg, withTripInfoRule } from "./bicycleCarriage";
+import { carriageForLeg, isBicycleAttribute } from "./bicycleCarriage";
+import { applyRealtimeService } from "./realtimeService";
+import { bicycleStatus } from "./bicycleStatus";
+import BicycleServiceStatus from "./ui/BicycleServiceStatus";
 import { checkOjpTripInfo } from "./ojpClient";
 import type { BicycleEvidence } from "./bicyclePermission";
 import type { OjpDetails } from "./ojp";
@@ -13,7 +16,7 @@ const requirement = (value: string) =>
     ? "Required"
     : value === "not-required"
       ? "Not required"
-      : "Unknown — check with the operator";
+      : "Ticket requirement not verified for this service";
 
 export default function BicycleCarriageDetails({
   leg,
@@ -53,8 +56,8 @@ export default function BicycleCarriageDetails({
         setDetail(result);
         setStatus("checked");
         const { leg: current, onEvidence: update } = latest.current;
-        if (current.bicycleEvidence)
-          update?.(current, withTripInfoRule(current.bicycleEvidence, result.rule, result.checked));
+        const evidence = applyRealtimeService(current, result).bicycleEvidence;
+        if (evidence) update?.(current, evidence);
       },
       () => {
         if (active) setStatus("failed");
@@ -66,15 +69,10 @@ export default function BicycleCarriageDetails({
     // The dated segment, rather than a freshly rendered object, identifies the request.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  const displayLeg =
-    detail && leg.bicycleEvidence
-      ? {
-          ...leg,
-          bicycleEvidence: withTripInfoRule(leg.bicycleEvidence, detail.rule, detail.checked),
-        }
-      : leg;
+  const displayLeg = detail ? applyRealtimeService(leg, detail) : leg;
   const rule = carriageForLeg(displayLeg, profile),
     prohibited = rule.permission === "prohibited";
+  const displayStatus = bicycleStatus(displayLeg, profile);
   const notes = [
     ...new Set(
       [
@@ -82,22 +80,15 @@ export default function BicycleCarriageDetails({
         ...(leg.bicycleAttributes ?? []),
         ...(detail?.rule.attributes ?? []),
       ]
-        .filter(
-          (a) => /^A__V[NRBICKT]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text),
-        )
+        .filter(isBicycleAttribute)
         .map((a) => a.text.trim())
         .filter(Boolean),
     ),
   ];
   return (
     <div className={`bicycle-carriage permission-${rule.permission}`}>
-      <strong>
-        {prohibited
-          ? "Bicycles not allowed"
-          : rule.permission === "confirmed"
-            ? "Bicycle access verified · conditions apply"
-            : "Bicycle permission unknown"}
-      </strong>
+      <BicycleServiceStatus leg={displayLeg} profile={profile} />
+      <p>{displayStatus.explanation}</p>
       <p className="carriage-source">
         {leg.service} · {leg.from} → {leg.to}
         {leg.departure &&
@@ -115,12 +106,6 @@ export default function BicycleCarriageDetails({
         </p>
       ) : (
         <>
-          {rule.permission === "confirmed" &&
-            (rule.bikeTicket === "unknown" || rule.bikeReservation === "unknown") && (
-              <p>
-                Permission is verified. Ticket or reservation details below still need confirmation.
-              </p>
-            )}
           <dl>
             <div>
               <dt>Bike ticket or pass</dt>
@@ -128,7 +113,7 @@ export default function BicycleCarriageDetails({
             </div>
             <div>
               <dt>Bike-space reservation</dt>
-              <dd>{requirement(rule.bikeReservation)}</dd>
+              <dd>{displayStatus.reservation}</dd>
             </div>
           </dl>
           {rule.bikeTicket === "required" && (
@@ -237,7 +222,7 @@ export default function BicycleCarriageDetails({
                     rule.bikeTicket !== "unknown" &&
                     rule.bikeReservation !== "unknown"
                   ? "Follow the published conditions above before boarding."
-                  : "Check the remaining unknown requirements with the operator before travelling."}
+                  : "The unresolved item is identified above; service details and applicable published rules are used when available."}
       </p>
     </div>
   );

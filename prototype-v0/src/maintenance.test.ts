@@ -4,21 +4,30 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
 import { createMaintenanceHandler,canaryAlert,MAX_SOURCE_CHECKS,type CanaryResult } from "../server/maintenanceHandler.ts";
 import { MONITORED_SOURCES, monitoredHealth } from "./monitoredSources.ts";
+import { parseOjpConnections } from "./ojp.ts";
 import type { QuotaDatabase } from "../server/apiQuota.ts";
 function database(){const sql=new DatabaseSync(":memory:");type S={sql:string;values:(string|number)[];bind(...values:(string|number)[]):S};return {sql,DB:{prepare(source:string):S{return {sql:source,values:[],bind(...values){this.values=values;return this;}};},async batch(ss:S[]){sql.exec("BEGIN IMMEDIATE");try{const r=ss.map(s=>({success:true,results:sql.prepare(s.sql).all(...s.values)}));sql.exec("COMMIT");return r;}catch(e){sql.exec("ROLLBACK");throw e;}}} as unknown as QuotaDatabase};}
 const original=readFileSync(new URL("./fixtures/ojp-2026-09-24/rail-off.xml",import.meta.url),"utf8");
 // Synthetic estimates exercise capture/parser semantics. A live fixture is captured only by the deployed canary.
 const xml=original.replace(/(<(?:\w+:)?TimetabledTime>)([^<]+)(<\/(?:\w+:)?TimetabledTime>)/g,"$1$2$3<EstimatedTime>$2</EstimatedTime>")
- .replace(/(<(?:\w+:)?ResponseTimestamp>)[^<]+/g,"$12026-10-12T08:30:00Z");
+ .replace(/(<(?:\w+:)?ResponseTimestamp>)[^<]+/g,"$12026-10-12T08:30:00Z").replaceAll("2026-09-25","2026-10-12");
+function infoResponse(body: string, trip = xml) {
+ const target=parseOjpConnections(trip,false).find(l=>l.reference&&body.includes(`<JourneyRef>${l.reference.journeyRef}</JourneyRef>`))!;
+ const r=target.reference!;
+ return `<OJP><OJPResponse><ServiceDelivery><OJPTripInfoDelivery><ResponseTimestamp>${target.realtime!.checkedAt}</ResponseTimestamp><TripInfoResult><Service><JourneyRef>${r.journeyRef}</JourneyRef><OperatingDayRef>${r.operatingDay}</OperatingDayRef></Service><OnwardCall><Order>1</Order><StopPointRef>${r.fromRef}</StopPointRef><ServiceDeparture><TimetabledTime>${r.departure}</TimetabledTime><EstimatedTime>${r.departure}</EstimatedTime></ServiceDeparture></OnwardCall><OnwardCall><Order>2</Order><StopPointRef>${r.toRef}</StopPointRef><ServiceArrival><TimetabledTime>${r.arrival}</TimetabledTime><EstimatedTime>${r.arrival}</EstimatedTime></ServiceArrival></OnwardCall></TripInfoResult></OJPTripInfoDelivery></ServiceDelivery></OJPResponse></OJP>`;
+}
 const request=()=>new Request("https://private.example/api/maintenance/check",{method:"POST",headers:{"X-Maintenance-Intent":"review"}});
 it("persists one daily canary across concurrent workers, respects quota and reads back raw evidence without credentials",async()=>{
  const {DB,sql}=database();let provider=0,sources=0,quota=0;const now=()=>new Date("2026-10-12T08:30:00Z");
- const fetcher:typeof fetch=async url=>{if(String(url).includes("ojp20")){provider++;return new Response(xml);}sources++;return String(url).includes("Downloads")||String(url).endsWith(".pdf")?new Response("%PDF-1.7 fixture",{headers:{"Content-Type":"application/pdf"}}):new Response("<html>Published tariff</html>",{headers:{"Content-Type":"text/html"}});};
+ const fetcher:typeof fetch=async (url,init)=>{if(String(url).includes("ojp20")){provider++;const body=String(init?.body);assert.match(body,/<UseRealtimeData>explanatory/);return new Response(body.includes("<OJPTripInfoRequest>")?infoResponse(body):xml);}sources++;return String(url).includes("Downloads")||String(url).endsWith(".pdf")?new Response("%PDF-1.7 fixture",{headers:{"Content-Type":"application/pdf"}}):new Response("<html>Published tariff</html>",{headers:{"Content-Type":"text/html"}});};
  const handlers=Array.from({length:8},()=>createMaintenanceHandler(fetcher,now,async()=>{quota++;}));
  const replies=await Promise.all(handlers.map(h=>h(request(),{DB,OJP_API_KEY:"fixture-secret"}).then(r=>r.json())));
- assert.equal(replies.filter(r=>r.status==="completed").length,1);assert.equal(provider,1);assert.equal(sources,MAX_SOURCE_CHECKS);assert.equal(quota,1);
+ assert.equal(replies.filter(r=>r.status==="completed").length,1);assert.equal(provider,2);assert.equal(sources,MAX_SOURCE_CHECKS);assert.equal(quota,2);
  const status=await handlers[0](new Request("https://private.example/api/maintenance/status"),{DB}).then(r=>r.json());
  assert.equal(status.history[0].status,"estimates-observed");assert.ok(status.history[0].parsedEstimates>0);assert.equal(status.history[0].fixtureSaved,true);
+ assert.equal(status.history[0].tripInfo.status,"estimates-observed");assert.equal(status.history[0].tripInfo.freshEstimates,2);
+ const metadata=await handlers[0](new Request("https://private.example/api/maintenance/fixture?kind=tripinfo&format=metadata"),{DB}).then(r=>r.json());
+ assert.equal(metadata.reference.journeyRef,status.history[0].tripInfo.reference.journeyRef);assert.equal(metadata.sha256.length,64);
  const fixture=await handlers[0](new Request("https://private.example/api/maintenance/fixture"),{DB}).then(r=>r.text());assert.equal(fixture,xml);
  assert.ok(!JSON.stringify(sql.prepare("SELECT * FROM maintenance_records").all()).includes("fixture-secret"));sql.close();
 });
@@ -32,7 +41,7 @@ it("reports retrieval failure without extending any expiry and rejects an implic
 it("rotates bounded source retrieval without starving unvisited sources and saves numbered line candidates",async()=>{
  const {DB,sql}=database(),visited=new Set<string>(),requests:string[]=[];let now=new Date("2026-10-12T08:30:00Z"),calls=0;
  const fetcher:typeof fetch=async(url,init)=>{
-  if(String(url).includes("ojp20")){requests.push(String(init?.body));return new Response(xml.replaceAll("2026-10-12T08:30:00Z",now.toISOString()));}
+  if(String(url).includes("ojp20")){const body=String(init?.body),trip=xml.replaceAll("2026-10-12",now.toISOString().slice(0,10));if(body.includes("<OJPTripInfoRequest>"))return new Response(infoResponse(body,trip));requests.push(body);return new Response(trip);}
   calls++;visited.add(String(url));const source=MONITORED_SOURCES.find(s=>s.url===String(url))!;
   return source.format==="pdf"?new Response("%PDF-1.7 fixture",{headers:{"Content-Type":"application/pdf"}}):source.format==="json"?Response.json({updated:"2026-10-04"}):new Response("<html>Published tariff</html>",{headers:{"Content-Type":"text/html"}});
  };
@@ -43,6 +52,8 @@ it("rotates bounded source retrieval without starving unvisited sources and save
   now=new Date(+now+86400000);
  }
  assert.equal(visited.size,MONITORED_SOURCES.length);assert.match(requests[0],/Zürich HB/);assert.match(requests[1],/Genève, Plainpalais/);
+ const originalFixture=await handler(new Request("https://private.example/api/maintenance/fixture"),{DB}).then(r=>r.text());assert.equal(originalFixture,xml);
+ const infoMetadata=await handler(new Request("https://private.example/api/maintenance/fixture?kind=tripinfo&format=metadata"),{DB}).then(r=>r.json());assert.equal(infoMetadata.checkedAt,"2026-10-12T08:30:00.000Z");
  const line=await handler(new Request("https://private.example/api/maintenance/sources/tpg-line-12"),{DB});assert.equal(line.status,200);
  assert.equal(line.headers.get("content-disposition"),'attachment; filename=tpg-line-12.html');
  const status=await handler(new Request("https://private.example/api/maintenance/status"),{DB}).then(r=>r.json());

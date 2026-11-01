@@ -21,8 +21,8 @@ export function journeyDataReport(journey: Journey, profile: FareProfile, quote?
       departureTransfer: leg.stationDeparture ? { status: leg.stationDeparture.status, feed: leg.stationDeparture.feed, reason: leg.stationDeparture.reason } : null,
       realtime: leg.realtime, departureTiming:departureTiming(leg), arrivalTiming:arrivalTiming(leg) };
   });
-  return { format: "re.route-data-report-v2", feasibility:journey.realtimeStatus??null, recovery:journey.recovery??null, created: new Date().toISOString(), profile: { ...profile }, takeBikeOnTransit,
-    fare: { passenger:fare.passengerPrice, bicycle:fare.bicyclePrice, reservation:fare.reservationPrice, total:fare.totalPrice, passengerChf: fare.passengerChf, bikeChf: fare.bikeChf, reservationChf: fare.reservationChf, totalChf: fare.totalChf,
+  return { format: "re.route-data-report-v3", feasibility:journey.realtimeStatus??null, recovery:journey.recovery??null, created: new Date().toISOString(), profile: { ...profile }, takeBikeOnTransit,
+    fare: { passenger:fare.passengerPrice, bicycle:fare.bicyclePrice, reservation:fare.reservationPrice, total:fare.totalPrice,
       bikeProduct: fare.bikeProduct, estimated: fare.estimated, published: fare.published, localGuidance:fare.localGuidance, online: quote ?? null }, services,
     cycling: journey.transitLegs.filter(l => l.cyclingRoute).map(l => ({ from: l.from, to: l.to, estimatedMinutes: l.cyclingRoute!.minutes,
       distanceKm: l.cyclingRoute!.distanceKm })),

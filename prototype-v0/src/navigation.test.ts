@@ -223,8 +223,16 @@ it("recovers from an explicitly confirmed boarding stop with consumed budgets an
  assert.equal(next.origin.label,"B");assert.equal(next.options.maxBikeMinutes,80);assert.equal(next.options.maxAccessMinutes,50);
  assert.deepEqual(next.options.fareProfile,trip.options.fareProfile);assert.deepEqual(next.waypoints,[]);
  assert.equal(next.recovery.completed.length,1);assert.equal(next.recovery.originalPriceReusable,false);assert.equal(JSON.stringify(trip),before);
+ assert.equal(next.options.horizonMinutes,trip.options.horizonMinutes);
  assert.throws(()=>confirmedOnwardRequest(trip,1,true,now+86400000),/another day/);
  trip.options.takeBikeOnTransit=false;trip.options.cyclingPosition="start-only";
  assert.equal(confirmedOnwardRequest(trip,1,true,now).options.walkingOnly,true);
  trip.options.cyclingPosition="end-only";assert.throws(()=>confirmedOnwardRequest(trip,1,true,now),/bicycle/);
+});
+it("bounds recovery by imminent boarding rather than excluding onward journeys longer than two hours",()=>{
+ const trip=mixed(),stage=trip.stages[1];
+ stage.leg={...stage.leg!,departure:new Date(now+120*60000),arrival:new Date(now+360*60000)};
+ assert.equal(confirmedOnwardRequest(trip,1,true,now).options.horizonMinutes,DEFAULT_OPTIONS.horizonMinutes);
+ stage.leg.departure=new Date(now+120*60000+1);
+ assert.throws(()=>confirmedOnwardRequest(trip,1,true,now),/within two hours/);
 });

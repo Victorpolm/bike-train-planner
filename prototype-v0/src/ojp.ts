@@ -29,7 +29,7 @@ const text = (value: unknown): string => typeof value === "string" ? value : val
   ? text((value as Xml)["#text"] ?? (value as Xml).Text) : "";
 const instant = (value: unknown) => { const s = text(value); return s && Number.isFinite(Date.parse(s)) ? new Date(s).toISOString() : null; };
 const attributes = (node: Xml | undefined, scope: BicycleAttribute["scope"]): BicycleAttribute[] => list<Xml>(node?.Attribute)
-  .map(a => ({ code: text(a.Code), text: text(a.UserText), scope }));
+  .map(a => ({ code: text(a.Code), text: text(a.UserText ?? a.Text), scope }));
 
 function delivery(xml: string, kind: "OJPTripDelivery" | "OJPTripInfoDelivery"): Xml {
   if (xml.length > 8_000_000 || /<!DOCTYPE|<!ENTITY/i.test(xml) || XMLValidator.validate(xml) !== true) throw new Error("Invalid OJP response");

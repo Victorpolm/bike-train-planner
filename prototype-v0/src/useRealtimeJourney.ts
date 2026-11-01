@@ -2,7 +2,7 @@ import { StationTransferClient } from "./stationTransferClient.ts";
 import { emptyNetwork } from "./model.ts";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { checkOjpTripInfo } from "./ojpClient.ts";
-import { platformChanged, realtimeKey, type TransitRealtime } from "./realtime.ts";
+import { failedRealtimeRefresh, platformChanged, realtimeKey, type TransitRealtime } from "./realtime.ts";
 import { realtimeJourney, type RealtimePlatforms } from "./realtimeJourney.ts";
 import { applyRealtimeService } from "./realtimeService.ts";
 import type { TravelProfile } from "./travelProfile.ts";
@@ -46,7 +46,11 @@ export function useRealtimeJourney(journey: Journey | null, enabled: boolean, bo
             if (!disposed) setState(old => ({ ...old, key, updates: new Map(old.updates).set(realtimeKey(leg), details.realtime!),
               platforms: new Map(old.platforms).set(realtimeKey(leg), { stationArrival: updated.stationArrival, stationDeparture: updated.stationDeparture,
                 bicycleEvidence: updated.bicycleEvidence, bicycleAttributes: updated.bicycleAttributes }), now: Date.now() }));
-          } catch { if (!disposed) failed = true; }
+          } catch { if (!disposed) {
+            failed = true;
+            setState(old => ({ ...old, updates: new Map(old.updates).set(realtimeKey(leg),
+              failedRealtimeRefresh(old.updates.get(realtimeKey(leg)) ?? leg.realtime)), now: Date.now() }));
+          } }
         }
       };
       await Promise.all([worker(), worker()]);

@@ -1,11 +1,10 @@
 import { MONITORED_SOURCES, monitoredHealth } from "../src/monitoredSources.ts";
-import { realtimeStale } from "../src/realtime.ts";
-import { ojpTripRequest, parseOjpConnections } from "../src/ojp.ts";
+import { runLiveCanary, type CanaryResult, type LiveFixture } from "./liveCanary.ts";
+export type { CanaryResult } from "./liveCanary.ts";
 import { claimApiCall, type QuotaGate, type QuotaDatabase } from "./apiQuota.ts";
 import type { OjpEnvironment } from "./ojpHandler.ts";
 
 type RecordRow = { key: string; payload: string; checked: string };
-export type CanaryResult = { day:string; checkedAt:string; status:"estimates-observed"|"no-estimates"|"error"; services:number; estimatedTimes:number; parsedEstimates:number; fixtureSaved:boolean; reason?:string; corridor?:string; operators?:string[]; freshEstimatedServices?:number };
 type SourceCheck = { id:string; url:string; checkedAt:string; status:"pending"|"baseline"|"unchanged"|"changed"|"error"; sha256?:string; previousHash?:string; bytes?:number; candidateSaved?:boolean; contentType?:string; reason?:string };
 const DAY=86400000;
 export const MAX_SOURCE_CHECKS=8;
@@ -44,14 +43,24 @@ const base64=(bytes:Uint8Array)=>{let raw="";for(let i=0;i<bytes.length;i+=8192)
 async function initialize(db:QuotaDatabase){await db.batch([db.prepare("CREATE TABLE IF NOT EXISTS maintenance_records(key TEXT PRIMARY KEY,payload TEXT NOT NULL,checked TEXT NOT NULL)")]);}
 async function read<T>(db:QuotaDatabase,key:string):Promise<T|null>{const r=await db.batch<RecordRow>([db.prepare("SELECT key,payload,checked FROM maintenance_records WHERE key=?1").bind(key)]);if(!r[0]?.success)throw new Error("Monitor storage unavailable");return r[0].results[0]?JSON.parse(r[0].results[0].payload) as T:null;}
 const write=(db:QuotaDatabase,key:string,data:unknown,checked:string)=>db.prepare("INSERT INTO maintenance_records(key,payload,checked) VALUES(?1,?2,?3) ON CONFLICT(key) DO UPDATE SET payload=excluded.payload,checked=excluded.checked").bind(key,JSON.stringify(data),checked);
-export function canaryAlert(history:CanaryResult[],now=new Date()) {
+function observationAlert(history: Pick<CanaryResult, "day" | "status">[],now:Date) {
  const weekdays=history.filter(r=>![0,6].includes(new Date(r.day+"T12:00:00Z").getUTCDay())).sort((a,b)=>b.day.localeCompare(a.day));
  const expected:string[]=[];const cursor=new Date(dayOf(now)+"T12:00:00Z");
  // Only completed weekdays count; today's run may not yet have happened.
  for(let i=0;expected.length<5&&i<9;i++){cursor.setUTCDate(cursor.getUTCDate()-1);if(![0,6].includes(cursor.getUTCDay()))expected.push(cursor.toISOString().slice(0,10));}
  const noEstimates=expected.every(day=>weekdays.some(r=>r.day===day&&r.status==="no-estimates")) || weekdays.length>=5 && weekdays.slice(0,5).every(r=>r.status==="no-estimates") && weekdays.slice(0,5).map(r=>r.day).join() === [dayOf(now),...expected.slice(0,4)].join();
  const newest=weekdays[0];
- return {state:noEstimates?"attention":!newest||Date.parse(dayOf(now))-Date.parse(newest.day)>4*DAY?"stale":newest.status==="error"?"error":"observing",reason:noEstimates?"Five consecutive weekday samples contained no fresh parsed estimates. Investigate the sampled corridors and provider; this does not prove an outage.":!newest?"No weekday canary has run yet.":"Rotating corridor samples are diagnostic, not a guarantee of live coverage on your journey."};
+ return {state:noEstimates?"attention":!newest||Date.parse(dayOf(now))-Date.parse(newest.day)>4*DAY?"stale":newest.status==="error"?"error":"observing",reason:noEstimates?"Five consecutive weekday samples contained no fresh parsed estimates. Investigate the sampled corridors and provider; this does not prove an outage.":!newest?"No weekday canary has run yet.":newest.status==="error"?"The most recent weekday request or parser check failed. Inspect the recorded sample.":"Rotating corridor samples are diagnostic, not a guarantee of live coverage on your journey."};
+}
+export function canaryAlert(history:CanaryResult[],now=new Date()) {
+ const tripRequest=observationAlert(history,now);
+ const checked=history.filter(r=>r.tripInfo).map(r=>({day:r.day,status:r.tripInfo!.status}));
+ const tripInfo=observationAlert(checked,now);
+ const attention=[tripRequest,tripInfo].find(r=>r.state==="error")??[tripRequest,tripInfo].find(r=>r.state==="attention");
+ return {state:attention?.state??(tripRequest.state==="stale"?"stale":tripInfo.state==="stale"?"partial":"observing"),
+  reason:attention?(tripInfo===attention?"TripInfo: ":"TripRequest: ")+attention.reason
+   :tripInfo.state==="stale"?"Selected-journey TripInfo refresh has no recent weekday observation. Search results alone do not verify this path.":tripRequest.reason,
+  tripRequest,tripInfo};
 }
 /** Private, owner-scoped Site. Never enable this writer on a public/shared deployment without adding server-side writer authorization. */
 export function createMaintenanceHandler(fetcher:typeof fetch=fetch,clock=()=>new Date(),quota:QuotaGate=claimApiCall) {
@@ -65,8 +74,12 @@ export function createMaintenanceHandler(fetcher:typeof fetch=fetch,clock=()=>ne
     return json({checkedAt:latest?.checkedAt??null,sourceChecks:latest?.sources??[],canary:canaryAlert(history,now),history,tariffs:monitoredHealth(now),sourceCheckStale:!latest||+now-Date.parse(latest.checkedAt)>4*DAY,policy:"At most eight due sources per run, oldest first; checks become due daily near renewal. Changed documents are candidates for review. Published prices and validity dates are never extended automatically."});
    }
    if(path==="/api/maintenance/fixture"&&request.method==="GET") {
-    const fixture=await read<{xml:string;checkedAt:string}>(db,"fixture");
-    return fixture?new Response(fixture.xml,{headers:{"Content-Type":"application/xml","Content-Disposition":"attachment; filename=ojp-live-estimates.xml","Cache-Control":"no-store"}}):json({error:"No raw live-estimate fixture has been captured yet."},404);
+    const kind=url.searchParams.get("kind")??"triprequest";
+    if(!["triprequest","tripinfo"].includes(kind))return json({error:"Choose triprequest or tripinfo."},400);
+    const fixture=await read<LiveFixture>(db,kind==="tripinfo"?"fixture:tripinfo":"fixture");
+    if(!fixture)return json({error:"No verified live-estimate fixture has been captured for this request type yet."},404);
+    if(url.searchParams.get("format")==="metadata")return json({kind,checkedAt:fixture.checkedAt,reference:fixture.reference??null,sha256:await hash(new TextEncoder().encode(fixture.xml))});
+    return new Response(fixture.xml,{headers:{"Content-Type":"application/xml","Content-Disposition":`attachment; filename=ojp-${kind}-live-estimates.xml`,"Cache-Control":"no-store"}});
    }
    const sourceId=path.match(/^\/api\/maintenance\/sources\/([a-z0-9-]+)$/)?.[1];
    if(sourceId&&request.method==="GET"&&MONITORED_SOURCES.some(s=>s.id===sourceId)) {
@@ -83,24 +96,16 @@ export function createMaintenanceHandler(fetcher:typeof fetch=fetch,clock=()=>ne
    const oldHistory=await read<CanaryResult[]>(db,"canary-history")??[],writes:ReturnType<QuotaDatabase["prepare"]>[]=[];
    const weekday=new Date(day+"T12:00:00Z").getUTCDay();
    const corridor=CANARY_CORRIDORS[weekday>=1&&weekday<=5?weekday-1:0];
-   const canary:CanaryResult={day,checkedAt,status:"error",services:0,estimatedTimes:0,parsedEstimates:0,fixtureSaved:false,corridor:corridor.name,operators:[],freshEstimatedServices:0};
    const key=env.OJP_API_KEY?.trim().replace(/^Bearer\s+/i,"").trim();
-   try {
-    if(!key)throw new Error("Provider not configured");
-    const signal=AbortSignal.timeout(20000);await quota(env,key,signal);
-    const xmlRequest=ojpTripRequest({from:corridor.from,to:corridor.to,departure:checkedAt},false,checkedAt);
-    const response=await fetcher("https://api.opentransportdata.swiss/ojp20",{method:"POST",redirect:"manual",signal,headers:{Authorization:"Bearer "+key,"Content-Type":"application/xml",Accept:"application/xml"},body:xmlRequest});
-    const raw=new TextDecoder().decode(await bounded(response,2000000,signal)).split(key).join("[REDACTED]");
-    const legs=parseOjpConnections(raw,false).filter(l=>l.mode==="transit");canary.services=legs.length;
-    canary.estimatedTimes=(raw.match(/<(?:[\w-]+:)?EstimatedTime(?:\s[^>]*)?>/g)??[]).length;
-    canary.parsedEstimates=legs.filter(l=>l.realtime?.estimatedDeparture||l.realtime?.estimatedArrival).length;
-    canary.freshEstimatedServices=legs.filter(l=>l.realtime&&!realtimeStale(l.realtime,+now)&&(l.realtime.estimatedDeparture||l.realtime.estimatedArrival)).length;
-    canary.operators=[...new Set(legs.map(l=>l.operator).filter((s):s is string=>!!s))];
-    if(!legs.length)throw new Error("No parsed services");
-    canary.status=canary.freshEstimatedServices>0?"estimates-observed":"no-estimates";
-    if(canary.estimatedTimes>0&&!canary.freshEstimatedServices)canary.reason="Estimate elements were present, but none parsed with a fresh provider timestamp.";
-    if(canary.estimatedTimes>0&&raw.length<=600000){writes.push(write(db,"fixture",{xml:raw,checkedAt},checkedAt));canary.fixtureSaved=true;}
-   }catch {canary.reason="Canary request or parsing failed. Check provider configuration, quota and service availability; no secret or upstream diagnostic is retained.";}
+   const observed=await runLiveCanary({from:corridor.from,to:corridor.to,departure:checkedAt},fetcher,now,key??"",signal=>quota(env,key??"",signal));
+   const canary={...observed.sample,corridor:corridor.name};
+   // Preserve the first verified response rather than overwriting the regression
+   // evidence with each run. The live history records subsequent observations.
+   for(const [record,candidate] of [["fixture",observed.tripFixture],["fixture:tripinfo",observed.infoFixture]] as const) {
+    if(candidate)writes.push(db.prepare("INSERT INTO maintenance_records(key,payload,checked) VALUES(?1,?2,?3) ON CONFLICT(key) DO NOTHING").bind(record,JSON.stringify(candidate),checkedAt));
+    const retained=!!candidate||!!await read<LiveFixture>(db,record);
+    if(record==="fixture")canary.fixtureSaved=retained;else if(canary.tripInfo)canary.tripInfo.fixtureSaved=retained;
+   }
    const previous=await read<{sources:SourceCheck[]}>(db,"latest");
    const states=MONITORED_SOURCES.map(source=>({source,prior:previous?.sources.find(s=>s.id===source.id)}));
    const due=states.filter(({source,prior})=>{

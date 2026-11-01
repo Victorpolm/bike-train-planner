@@ -1,4 +1,5 @@
 import TransitTime from "./ui/TransitTime";
+import BicycleServiceStatus from "./ui/BicycleServiceStatus";
 import { departureTiming, arrivalTiming, type Timing } from "./realtime";
 import { arrivalTime, effectivePlatform, realtimeStale, type TransitRealtime } from "./realtime";
 import type { RealtimeJourneyState } from "./useRealtimeJourney";
@@ -154,7 +155,7 @@ export default function JourneyPlan({
                       : leg.realtime?.estimatedDeparture || leg.realtime?.estimatedArrival
                         ? "Provider estimates shown"
                         : "No live time estimate supplied; timetable shown"}
-                  {leg.realtime && (
+                  {leg.realtime && Number.isFinite(Date.parse(leg.realtime.checkedAt)) && (
                     <>
                       {" "}
                       · checked {clock.format(new Date(leg.realtime.checkedAt))}
@@ -165,6 +166,11 @@ export default function JourneyPlan({
               )}
               {extraServiceName && <p className="plan-service">Service {leg.serviceName}</p>}
               {leg?.operator && <p className="plan-service">Operator {leg.operator}</p>}
+              {takeBikeOnTransit && leg?.mode === "transit" && (
+                <p>
+                  <BicycleServiceStatus leg={leg} profile={fareProfile} />
+                </p>
+              )}
               <div className="plan-stop">
                 <TransitTime
                   timing={
@@ -333,7 +339,7 @@ export default function JourneyPlan({
                   {leg.service} · {leg.from} → {leg.to}
                 </h4>
                 <p>
-                  {leg.departure && clock.format(leg.departure)} ·{" "}
+                  <TransitTime timing={departureTiming(leg, realtime?.now)} /> ·{" "}
                   {leg.operator ?? "Operator not supplied"}
                 </p>
                 <BicycleCarriageDetails profile={fareProfile} leg={leg} onEvidence={onEvidence} />
@@ -344,9 +350,9 @@ export default function JourneyPlan({
       <FareDetails journey={journey} profile={fareProfile} takeBikeOnTransit={takeBikeOnTransit} />
       <InfoDisclosure label="Journey guidance">
         <p className="plan-caution">
-          Bicycle guidance covers a standard, unfolded bicycle. Check uncertain departures with the
-          operator. Permission does not guarantee space or make a reservation; this app does not
-          book bicycle spaces. Times and platforms come from the timetable service.
+          Bicycle guidance uses your saved bicycle and traveller profile. Check uncertain departures
+          with the operator. Permission does not guarantee space or make a reservation; this app
+          does not book bicycle spaces. Times and platforms come from the timetable service.
         </p>
       </InfoDisclosure>
     </section>

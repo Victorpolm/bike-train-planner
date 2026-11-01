@@ -308,3 +308,8 @@ button:disabled { cursor: default; opacity: .55; }
 .privacy-table th, .privacy-table td { text-align: left; vertical-align: top; border-bottom: 1px solid #d4ded7; padding: .6rem; }
 .privacy-table td:first-child { width: 30%; }
 @media (max-width: 500px) { .privacy-link { max-width: 100px; line-height: 1.25; } }
+.bicycle-service-status { display: inline-flex; align-items: center; gap: .5rem; line-height: 1.45; }
+.bicycle-service-status svg { flex: 0 0 40px; }
+.bicycle-service-allowed { color: #155a41; }
+.bicycle-service-reservation, .bicycle-service-unverified { color: #755008; }
+.bicycle-service-prohibited { color: #9b2525; }

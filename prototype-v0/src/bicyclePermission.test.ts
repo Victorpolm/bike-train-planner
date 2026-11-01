@@ -207,7 +207,7 @@ it("keeps allowed services verified when ticket or reservation requirements are 
     leg.bicycleEvidence!.prerequisites = { bikeTicket: "unknown", bikeReservation: "unknown" };
     assert.equal(carriageForLeg(leg).permission, "confirmed");
     assert.equal(carriageForLeg(leg).bikeReservation, "unknown");
-    assert.match(bicycleJourneySummary([leg])!, /access verified on every transit leg/);
+    assert.match(bicycleJourneySummary([leg])!, /Bikes allowed on every transit leg/);
     assert.equal(bicycleLegAllowed(leg, "include-unknown", "confirmed"), true);
   }
 });
@@ -230,5 +230,5 @@ it("applies reviewed bus and tram permission while preserving explicit bans and 
   assert.equal(bicyclePermission({ ...unknown, operator: "VBZ", category: "EV" }), "uncertain");
   const known = { ...unknown, operator: "VBZ", service: "B 5" };
   assert.equal(carriageForLeg(known).bikeTicket, "required");
-  assert.match(bicycleJourneySummary([known, unknown])!, new RegExp(`1 of 2 services verified · access unknown on ${unknown.service}`));
+  assert.match(bicycleJourneySummary([known, unknown])!, new RegExp(`1 of 2 services verified · bicycle information incomplete on ${unknown.service}`));
 });

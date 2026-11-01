@@ -36,14 +36,14 @@ export default function OnwardRecovery({
     setConfirmed(false);
     setMessage("");
   }
-  async function search() {
+  async function search(atStop = confirmed) {
     controller.current?.abort();
     const abort = new AbortController();
     controller.current = abort;
     setResult(null);
     setBusy(true);
     try {
-      const request = confirmedOnwardRequest(nav, stage, confirmed);
+      const request = confirmedOnwardRequest(nav, stage, atStop);
       setMessage("Finding up to three onward options within your remaining limits…");
       const session = await plan(
         request.origin,
@@ -88,7 +88,8 @@ export default function OnwardRecovery({
       <h3>Find an onward connection</h3>
       <p>
         Choose where you are now. Completed riding, boardings, bicycle placement and remaining stops
-        stay part of the journey limits. New tickets may be needed.
+        stay part of the journey limits. Confirming your stop starts one search for up to three
+        options. New tickets may be needed.
       </p>
       <label>
         Current boarding stop
@@ -120,12 +121,13 @@ export default function OnwardRecovery({
             setBusy(false);
             setResult(null);
             setConfirmed(e.target.checked);
+            if (e.target.checked) void search(true);
           }}
         />
         I am at this stop, off the vehicle, and have completed the preceding sections.
       </label>
       <button type="button" disabled={disabled || busy || !confirmed} onClick={() => void search()}>
-        Find onward options
+        {result ? "Refresh onward options" : "Find onward options"}
       </button>
       {busy && (
         <button type="button" onClick={reset}>

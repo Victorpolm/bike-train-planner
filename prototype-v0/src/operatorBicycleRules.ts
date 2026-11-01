@@ -142,7 +142,7 @@ export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null
   // Missing regional geography must not create an overbroad permission default.
   const possiblePeakRestriction = ["S", "RE"].includes(category) && overlapsRegionalPeak(leg);
   return { permission: possiblePeakRestriction ? "unknown" : "allowed", ticket: "required",
-    reservation: sbbIcReservation(leg), source: { ...SBB_IR_BICYCLES, title: "SBB bicycle carriage and reservation calendar", checked: "2026-09-27" },
+    reservation: sbbIcReservation(leg), source: { ...SBB_IR_BICYCLES, title: "SBB bicycle carriage and reservation calendar", checked: "2026-11-01" },
     instructions: ["Carry a bicycle ticket or pass as well as your passenger ticket or travelcard. Your adult GA does not include bicycle carriage.",
       "Load and unload the bicycle yourself. Use the marked bicycle area, remove bulky luggage and keep doors clear.",
       ...(possiblePeakRestriction ? [regionalBicycleWindow(leg).label + ": limited weekday bicycle carriage in the morning and 16:00–19:00. Missing dated permission remains unknown, not prohibited."] : []),

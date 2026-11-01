@@ -1,9 +1,12 @@
 import assert from "node:assert/strict";
 import { it } from "node:test";
-import { parseOjpDetails, ojpTripInfoRequest, ojpTripRequest, type OjpReference } from "./ojp.ts";
-import { arrivalTime, departureTime, effectivePlatform, realtimeKey, realtimeStale, type TransitRealtime } from "./realtime.ts";
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { parseOjpConnections, parseOjpDetails, ojpTripInfoRequest, ojpTripRequest, type OjpReference } from "./ojp.ts";
+import { arrivalTime, departureTime, departureTiming, arrivalTiming, failedRealtimeRefresh, effectivePlatform, realtimeKey, realtimeStale, type TransitRealtime } from "./realtime.ts";
 import { realtimeJourney } from "./realtimeJourney.ts";
 import { applyRealtimeService } from "./realtimeService.ts";
+import { addOjpConnections } from "./ojpClient.ts";
 import { carriageForLeg } from "./bicycleCarriage.ts";
 import { DEFAULT_OPTIONS, emptyNetwork, solve } from "./model.ts";
 import { solveWaypoints } from "./waypoints.ts";
@@ -34,6 +37,26 @@ it("requests explanatory realtime and retains scheduled exact-segment identity",
   assert.throws(() => parseOjpDetails(xml(), { ...ref, operatingDay: "2026-10-10" }), /mismatch/);
   assert.throws(() => parseOjpDetails(xml(), { ...ref, departure: time(11).toISOString() }), /segment/);
 });
+it("parses the retained real explanatory OJP response at its recorded check time",()=>{
+ const raw=readFileSync(new URL("./fixtures/ojp-live-2026-10-11/trip.xml",import.meta.url),"utf8");
+ assert.equal(createHash("sha256").update(raw).digest("hex"),"380fc6480b9321402f11513155dc5c0a249222b2341b002fa7c9190f4c1971a7");
+ assert.equal((raw.match(/<(?:[\w-]+:)?EstimatedTime>/g)??[]).length,34);
+ const legs=parseOjpConnections(raw,false).filter(l=>l.mode==="transit");
+ assert.equal(legs.filter(l=>l.realtime?.estimatedDeparture||l.realtime?.estimatedArrival).length,7);
+ assert.ok(legs.every(l=>l.realtime&&!realtimeStale(l.realtime,Date.parse("2026-10-11T19:28:17Z"))));
+ assert.ok(legs.some(l=>l.realtime?.estimatedDeparture!==l.departure||l.realtime?.estimatedArrival!==l.arrival));
+});
+it("replays the real IC8 TripInfo response through selected-journey refresh without changing scheduled identity",()=>{
+ const record=JSON.parse(readFileSync(new URL("./fixtures/ojp-live-2026-10-13/tripinfo.json",import.meta.url),"utf8"));
+ const network=emptyNetwork();addOjpConnections(network,{legs:[record.leg],checked:record.checked,warnings:record.warnings});
+ const before=[...network.edges.values()][0].leg,ref=before.ojp;
+ const after=applyRealtimeService(before,record.tripInfo);
+ assert.equal(after.ojp,ref);assert.equal(after.departure,before.departure);assert.equal(after.arrival,before.arrival);
+ assert.equal(after.realtime!.estimatedDeparture,"2026-10-13T21:01:36.000Z");
+ assert.equal(after.realtime!.estimatedArrival,"2026-10-13T22:02:30.000Z");
+ assert.equal(departureTiming(after,Date.parse(record.tripInfo.checked)).freshness,"fresh");
+ assert.equal(arrivalTiming(after,Date.parse(record.tripInfo.checked)).basis,"estimated");
+});
 it("distinguishes cancellation, skipped boarding, unknown delay and absent estimates from on-time", () => {
   assert.equal(parseOjpDetails(xml("<Cancelled>true</Cancelled><UndefinedDelay>true</UndefinedDelay>"), ref).realtime!.cancelled, true);
   const skipped = parseOjpDetails(xml("", "", "", "<NotServicedStop>true</NotServicedStop>"), ref).realtime!;
@@ -45,6 +68,25 @@ it("never calls estimates fresh when the provider omitted its response timestamp
  const details=parseOjpDetails(xml().replace(`<ResponseTimestamp>${stamp}</ResponseTimestamp>`,""),ref);
  assert.equal(details.realtime!.providerTimestampVerified,false);
  assert.equal(realtimeStale(details.realtime!,Date.parse(details.realtime!.checkedAt)),true);
+});
+it("retains the last provider time after a failed refresh while immediately withdrawing freshness",()=>{
+ const original=update(5),failed=failedRealtimeRefresh(original,time(1).toISOString());
+ assert.equal(failed.checkedAt,stamp);assert.equal(failed.estimatedArrival,original.estimatedArrival);
+ assert.equal(realtimeStale(failed,+time(1)),true);assert.equal(realtimeStale(original,+time(1)),false);
+ const leg=fixture().network.edges.get("first")!.leg;leg.realtime=failed;
+ assert.equal(departureTiming(leg,+time(1)).refreshFailed,true);
+ assert.equal(departureTiming(leg,+time(1)).freshness,"stale");
+ assert.equal(failedRealtimeRefresh(undefined).estimatedArrival,null);
+});
+it("shows scheduled context rather than a usable prediction for cancelled or indefinite-delay services",()=>{
+ const leg=fixture().network.edges.get("first")!.leg;
+ for(const override of [{cancelled:true},{undefinedDelay:true}]){
+  leg.realtime={...update(5),...override};
+  assert.equal(+departureTiming(leg,+time(1)).at!,+leg.departure!);
+  assert.equal(+arrivalTiming(leg,+time(1)).at!,+leg.arrival!);
+  assert.equal(departureTiming(leg,+time(1)).basis,"scheduled");
+  assert.equal(departureTiming(leg,+time(1)).delayMinutes,undefined);
+ }
 });
 it("refreshes bicycle restrictions and reservation requirements on the selected dated service",()=>{
  const f=fixture(),raw=solve(f.network,f.origin,f.destination,time(0),f.options,"baseline").journeys[0];

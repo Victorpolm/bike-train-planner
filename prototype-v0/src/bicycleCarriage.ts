@@ -27,17 +27,27 @@ const SBB_BICYCLES = {
   checked: "2026-09-24",
 };
 
-// Only these reviewed service codes and the observed, explicit no-reservation
-// sentence establish a rule. Dynamic I_* codes alone never establish permission.
+// Exact service codes and complete explicit sentences only. A generic R is a
+// passenger reservation; missing symbols and conditional prose are not exemptions.
+export const isBicycleAttribute = (a: BicycleAttribute) => /^A__V[HNRBICKT]$/.test(a.code) || /velo|bicycl|bike|fahrr|vélo|biciclett/i.test(a.text);
+const wording = (s: string) => normalized(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.!]$/, "");
+const noReservationText = /^(?:bicycles?: (?:no reservation required|carriage (?:possible |permitted )?without reservation)|velos?: (?:reservation non obligatoire|sans reservation)|velos?: (?:keine reservation erforderlich|mitnahme ohne reservation moglich)|biciclette: (?:prenotazione non obbligatoria|trasporto senza prenotazione))$/;
+const requiredText = /^(?:bicycles?: reservation (?:required|compulsory|mandatory)|velos?: reservation obligatoire|velos?: reservierung obligatorisch|biciclette: prenotazione obbligatoria)$/;
+const allowedText = /^(?:bicycles?: carriage (?:permitted|possible)|bicycles? (?:allowed|permitted)|velos?: transport (?:autorise|possible)|velos?: mitnahme moglich|biciclette: trasporto (?:consentito|possibile))$/;
+const observedNoReservation = new Set([
+  "die mitnahme von velos ist ohne reservation moglich, sofern genugend mitnahmeplatze vorhanden sind",
+  "die mitnahme von velos ist ohne reservation moglich, sofern genugend mitnahmeplatze in den eingesetzten fahrzeugen zur verfugung stehen. eine mitnahmegarantie besteht nicht",
+]);
 export function interpretBicycleAttributes(attributes: BicycleAttribute[], filtered = false): CarriageRule {
-  const relevant = attributes.filter(a => /^A__V[NRBICKT]$/.test(a.code) || /velo|bicycl|fahrr|vélo|biciclett/i.test(a.text));
+  const relevant = attributes.filter(isBicycleAttribute);
   const prohibited = relevant.some(a => a.code === "A__VN" || /^(velos?: keine beförderung möglich|bicycles?: carriage (?:prohibited|not possible)|v[ée]los?: transport (?:impossible|interdit)|biciclette: trasporto (?:non possibile|vietato))\.?$/i.test(a.text.trim()));
-  const reservation = relevant.some(a => a.code === "A__VR");
-  const noReservation = relevant.some(a => normalized(a.text).startsWith("die mitnahme von velos ist ohne reservation möglich, sofern genügend mitnahmeplätze"));
+  const reservation = relevant.some(a => a.code === "A__VR" || requiredText.test(wording(a.text)));
+  const noReservation = relevant.some(a => noReservationText.test(wording(a.text)) || observedNoReservation.has(wording(a.text)));
+  const bicycleSpace = relevant.some(a => a.code === "A__VH" || allowedText.test(wording(a.text)));
   const limited = relevant.some(a => a.code === "A__VB");
   const staffLoading = relevant.some(a => a.code === "A__VC");
   const internationalOnly = relevant.some(a => a.code === "A__VI");
-  const explicit = prohibited || reservation || noReservation || limited || staffLoading;
+  const explicit = prohibited || reservation || noReservation || limited || staffLoading || bicycleSpace;
   const notes: string[] = [];
   if (prohibited) notes.push("Bicycles cannot be carried on this service.");
   if (reservation) notes.push("Reserve a bicycle space before boarding. The reservation is separate from the bike ticket.");
@@ -47,6 +57,7 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
   if (relevant.some(a => a.code === "A__VK")) notes.push("Buy the bicycle ticket from the local transport operator.");
   if (relevant.some(a => a.code === "A__VT")) notes.push("Packaged bicycles are not accepted on this service.");
   if (limited) notes.push("Bicycle carriage is subject to limited space.");
+  if (bicycleSpace) notes.push("The service indicates bicycle carriage. Bicycle-type restrictions and available space still apply.");
   if (reservation && noReservation) notes.push("The provider gives conflicting reservation conditions. Confirm with the operator before boarding.");
   return {
     permission: prohibited ? "prohibited" : !internationalOnly && (explicit || filtered) ? "allowed" : "unknown",
@@ -54,7 +65,7 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
     // Contradictory reservation notes require confirmation; do not silently
     // select the less restrictive reading.
     bikeReservation: reservation && noReservation ? "unknown" : reservation ? "required" : noReservation ? "not-required" : "unknown",
-    reservationUnspecified: !relevant.some(a => /reserv/i.test(a.text) || a.code === "A__VR"),
+    reservationUnspecified: !relevant.some(a => /reserv|prenotaz/i.test(a.text) || a.code === "A__VR"),
     notes: [...new Set(notes)], attributes: relevant,
   };
 }
@@ -118,10 +129,14 @@ export function bicycleJourneySummary(legs: TransitLeg[], profile?: TravelProfil
   if (rules.some(r => r.permission === "prohibited")) return "Includes a service that prohibits bicycles · comparison only";
   const unknown = services.filter((_, i) => rules[i].permission === "uncertain");
   const names = [...new Set(unknown.map(leg => leg.service))].join(", ");
-  const status = unknown.length === 0 ? "Bicycle access verified on every transit leg"
-    : `${rules.length - unknown.length} of ${rules.length} services verified · access unknown on ${names}`;
-  return status + (rules.some(r => r.bikeReservation === "required") ? " · bike reservation required" : "")
-    + (rules.some(r => r.bikeReservation === "unknown" || r.bikeTicket === "unknown") ? " · some ticket/reservation requirements need checking" : "");
+  const status = unknown.length === 0 ? "Bikes allowed on every transit leg"
+    : `${rules.length - unknown.length} of ${rules.length} services verified · bicycle information incomplete on ${names}`;
+  const required = services.filter((_, i) => rules[i].bikeReservation === "required").map(l => l.service);
+  const unresolved = services.filter((_, i) => rules[i].bikeReservation === "unknown").map(l => l.service);
+  return status + (required.length ? ` · Reservation required: ${[...new Set(required)].join(", ")}` : "")
+    + (unresolved.length ? ` · Reservation requirement not verified: ${[...new Set(unresolved)].join(", ")}`
+      : !required.length ? " · No reservation required" : "")
+    + (rules.some(r => r.bikeTicket === "unknown") ? " · Bicycle ticket requirement not verified" : "");
 }
 
 export function withTripInfoRule(evidence: BicycleEvidence, rule: CarriageRule, checked: string): BicycleEvidence {

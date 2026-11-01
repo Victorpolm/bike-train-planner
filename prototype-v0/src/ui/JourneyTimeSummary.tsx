@@ -34,6 +34,20 @@ export default function JourneyTimeSummary({
         </span>
       </span>
     );
+  if (
+    timing.journey.transitLegs?.some(
+      (leg) => leg.mode === "transit" && leg.realtime?.undefinedDelay,
+    )
+  )
+    return (
+      <span className="journey-time-summary uncertain-journey" role="status">
+        <strong>Arrival time unknown</strong>
+        <span>
+          The provider reports a delay without a duration. Scheduled service times remain in the
+          plan.
+        </span>
+      </span>
+    );
   return (
     <span className="journey-time-summary">
       <span className="journey-time-range">

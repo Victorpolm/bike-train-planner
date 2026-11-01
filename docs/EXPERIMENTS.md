@@ -941,3 +941,8 @@ Nine new regressions cover this case, preserved connection waits and time decomp
 ## 11 October 2026 — Zürich–Laax fare and annual transfer boundary regressions
 
 Synthetic dated SBB IC3 + PostBus B81 with OJP bicycle CHF29 now selects the reviewed CHF15 pass and one CHF2 through reservation. Lower ticket, annual pass, GA separation, unknown/prohibited services, interrupted booking, RhB, replacements, 13 December CHF16 and 05:00 expiry are covered. Exact SLOID mapping and cache invalidation, numeric OJP operators, product2361, tariff precedence, data-report privacy, SQL quota concurrency/rolling budgets/cancellation/failure and 12/13 December feed selection/corruption/outage tests are added. Actual scheduled import acquired both annual feeds; final gates/publication are recorded in the release report. [Shared quotas, transfer refresh and data-quality corrections](DATA_QUALITY_AND_QUOTAS_2026-10-11.md)
+
+
+## 2026-11-01 — Bicycle evidence and live status regressions
+
+Add nine cases covering positive service bicycle provision and overriding VN/VI, IC calendar fallback on 1 November versus 30 October, bicycle R versus passenger R, complete multilingual sentences versus conditional exceptions, cargo/loading constraints, named unresolved services, XML Text-to-graph-to-TripInfo propagation, and independent live departure/arrival freshness and sub-minute delays. The added provision/XML attributes are synthetic; recorded September/October OJP fixtures remain separate. All 702 JavaScript tests pass. No change to bounded-search objectives or claim of new nationwide coverage. [Release and limits](BIKE_AND_LIVE_STATUS_2026-11-01.md).

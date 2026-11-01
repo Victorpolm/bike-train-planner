@@ -1,0 +1,219 @@
+{
+  "recordedAt": "2026-10-13T20:48:08.924788+00:00",
+  "origin": "https://bike-train-prototype-victorpolm.tim-gehrunge-2308.chatgpt.site",
+  "scope": "Fixed public diagnostic corridor, not a user itinerary",
+  "query": {
+    "from": {
+      "id": "8503000",
+      "name": "Zürich HB",
+      "lat": 47.378,
+      "lon": 8.54
+    },
+    "to": {
+      "id": "8507000",
+      "name": "Bern",
+      "lat": 46.949,
+      "lon": 7.439
+    },
+    "departure": "2026-10-13T20:48:08.924788+00:00"
+  },
+  "connectionsHttp": 200,
+  "tripInfoHttp": 200,
+  "checked": "2026-10-13T20:48:14.309Z",
+  "warnings": [],
+  "leg": {
+    "realtime": {
+      "checkedAt": "2026-10-13T20:48:17.509Z",
+      "providerTimestampVerified": true,
+      "estimatedDeparture": "2026-10-13T21:01:36.000Z",
+      "estimatedArrival": "2026-10-13T22:02:30.000Z",
+      "departurePlatform": "31",
+      "arrivalPlatform": "2",
+      "cancelled": false,
+      "departureCancelled": false,
+      "arrivalCancelled": false,
+      "undefinedDelay": false
+    },
+    "accessRules": [
+      {
+        "point": {
+          "lat": 47.37801,
+          "lon": 8.54
+        },
+        "toRef": "ch:1:sloid:3000:500:31",
+        "seconds": 420,
+        "departure": "2026-10-13T21:01:00.000Z",
+        "operatingDay": "2026-10-13",
+        "checked": "2026-10-13T20:48:15.450Z"
+      },
+      {
+        "point": {
+          "lat": 47.37801,
+          "lon": 8.54
+        },
+        "toRef": "ch:1:sloid:3000:500:31",
+        "seconds": 420,
+        "departure": "2026-10-13T21:01:00.000Z",
+        "operatingDay": "2026-10-13",
+        "checked": "2026-10-13T20:48:17.509Z"
+      }
+    ],
+    "mode": "transit",
+    "from": {
+      "id": "ch:1:sloid:3000",
+      "name": "Zürich HB",
+      "lat": 47.37835,
+      "lon": 8.53665
+    },
+    "to": {
+      "id": "ch:1:sloid:7000",
+      "name": "Bern",
+      "lat": 46.94846,
+      "lon": 7.43783
+    },
+    "departure": "2026-10-13T21:01:00.000Z",
+    "arrival": "2026-10-13T22:02:00.000Z",
+    "service": "IC8",
+    "transferRules": [],
+    "serviceName": "IC8",
+    "category": "IC",
+    "operator": "ojp:11",
+    "direction": "Bern",
+    "departurePlatform": "31",
+    "arrivalPlatform": "2",
+    "reference": {
+      "journeyRef": "ch:1:sjyid:100001:838-001",
+      "operatingDay": "2026-10-13",
+      "fromRef": "ch:1:sloid:3000:500:31",
+      "toRef": "ch:1:sloid:7000:1:2",
+      "fromOrder": 1,
+      "toOrder": 4,
+      "departure": "2026-10-13T21:01:00.000Z",
+      "arrival": "2026-10-13T22:02:00.000Z",
+      "bikeFiltered": true,
+      "attributes": [
+        {
+          "code": "A__BA",
+          "text": "Fahrplanänderung",
+          "scope": "service"
+        },
+        {
+          "code": "A__FS",
+          "text": "Gratis-Internet mit der App SBB FreeSurf",
+          "scope": "service"
+        },
+        {
+          "code": "A__BZ",
+          "text": "Businesszone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A__FA",
+          "text": "Familienwagen mit Spielplatz",
+          "scope": "service"
+        },
+        {
+          "code": "A__RZ",
+          "text": "Ruhezone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A__NF",
+          "text": "Niederflureinstieg",
+          "scope": "service"
+        },
+        {
+          "code": "ojp91008ER_InfoCall510_108276_1",
+          "text": "Aussteigeseite: Rechts",
+          "scope": "stop"
+        },
+        {
+          "code": "ojp91008ER_InfoCall510_106652_1",
+          "text": "Aussteigeseite: Links",
+          "scope": "stop"
+        },
+        {
+          "code": "ojp91008ER_InfoCall510_111055_1",
+          "text": "Aussteigeseite: Links",
+          "scope": "stop"
+        },
+        {
+          "code": "A__BA",
+          "text": "Fahrplanänderung",
+          "scope": "service"
+        },
+        {
+          "code": "A__FS",
+          "text": "Gratis-Internet mit der App SBB FreeSurf",
+          "scope": "service"
+        },
+        {
+          "code": "A__BZ",
+          "text": "Businesszone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A__FA",
+          "text": "Familienwagen mit Spielplatz",
+          "scope": "service"
+        },
+        {
+          "code": "A__RZ",
+          "text": "Ruhezone in 1. Klasse",
+          "scope": "service"
+        },
+        {
+          "code": "A__NF",
+          "text": "Niederflureinstieg",
+          "scope": "service"
+        },
+        {
+          "code": "ojp91008ER_InfoCall510_108276_1",
+          "text": "Aussteigeseite: Rechts",
+          "scope": "stop"
+        },
+        {
+          "code": "ojp91008ER_InfoCall510_106652_1",
+          "text": "Aussteigeseite: Links",
+          "scope": "stop"
+        },
+        {
+          "code": "ojp91008ER_InfoCall510_111055_1",
+          "text": "Aussteigeseite: Links",
+          "scope": "stop"
+        }
+      ]
+    },
+    "rule": {
+      "permission": "allowed",
+      "basis": "ojp-filter",
+      "bikeReservation": "unknown",
+      "reservationUnspecified": true,
+      "notes": [],
+      "attributes": []
+    }
+  },
+  "tripInfo": {
+    "rule": {
+      "permission": "unknown",
+      "basis": "unassessed",
+      "bikeReservation": "unknown",
+      "reservationUnspecified": true,
+      "notes": [],
+      "attributes": []
+    },
+    "checked": "2026-10-13T20:48:23.878Z",
+    "realtime": {
+      "checkedAt": "2026-10-13T20:48:23.878Z",
+      "providerTimestampVerified": true,
+      "estimatedDeparture": "2026-10-13T21:01:36.000Z",
+      "estimatedArrival": "2026-10-13T22:02:30.000Z",
+      "departurePlatform": null,
+      "arrivalPlatform": null,
+      "cancelled": false,
+      "departureCancelled": false,
+      "arrivalCancelled": false,
+      "undefinedDelay": false
+    }
+  }
+}

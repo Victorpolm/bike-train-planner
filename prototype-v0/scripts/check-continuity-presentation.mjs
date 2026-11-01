@@ -72,7 +72,7 @@ for (const cancelled of [false, true]) {
   const html = render(JourneyPlan, { id: 'live', journey, origin, destination, takeBikeOnTransit: false, walkingOnly: true,
     realtime: { active: true, loading: false, failed: false, issues: [], refresh: noop } }); panels++;
   assert.match(html, /every 30 seconds/); assert.match(html, /recorded location/);
-  if (cancelled) assert.match(html, /Cancelled/); else assert.match(html, /\+5 min/);
+  if (cancelled) assert.match(html, /Cancelled/); else assert.match(html, /(?:Delayed by |Last reported delay: )5 min/);
 }
 assert.equal(navigationTrip(input).stages.length, 1);
 console.log(JSON.stringify({ passed: true, panels, checks: 'Saved itinerary date/actions/storage disclosure/escaping/busy state; parked bicycle collection, walking, closure and max-stay warnings; map park action; actual delay/cancellation markup.', limitation: 'React server rendering only; interactive browser and physical-phone acceptance remain unverified.' }, null, 2));

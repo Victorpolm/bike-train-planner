@@ -86,8 +86,8 @@ export function bicycleLegAllowed(leg: TransitLeg, preference: BusPreference, sc
 }
 export const bicyclePermissionLabel = (leg: TransitLeg, profile?: TravelProfile) => {
   const permission = bicyclePermission(leg, profile);
-  return permission === "confirmed" ? "Bicycle access verified for this service"
-    : permission === "prohibited" ? "Bicycles not permitted" : "Bicycle permission uncertain for this service";
+  return permission === "confirmed" ? "Bikes allowed · conditions apply"
+    : permission === "prohibited" ? "Bikes not allowed on this section" : "Bicycle information incomplete for this service";
 };
 
 export const bicycleScopeOptions: Record<BicycleScope, string> = {

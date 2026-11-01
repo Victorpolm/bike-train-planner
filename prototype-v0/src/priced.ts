@@ -14,7 +14,8 @@ export function knownPrice(chf: number, name: string, source: PriceSource, optio
 export const priceAmount = (p: Priced) => p.known ? p.offer.chf : null;
 export const priceLabel = (p: Priced) => p.known ? `CHF ${p.offer.chf.toFixed(2)}` : p.code === "prohibited" ? "Not permitted" : "Price to check";
 export const priceConditions = (p: Priced) => p.known ? [p.offer.product.name,
-  ...(p.offer.flexibility === "train-bound" ? ["Only on the quoted train · limited availability"] : []),
+  ...(p.offer.flexibility === "train-bound" ? ["Only on the quoted train"] : p.offer.flexibility === "time-bound" ? ["Only within the quoted time window"] : p.offer.flexibility === "unknown" ? ["Ticket restrictions have not been verified"] : []),
+  ...(p.offer.availability === "capacity-limited" || p.offer.flexibility === "train-bound" ? ["limited availability · recheck before buying"] : []),
   ...p.offer.conditions, p.offer.provenance.environment === "test" ? "OJP test fare estimate" : "",
   p.offer.provenance.source.validThrough ? `Tariff valid through ${p.offer.provenance.source.validThrough}` : ""].filter(Boolean).join(" · ") : p.reason;
 export function sumPrices(parts: Priced[], source: PriceSource): Priced {

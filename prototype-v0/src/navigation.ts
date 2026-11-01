@@ -223,8 +223,10 @@ export function confirmedOnwardRequest(trip:NavigationTrip,index:number,confirme
   if(stage?.mode!=="transit"||!point)throw new Error("Choose a known boarding stop.");
   const currentDay=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Zurich"}).format(new Date(now));
   if(new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Zurich"}).format(trip.start)!==currentDay)throw new Error("Use Plan again for a journey on another day.");
+  const departure=stage.leg&&departureTime(stage.leg);
+  if(!departure||+departure>now+120*minute)throw new Error("Onward recovery is available within two hours of this boarding. Use Plan again for a later journey.");
   const request=replanFromStage(trip,index,false,null,{...point,label:stage.from,stopId:stage.leg?.fromId},now);
-  return {...request,options:{...request.options,horizonMinutes:Math.min(120,request.options.horizonMinutes)},
+  return {...request,
     recovery:{originalJourneyId:trip.journey!.recovery?.originalJourneyId??trip.journey!.id,confirmedAt:new Date(now).toISOString(),from:stage.from,
       originalPriceReusable:false as const,completed:[...(trip.journey?.recovery?.completed??[]),...trip.stages.slice(0,index).map(s=>({mode:s.mode,from:s.from,to:s.to,title:s.title,minutes:s.minutes,departure:s.leg?.departure?.toISOString(),arrival:s.leg?.arrival?.toISOString(),source:s.leg?.bicycleEvidence?.source}))].slice(-100)}};
 }
