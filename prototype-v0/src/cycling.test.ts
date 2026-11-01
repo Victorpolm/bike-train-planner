@@ -143,7 +143,7 @@ it("uses routed access time to reject a train that the old straight-line model c
   const a = { id: "A", name: "A", lat: 42, lon: 4 }, b = { id: "B", name: "B", lat: 43, lon: 5 };
   const origin: Place = { label: "Home", lat: 42.001, lon: 4 }, destination = { ...b, label: "Work", stopId: b.id };
   const n = emptyNetwork(); ride(n, a, b, 10, 40); ride(n, a, b, 25, 55);
-  const options = { ...DEFAULT_OPTIONS, maxAccessMinutes: 25, maxEgressMinutes: 0, maxBikeMinutes: 25 };
+  const options = { ...DEFAULT_OPTIONS, maxBikeMinutes: 20, maxAccessMinutes: 20, maxEgressMinutes: 0, maxBikeMinutes: 25 };
   assert.equal(Math.min(...solve(n, origin, destination, start, options, "baseline").journeys.map(j => j.totalMinutes)), 40);
   const road = parseCyclingRoute(geometry(origin, a, 1200), origin, a);
   n.cycling = new Map([[cyclingKey(origin, a), road]]);
@@ -188,7 +188,7 @@ for (const { offset, failedAlternatives } of [{ offset: 0, failedAlternatives: f
   const other = { id: "C", name: "Other station", lat: 42.003, lon: 4 };
   const from: Place = { label: "Home", lat: 42.001, lon: 4 }, to: Place = { ...b, label: "B", stopId: "B" };
   const urls: URL[] = [];
-  const result = await plan(from, to, "baseline", { ...DEFAULT_OPTIONS, maxAccessMinutes: 25, maxEgressMinutes: 0 },
+  const result = await plan(from, to, "baseline", { ...DEFAULT_OPTIONS, maxBikeMinutes: 20, maxAccessMinutes: 20, maxEgressMinutes: 0 },
     new AbortController().signal, () => {}, () => {}, {
       start, gapMs: 0, cyclingFetcher: async input => {
         const points = new URL(String(input)).searchParams.get("lonlats")!.split("|").map(s => { const [lon, lat] = s.split(",").map(Number); return { lon, lat }; });
@@ -207,8 +207,10 @@ for (const { offset, failedAlternatives } of [{ offset: 0, failedAlternatives: f
       },
     });
   assert.equal(result.baseline.journeys[0].totalMinutes, offset ? 55 : 54);
-  assert.equal(result.baseline.journeys[0].originStation.bikeMinutes, offset ? 22 : 20);
-  assert.equal(result.baseline.journeys[0].originStation.cyclingRoute?.minutes, offset ? 22 : 20);
+  assert.equal(metrics(result.baseline.journeys[0]).bike, 20);
+  assert.equal(metrics(result.baseline.journeys[0]).walk, offset ? 2 : 0);
+  const accessRoute = result.baseline.journeys[0].originStation.cyclingRoute ?? result.baseline.journeys[0].transitLegs.find(l => l.mode === "bike")?.cyclingRoute;
+  assert.equal(accessRoute?.minutes, offset ? 22 : 20);
   if (failedAlternatives) {
     assert.equal(result.cyclingStatus, "unavailable"); assert.equal(result.cyclingComparison, null);
     const warnings = searchWarnings(result);

@@ -1,3 +1,4 @@
+import { cyclingEffort } from "./cycling";
 import OnwardRecovery, { type RecoveryRequest } from "./OnwardRecovery";
 import { readFareProfile } from "./fares";
 import { travelProfileKey } from "./travelProfile";
@@ -179,13 +180,15 @@ function CyclingCard({
         Estimated using your cycling profile, including short walking access to the path. Select to
         explore elevation and surfaces.
       </span>
-      {comparison.minutes - (comparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) >
+      {(comparison.routes?.reduce((n, r) => n + cyclingEffort(r).bike, 0) ??
+        comparison.minutes - (comparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0)) >
         maxBikeMinutes && (
         <span className="comparison-caution">
           Exceeds your {maxBikeMinutes}-minute cycling budget for transit journeys.
         </span>
       )}
-      {comparison.minutes - (comparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0) <
+      {(comparison.routes?.reduce((n, r) => n + cyclingEffort(r).bike, 0) ??
+        comparison.minutes - (comparison.stops ?? []).reduce((n, s) => n + s.visit.minutes, 0)) <
         minBikeMinutes && (
         <span className="comparison-caution">
           Reference only: below your {minBikeMinutes}-minute cycling minimum.

@@ -23,6 +23,23 @@ export type CyclingRoute = {
   turnCount?: number; preference?: RoutePreference; alternativesChecked?: number; preferenceNote?: string;
   officialRoute?: OfficialRouteEvidence;
 };
+/** Elapsed time includes walking connectors, pushing and carrying. Only
+ * riding consumes the cycling budget. Keep minute-rounding slack with walking
+ * when walking exists; older/synthetic routes without a breakdown stay cycling. */
+export function cyclingEffort(route?: CyclingRoute | null, elapsed = route?.minutes ?? Infinity) {
+  const walking = Math.max(0, route?.connectorMinutes ?? 0) + Math.max(0, route?.pushingSeconds ?? 0) / 60 + Math.max(0, route?.carryingSeconds ?? 0) / 60;
+  if (!Number.isFinite(elapsed)) return { bike: Infinity, walk: Infinity, elapsed };
+  if (!route || walking <= 0) return { bike: elapsed, walk: 0, elapsed };
+  const riding = Math.max(0, route.ridingSeconds / 60);
+  const consistent = Number.isFinite(riding) && Math.abs(Math.ceil(riding + walking - 1e-9) - route.minutes) < 1e-6;
+  const bike = Math.min(elapsed, consistent ? riding : Math.max(0, elapsed - walking));
+  return { bike, walk: elapsed - bike, elapsed };
+}
+export function cyclingFits(route: CyclingRoute | null | undefined, bikeLimit: number, walkingLimit: number, elapsed = route?.minutes ?? Infinity) {
+  const effort = cyclingEffort(route, elapsed);
+  return Number.isFinite(elapsed) && effort.bike <= bikeLimit + 1e-9 && effort.walk <= walkingLimit + 1e-9;
+}
+
 export const CYCLING_PROFILE = "trekking";
 const MAX_CYCLING_SPEED_KMH = 25;
 // Match BRouter's bounded waypoint search. Building/stop centroids need not

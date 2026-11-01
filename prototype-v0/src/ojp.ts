@@ -1,3 +1,4 @@
+import { formationOperator, type FormationEvidence, type FormationReference } from "./formation.ts";
 import { operatorCode } from "./normalization.ts";
 import type { TransitRealtime } from "./realtime.ts";
 import { mergeAccessRules, mergeTransferRules, type StationAccessRule, type StationTransferRule } from "./transferTimes.ts";
@@ -15,12 +16,12 @@ export type OjpLeg = {
   mode: "transit" | "walk"; from: OjpStop; to: OjpStop; departure: string; arrival: string;
   service: string; serviceName: string | null; category: string | null; operator: string | null;
   direction: string | null; departurePlatform: string | null; arrivalPlatform: string | null;
-  reference?: OjpReference; rule?: CarriageRule;
+  reference?: OjpReference; rule?: CarriageRule; formationReference?: FormationReference; formation?: FormationEvidence;
   fareSourceIds?: string[];
 };
 export type OjpConnections = { legs: OjpLeg[]; checked: string; warnings: string[];
   fareSources?: import("./onlineFare.ts").RetainedFareSource[] };
-export type OjpDetails = { rule: CarriageRule; checked: string; realtime?: TransitRealtime };
+export type OjpDetails = { rule: CarriageRule; checked: string; realtime?: TransitRealtime; formationReference?: FormationReference; formation?: FormationEvidence };
 
 // XML is confined to this provider boundary. No provider markup reaches innerHTML.
 type Xml = Record<string, any>;
@@ -94,6 +95,13 @@ function ojpOperator(ref: string): string | null {
   return /^\d+$/.test(ref) && operatorCode(namespaced) !== namespaced.toUpperCase() ? namespaced : ref || null;
 }
 
+function formationReference(service: Xml, from: string, to: string, departure: string, arrival: string): FormationReference | undefined {
+  const operator = ojpOperator(text(service.OperatorRef)) ?? "", evu = formationOperator(operator), trainNumber = text(service.TrainNumber);
+  if (text(service.Mode?.PtMode) !== "rail" || !evu || !/^\d{1,7}$/.test(trainNumber) || !from || !to) return undefined;
+  return { operator, evu, trainNumber, from, to, departure, arrival,
+    journeyRef: text(service.JourneyRef), operatingDay: text(service.OperatingDayRef) };
+}
+
 export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[] {
   const data = delivery(xml, "OJPTripDelivery"), stops = places(data.TripResponseContext);
   const legs: OjpLeg[] = [];
@@ -148,6 +156,7 @@ export function parseOjpConnections(xml: string, bikeFiltered: boolean): OjpLeg[
           departurePlatform: text(board.PlannedQuay) || null, arrivalPlatform: text(alight.PlannedQuay) || null,
           reference: { journeyRef, operatingDay, fromRef, toRef, fromOrder, toOrder, departure, arrival, bikeFiltered, attributes: scoped },
           rule: interpretBicycleAttributes(scoped, bikeFiltered),
+          formationReference: formationReference(service, from.name, to.name, departure, arrival),
         };
         legs.push(parsed); previousRide = parsed; pending = []; access = null;
       } else if (transfer && previousRide) {
@@ -204,7 +213,8 @@ export function parseOjpDetails(xml: string, ref: OjpReference): OjpDetails {
   if (from < 0 || to <= from) throw new Error("Service details do not identify the boarded segment");
   const checked = instant(data.ResponseTimestamp) ?? new Date().toISOString();
   return { rule: interpretBicycleAttributes([...attributes(service, "service"), ...calls.slice(from, to + 1).flatMap(c => attributes(c, "stop"))]),
-    checked, realtime: realtime(service, calls[from], calls[to], checked, !!instant(data.ResponseTimestamp)) };
+    checked, realtime: realtime(service, calls[from], calls[to], checked, !!instant(data.ResponseTimestamp)),
+    formationReference: formationReference(service, text(calls[from].StopPointName), text(calls[to].StopPointName), ref.departure, ref.arrival) };
 }
 
 export function parseOjpTripInfo(xml: string, ref: OjpReference): CarriageRule { return parseOjpDetails(xml, ref).rule; }

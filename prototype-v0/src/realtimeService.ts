@@ -12,6 +12,6 @@ export function applyRealtimeService(leg: TransitLeg, details: OjpDetails): Tran
     conditions: [], source: { title: "OJP dated service", url: "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/", checked: details.checked },
   };
   return { ...leg, realtime: details.realtime ?? leg.realtime,
-    bicycleEvidence: withTripInfoRule(initial, details.rule, details.checked),
+    bicycleEvidence: { ...withTripInfoRule(initial, details.rule, details.checked), formation: details.formation },
     bicycleAttributes: details.rule.attributes };
 }

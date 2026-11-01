@@ -1,3 +1,4 @@
+import { cyclingEffort } from "./cycling.ts";
 import { withoutBicycle } from "./bicycleContinuity.ts";
 import { cyclingSteps, journeySteps } from "./itinerary.ts";
 import { arrivalTime, departureTime, realtimeKey, realtimeStale, realtimeUnavailable, effectivePlatform } from "./realtime.ts";
@@ -12,7 +13,7 @@ export type NavigationInput = {
 };
 export type NavigationStage = {
   mode: TransitLeg["mode"]; title: string; from: string; to: string;
-  minutes: number; path: Point[]; distances: number[]; lengthM: number;
+  minutes: number; ridingMinutes?: number; path: Point[]; distances: number[]; lengthM: number;
   endGapM: number; endPoint?: Point;
   leg?: TransitLeg; completedVisits: number;
 };
@@ -47,6 +48,7 @@ export function navigationTrip(input: NavigationInput): NavigationTrip {
         && (!visit.place.visit || step.leg?.facilityVisit?.id === visit.place.visit.id)) visits++;
     }
     return { mode: step.mode as TransitLeg["mode"], title: step.title, from: step.from ?? "Starting point", to: step.to ?? "Destination",
+      ridingMinutes: step.mode === "bike" ? cyclingEffort(step.cyclingRoute ?? step.leg?.cyclingRoute, route?.minutes ?? (step.arrival && step.departure ? (+step.arrival - +step.departure) / minute : 0)).bike : 0,
       minutes: route?.minutes ?? (step.arrival && step.departure ? Math.max(0, (+step.arrival - +step.departure) / minute) : 0),
       path, distances, lengthM: distances.at(-1) ?? 0, endGapM: route?.endGapM ?? 0, endPoint: route?.to ?? step.leg?.toPoint, leg: step.leg, completedVisits: visits };
   });
@@ -189,14 +191,14 @@ function replanFromStage(trip: NavigationTrip,index:number,onboard:boolean,progr
   if (trip.options.arriveBy && Date.parse(trip.options.arriveBy) <= now) throw new Error("Your arrival deadline has passed. Choose a new time in Plan.");
   const current = trip.stages[index];
   const fraction = current?.lengthM && progress ? Math.min(1, progress.highWaterM / current.lengthM) : 0;
-  const usedBike = previous.filter(s => s.mode === "bike").reduce((sum, s) => sum + s.minutes, 0)
-    + (current?.mode === "bike" ? current.minutes * fraction : 0);
-  const usedAccess = previous.filter((s, i) => s.mode === "bike" && (firstTransit < 0 || i < firstTransit)).reduce((sum, s) => sum + s.minutes, 0)
-    + (current?.mode === "bike" && (firstTransit < 0 || index < firstTransit) ? current.minutes * fraction : 0);
+  const usedBike = previous.filter(s => s.mode === "bike").reduce((sum, s) => sum + (s.ridingMinutes ?? s.minutes), 0)
+    + (current?.mode === "bike" ? (current.ridingMinutes ?? current.minutes) * fraction : 0);
+  const usedAccess = previous.filter((s, i) => s.mode === "bike" && (firstTransit < 0 || i < firstTransit)).reduce((sum, s) => sum + (s.ridingMinutes ?? s.minutes), 0)
+    + (current?.mode === "bike" && (firstTransit < 0 || index < firstTransit) ? (current.ridingMinutes ?? current.minutes) * fraction : 0);
   const usedTransfers = new Set(previous.flatMap((s, i) => s.mode === "bike" && i > firstTransit && i < lastTransit
     ? [s.leg?.cyclingSectionId ?? `stage:${i}`] : [])).size;
-  const usedEgress = current?.mode === "bike" && lastTransit >= 0 && index > lastTransit ? current.minutes * fraction : 0;
-  const usedIntermediate = current?.mode === "bike" && firstTransit >= 0 && index > firstTransit && index < lastTransit ? current.minutes * fraction : 0;
+  const usedEgress = current?.mode === "bike" && lastTransit >= 0 && index > lastTransit ? (current.ridingMinutes ?? current.minutes) * fraction : 0;
+  const usedIntermediate = current?.mode === "bike" && firstTransit >= 0 && index > firstTransit && index < lastTransit ? (current.ridingMinutes ?? current.minutes) * fraction : 0;
   let options = { ...trip.options, maxBikeMinutes: Math.max(0, Math.floor(trip.options.maxBikeMinutes - usedBike)),
     minBikeMinutes: Math.max(0, Math.ceil((trip.options.minBikeMinutes ?? 0) - usedBike - 1e-9)),
     maxEgressMinutes: Math.max(0, Math.floor(trip.options.maxEgressMinutes - usedEgress)),

@@ -1,6 +1,6 @@
 import { applyCyclingEdit, type AppliedCyclingEdit, type EditContext } from "./cyclingEditor.ts";
 import type { DetourStage } from "./cyclingDetour.ts";
-import type { CyclingRoute } from "./cycling.ts";
+import { cyclingEffort, type CyclingRoute } from "./cycling.ts";
 import { fetchJson } from "./http.ts";
 import { officialBounds, officialGuides, lineMatch, overlapsClosure, type Bounds, type OfficialClosureReply, type OfficialRouteReply, type OfficialSection } from "./officialCycling.ts";
 import type { Point } from "./routing.ts";
@@ -17,7 +17,7 @@ export function applyOfficialOption(context: EditContext, stage: DetourStage, ch
   if (!Number.isFinite(checkedAt) || Date.now() - checkedAt > 30 * 60_000 || checkedAt > Date.now() + 60_000)
     throw new Error("The closure check expired. Check this option again before applying.");
   const edit = applyCyclingEdit(context, stage, checked.routes);
-  if (edit.cycling && edit.cycling.routes!.reduce((sum, r) => sum + r.minutes, 0) > context.options.maxBikeMinutes)
+  if (edit.cycling && edit.cycling.routes!.reduce((sum, r) => sum + cyclingEffort(r).bike, 0) > context.options.maxBikeMinutes)
     throw new Error(`This option exceeds your ${context.options.maxBikeMinutes}-minute cycling limit.`);
   return edit;
 }

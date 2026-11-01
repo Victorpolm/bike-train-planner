@@ -163,7 +163,7 @@ describe("server-only OJP boundary", () => {
   it("does not send a request without a runtime secret", async () => {
     const handler = createOjpHandler(async () => { throw new Error("Must not fetch"); }, 0);
     assert.equal((await handler(request(), {})).status, 503);
-    assert.deepEqual(await (await handler(new Request("https://app.example/api/ojp/status"), {})).json(), { available: false });
+    assert.deepEqual(await (await handler(new Request("https://app.example/api/ojp/status"), {})).json(), { available: false, formationAvailable: false });
   });
   it("sends the key only upstream and caches successful paired searches", async () => {
     let calls = 0; const secret = "test-secret-never-client-visible";

@@ -1,3 +1,4 @@
+import { freshFormation } from "./formation";
 import type { FareProfile } from "./fares";
 import InfoDisclosure from "./InfoDisclosure";
 import { useEffect, useRef, useState } from "react";
@@ -133,7 +134,25 @@ export default function BicycleCarriageDetails({
       {rule.evidence?.conditions.map((note) => (
         <p key={note}>{note}</p>
       ))}
+      {rule.evidence?.formation && (
+        <p className="carriage-source">
+          {freshFormation(rule.evidence.formation)
+            ? rule.evidence.formation.message
+            : "The formation check has expired. Refresh this service to recheck its bicycle coaches."}
+          {freshFormation(rule.evidence.formation) &&
+            !!rule.evidence.formation.coaches?.length &&
+            ` Bicycle coach${rule.evidence.formation.coaches.length > 1 ? "es" : ""}: ${rule.evidence.formation.coaches.join(", ")}.`}
+        </p>
+      )}
       <InfoDisclosure label="Sources and operator guidance">
+        {rule.evidence?.formation && (
+          <p>
+            <a href={rule.evidence.formation.source} target="_blank" rel="noreferrer">
+              Train formation evidence
+            </a>{" "}
+            · checked {new Date(rule.evidence.formation.checked).toLocaleTimeString("en-GB")}
+          </p>
+        )}
         {rule.evidence?.basis === "ojp-filter" && (
           <p>
             OJP returned this dated service with bicycle transport enabled. Missing ticket or

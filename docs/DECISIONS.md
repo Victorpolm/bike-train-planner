@@ -808,3 +808,14 @@ Use shared D1 admission for actual OJP/OJP Fare calls; preserve owner-private ac
 **Delivery:** Owner-private version 76, Site source `302142d519b0d292e00613a7c98f03bf40a5a5dc`. Recovered deployed version 75 source `cfe9bfa1b6681d4c802a125348c77fd243a021f9` and preserved its changes while synchronizing the application to main. Latest GitHub station-transfer data and paused notification triggers are retained. 702 JS tests, 16 Python tests, 61 rendered panels and production builds pass.
 
 **Limits:** No Formation API product key is configured, so separate formation retrieval remains pending. Positive provision interpretation is tested, but a newly observed production OJP VH field is not claimed. Browser preview infrastructure was unavailable. No claim of full SBB equivalence, capacity confirmation, booking or public access. [Evidence and next checks](BIKE_AND_LIVE_STATUS_2026-11-01.md).
+
+
+## 1 November 2026 — Formation evidence and independent walking budgets
+
+**Authorization:** Use the supplied formation API key, verify live access, improve bike/reservation decisions, and prevent cycling limits from limiting walking.
+
+**Decision:** Accept API_FORMATION_KEY and the configured OJP_FORMATION_KEY alias; keep secrets server-only. Use trusted explicit train/operator/day identifiers and exact boarded-section matching. CUS bicycle/group symbols are usable evidence even when FOS facility flags are false defaults. Require through-vehicle proof, preserve prohibitions/profile requirements, and keep reservation rules distinct from provision/capacity. Use bounded full→stop fallback and expire formation conclusions.
+
+**Accounting:** Riding alone consumes cycling minima/maxima/section budgets. Walking connectors, pushing and carrying consume the separate walking allowance, while all movement still consumes elapsed travel time. Apply the same accounting to search/acquisition, visits, edits, metrics and navigation.
+
+**Delivery:** Owner-private version 79, Site source `b44060286ceb57a39df9ebce59a93a6f95bd134a`;719 JS tests, 16 Python tests,64 rendered panels and builds pass. Live IC904 and RE37 formation provision matched. Incomplete line labels and absent reservation evidence can still leave a reservation requirement unresolved. [Evidence and limits](FORMATION_AND_WALKING_2026-11-01.md).

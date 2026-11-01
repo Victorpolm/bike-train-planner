@@ -1,6 +1,6 @@
 import { boardingCheck } from "./transferTimes.ts";
 import { detourStages, type DetourStage } from "./cyclingDetour.ts";
-import type { CyclingRoute } from "./cycling.ts";
+import { cyclingEffort, type CyclingRoute } from "./cycling.ts";
 import { cyclingSteps, journeySteps } from "./itinerary.ts";
 import { earlierJourneyStart, journeyTiming } from "./journeyTiming.ts";
 import { visitHours } from "./facilityHours.ts";
@@ -62,6 +62,8 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   }
   if (!routes.length || routes.length > MAX_SHAPING_POINTS + 1 || routes.some(r => r.blocked || !Number.isFinite(r.minutes) || r.minutes < 0))
     throw new Error("A complete usable cycling path is required.");
+  if (routes.reduce((sum, route) => sum + cyclingEffort(route).walk, 0) > (options.maxWalkingMinutes ?? 30))
+    throw new Error("The walking/pushing portions exceed your separate walking allowance.");
   const equal = (a: Place | CyclingRoute["from"], b: Place | CyclingRoute["from"]) => haversineKm(a, b) < .001;
   if (!equal(routes[0].from, stage.from) || !equal(routes.at(-1)!.to, stage.to)
     || routes.slice(1).some((r, i) => !equal(routes[i].to, r.from))) throw new Error("The edited path must keep this section’s endpoints and remain connected.");
@@ -73,10 +75,10 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     const stops = (cycling.stops ?? []).map(s => ({ ...s, afterRoute: s.afterRoute >= index ? s.afterRoute + routes.length - 1 : s.afterRoute }));
     if (visit) stops.push({ afterRoute: index, visit });
     stops.sort((a, b) => a.afterRoute - b.afterRoute);
-    const riding = updated.reduce((sum, route) => sum + route.minutes, 0);
+    const riding = updated.reduce((sum, route) => sum + cyclingEffort(route).bike, 0);
     if (riding + 1e-9 < (options.minBikeMinutes ?? 0)) throw new Error(`This edit falls below your ${options.minBikeMinutes}-minute cycling minimum.`);
     if (visit && riding > options.maxBikeMinutes) throw new Error(`This detour exceeds your ${options.maxBikeMinutes}-minute total cycling limit.`);
-    const minutes = riding + stops.reduce((sum, s) => sum + s.visit.minutes, 0);
+    const minutes = updated.reduce((sum, route) => sum + route.minutes, 0) + stops.reduce((sum, s) => sum + s.visit.minutes, 0);
     if (minutes > options.horizonMinutes) throw new Error("This edited ride exceeds the journey time window.");
     const departure = options.arriveBy ? new Date(Date.parse(options.arriveBy) - minutes * 60_000) : start;
     if (+departure < +context.start) throw new Error("This edited ride would require leaving before the search time window. Choose a later arrival or a shorter ride.");
@@ -97,9 +99,10 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     : original.title.includes("intermediate stop") || original.title.includes("destination") ? options.maxEgressMinutes
       : original.title.includes("station") ? options.maxAccessMinutes : options.maxIntermediateMinutes);
   const group = original.leg?.cyclingSectionId ?? stage.id;
+  const originalRiding = cyclingEffort(stage.route, stage.originalMinutes).bike;
   const groupMinutes = journey.transitLegs.filter(l => l.mode === "bike" && l.cyclingSectionId === group)
-    .reduce((sum, l) => sum + (l.departure && l.arrival ? (+l.arrival - +l.departure) / 60_000 : Infinity), 0);
-  if ((groupMinutes || stage.originalMinutes) - stage.originalMinutes + routes.reduce((sum, r) => sum + r.minutes, 0) > cap)
+    .reduce((sum, l) => sum + cyclingEffort(l.cyclingRoute, l.departure && l.arrival ? (+l.arrival - +l.departure) / 60_000 : Infinity).bike, 0);
+  if ((groupMinutes || originalRiding) - originalRiding + routes.reduce((sum, r) => sum + cyclingEffort(r).bike, 0) > cap)
     throw new Error(`This cycling section exceeds its ${cap}-minute limit. Move or remove a point, or change Preferences and search again.`);
 
   const legs: TransitLeg[] = [];
@@ -150,8 +153,8 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   const rides = legs.filter(l => l.mode === "transit");
   let previousVisitStep = 0;
   const result: Journey = { ...journey, legsIncludeEndpoints: true, transitLegs: legs,
-    originStation: { ...journey.originStation, bikeMinutes: 0, distanceKm: 0, cyclingRoute: undefined },
-    destinationStation: { ...journey.destinationStation, bikeMinutes: 0, distanceKm: 0, cyclingRoute: undefined },
+    originStation: { ...journey.originStation, bikeMinutes: 0, walkMinutes: 0, walkingRoute: undefined, distanceKm: 0, cyclingRoute: undefined },
+    destinationStation: { ...journey.destinationStation, bikeMinutes: 0, walkMinutes: 0, walkingRoute: undefined, distanceKm: 0, cyclingRoute: undefined },
     departure: legs[0].departure!, arrival: new Date(cursor), totalMinutes: (cursor - +start) / 60_000,
     trainMinutes: (+rides.at(-1)!.arrival! - +rides[0].departure!) / 60_000,
     waitMinutes: legs.reduce((sum, l, i) => sum + Math.max(0, (+l.departure! - +(legs[i - 1]?.arrival ?? start)) / 60_000), 0),

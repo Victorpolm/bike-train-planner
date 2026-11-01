@@ -946,3 +946,12 @@ Synthetic dated SBB IC3 + PostBus B81 with OJP bicycle CHF29 now selects the rev
 ## 2026-11-01 — Bicycle evidence and live status regressions
 
 Add nine cases covering positive service bicycle provision and overriding VN/VI, IC calendar fallback on 1 November versus 30 October, bicycle R versus passenger R, complete multilingual sentences versus conditional exceptions, cargo/loading constraints, named unresolved services, XML Text-to-graph-to-TripInfo propagation, and independent live departure/arrival freshness and sub-minute delays. The added provision/XML attributes are synthetic; recorded September/October OJP fixtures remain separate. All 702 JavaScript tests pass. No change to bounded-search objectives or claim of new nationwide coverage. [Release and limits](BIKE_AND_LIVE_STATUS_2026-11-01.md).
+
+
+## 2026-11-01 — Cycling5 + walking3 golden journey
+
+**Before:** A checked access path with 300 riding seconds and 3 walking minutes was rejected by cycling maximum 5 and incorrectly satisfied minimum 8 when maximum 8 was used.
+
+**Expected and observed:** With cycling cap 5, access cap 5 and walking allowance 3, the path reaches the station at08:08, boards the08:11 train with its three-minute allowance, and arrives08:31. Metrics are bike 5 / walk 3. Walking allowance 2 rejects it; cycling minimum 8 rejects it; moving the train to08:10 makes it infeasible. Baseline/Extended and arrive-by agree. Pushing/carrying and an ordered visit retain the same accounting. A separate intermediate connection accepts riding 2 + walking 7 under intermediate cycling cap 2, but rejects walking cap 6. Edits preserve elapsed catchability; navigation deducts riding only. The existing111 m access-gap acquisition test accepts20 riding/22 elapsed minutes under cycling cap 20 and still queries08:25.
+
+719 JS regressions, 16 Python checks,64 rendered panels and production builds pass. Formation tests also exercise the recorded RE37 grouped VH syntax against synthetic section boundaries; production IC904/RE37 matching is separately recorded. [Release evidence](FORMATION_AND_WALKING_2026-11-01.md).

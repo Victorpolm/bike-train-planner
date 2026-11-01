@@ -7,7 +7,7 @@ import { addClimb, climbingTradeoff, climbVector, hillSearch, journeyClimb, rout
 import { validateCyclingPace, type CyclingPace } from "./cyclingPace.ts";
 import { ROUTE_PREFERENCES, type RoutePreference } from "./cyclingPreferences.ts";
 import { cyclingMinutes, haversineKm, type Journey, type Place, type Point, type Station, type TransitLeg } from "./routing.ts";
-import { cachedCycling, type CyclingRoute } from "./cycling.ts";
+import { cachedCycling, cyclingEffort, cyclingFits, type CyclingRoute } from "./cycling.ts";
 import { type BusPreference } from "./busCarriage.ts";
 import { BICYCLE_SCOPES, bicycleLegAllowed, type BicycleScope } from "./bicyclePermission.ts";
 import { cachedWalking, DEFAULT_WALKING_MINUTES, walkingLeg, type WalkingRoute } from "./walking.ts";
@@ -65,6 +65,9 @@ export const endpointIsWalking = (o: Options, direction: "access" | "egress") =>
 export const endpointMinutes = (station: Station) => station.bikeMinutes + (station.walkMinutes ?? 0);
 export const endpointTravelLimit = (o: Options, direction: "access" | "egress") => endpointIsWalking(o, direction)
   ? o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : endpointCyclingLimit(o, direction);
+export const endpointFits = (station: Station, o: Options, direction: "access" | "egress") =>
+  Number.isFinite(endpointMinutes(station)) && station.bikeMinutes <= endpointCyclingLimit(o, direction) + 1e-9
+    && (station.walkMinutes ?? 0) <= (o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES) + 1e-9;
 export const journeyLegAllowed = (leg: TransitLeg, o: Options) => !realtimeUnavailable(leg) && bicycleLegAllowed(leg, o.busPreference,
   o.takeBikeOnTransit === false ? "all-transit" : o.bicycleScope, o.takeBikeOnTransit === false ? undefined : o.fareProfile);
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
@@ -83,14 +86,14 @@ export function cyclingLink(network: Network, from: Point & { id?: string; stopI
 export const atEndpoint = (stop: Stop, point: Place, network?: Network, direction: "access" | "egress" = "access", o?: Options): Station => {
   if (o && endpointIsWalking(o, direction)) {
     const route = direction === "access" ? cachedWalking(network?.walking, point, stop) : cachedWalking(network?.walking, stop, point);
-    return { ...stop, distanceKm: route?.distanceKm ?? Infinity, bikeMinutes: 0, walkMinutes: route?.minutes ?? Infinity, walkingRoute: route };
+    return { ...stop, distanceKm: route?.distanceKm ?? Infinity, bikeMinutes: 0, walkMinutes: route?.minutes ?? Infinity, cyclingRoute: undefined, walkingRoute: route };
   }
   if (network?.cycling) {
     const link = direction === "access" ? cyclingLink(network, point, stop) : cyclingLink(network, stop, point);
-    return { ...stop, distanceKm: link.distanceKm, bikeMinutes: link.minutes, cyclingRoute: link.route };
+    return { ...stop, distanceKm: link.distanceKm, bikeMinutes: cyclingEffort(link.route, link.minutes).bike, walkMinutes: cyclingEffort(link.route, link.minutes).walk, walkingRoute: undefined, cyclingRoute: link.route };
   }
   const distanceKm = point.stopId === stop.id ? 0 : haversineKm(stop, point);
-  return { ...stop, distanceKm, bikeMinutes: cyclingMinutes(distanceKm, o?.cyclingPace) };
+  return { ...stop, distanceKm, bikeMinutes: cyclingMinutes(distanceKm, o?.cyclingPace), walkMinutes: 0, walkingRoute: undefined };
 };
 
 export function validateOptions(o: Options) {
@@ -137,10 +140,10 @@ export function metrics(j: Journey, threshold = 6) {
   const boardings = j.transitLegs.filter(l => l.mode === "transit").length;
   const first = j.transitLegs.findIndex(l => l.mode === "transit");
   const last = j.transitLegs.reduce((found, l, i) => l.mode === "transit" ? i : found, -1);
-  const walking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "walk").reduce((sum, l) => sum + duration(l), 0);
-  const biking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "bike").reduce((sum, l) => sum + duration(l), 0);
+  const walking = (legs: TransitLeg[]) => legs.reduce((sum, l) => sum + (l.mode === "walk" ? duration(l) : l.mode === "bike" ? cyclingEffort(l.cyclingRoute, duration(l)).walk : 0), 0);
+  const biking = (legs: TransitLeg[]) => legs.filter(l => l.mode === "bike").reduce((sum, l) => sum + cyclingEffort(l.cyclingRoute, duration(l)).bike, 0);
   const middle = biking(j.transitLegs.slice(first + 1, last));
-  const walk = walking(j.transitLegs), bike = j.originStation.bikeMinutes + biking(j.transitLegs) + j.destinationStation.bikeMinutes;
+  const walk = walking(j.transitLegs) + (j.originStation.walkMinutes ?? 0) + (j.destinationStation.walkMinutes ?? 0), bike = j.originStation.bikeMinutes + biking(j.transitLegs) + j.destinationStation.bikeMinutes;
   return { ascent: climb.unknown ? Infinity : climb.ascent, steepM: climb.unknown ? Infinity : climb.steepM,
     excessM: climb.unknown ? Infinity : climb.excessM, time: j.totalMinutes, leave: -j.startTime.getTime(), bike, walk, active: bike + walk,
     start: j.originStation.bikeMinutes, end: j.destinationStation.bikeMinutes, middle, boardings,
@@ -290,18 +293,23 @@ function accessDepartureTimes(edges: readonly Edge[], stop: Stop, cyclingMinutes
  * checked cycling prefix; all complete paths still undergo the usual solver. */
 export function arrivalDepartureSeeds(network: Network, points: Place[], earliest: Date, o: Options): number[] {
   const times = new Set<number>();
-  let prefix = 0, visits = 0;
+  let prefix = 0, prefixBike = 0, visits = 0;
   for (let stage = 0; stage < points.length - 1; stage++) {
     if (stage) {
       const minutes = endpointIsWalking(o, "access") ? cachedWalking(network.walking, points[stage - 1], points[stage])?.minutes ?? Infinity
         : cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).minutes;
-      if (minutes > (endpointIsWalking(o, "access") ? o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : Math.max(o.maxAccessMinutes, o.maxEgressMinutes))) break;
+      if (endpointIsWalking(o, "access")) { if (minutes > (o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES)) break; }
+      else {
+        const route = cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).route;
+        if (!cyclingFits(route, Math.max(o.maxAccessMinutes, o.maxEgressMinutes), o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES, minutes)) break;
+        prefixBike += cyclingEffort(route, minutes).bike;
+      }
       prefix += minutes; visits += points[stage].visit?.minutes ?? 0;
     }
-    if (!Number.isFinite(prefix) || !endpointIsWalking(o, "access") && prefix > o.maxBikeMinutes) break;
+    if (!Number.isFinite(prefix) || prefixBike > o.maxBikeMinutes) break;
     for (const stop of network.stops.values()) {
-      const access = endpointMinutes(atEndpoint(stop, points[stage], network, "access", o));
-      if (access > endpointTravelLimit(o, "access") || !endpointIsWalking(o, "access") && prefix + access > o.maxBikeMinutes) continue;
+      const station = atEndpoint(stop, points[stage], network, "access", o), access = endpointMinutes(station);
+      if (!endpointFits(station, o, "access") || prefixBike + station.bikeMinutes > o.maxBikeMinutes) continue;
       const edges = [...network.edges.values()].filter(e => e.from === stop.id && e.leg.departure && e.leg.arrival
         && arrivalTime(e.leg)! >= departureTime(e.leg)! && ["transit", "walk"].includes(e.leg.mode)
         && journeyLegAllowed(e.leg, o));
@@ -366,7 +374,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   for (const stop of network.stops.values()) {
     if (!outgoing.has(stop.id)) continue;
     const access = atEndpoint(stop, origin, network, "access", o), accessMinutes = endpointMinutes(access);
-    if (accessMinutes <= endpointTravelLimit(o, "access")) for (const startedAt of o.arriveBy
+    if (endpointFits(access, o, "access")) for (const startedAt of o.arriveBy
       ? accessDepartureTimes(outgoing.get(stop.id)!, stop, accessMinutes, start, o) : [+start]) add({ stop: stop.id, startedAt,
       time: startedAt + accessMinutes * 60_000, bike: access.bikeMinutes,
       walk: access.walkMinutes ?? 0, accessActive: accessMinutes, egressWalk: 0,
@@ -401,7 +409,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     let neighbors = cycling.get(from.id);
     if (!neighbors) {
       neighbors = boardingStops.filter(s => s.id !== from.id).map(stop => ({ stop, ...cyclingLink(network, from, stop, o.cyclingPace) }))
-        .filter(n => n.minutes > 0 && n.minutes <= o.maxIntermediateMinutes);
+        .filter(n => n.minutes > 0 && cyclingFits(n.route, o.maxIntermediateMinutes, o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES, n.minutes));
       cycling.set(from.id, neighbors);
     }
     for (const { stop, minutes, route } of neighbors) {
@@ -410,7 +418,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
         departure: new Date(current.time), arrival: new Date(arrival), departurePlatform: null, arrivalPlatform: null,
         service: "Cycle between stops", serviceName: null, direction: null,
         fromId: from.id, toId: stop.id, fromPoint: from, toPoint: stop, cyclingRoute: route, geometry: route?.points };
-      add({ ...current, stop: stop.id, time: arrival, bike: current.bike + minutes,
+      add({ ...current, stop: stop.id, time: arrival, bike: current.bike + cyclingEffort(route, minutes).bike, walk: current.walk + cyclingEffort(route, minutes).walk,
         climb: addClimb(current.climb, routeClimb(route, minutes, o.hills?.maxUphillPercent)),
         middle: current.middle + 1, needsTransit: true, legs: [...current.legs, leg], alive: true });
     }
@@ -420,7 +428,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
   for (const label of reachable) {
     if (!label.boardings || label.needsTransit) continue;
     const egress = atEndpoint(network.stops.get(label.stop)!, destination, network, "egress", o), egressMinutes = endpointMinutes(egress);
-    if (egressMinutes > endpointTravelLimit(o, "egress") || !cyclingDurationFits(label.bike + egress.bikeMinutes, o) ||
+    if (!endpointFits(egress, o, "egress") || !cyclingDurationFits(label.bike + egress.bikeMinutes, o) ||
       label.time + egressMinutes * 60_000 > horizon) continue;
     const departure = departureTime(label.legs[0])!, arrival = new Date(label.time);
     const journey: Journey = { id: JSON.stringify([label.access.id, ...label.legs.map(l =>
@@ -438,7 +446,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
         if (!endpointMinutes(station)) return [];
         if (station.walkingRoute) return [walkingLeg(station.walkingRoute, time, from, to)];
         return [{ mode: "bike", from: "label" in from ? from.label : from.name, to: "label" in to ? to.label : to.name,
-          fromPoint: from, toPoint: to, departure: new Date(time), arrival: new Date(time + station.bikeMinutes * 60_000),
+          fromPoint: from, toPoint: to, departure: new Date(time), arrival: new Date(time + endpointMinutes(station) * 60_000),
           departurePlatform: null, arrivalPlatform: null, service: "Cycle", serviceName: null, direction: null,
           cyclingRoute: station.cyclingRoute, geometry: station.cyclingRoute?.points }];
       };

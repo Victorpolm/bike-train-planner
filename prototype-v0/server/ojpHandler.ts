@@ -1,3 +1,4 @@
+import { createFormationService, formationKey, type FormationEnvironment } from "./formationService.ts";
 import { claimApiCall, coolDownApi, QuotaError, quotaResponse, type QuotaEnvironment, type QuotaGate } from "./apiQuota.ts";
 import { mergeOjpConnections, ojpTripInfoRequest, ojpTripRequest, parseOjpDetails,
   type OjpQuery, type OjpReference } from "../src/ojp.ts";
@@ -5,7 +6,7 @@ import { providerFailure } from "./providerFailure.ts";
 import { retainedConnections } from "./retainedFare.ts";
 import { waitFor } from "../src/http.ts";
 
-export type OjpEnvironment = QuotaEnvironment & { OJP_API_KEY?: string };
+export type OjpEnvironment = QuotaEnvironment & FormationEnvironment & { OJP_API_KEY?: string };
 const ENDPOINT = "https://api.opentransportdata.swiss/ojp20";
 const MAX_RESPONSE = 8_000_000;
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), {
@@ -59,6 +60,7 @@ async function subscribe(work: OjpWork, signal: AbortSignal) {
 }
 
 export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds = 1500, timeoutMs = 30_000, quota: QuotaGate = claimApiCall) {
+  const checkFormation = createFormationService(fetcher, quota);
   // Bounded, short-lived caches contain timetable responses only. The secret
   // stays in runtime env and is never part of a response, cache key or log.
   const cache = new Map<string, { expires: number; data: unknown }>();
@@ -84,7 +86,7 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
           headers: { Authorization: "Bearer " + key, "Content-Type": "application/xml", Accept: "application/xml" }, body: payload });
         if (!response.ok) {
           console.warn("OJP upstream HTTP failure", response.status);
-          if (!signal.aborted && activeKey === key && [401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
+          if (!signal.aborted && activeKey === key + "\0" + formationKey(env) && [401, 403, 429].includes(response.status)) blockedUntil = Date.now() + 60_000;
           if ([401, 403, 429].includes(response.status)) await coolDownApi(env, key);
           await response.body?.cancel();
           throw new Error("OJP request failed");
@@ -105,21 +107,22 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
   };
   return async (request: Request, env: OjpEnvironment): Promise<Response> => {
     const path = new URL(request.url).pathname, key = env.OJP_API_KEY?.trim().replace(/^Bearer\s+/i, "").trim();
-    if (path === "/api/ojp/status" && request.method === "GET") return json({ available: !!key });
+    if (path === "/api/ojp/status" && request.method === "GET") return json({ available: !!key, formationAvailable: !!formationKey(env) });
     if (!["/api/ojp/connections", "/api/ojp/tripinfo"].includes(path)) return json({ error: "Not found" }, 404);
     if (request.method !== "POST") return json({ error: "Use POST" }, 405);
     const origin = request.headers.get("origin");
     if (origin && origin !== new URL(request.url).origin) return json({ error: "Origin not allowed" }, 403);
     if (!request.headers.get("content-type")?.startsWith("application/json")) return json({ error: "Use JSON" }, 415);
     if (!key) return json({ error: "Bicycle information is not connected yet." }, 503);
-    if (activeKey !== key) {
+    const configurationKey = key + "\0" + formationKey(env);
+    if (activeKey !== configurationKey) {
       for (const work of pending.values()) work.controller.abort(new DOMException("Credentials changed", "AbortError"));
-      cache.clear(); pending.clear(); blockedUntil = 0; activeKey = key;
+      cache.clear(); pending.clear(); blockedUntil = 0; activeKey = configurationKey;
     }
     let body: any;
     try { body = JSON.parse(await boundedText(request, 8192, request.signal)); }
     catch { return json({ error: request.signal.aborted ? "Journey check cancelled." : "Invalid request" }, request.signal.aborted ? 499 : 400); }
-    if (activeKey !== key) return json({ error: "Journey service configuration changed. Please try again." }, 503);
+    if (activeKey !== configurationKey) return json({ error: "Journey service configuration changed. Please try again." }, 503);
     const isConnections = path.endsWith("connections");
     if (!(isConnections ? validQuery(body) : validRef(body))) return json({ error: "Invalid journey references" }, 400);
     if (request.signal.aborted) return json({ error: "Journey check cancelled." }, 499);
@@ -139,9 +142,9 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
         return response;
       }
       const controller = new AbortController(), signal = controller.signal;
-      // Finish before the 35s connection / 20s detail client deadlines.
+      // Finish before the 35s client deadlines, including bounded formation checks.
       const timer = setTimeout(() => controller.abort(new DOMException("Journey check timed out", "TimeoutError")),
-        Math.min(timeoutMs, isConnections ? 30_000 : 18_000));
+        Math.min(timeoutMs, isConnections ? 30_000 : 28_000));
       const work: OjpWork = { promise: Promise.resolve(), controller, subscribers: 0, settled: false };
       const task = (async () => {
       const checked = new Date().toISOString();
@@ -151,10 +154,19 @@ export function createOjpHandler(fetcher: typeof fetch = fetch, paceMilliseconds
         let filtered: Awaited<ReturnType<typeof retainedConnections>> = { legs: [], sources: [] }, warnings: string[] = [];
         try { filtered = await retainedConnections(await requestOjp(ojpTripRequest(body, true, checked), key, signal, env), true, key); }
         catch { signal.throwIfAborted(); warnings = ["The bicycle-filtered search could not finish. Unverified services remain unknown."]; }
-        data = { legs: mergeOjpConnections(unfiltered.legs, filtered.legs), checked, warnings,
+        const legs = mergeOjpConnections(unfiltered.legs, filtered.legs);
+        // Enrich a bounded selection before permission filtering. Remaining services
+        // are checked on selection and refresh, using the same exact references.
+        if (formationKey(env)) for (const leg of legs.filter(l => l.formationReference).slice(0, 3)) {
+          if (Date.now() - Date.parse(checked) > 20_000) break;
+          leg.formation = await checkFormation(leg.formationReference, env, signal);
+        }
+        data = { legs, checked, warnings,
           fareSources: [...new Map([...unfiltered.sources, ...filtered.sources].map(s => [s.id, s])).values()] };
       } else {
-        data = parseOjpDetails(await requestOjp(ojpTripInfoRequest(body, checked), key, signal, env), body);
+        const details = parseOjpDetails(await requestOjp(ojpTripInfoRequest(body, checked), key, signal, env), body);
+        details.formation = await checkFormation(details.formationReference, env, signal);
+        data = details;
       }
       signal.throwIfAborted();
       if (cache.size >= 32) cache.delete(cache.keys().next().value!);

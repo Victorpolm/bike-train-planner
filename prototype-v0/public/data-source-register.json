@@ -1,5 +1,5 @@
 {
-  "reviewed": "2026-10-11",
+  "reviewed": "2026-11-01",
   "scope": "Re.route private Swiss beta. API access, data licences and software licences are separate. Unknown rights are not permission. This register is an engineering audit, not legal clearance.",
   "sources": [
     {
@@ -15,6 +15,21 @@
         "https://images.schweizmobil.ch/files/Datenbezug%20SchweizMobil-Routen.pdf",
         "https://docs.geo.admin.ch/access-data/identify-features.html",
         "https://opendata.swiss/en/dataset/langsamverkehr-veloland-schweiz"
+      ]
+    },
+    {
+      "id": "formation",
+      "source": "ODMCH Train Formation Service (CUS / FOS)",
+      "licence": "ODMCH terms plus registered API access and QoS conditions.",
+      "attribution": "opentransportdata.swiss formation source and check time retained alongside OJP evidence.",
+      "caching": "Bounded 30-second server cache. Formation-only conclusions expire after two minutes; selected services refresh while visible.",
+      "redistribution": "Processed journey presentation under ODMCH terms. API key is server-only and never redistributed. Permission does not imply bicycle-space availability or booking.",
+      "limits": "Published free allowance 50 requests/minute and 20,000/day per key; app shared D1 pacing is at most 40/minute with a conservative rolling daily limit. Other applications using the key remain outside this app’s accounting. Full/stop-based formations cover today; vehicle-based data covers today through three days ahead. Participating operators only.",
+      "status": "Enabled with a separate server-only formation key and shared per-key quota control; no capacity or reservation booking.",
+      "links": [
+        "https://opentransportdata.swiss/en/cookbook/realtime-prediction-cookbook/formationsdaten/",
+        "https://opentransportdata.swiss/en/terms-of-use/",
+        "https://opentransportdata.swiss/en/limits-and-costs/"
       ]
     },
     {

@@ -181,3 +181,8 @@ Primary references: [1](https://photon.komoot.io/) · [2](https://github.com/kom
 - **Status:** Enabled within reviewed scope; future tariff changes need review.
 
 Primary references: [1](https://www.sbb.ch/en/offers/bike-day-pass) · [2](https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike)
+
+
+## ODMCH Train Formation Service — added 1 November 2026
+
+Server-only key aliases API_FORMATION_KEY/OJP_FORMATION_KEY; shared per-key quota control; 30-second bounded cache and two-minute evidence expiry. Today uses full/stop-based formation data, the next three days vehicle-based data. Match explicit train/day/section and through coaches; preserve source and checked time. Equipment provision and reservation markings do not prove capacity or make a booking. The deployed JSON/HTML register contains the current terms, links and limits. [Implementation and live verification](FORMATION_AND_WALKING_2026-11-01.md).

@@ -1,3 +1,4 @@
+import { freshFormation, type FormationEvidence } from "./formation.ts";
 import { profileBikeRule } from "./bikeEligibility.ts";
 import { travelProfileKey, type TravelProfile } from "./travelProfile.ts";
 import { busCarriage, isBus, transitAllowed, type BusPreference } from "./busCarriage.ts";
@@ -10,6 +11,7 @@ export type BicycleScope = typeof BICYCLE_SCOPES[number];
 // exact dated service and boarded segment, not just an operator or route family.
 export type BicycleEvidence = {
   permission: "allowed" | "prohibited" | "unknown";
+  formation?: FormationEvidence;
   fromId: string; toId: string; departure: string; service: string; operator: string | null;
   source: { title: string; url: string; checked: string };
   conditions: string[];
@@ -28,7 +30,20 @@ export function applicableBicycleEvidence(leg: TransitLeg): BicycleEvidence | un
   return e && e.fromId === leg.fromId && e.toId === leg.toId
     && Number.isFinite(leg.departure?.getTime()) && Date.parse(e.departure) === leg.departure?.getTime()
     && e.service === leg.service && e.operator === (leg.operator ?? null)
-    && !!e.source.title && /^https:\/\//.test(e.source.url) && Number.isFinite(Date.parse(e.source.checked)) ? e : undefined;
+    && !!e.source.title && /^https:\/\//.test(e.source.url) && Number.isFinite(Date.parse(e.source.checked)) ? formationBicycleEvidence(e) : undefined;
+}
+/** Formation evidence is refreshed independently; never make a stale coach
+ * permission or reservation sticky in the underlying timetable evidence. */
+function formationBicycleEvidence(e: BicycleEvidence): BicycleEvidence {
+  const f = e.formation, rule = f?.rule;
+  if (!freshFormation(f) || f?.status !== "matched" || !rule) return e;
+  const prior = e.prerequisites?.bikeReservation ?? "unknown";
+  const conflict = rule.bikeReservation === "required" && prior === "not-required";
+  return { ...e, permission: e.permission === "prohibited" ? "prohibited" : rule.permission === "allowed" ? "allowed" : e.permission,
+    conditions: [...e.conditions, ...rule.notes, ...(conflict ? ["The provider gives conflicting reservation conditions. Confirm with the operator before boarding."] : [])],
+    prerequisites: { bikeTicket: "unknown", ...e.prerequisites,
+      bikeReservation: conflict ? "unknown" : rule.bikeReservation === "required" ? "required" : prior,
+      reservationUnspecified: conflict ? false : rule.bikeReservation === "required" ? false : e.prerequisites?.reservationUnspecified ?? true } };
 }
 // The uncached evaluator is also used by equivalence tests and the offline
 // benchmark. Permission remains distinct from tickets, reservations and space.
@@ -65,7 +80,7 @@ export function permissionInputs(leg: TransitLeg): unknown[] {
     leg.realtime?.departurePlatform, leg.realtime?.arrivalPlatform,
     leg.fromId, leg.toId, leg.departure?.getTime(), leg.arrival?.getTime(),
     leg.fromPoint?.lat, leg.fromPoint?.lon, leg.toPoint?.lat, leg.toPoint?.lon,
-    !!e, e?.permission, e?.fromId, e?.toId, e?.departure, e?.service, e?.operator,
+    freshFormation(e?.formation), JSON.stringify(e?.formation), !!e, e?.permission, e?.fromId, e?.toId, e?.departure, e?.service, e?.operator,
     e?.source.title, e?.source.url, e?.source.checked, ...(e?.conditions ?? [])];
 }
 export function bicyclePermission(leg: TransitLeg, profile?: TravelProfile): Permission {

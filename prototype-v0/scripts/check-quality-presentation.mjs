@@ -94,4 +94,13 @@ const ontime=render(TransitTime,{timing:checkedTime});panels++; assert.match(ont
 for(const timing of [{...checkedTime,basis:'scheduled'},{...checkedTime,freshness:'stale'},{...checkedTime,delaySeconds:20}]) {
   const html=render(TransitTime,{timing});panels++;assert.doesNotMatch(html,/On time/);
 }
+for (const [status, text] of [['matched','A bicycle-equipped coach runs through your section.'],['no-data','No usable bicycle coach is confirmed for the whole section.'],['auth-failed','The formation API rejected its configured key.']]) {
+  const formation={status,message:text,checked:new Date().toISOString(),source:'https://opentransportdata.swiss/en/cookbook/realtime-prediction-cookbook/formationsdaten/',
+    ...(status==='matched'?{coaches:['2'],rule:interpretBicycleAttributes([{code:'A__VR',text:'Bicycle reservation required',scope:'segment'}])}:{})};
+  const evidence={permission:'unknown',fromId:train.fromId,toId:train.toId,departure:train.departure.toISOString(),service:train.service,operator:train.operator,
+    source:{title:'OJP',url:'https://example.test',checked:'2026-11-01'},conditions:[],formation};
+  const html=render(BicycleDetails,{leg:{...train,bicycleEvidence:evidence},profile:DEFAULT_FARE_PROFILE});panels++;
+  assert.ok(html.includes(text));assert.match(html,/Train formation evidence/);
+  if(status==='matched') { assert.match(html,/Reservation required/);assert.match(html,/Bicycle coach: 2/); }
+}
 console.log(JSON.stringify({panels,status:'passed',browserInteraction:'not-tested'}));

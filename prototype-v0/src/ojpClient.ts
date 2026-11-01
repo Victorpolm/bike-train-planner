@@ -28,7 +28,7 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
     if (!Number.isFinite(leg.departure!.getTime()) || !Number.isFinite(leg.arrival!.getTime())) continue;
     if (input.rule && input.reference) {
       leg.bicycleEvidence = {
-        permission: input.rule.permission, basis: input.rule.basis,
+        permission: input.rule.permission, basis: input.rule.basis, formation: input.formation,
         fromId: from.id, toId: to.id, departure: input.departure, service: input.service, operator: input.operator,
         source: { title: input.rule.basis === "ojp-filter" ? "OJP bicycle-compatible search" : "OJP dated service conditions", url: SOURCE, checked: data.checked },
         conditions: input.rule.notes, prerequisites: { bikeTicket: "unknown", bikeReservation: input.rule.bikeReservation, reservationUnspecified: input.rule.reservationUnspecified },
@@ -111,7 +111,7 @@ export function checkOjpTripInfo(ref: OjpReference, signal?: AbortSignal): Promi
   const key = JSON.stringify(body), cached = detailCache.get(key);
   if (cached && cached.expires > Date.now()) return detailSubscriber(cached.promise, signal);
   const promise = (async () => {
-    return await fetchJson<OjpDetails>("/api/ojp/tripinfo", undefined, 20_000, fetch,
+    return await fetchJson<OjpDetails>("/api/ojp/tripinfo", undefined, 35_000, fetch,
       { method: "POST", headers: { "Content-Type": "application/json" }, body: key });
   })();
   if (detailCache.size >= 64) detailCache.delete(detailCache.keys().next().value!);
