@@ -18,7 +18,10 @@ function prepare(data: TransferData) {
 const platform = (s: string) => s.trim().replace(/\s+/g, "").toUpperCase();
 const matchesPlatform = (actual: string, wanted: string) => platform(actual) === wanted || !!wanted && platform(actual).split("/").includes(wanted);
 function resolve(query: TransferEndpointQuery, data: ReturnType<typeof prepare>): StaticTransferEndpoint {
-  const key = transferEndpointKey(query), missing = (status: "unmapped" | "ambiguous"): StaticTransferEndpoint => ({ key, status, feed: data.feed });
+  const key = transferEndpointKey(query);
+  let verifiedStation = "";
+  const missing = (status: "unmapped" | "ambiguous"): StaticTransferEndpoint => ({ key, status, feed: data.feed,
+    ...(verifiedStation ? { stationId: verifiedStation, stationIdentityVerified: true } : {}) });
   const rowAt = (id: string) => { const i = data.ids.get(id); return i === undefined ? undefined : data.stops[i]; };
   const exact = rowAt(query.ref), graph = query.stopId ? rowAt(query.stopId) : undefined;
   // IDs come from the supplied DIDOK/original_stop_id columns, never SLOID arithmetic or name similarity.
@@ -26,6 +29,10 @@ function resolve(query: TransferEndpointQuery, data: ReturnType<typeof prepare>)
   const refDidok = exact?.[2] || (data.stations.has(query.ref) ? query.ref : originalStations.size === 1 ? [...originalStations][0] : "");
   const graphDidok = graph?.[2] || (query.stopId && data.stations.has(query.stopId) ? query.stopId : "");
   if (refDidok && graphDidok && refDidok !== graphDidok) return missing("unmapped");
+  // Country/station identity does not require a unique platform. Keep the
+  // official reference join even when transfer-time resolution is ambiguous.
+  // A graph node alone must never rescue an unknown provider reference.
+  verifiedStation = refDidok;
   const didok = refDidok || graphDidok;
   let candidates: number[];
   const code = platform(query.platform ?? "");

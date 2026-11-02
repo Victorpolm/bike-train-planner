@@ -21,6 +21,8 @@ export type BicycleEvidence = {
     bikeReservation: "required" | "not-required" | "unknown";
     /** True only when the adapter found no reservation condition at all. */
     reservationUnspecified?: boolean;
+    /** Successful exact-service/section conditions check by the OJP adapter. */
+    conditionsChecked?: boolean;
     ticketSource?: { title: string; url: string; checked: string };
     bookingUrl?: string;
   };
@@ -74,8 +76,8 @@ export function permissionInputs(leg: TransitLeg): unknown[] {
   // fields/conditions and point mutations must all invalidate a cached verdict.
   // Keep these dependencies aligned whenever a permission rule is extended.
   return [leg.mode, leg.category, leg.operator, leg.service, leg.serviceName, leg.from, leg.to,
-    leg.stationArrival?.status, leg.stationArrival?.key, leg.stationArrival?.stationId,
-    leg.stationDeparture?.status, leg.stationDeparture?.key, leg.stationDeparture?.stationId,
+    leg.stationArrival?.status, leg.stationArrival?.key, leg.stationArrival?.stationId, leg.stationArrival?.stationIdentityVerified,
+    leg.stationDeparture?.status, leg.stationDeparture?.key, leg.stationDeparture?.stationId, leg.stationDeparture?.stationIdentityVerified,
     leg.ojp?.fromRef, leg.ojp?.toRef, leg.ojp?.operatingDay, leg.departurePlatform, leg.arrivalPlatform,
     leg.realtime?.departurePlatform, leg.realtime?.arrivalPlatform,
     leg.fromId, leg.toId, leg.departure?.getTime(), leg.arrival?.getTime(),

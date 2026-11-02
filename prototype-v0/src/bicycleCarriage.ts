@@ -9,6 +9,7 @@ import { normalizeName as normalized } from "./normalization.ts";
 import { applicableBicycleEvidence, bicyclePermission, permissionInputs, type BicycleEvidence } from "./bicyclePermission.ts";
 import { busCarriage } from "./busCarriage.ts";
 import { localChildBikeConcession } from "./localTransport.ts";
+import { nationalBicycleReservation } from "./nationalBicycleRules.ts";
 import type { TransitLeg } from "./routing.ts";
 import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB_IR_BICYCLES, operatorBicycleRule, isSbb } from "./operatorBicycleRules.ts";
 
@@ -29,7 +30,7 @@ const SBB_BICYCLES = {
 
 // Exact service codes and complete explicit sentences only. A generic R is a
 // passenger reservation; missing symbols and conditional prose are not exemptions.
-export const isBicycleAttribute = (a: BicycleAttribute) => /^A__V[HNRBICKT]$/.test(a.code) || /velo|bicycl|bike|fahrr|vélo|biciclett/i.test(a.text);
+export const isBicycleAttribute = (a: BicycleAttribute) => /^A__V[A-Z]$/.test(a.code) || /velo|bicycl|bike|fahrr|vélo|biciclett/i.test(a.text);
 const wording = (s: string) => normalized(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.!]$/, "");
 const noReservationText = /^(?:bicycles?: (?:no reservation required|carriage (?:possible |permitted )?without reservation)|velos?: (?:reservation non obligatoire|sans reservation)|velos?: (?:keine reservation erforderlich|mitnahme ohne reservation moglich)|biciclette: (?:prenotazione non obbligatoria|trasporto senza prenotazione))$/;
 const requiredText = /^(?:bicycles?: reservation (?:required|compulsory|mandatory)|velos?: reservation obligatoire|velos?: reservierung obligatorisch|biciclette: prenotazione obbligatoria)$/;
@@ -65,7 +66,8 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
     // Contradictory reservation notes require confirmation; do not silently
     // select the less restrictive reading.
     bikeReservation: reservation && noReservation ? "unknown" : reservation ? "required" : noReservation ? "not-required" : "unknown",
-    reservationUnspecified: !relevant.some(a => /reserv|prenotaz/i.test(a.text) || a.code === "A__VR"),
+    reservationUnspecified: !relevant.some(a => /reserv|prenotaz|book|anmeld/i.test(wording(a.text)) || a.code === "A__VR"
+      || !/^A__V[HNRBICKT]$/.test(a.code) && !allowedText.test(wording(a.text))),
     notes: [...new Set(notes)], attributes: relevant,
   };
 }
@@ -74,6 +76,10 @@ export function evaluateCarriageForLeg(leg: TransitLeg, profile?: TravelProfile)
   const specific = profileBikeRule(leg, profile, applicableBicycleEvidence(leg));
   const evidence = applicableBicycleEvidence(leg), policy = busCarriage(leg);
   const requirements = evidence?.prerequisites, operatorRule = operatorBicycleRule(leg);
+  const permission = bicyclePermission(leg, profile);
+  // A more specific operator rule (including unresolved rail/calendar scope)
+  // remains authoritative. The shared fallback cannot erase it.
+  const national = !operatorRule && !specific.handLuggage ? nationalBicycleReservation(leg, evidence, permission) : null;
   const sob = sobMainlineRule(leg);
   const sbbIR = sbbInterRegioRule(leg);
   const operatorPermissionSource = operatorRule && operatorRule.permission !== "unknown" ? operatorRule.source : sob ? SOB_BICYCLES : sbbIR ? SBB_IR_BICYCLES : policy?.verifiesPermission ? policy.source : undefined;
@@ -82,28 +88,28 @@ export function evaluateCarriageForLeg(leg: TransitLeg, profile?: TravelProfile)
     && !evidence?.conditions.some(note => /conflicting reservation/i.test(note)) && !!operatorRule;
   const sbb = isSbb(leg);
   const bikeTicket = requirements?.bikeTicket !== undefined && requirements.bikeTicket !== "unknown"
-    ? requirements.bikeTicket : sbb || sob || operatorRule?.ticket === "required" || policy?.ticket === "required" ? "required" : "unknown";
+    ? requirements.bikeTicket : sbb || sob || operatorRule?.ticket === "required" || policy?.ticket === "required" || national ? "required" : "unknown";
   const date=leg.departure?swissDateTimeInput(leg.departure).slice(0,10):"";
   const childFree=!!profile && childBikeFree(profile) && validPassOn(profile,date) && domesticSwissLeg(leg) && date>=tariffSource("t600").validFrom && date<=tariffSource("t600").validThrough &&
     (["SBB","BLS","RHB","SOB"].includes(operatorCode(leg.operator))&&["IC","IR","RE","S","R","EC","ICE","RJX","PE"].includes(normalizeCode(leg.category)) || ["VBZ","VBG","VZO","STBW","PAG"].includes(operatorCode(leg.operator)) || localChildBikeConcession(leg));
   const childGuidance=childFree?["An eligible child bicycle travels free under the saved accompaniment/travelcard conditions. Children aged 6–15 still need a bicycle reservation where compulsory."]:[];
-  const ticketSource = requirements?.ticketSource ?? (operatorRule?.source ?? (sbb ? SBB_BICYCLES : policy?.source));
+  const ticketSource = requirements?.ticketSource ?? (operatorRule?.source ?? (sbb ? SBB_BICYCLES : policy?.source ?? national?.membershipSource));
   return {
-    permission: bicyclePermission(leg, profile), evidence,
+    permission, evidence, nationalRule: national,
     profileRule: specific,
     bikeTicket: specific.reservationExempt || childFree ? "not-required" : bikeTicket,
-    bikeReservation: specific.reservationExempt || childFree && profile!.age! < 6 ? "not-required" : requirements?.bikeReservation && requirements.bikeReservation !== "unknown" ? requirements.bikeReservation : reservationFallback ? operatorRule!.reservation : "unknown",
-    reservationSource: reservationFallback && (!requirements || requirements.bikeReservation === "unknown") ? sob ? SOB_RESERVATIONS : operatorRule?.source : undefined,
+    bikeReservation: specific.reservationExempt || childFree && profile!.age! < 6 ? "not-required" : requirements?.bikeReservation && requirements.bikeReservation !== "unknown" ? requirements.bikeReservation : reservationFallback ? operatorRule!.reservation : national?.reservation ?? "unknown",
+    reservationSource: reservationFallback && (!requirements || requirements.bikeReservation === "unknown") ? sob ? SOB_RESERVATIONS : operatorRule?.source : national?.source,
     permissionSource: operatorRule?.permission === "prohibited" || !evidence || evidence.permission === "unknown" ? operatorPermissionSource : undefined,
     ticketSource,
     bookingUrl: requirements?.bookingUrl ?? ticketSource?.url,
-    guidance: specific.guidance.length || childGuidance.length ? [...new Set([...specific.guidance,...childGuidance,...(operatorRule?.instructions??policy?.instructions??[])])] : operatorRule ? operatorRule.instructions : sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
+    guidance: national ? [...specific.guidance, ...childGuidance, national.explanation, ...(policy?.permission !== "unknown" ? policy?.instructions ?? [] : [])] : specific.guidance.length || childGuidance.length ? [...new Set([...specific.guidance,...childGuidance,...(operatorRule?.instructions??policy?.instructions??[])])] : operatorRule ? operatorRule.instructions : sob ? ["Take a bicycle ticket or pass. Load and unload the bicycle yourself and use the designated bicycle area.",
       "Bicycle spaces on these SOB trains cannot be reserved. Carriage depends on space; follow the crew’s instructions."] : sbbIR ? [
       "For a standard bicycle up to two metres long: load and unload it yourself and use the designated bicycle area.",
       "Take a bicycle ticket or pass. Carriage depends on space; keep doors and aisles clear and follow staff instructions.",
       "The normal domestic InterRegio rule does not require a bicycle reservation. Any dated service restriction shown above takes precedence.",
     ] : policy?.instructions ?? [],
-    policySource: operatorPermissionSource ?? policy?.source,
+    policySource: operatorPermissionSource ?? policy?.source ?? national?.membershipSource,
   };
 }
 
@@ -113,7 +119,7 @@ export function carriageForLeg(leg: TransitLeg, profile?: TravelProfile) {
   const source = requirements?.ticketSource;
   // Permission inputs cover operator/date/segment/condition mutations. Retain
   // source values too: bookingUrl may have been derived from a mutable URL.
-  const inputs = [travelProfileKey(profile), ...permissionInputs(leg), evidence, requirements?.bikeTicket, requirements?.bikeReservation, requirements?.reservationUnspecified,
+  const inputs = [travelProfileKey(profile), ...permissionInputs(leg), evidence, requirements?.bikeTicket, requirements?.bikeReservation, requirements?.reservationUnspecified, requirements?.conditionsChecked,
     source, source?.title, source?.url, source?.checked, requirements?.bookingUrl];
   const cached = carriageCache.get(leg);
   if (cached && cached.inputs.length === inputs.length && inputs.every((value, i) => Object.is(value, cached.inputs[i]))) return cached.value;
@@ -154,7 +160,7 @@ export function withTripInfoRule(evidence: BicycleEvidence, rule: CarriageRule, 
     basis: rule.basis === "unassessed" ? evidence.basis : rule.basis,
     conditions,
     source: { title: "OJP service and stop conditions", url: "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptripinforequest-2-0/", checked },
-    prerequisites: { bikeTicket: evidence.prerequisites?.bikeTicket ?? "unknown", ...evidence.prerequisites,
+    prerequisites: { bikeTicket: evidence.prerequisites?.bikeTicket ?? "unknown", ...evidence.prerequisites, conditionsChecked: true,
       reservationUnspecified: !conflict && rule.reservationUnspecified === true && (evidence.prerequisites === undefined || evidence.prerequisites.reservationUnspecified === true),
       bikeReservation: conflict ? "unknown" : rule.bikeReservation === "unknown" ? previousReservation : rule.bikeReservation },
   };

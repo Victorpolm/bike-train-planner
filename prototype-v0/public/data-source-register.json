@@ -1,5 +1,5 @@
 {
-  "reviewed": "2026-11-01",
+  "reviewed": "2026-11-02",
   "scope": "Re.route private Swiss beta. API access, data licences and software licences are separate. Unknown rights are not permission. This register is an engineering audit, not legal clearance.",
   "sources": [
     {
@@ -241,14 +241,17 @@
       "attribution": "Per-rule original publisher URL, checked date and validity dates.",
       "caching": "Reviewed dated constants/catalogues; source monitoring retrieves private review candidates before renewal. Prices and rule validity are never extended just because a document was downloaded.",
       "redistribution": "No full tariff documents, photographs or website prose redistributed. App estimates and operator purchase offers are distinguished.",
-      "limits": "Bicycle permissions, ticket entitlement, reservation requirement and available space are separate. Normal day-pass prices do not establish every operator/reservation charge.",
+      "limits": "Bicycle permissions, ticket entitlement, reservation requirement and available space are separate. Normal day-pass prices do not establish every operator/reservation charge. The June 2026 T600 matrix supplies 148 conservative unqualified business-number candidates. Shared reservation inference is limited to ordinary domestic bus/tram services with independently established permission and a successful exact-service conditions check; excluded/ambiguous scope and unknown notes remain unresolved. Review boundary: 12 December 2026.",
       "status": "Enabled for reviewed national and local scopes. Operator-specific sources take precedence over conflicting generic summaries; unresolved peak hours, trailer fares and group conditions remain explicit.",
       "links": [
         "https://www.sbb.ch/en/offers/bike-day-pass",
         "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike",
         "https://www.bernmobil.ch/de/unternehmen/faq",
         "https://www.tpf.ch/fr/abos-et-billets/mobilite-combinee/velos",
-        "https://www.unireso.com/titres-de-transport/"
+        "https://www.unireso.com/titres-de-transport/",
+        "https://www.allianceswisspass.ch/awbf",
+        "https://www.allianceswisspass.ch/fr/asp/Telechargements?download=2666",
+        "https://www.zvv.ch/de/allgemeine-seiten/tarif/verbundtarif-und-richtlinien/gepaeck-velo.html"
       ]
     },
     {
@@ -264,6 +267,21 @@
         "https://opendata.tpg.ch/explore/dataset/arrets/",
         "https://opendata.tpg.ch/terms/terms-and-conditions/",
         "https://www.unireso.com/wp-content/uploads/2026/06/CGV-unireso-Juin-2026-1.pdf"
+      ]
+    },
+    {
+      "id": "operator-identities",
+      "source": "Official Swiss business organisation register (Atlas / ODMCH)",
+      "licence": "ODMCH open-data terms; dataset and cookbook attribution retained.",
+      "attribution": "opentransportdata.swiss; official inventory retrieved 11 October 2026, source hash retained. Independent Re.route identity extraction.",
+      "caching": "Compact generated exact business-number/SBOID identities; ambiguous and non-validated records excluded; business validity dates retained. Regenerate from the official CSV with scripts/generate-operator-identities.py.",
+      "redistribution": "Only derived identity fields; no credentials or downloaded bulk archive.",
+      "limits": "Business units remain distinct. Parent-company identity does not confer another unit’s bicycle permissions, fares or T600 membership. A current refresh was unavailable on 2 November; this release uses the verified 11 October inventory.",
+      "status": "Enabled for exact operator resolution; no fuzzy matching or bare numeric identifier inference.",
+      "links": [
+        "https://opentransportdata.swiss/en/cookbook/masterdata-cookbook/business-organisations/",
+        "https://data.opentransportdata.swiss/dataset/business-organisation-v2/permalink",
+        "https://opentransportdata.swiss/en/terms-of-use/"
       ]
     }
   ]

@@ -26,7 +26,10 @@ export function bicycleStatus(leg: TransitLeg, profile?: TravelProfile) {
     : rule.permission === "confirmed" ? rule.bikeReservation === "unknown"
       ? "Bicycle carriage is established. The service details and applicable operator rules do not establish whether you need a reservation."
       : "Use the marked bicycle area. Permission does not confirm a free space or book a reservation."
-    : operatorBicycleRule(leg)?.instructions.join(" ") || "No explicit bicycle-carriage information or applicable reviewed operator rule covers this dated service. Absence of a symbol does not mean bicycles are prohibited.";
+    : operatorBicycleRule(leg)?.instructions.join(" ") || (rule.evidence?.source.url.includes("ojptripinforequest")
+      ? "The exact service and boarded section were checked. The provider still supplies no usable bicycle permission, and no reviewed operator rule resolves it. A missing symbol is not a ban."
+      : !leg.ojp ? "This timetable result has no exact service reference for a detailed bicycle check. No applicable operator rule establishes permission for this departure."
+      : "No explicit bicycle-carriage information or applicable reviewed operator rule covers this dated service. Absence of a symbol does not mean bicycles are prohibited.");
   return { title, permission, reservation, explanation, conflict,
     icon: rule.permission === "prohibited" ? "prohibited" as const
       : rule.permission !== "confirmed" || conflict ? "unverified" as const

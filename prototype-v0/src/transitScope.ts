@@ -6,7 +6,7 @@ export function swissStopId(leg: TransitLeg, end: "arrival" | "departure"): stri
   if (/^85\d{5}$/.test(id ?? "")) return id!;
   const endpoint = end === "arrival" ? leg.stationArrival : leg.stationDeparture;
   // A ch: SLOID prefix also occurs abroad. Require the maintained DIDOK join.
-  return endpoint && ["matched", "station"].includes(endpoint.status)
+  return endpoint && (["matched", "station"].includes(endpoint.status) || endpoint.stationIdentityVerified === true && endpoint.status !== "unavailable")
     && endpoint.key === transferEndpointKey(transferEndpointQuery(leg, end))
     && /^85\d{5}$/.test(endpoint.stationId ?? "") ? endpoint.stationId! : null;
 }

@@ -11,6 +11,8 @@ export type StaticTransferEndpoint = {
   reason?: string;
   id?: string; minimums?: Record<string, number>; feed?: TransferFeed;
   stationId?: string; stationMaximumSeconds?: number;
+  /** Official reference-to-station join, independent of platform resolution. */
+  stationIdentityVerified?: boolean;
 };
 export function transferEndpointQuery(leg: TransitLeg, end: "arrival" | "departure"): TransferEndpointQuery {
   const arrival = end === "arrival", stopId = arrival ? leg.toId : leg.fromId;

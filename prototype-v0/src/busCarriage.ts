@@ -21,7 +21,7 @@ const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/hel
 const postbus = new Set(["PAG", "POSTAUTO", "POSTAUTO AG", "POSTBUS", "OJP:801"]);
 const zvvOperators: Record<string, string> = {
   VBZ: "VBZ", "VERKEHRSBETRIEBE ZÜRICH": "VBZ", VBG: "VBG", "VERKEHRSBETRIEBE GLATTAL": "VBG",
-  VZO: "VZO", "VERKEHRSBETRIEBE ZÜRICHSEE UND OBERLAND": "VZO", "STADTBUS WINTERTHUR": "Stadtbus Winterthur",
+  VZO: "VZO", "VERKEHRSBETRIEBE ZÜRICHSEE UND OBERLAND": "VZO", STBW: "Stadtbus Winterthur", "STADTBUS WINTERTHUR": "Stadtbus Winterthur",
 };
 const prohibited: Record<string, string> = {
   ABF: "Autobus Freienbach", "AUTOBUS FREIENBACH": "Autobus Freienbach",

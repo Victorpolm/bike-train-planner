@@ -52,7 +52,15 @@ export function profileBikeRule(leg: TransitLeg, profile?: TravelProfile, eviden
     else if(permission!=="prohibited") permission="uncertain";
     if(currentLocal && local.detachedTrailerFree && bike.trailer==="detached") guidance.push(`${local.name} lists detached trailers as free; loading and available space still need checking.`);
   }
-  if(!swiss && profile?.bicycle) permission=permission==="prohibited"?permission:"uncertain";
+  // An ordinary pedal bicycle needs no Swiss-specific profile exception.
+  // Missing country/platform data must not erase positive dated permission.
+  // Special configurations still need an applicable operator/type policy.
+  const ordinary = ["ordinary","folding","child","balance"].includes(bike.kind) && bike.carriage==="unfolded"
+    && bike.drive==="pedal" && bike.selfLoading && !special && bike.trailer==="none";
+  if(!swiss && profile?.bicycle && !ordinary && permission!=="prohibited") {
+    permission="uncertain";
+    guidance.push("The bicycle-type rules for this section have not been verified. Ordinary-bicycle information alone cannot establish acceptance of this configuration.");
+  }
   if((luggage || permission==="confirmed") && (!leg.departure || swissDateTimeInput(leg.arrival??leg.departure).slice(0,10)>tariffSource("t600").validThrough)) {permission="uncertain";guidance.push("The reviewed bicycle-type rules have reached their renewal boundary. Confirm current conditions with the operator.");}
   return {permission,handLuggage:luggage,reservationExempt:luggage && permission==="confirmed",pricingUncertain:unmeasured || bike.trailer!=="none" && !(currentLocal&&local.detachedTrailerFree&&bike.trailer==="detached") || bike.drive==="other" || !bike.selfLoading,
     guidance,source:currentLocal?local.source:BIKE_PROFILE_SOURCE};

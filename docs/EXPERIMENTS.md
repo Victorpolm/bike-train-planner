@@ -955,3 +955,12 @@ Add nine cases covering positive service bicycle provision and overriding VN/VI,
 **Expected and observed:** With cycling cap 5, access cap 5 and walking allowance 3, the path reaches the station at08:08, boards the08:11 train with its three-minute allowance, and arrives08:31. Metrics are bike 5 / walk 3. Walking allowance 2 rejects it; cycling minimum 8 rejects it; moving the train to08:10 makes it infeasible. Baseline/Extended and arrive-by agree. Pushing/carrying and an ordered visit retain the same accounting. A separate intermediate connection accepts riding 2 + walking 7 under intermediate cycling cap 2, but rejects walking cap 6. Edits preserve elapsed catchability; navigation deducts riding only. The existing111 m access-gap acquisition test accepts20 riding/22 elapsed minutes under cycling cap 20 and still queries08:25.
 
 719 JS regressions, 16 Python checks,64 rendered panels and production builds pass. Formation tests also exercise the recorded RE37 grouped VH syntax against synthetic section boundaries; production IC904/RE37 matching is separately recorded. [Release evidence](FORMATION_AND_WALKING_2026-11-01.md).
+
+
+## 2026-11-02 — B31 and Beatenbucht bicycle-permission golden cases
+
+**B31:** Captured 3 November 12:02–12:19 Swiss time, Zürich Waserstrasse→Bahnhofplatz/HB, raw operator 849, no bicycle attributes but positive dated bicycle-filter match. Expected/observed: ordinary bicycle confirmed, bike ticket required, no reservation under checked ZVV/T600 scope. Removing the successful conditions-check marker leaves reservation unknown; VR requires a reservation and conflicts/unknown wording stay unresolved.
+
+**B21:** Captured 3 November 08:10–08:38 Swiss time, Interlaken Ost Bahnhof→Beatenbucht, operator 146, VB and positive filter. Before: ambiguous platform erased domestic identity and downgraded ordinary-bike permission. After: official DIDOK 8507178 retained independently; permission confirmed, scoped reservation not required; no invented platform-transfer time. Unknown/conflicting provider references and stale keys are rejected. STI Berg 605 cannot inherit STI 146 membership.
+
+**Replay:** Nine captured Swiss query cases / 60 legs change from 51 confirmed, 5 uncertain, 4 prohibited to 56 confirmed, 0 uncertain, 4 prohibited. All previously positive evidence remains positive; all four bans remain. This sample does not prove nationwide completeness. Automatic exact-section checks are capped at two calls, budgeted and fail-closed. [Release record](BICYCLE_COVERAGE_2026-11-02.md).

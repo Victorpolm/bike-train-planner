@@ -2,6 +2,8 @@ import { mergeAccessRules, mergeTransferRules } from "./transferTimes.ts";
 import { normalizeName as normalize } from "./normalization.ts";
 import { haversineKm, type TransitLeg } from "./routing.ts";
 import type { BicycleEvidence } from "./bicyclePermission.ts";
+import { bicyclePermission } from "./bicyclePermission.ts";
+import { applyRealtimeService } from "./realtimeService.ts";
 import type { Network, Stop } from "./model.ts";
 import type { OjpConnections, OjpDetails, OjpReference, OjpStop } from "./ojp.ts";
 import { fetchJson, HttpError } from "./http.ts";
@@ -31,7 +33,7 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
         permission: input.rule.permission, basis: input.rule.basis, formation: input.formation,
         fromId: from.id, toId: to.id, departure: input.departure, service: input.service, operator: input.operator,
         source: { title: input.rule.basis === "ojp-filter" ? "OJP bicycle-compatible search" : "OJP dated service conditions", url: SOURCE, checked: data.checked },
-        conditions: input.rule.notes, prerequisites: { bikeTicket: "unknown", bikeReservation: input.rule.bikeReservation, reservationUnspecified: input.rule.reservationUnspecified },
+        conditions: input.rule.notes, prerequisites: { bikeTicket: "unknown", bikeReservation: input.rule.bikeReservation, reservationUnspecified: input.rule.reservationUnspecified, conditionsChecked: true },
       };
     }
     const id = JSON.stringify(["ojp", input.reference?.journeyRef, input.reference?.operatingDay, from.id, to.id, input.departure, input.arrival]);
@@ -62,12 +64,36 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
 
 export class OjpClient {
   private cache = new Map<string, Promise<OjpConnections | null>>();
+  private investigations = new Set<string>();
   readonly warnings = new Set<string>();
   private unavailable = false;
   signal: AbortSignal;
   private fetcher: typeof fetch;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch) { this.signal = signal; this.fetcher = fetcher; }
   fork(signal: AbortSignal) { return new OjpClient(signal, this.fetcher); }
+  async investigateBicycles(network: Network, claim: (calls: number) => boolean) {
+    // At most two exact-section checks per search, charged to the existing
+    // request budget. A missing result never becomes a prohibition/exemption.
+    for (const edge of network.edges.values()) {
+      if (this.investigations.size >= 2) return;
+      const leg = edge.leg, ref = leg.ojp;
+      if (!ref || bicyclePermission(leg) !== "uncertain") continue;
+      const body = tripInfoBody(ref), key = JSON.stringify(body);
+      if (this.investigations.has(key)) continue;
+      if (!claim(1)) return;
+      this.investigations.add(key);
+      try {
+        const details = await fetchJson<OjpDetails>("/api/ojp/tripinfo", this.signal, 12_000, this.fetcher,
+          { method: "POST", headers: { "Content-Type": "application/json" }, body: key });
+        if (!details.rule || !details.checked) throw new Error("Invalid service details");
+        const updated = applyRealtimeService(leg, details);
+        if (updated.bicycleEvidence) applyBicycleEvidence(network, leg, updated.bicycleEvidence);
+      } catch {
+        this.signal.throwIfAborted();
+        this.warnings.add(`The detailed bicycle check for ${leg.service} was unavailable; its permission remains unverified.`);
+      }
+    }
+  }
   static async connect(signal: AbortSignal, fetcher: typeof fetch = fetch): Promise<OjpClient | null> {
     try {
       const status = await fetchJson<{ available: boolean }>("/api/ojp/status", signal, 15_000, fetcher);
@@ -104,10 +130,11 @@ export class OjpClient {
 }
 
 const detailCache = new Map<string, { expires: number; promise: Promise<OjpDetails> }>();
+const tripInfoBody = (ref: OjpReference) => ({ journeyRef: ref.journeyRef, operatingDay: ref.operatingDay, fromRef: ref.fromRef, toRef: ref.toRef,
+  departure: ref.departure, arrival: ref.arrival });
 export function checkOjpTripInfo(ref: OjpReference, signal?: AbortSignal): Promise<OjpDetails> {
   if (signal?.aborted) return Promise.reject(signal.reason);
-  const body = { journeyRef: ref.journeyRef, operatingDay: ref.operatingDay, fromRef: ref.fromRef, toRef: ref.toRef,
-    departure: ref.departure, arrival: ref.arrival };
+  const body = tripInfoBody(ref);
   const key = JSON.stringify(body), cached = detailCache.get(key);
   if (cached && cached.expires > Date.now()) return detailSubscriber(cached.promise, signal);
   const promise = (async () => {

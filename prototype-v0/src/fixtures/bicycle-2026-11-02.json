@@ -1,0 +1,221 @@
+{
+  "b31": {
+    "query": {
+      "from": {
+        "id": "8591424",
+        "name": "Zürich, Waserstrasse",
+        "lat": 47.358318,
+        "lon": 8.584058
+      },
+      "to": {
+        "id": "8587348",
+        "name": "Zürich, Bahnhofplatz/HB",
+        "lat": 47.377239,
+        "lon": 8.53934
+      },
+      "departure": "2026-11-03T11:00:00Z"
+    },
+    "checked": "2026-11-02T07:42:59.518Z",
+    "leg": {
+      "accessRules": [
+        {
+          "point": {
+            "lat": 47.35832,
+            "lon": 8.58405
+          },
+          "toRef": "ch:1:sloid:91424::11",
+          "seconds": 60,
+          "departure": "2026-11-03T11:02:00.000Z",
+          "operatingDay": "2026-11-03",
+          "checked": "2026-11-02T07:43:01.556Z"
+        },
+        {
+          "point": {
+            "lat": 47.35832,
+            "lon": 8.58405
+          },
+          "toRef": "ch:1:sloid:91424::11",
+          "seconds": 60,
+          "departure": "2026-11-03T11:02:00.000Z",
+          "operatingDay": "2026-11-03",
+          "checked": "2026-11-02T07:43:02.548Z"
+        }
+      ],
+      "mode": "transit",
+      "from": {
+        "id": "ch:1:sloid:91424",
+        "name": "Zürich, Waserstrasse",
+        "lat": 47.35847,
+        "lon": 8.58348
+      },
+      "to": {
+        "id": "ch:1:sloid:87348",
+        "name": "Zürich, Bahnhofplatz/HB",
+        "lat": 47.37733,
+        "lon": 8.53962
+      },
+      "departure": "2026-11-03T11:02:00.000Z",
+      "arrival": "2026-11-03T11:19:00.000Z",
+      "service": "B 31",
+      "transferRules": [],
+      "serviceName": "31",
+      "category": "B",
+      "operator": "ojp:849",
+      "direction": "Zürich, Hermetschloo",
+      "departurePlatform": null,
+      "arrivalPlatform": null,
+      "reference": {
+        "journeyRef": "ch:1:sjyid:100648:plan:be8bb954-4862-41c1-8a1b-78643d2ff860",
+        "operatingDay": "2026-11-03",
+        "fromRef": "ch:1:sloid:91424::11",
+        "toRef": "ch:1:sloid:87348::11",
+        "fromOrder": 1,
+        "toOrder": 14,
+        "departure": "2026-11-03T11:02:00.000Z",
+        "arrival": "2026-11-03T11:19:00.000Z",
+        "bikeFiltered": true,
+        "attributes": [
+          {
+            "code": "A__NF",
+            "text": "Niederflureinstieg",
+            "scope": "service"
+          },
+          {
+            "code": "A__NF",
+            "text": "Niederflureinstieg",
+            "scope": "service"
+          }
+        ]
+      },
+      "rule": {
+        "permission": "allowed",
+        "basis": "ojp-filter",
+        "bikeReservation": "unknown",
+        "reservationUnspecified": true,
+        "notes": [],
+        "attributes": []
+      }
+    }
+  },
+  "b21": {
+    "query": {
+      "from": {
+        "id": "8507492",
+        "name": "Interlaken Ost",
+        "lat": 46.690498,
+        "lon": 7.868999
+      },
+      "to": {
+        "id": "8507751",
+        "name": "Beatenberg, Station",
+        "lat": 46.69064,
+        "lon": 7.765693
+      },
+      "departure": "2026-11-03T07:00:00Z"
+    },
+    "checked": "2026-11-02T09:12:08.537Z",
+    "leg": {
+      "accessRules": [
+        {
+          "point": {
+            "lat": 46.6905,
+            "lon": 7.86899
+          },
+          "toRef": "ch:1:sloid:76376:0:249157",
+          "seconds": 180,
+          "departure": "2026-11-03T07:10:00.000Z",
+          "operatingDay": "2026-11-03",
+          "checked": "2026-11-02T09:12:08.939Z"
+        },
+        {
+          "point": {
+            "lat": 46.6905,
+            "lon": 7.86899
+          },
+          "toRef": "ch:1:sloid:76376:0:249157",
+          "seconds": 180,
+          "departure": "2026-11-03T07:10:00.000Z",
+          "operatingDay": "2026-11-03",
+          "checked": "2026-11-02T09:12:10.597Z"
+        }
+      ],
+      "mode": "transit",
+      "from": {
+        "id": "ch:1:sloid:76376",
+        "name": "Interlaken Ost, Bahnhof",
+        "lat": 46.69031,
+        "lon": 7.86903
+      },
+      "to": {
+        "id": "ch:1:sloid:7178",
+        "name": "Beatenbucht",
+        "lat": 46.68625,
+        "lon": 7.74655
+      },
+      "departure": "2026-11-03T07:10:00.000Z",
+      "arrival": "2026-11-03T07:38:00.000Z",
+      "service": "B 21",
+      "transferRules": [],
+      "serviceName": "21",
+      "category": "B",
+      "operator": "ojp:146",
+      "direction": "Thun, Bahnhof",
+      "departurePlatform": "A",
+      "arrivalPlatform": null,
+      "reference": {
+        "journeyRef": "ch:1:sjyid:100118:plan:5797a6ea-daaf-4461-b852-cc0b54139ae7",
+        "operatingDay": "2026-11-03",
+        "fromRef": "ch:1:sloid:76376:0:249157",
+        "toRef": "ch:1:sloid:7178:1:4",
+        "fromOrder": 1,
+        "toOrder": 17,
+        "departure": "2026-11-03T07:10:00.000Z",
+        "arrival": "2026-11-03T07:38:00.000Z",
+        "bikeFiltered": true,
+        "attributes": [
+          {
+            "code": "A__VB",
+            "text": "VELOS: Platzzahl eingeschränkt",
+            "scope": "service"
+          },
+          {
+            "code": "A__NF",
+            "text": "Niederflureinstieg",
+            "scope": "service"
+          },
+          {
+            "code": "A__VB",
+            "text": "VELOS: Platzzahl eingeschränkt",
+            "scope": "service"
+          },
+          {
+            "code": "A__NF",
+            "text": "Niederflureinstieg",
+            "scope": "service"
+          }
+        ]
+      },
+      "rule": {
+        "permission": "allowed",
+        "basis": "service-rule",
+        "bikeReservation": "unknown",
+        "reservationUnspecified": true,
+        "notes": [
+          "Bicycle carriage is subject to limited space."
+        ],
+        "attributes": [
+          {
+            "code": "A__VB",
+            "text": "VELOS: Platzzahl eingeschränkt",
+            "scope": "service"
+          },
+          {
+            "code": "A__VB",
+            "text": "VELOS: Platzzahl eingeschränkt",
+            "scope": "service"
+          }
+        ]
+      }
+    }
+  }
+}

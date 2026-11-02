@@ -819,3 +819,12 @@ Use shared D1 admission for actual OJP/OJP Fare calls; preserve owner-private ac
 **Accounting:** Riding alone consumes cycling minima/maxima/section budgets. Walking connectors, pushing and carrying consume the separate walking allowance, while all movement still consumes elapsed travel time. Apply the same accounting to search/acquisition, visits, edits, metrics and navigation.
 
 **Delivery:** Owner-private version 79, Site source `b44060286ceb57a39df9ebce59a93a6f95bd134a`;719 JS tests, 16 Python tests,64 rendered panels and builds pass. Live IC904 and RE37 formation provision matched. Incomplete line labels and absent reservation evidence can still leave a reservation requirement unresolved. [Evidence and limits](FORMATION_AND_WALKING_2026-11-01.md).
+
+
+## 2 November 2026 — Exact bicycle evidence and shared reservation scope
+
+**Decision:** Preserve explicit ordinary-bike permission independently of platform resolution. Resolve official business identity automatically, but retain raw business numbers for T600 membership. For verified ordinary domestic buses/trams, successful exact-service conditions with no unresolved reservation notice may establish no reservation under scoped T600/ZVV rules. Membership itself never establishes bicycle permission; stronger dated/operator restrictions and unknown scope prevail. Unknown/unrecognized condition wording blocks this inference.
+
+**Investigation:** At most two automatic exact-section TripInfo checks per search, inside the existing request budget; failures and omitted results remain unknown.
+
+**Delivery:** Owner-private version 80, Site source `83774611e7d77de525e1173ca8fb10f418ebfbd6`. 726 JS / 16 Python tests, 65 rendered panels and builds pass. B31 and the Beatenbucht platform case are production-derived regressions. [Evidence, source generation and remaining scope](BICYCLE_COVERAGE_2026-11-02.md).

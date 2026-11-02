@@ -104,3 +104,17 @@ for (const [status, text] of [['matched','A bicycle-equipped coach runs through 
   if(status==='matched') { assert.match(html,/Reservation required/);assert.match(html,/Bicycle coach: 2/); }
 }
 console.log(JSON.stringify({panels,status:'passed',browserInteraction:'not-tested'}));
+
+// Production-captured B31 has no bike symbol; show sourced rule inference.
+const b31Fixture=JSON.parse(readFileSync(new URL('../src/fixtures/bicycle-2026-11-02.json',import.meta.url),'utf8')).b31;
+const {emptyNetwork}=await import('../src/model.ts');
+const {addOjpConnections}=await import('../src/ojpClient.ts');
+const b31Network=emptyNetwork();
+for(const s of [b31Fixture.query.from,b31Fixture.query.to]) b31Network.stops.set(s.id,s);
+addOjpConnections(b31Network,{legs:[b31Fixture.leg],checked:b31Fixture.checked,warnings:[]});
+const b31Leg=[...b31Network.edges.values()][0].leg;
+const b31Html=render(BicycleDetails,{leg:b31Leg,profile:DEFAULT_FARE_PROFILE});panels++;
+assert.match(b31Html,/Bikes allowed/);assert.match(b31Html,/No reservation required/);
+assert.match(b31Html,/dated service conditions were checked/);assert.match(b31Html,/T600/);
+assert.doesNotMatch(b31Html,/reservation information remains unknown/);
+console.log(JSON.stringify({bicycleCoveragePanels:1,totalPanels:panels}));

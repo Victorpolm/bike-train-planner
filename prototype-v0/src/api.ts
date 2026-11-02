@@ -151,6 +151,7 @@ async function acquireConnections(network: Network, client: TimetableClient, fro
 async function connections(network: Network, client: TimetableClient, from: Stop, to: Stop, ready: Date, boardingMinutes: number, arriveBy = false) {
   await measureStage(client.signal, "timetable", () => acquireConnections(network, client, from, to, ready, boardingMinutes, arriveBy));
   if (client.stationTransfers) await measureStage(client.signal, "transfers", () => client.stationTransfers!.hydrate(network, client.signal));
+  if (client.ojp) await measureStage(client.signal, "timetable", () => client.ojp!.investigateBicycles(network, calls => client.claimRequests(calls)));
 }
 
 export type SearchSession = {

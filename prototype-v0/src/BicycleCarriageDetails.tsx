@@ -155,8 +155,8 @@ export default function BicycleCarriageDetails({
         )}
         {rule.evidence?.basis === "ojp-filter" && (
           <p>
-            OJP returned this dated service with bicycle transport enabled. Missing ticket or
-            reservation information remains unknown.
+            OJP returned this dated service with bicycle transport enabled. Ticket and reservation
+            conditions are assessed separately using dated notes and applicable rules.
           </p>
         )}
         {rule.evidence && (
