@@ -964,3 +964,12 @@ Add nine cases covering positive service bicycle provision and overriding VN/VI,
 **B21:** Captured 3 November 08:10–08:38 Swiss time, Interlaken Ost Bahnhof→Beatenbucht, operator 146, VB and positive filter. Before: ambiguous platform erased domestic identity and downgraded ordinary-bike permission. After: official DIDOK 8507178 retained independently; permission confirmed, scoped reservation not required; no invented platform-transfer time. Unknown/conflicting provider references and stale keys are rejected. STI Berg 605 cannot inherit STI 146 membership.
 
 **Replay:** Nine captured Swiss query cases / 60 legs change from 51 confirmed, 5 uncertain, 4 prohibited to 56 confirmed, 0 uncertain, 4 prohibited. All previously positive evidence remains positive; all four bans remain. This sample does not prove nationwide completeness. Automatic exact-section checks are capped at two calls, budgeted and fail-closed. [Release record](BICYCLE_COVERAGE_2026-11-02.md).
+
+
+## 2026-11-02 — Folding-only exclusion, bag conditions and audit identity cases
+
+**Controlled conditions:** Across English/French/German/Italian cases, folding-only departures remain prohibited for ordinary, packed and legacy folding profiles after positive coach evidence or detail refresh. They appear only in the explicit all-transit comparison. Bag-required departures are confirmed with visible original restrictions; ticket and reservation remain independently unknown unless further evidence resolves them. VN/VT contradictions do not create unconditional permission.
+
+**Recorded station pipeline:** All seven rail legs in `ojp-live-2026-10-11/trip.xml`, with changed stop names and no initial station graph, resolve through the official station endpoint to confirmed permission and required reservation. Winter IC4 with Zürich/Schaffhausen SLOIDs changes from unknown reservation before official hydration to required afterward. Unrelated IC4 scope remains unknown.
+
+**Freshness:** VBZ departures before 24 September or after 12 December 2026 do not inherit the general reviewed rule. Missing identity and expired-rule explanations differ. Captured current B31 behavior remains covered by the existing production fixture. [Release and limits](BICYCLE_PACKING_AUDIT_2026-11-02.md).

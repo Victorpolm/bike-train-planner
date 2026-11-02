@@ -36,13 +36,13 @@ it("does not discount expired travelcards or treat an unrelated pass as verified
  assert.equal(fareSummary([train()],{...DEFAULT_FARE_PROFILE,passenger:"ga",otherPass}).passengerChf,0);
 });
 it("separates luggage, measured long bicycles, trailers and child bikes in prices and permission",()=>{
- const folded={...DEFAULT_FARE_PROFILE,bicycle:{...DEFAULT_BICYCLE,kind:"folding" as const,carriage:"folded" as const}};
- assert.equal(fareSummary([train()],folded).bikeChf,0);assert.equal(carriageForLeg(train(),folded).bikeReservation,"not-required");
+ const packed={...DEFAULT_FARE_PROFILE,bicycle:{...DEFAULT_BICYCLE,carriage:"bagged" as const}};
+ assert.equal(fareSummary([train()],packed).bikeChf,0);assert.equal(carriageForLeg(train(),packed).bikeReservation,"not-required");
  const long={...DEFAULT_FARE_PROFILE,age:4,bicycle:{...DEFAULT_BICYCLE,kind:"cargo" as const,lengthCm:300}};
  assert.equal(bicyclePermission(train(),long),"prohibited");assert.equal(fareSummary([train()],long).bikeChf,null);
  const small={...long,bicycle:{...DEFAULT_BICYCLE,kind:"child" as const,lengthCm:90}};
  assert.equal(fareSummary([train()],small).bikeChf,0);assert.equal(carriageForLeg(train(),small).bikeReservation,"not-required");
- assert.equal(bicyclePermission(train(),{...folded,bicycle:{...folded.bicycle,trailer:"attached"}}),"uncertain");
+ assert.equal(bicyclePermission(train(),{...packed,bicycle:{...packed.bicycle,trailer:"attached"}}),"uncertain");
  assert.equal(bicyclePermission(train({operator:"PAG",category:"B",service:"B1"}),long),"prohibited");
  const invalid=readFareProfile({...DEFAULT_FARE_PROFILE,bicycle:{...DEFAULT_BICYCLE,lengthCm:700}});
  assert.equal(bicyclePermission(train(),invalid),"uncertain");

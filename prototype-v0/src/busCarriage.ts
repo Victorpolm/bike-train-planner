@@ -1,3 +1,5 @@
+import { swissDateTimeInput } from "./departure.ts";
+import { replacementService } from "./transitScope.ts";
 import { normalizeCode as normalize, operatorCode } from "./normalization.ts";
 import type { TransitLeg } from "./routing.ts";
 import { localOperatorBicycleRule, localPolicy } from "./localTransport.ts";
@@ -7,6 +9,7 @@ export type BusCarriage = {
   permission: "conditional" | "not-allowed" | "unknown";
   operator: string;
   verifiesPermission?: boolean;
+  reason?: "rule-expired";
   reservation: "check-service" | "unknown" | "not-applicable";
   reservationAvailability: "unknown";
   capacity: "unknown";
@@ -18,6 +21,10 @@ export type BusCarriage = {
 const POSTBUS = { title: "PostBus bicycle rules", url: "https://www.postauto.ch/en/travel-and-services/travel-advice-and-reservations/travelling-with-a-bike", checked: "2026-09-24" };
 const ZVV = { title: "ZVV bicycle rules", url: "https://www.zvv.ch/en/travelcards-and-tickets/tickets/self-service-bicycle-transport.html", checked: "2026-09-24" };
 const TPG = { title: "tpg bicycle rules", url: "https://www.tpg.ch/en/travel/helpful-tips/cyclists", checked: "2026-09-24" };
+export const ZVV_BIKE_REVIEW = { validFrom: "2026-09-24", validThrough: "2026-12-12" };
+const zvvCurrent = (leg: TransitLeg) => !!leg.departure && !!leg.arrival && Number.isFinite(+leg.departure) && Number.isFinite(+leg.arrival)
+  && +leg.arrival > +leg.departure && swissDateTimeInput(leg.departure).slice(0, 10) >= ZVV_BIKE_REVIEW.validFrom
+  && swissDateTimeInput(leg.arrival).slice(0, 10) <= ZVV_BIKE_REVIEW.validThrough;
 const postbus = new Set(["PAG", "POSTAUTO", "POSTAUTO AG", "POSTBUS", "OJP:801"]);
 const zvvOperators: Record<string, string> = {
   VBZ: "VBZ", "VERKEHRSBETRIEBE ZÜRICH": "VBZ", VBG: "VBG", "VERKEHRSBETRIEBE GLATTAL": "VBG",
@@ -47,7 +54,7 @@ export function busCarriage(leg: TransitLeg): BusCarriage | null {
     reservation: "not-applicable", ticket: "not-applicable", source: ZVV,
     instructions: ["The published operator rules exclude bicycle transport. This bus is excluded from journeys with your unfolded bicycle."] };
   // Replacement vehicles must not inherit an operator's ordinary bus policy.
-  if (["EV", "SEV"].includes(normalize(leg.category))) return { ...unknown,
+  if (replacementService(leg)) return { ...unknown,
     instructions: ["This is a replacement service. Confirm bicycle carriage directly for this departure; ordinary operator rules may not apply."] };
   const local = localOperatorBicycleRule(leg);
   if (local) return { ...unknown, operator: localPolicy(leg)!.name,
@@ -62,6 +69,8 @@ export function busCarriage(leg: TransitLeg): BusCarriage | null {
       "Have a bicycle ticket or pass and make any required reservation before departure. Load and unload the bike yourself, using the rack or trailer when provided.",
       "Space is limited; the driver decides if necessary. Wheelchairs and pushchairs have priority. Keep doors and aisles clear.",
     ] };
+  if (zvvOperators[operator] && !zvvCurrent(leg)) return { ...unknown, operator: zvvOperators[operator], reason: "rule-expired", source: ZVV,
+    instructions: [`The ${zvvOperators[operator]} bicycle rule was reviewed on ${ZVV.checked}. It covers journeys from ${ZVV_BIKE_REVIEW.validFrom} through ${ZVV_BIKE_REVIEW.validThrough}; this journey needs a current rule check.`] };
   if (zvvOperators[operator]) return { ...unknown, operator: zvvOperators[operator], permission: "conditional", verifiesPermission: true,
     ticket: "required", source: ZVV, instructions: [
       "A clean bicycle can travel if there is enough space and you have a valid bicycle ticket. Carriage is not guaranteed.",

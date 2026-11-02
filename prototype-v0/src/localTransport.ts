@@ -97,7 +97,7 @@ export function localOperatorBicycleRule(leg: TransitLeg) {
   else if(op==="TRANSN"&&(line==="591"||/MOBICIT[EÉ]/.test(normalizeCode(leg.service+" "+leg.serviceName))))permission="prohibited";
   else if(op==="TRANSN"&&line==="590")permission="unknown";
   return {permission,reservation:localPolicyCurrent(leg)?p.reservation:"unknown" as const,ticket:"required" as const,source:p.source,
-    instructions:[p.ticket,...p.instructions,...(!localPolicyCurrent(leg)?["Outside the reviewed local-rule dates; consult the current operator source."]:[])]};
+    instructions:[p.ticket,...p.instructions,...(!localPolicyCurrent(leg)?[`The ${p.name} bicycle rule was reviewed on ${p.source.checked}. Its reviewed coverage is ${LOCAL_REVIEW_FROM} through ${LOCAL_REVIEW_THROUGH}; this journey needs a current rule check.`]:[])]};
 }
 export const localNationalBikePass = (leg:TransitLeg) => !!localPolicy(leg)?.nationalPass && localPolicyCurrent(leg)
   && (operatorCode(leg.operator)!=="TPG"||tpgZone10Leg(leg));

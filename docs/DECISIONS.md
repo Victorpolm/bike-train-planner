@@ -828,3 +828,12 @@ Use shared D1 admission for actual OJP/OJP Fare calls; preserve owner-private ac
 **Investigation:** At most two automatic exact-section TripInfo checks per search, inside the existing request budget; failures and omitted results remain unknown.
 
 **Delivery:** Owner-private version 80, Site source `83774611e7d77de525e1173ca8fb10f418ebfbd6`. 726 JS / 16 Python tests, 65 rendered panels and builds pass. B31 and the Beatenbucht platform case are production-derived regressions. [Evidence, source generation and remaining scope](BICYCLE_COVERAGE_2026-11-02.md).
+
+
+## 2 November 2026 — Ordinary-bike scope and explicit packing conditions
+
+**Decision:** Folding-bike exceptions are out of scope. A folding-only service is prohibited for current planning, including legacy folding profiles. An ordinary bike accepted in a bag is allowed conditionally, with the original preparation restrictions visible. Packing itself does not imply free travel, no reservation or available space. Recognized exact clauses become structured conditions; unknown and contradictory conditions stay unresolved.
+
+**Audit follow-up:** Use resolved official identities in the existing IC corridor rule; retain the complete station lookup pipeline rather than inventing SLOID arithmetic. Date the ZVV fallback and explain expired rules. Keep automatic expiry notifications paused.
+
+**Delivery:** Private version 81, source `bae99cb7f2046e57705ca18f0f0b497e99d08b25`; 734 JS tests, 16 Python tests, 69 rendered panels and builds pass. [Evidence and limits](BICYCLE_PACKING_AUDIT_2026-11-02.md).

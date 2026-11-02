@@ -118,3 +118,21 @@ assert.match(b31Html,/Bikes allowed/);assert.match(b31Html,/No reservation requi
 assert.match(b31Html,/dated service conditions were checked/);assert.match(b31Html,/T600/);
 assert.doesNotMatch(b31Html,/reservation information remains unknown/);
 console.log(JSON.stringify({bicycleCoveragePanels:1,totalPanels:panels}));
+
+// Synthetic provider conditions exercise the actual service card and details.
+for (const [text, expected] of [['Only folding bicycles are allowed.', 'Bikes not allowed · Folding bikes only'],
+  ['Bicycles: bag required. Remove the front wheel; maximum packed size 120 × 90 cm.', 'Bikes allowed · Bag required']]) {
+  const evidence=withTripInfoRule({permission:'unknown',fromId:train.fromId,toId:train.toId,departure:train.departure.toISOString(),service:train.service,operator:train.operator,
+    source:{title:'Synthetic provider fixture',url:'https://example.test',checked:'2026-11-02'},conditions:[]},interpretBicycleAttributes([{code:'I_note',text,scope:'service'}]),'2026-11-02');
+  const html=render(BicycleDetails,{leg:{...train,bicycleEvidence:evidence},profile:DEFAULT_FARE_PROFILE});panels++;
+  assert.ok(html.includes(expected));assert.ok(html.includes(text));
+  if (text.includes('bag required')) assert.match(html,/maximum packed size 120 × 90 cm/);
+}
+const stale=render(BicycleDetails,{leg:{...train,operator:'VBZ',category:'B',service:'31',departure:new Date('2026-12-13T10:00:00Z'),arrival:new Date('2026-12-13T10:10:00Z')},profile:DEFAULT_FARE_PROFILE});panels++;
+assert.match(stale,/Bicycle rule needs updating/);assert.match(stale,/2026-12-12/);
+const {default:PersonalSettingsFields}=await import('../src/PersonalSettingsFields.tsx');
+const {guestSettings}=await import('../src/travellerProfiles.ts');
+const settings=render(PersonalSettingsFields,{value:guestSettings(),disabled:false,onChange:()=>{}});panels++;
+assert.doesNotMatch(settings,/<option value="folding"|<option value="folded"/);
+assert.match(settings,/Folding-bike exceptions are not included/);assert.match(settings,/Wheel removed, correctly packed/);
+console.log(JSON.stringify({packingAuditPanels:4,totalPanels:panels,status:'passed'}));

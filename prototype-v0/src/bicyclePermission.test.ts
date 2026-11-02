@@ -8,14 +8,14 @@ import { findCandidateStations, plan, selectStationPairs } from "./api.ts";
 import { TimetableClient } from "./timetableClient.ts";
 import type { CyclingComparison, Journey, Place, TransitLeg } from "./routing.ts";
 
-const start = new Date("2026-09-21T08:00:00+02:00");
+const start = new Date("2026-10-12T08:00:00+02:00");
 const time = (m: number) => new Date(start.getTime() + m * 60_000);
 const points: Place[] = [0, 1, 2].map(i => ({ label: `Point ${i}`, stopId: String(i), lat: 30 + i, lon: 4 }));
 const options: Options = { ...DEFAULT_OPTIONS, busPreference: "include-unknown", maxAccessMinutes: 0,
   maxEgressMinutes: 0, maxIntermediateMinutes: 0, maxBikeMinutes: 0 };
 const proof = (leg: TransitLeg, permission: BicycleEvidence["permission"] = "allowed"): BicycleEvidence => ({
   permission, fromId: leg.fromId!, toId: leg.toId!, departure: leg.departure!.toISOString(), service: leg.service,
-  operator: leg.operator ?? null, source: { title: "Controlled service evidence", url: "https://example.com/service", checked: "2026-09-21" },
+  operator: leg.operator ?? null, source: { title: "Controlled service evidence", url: "https://example.com/service", checked: "2026-10-12" },
   conditions: ["Controlled fixture only; reservation and capacity are not confirmed."],
 });
 function ride(n: Network, from: number, to: number, departure: number, arrival: number, evidence = false, category = "IC") {
@@ -185,7 +185,7 @@ it("discovers local Zürich bus stops beside rail hubs and reserves a local conn
 it("publishes verified access from a reviewed VBZ policy for dated daytime and night services", async () => {
   const station = (p: Place) => ({ id: p.stopId, name: p.label, coordinate: { x: p.lat, y: p.lon } });
   for (const hour of [8, 1]) {
-    const departure = new Date(`2026-09-21T${String(hour).padStart(2, "0")}:00:00+02:00`);
+    const departure = new Date(`2026-10-12T${String(hour).padStart(2, "0")}:00:00+02:00`);
     const t = (m: number) => new Date(departure.getTime() + m * 60_000).toISOString();
     const result = await plan(points[0], points[2], "baseline", options, new AbortController().signal, () => {}, () => {}, {
       start: departure, gapMs: 0, cyclingClient: null, fetcher: async () => new Response(JSON.stringify({ connections: [{ sections: [{

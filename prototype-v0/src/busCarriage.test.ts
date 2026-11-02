@@ -10,7 +10,7 @@ import { plan } from "./api.ts";
 import { journeyStops } from "./mapData.ts";
 import { preferenceOptions } from "./preferences.ts";
 
-const start = new Date("2026-09-21T08:00:00+02:00");
+const start = new Date("2026-10-12T08:00:00+02:00");
 const time = (m: number) => new Date(start.getTime() + m * 60_000).toISOString();
 const a = { id: "A", name: "Start", coordinate: { x: 30, y: 4 } };
 const b = { id: "B", name: "Visit", coordinate: { x: 31, y: 5 } };

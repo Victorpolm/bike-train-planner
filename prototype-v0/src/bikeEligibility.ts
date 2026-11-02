@@ -13,7 +13,7 @@ export function profileBikeRule(leg: TransitLeg, profile?: TravelProfile, eviden
   const guidance:string[]=[];
   let permission:"confirmed"|"uncertain"|"prohibited"|undefined;
   const childSmall=profile?.age!=null && profile.age<6 && ["child","balance"].includes(bike.kind) && (bike.lengthCm===null || bike.lengthCm<=150);
-  const luggage=(bike.carriage==="folded" && bike.kind==="folding") || bike.carriage==="bagged" || childSmall;
+  const luggage=bike.carriage==="bagged" || childSmall;
   const special=(bike.lengthCm!==null && bike.lengthCm>200);
   const unmeasured=["cargo","tandem","recumbent","adaptive","other"].includes(bike.kind) && bike.lengthCm===null;
   const swiss=domesticSwissLeg(leg);
@@ -24,15 +24,12 @@ export function profileBikeRule(leg: TransitLeg, profile?: TravelProfile, eviden
   if(bike.drive==="other" || !bike.selfLoading) {permission="uncertain";guidance.push("This motor type or assisted loading requires operator confirmation; ordinary self-loading rules do not establish permission.");}
   if(unmeasured) {permission="uncertain";guidance.push("Enter bicycle length. Its name alone does not establish whether it fits the operator's ordinary-bicycle rules.");}
   if(luggage){
-    guidance.push(bike.carriage==="bagged" ? bike.kind==="folding" ? "Fold the bicycle small and fully enclose it in a transport bag. Keep doors and passageways clear." : "Remove the front wheel and fully pack the bike and wheel in a purpose-made transport bag. Keep doors and passageways clear."
-      : childSmall ? "A child's bicycle belonging to a child under 6 is hand luggage; no bicycle ticket or reservation is required on reviewed services."
-      : "Fold before boarding and keep folded until after alighting. Store as hand luggage, away from paid bicycle spaces; carriage still depends on room.");
+    guidance.push(bike.carriage==="bagged" ? "Remove the front wheel and fully pack the bike and wheel in a purpose-made transport bag. Keep doors and passageways clear."
+      : "A child's bicycle belonging to a child under 6 is hand luggage; no bicycle ticket or reservation is required on reviewed services.");
     if(swiss && (ordinaryRail || ["VBZ","VBG","VZO","STBW","PAG"].includes(op)) && permission===undefined) permission="confirmed";
-    if(currentLocal && (bike.carriage==="bagged"&&local.baggedFree || bike.carriage==="folded"&&local.foldedFree || childSmall&&local.childConcession)
+    if(currentLocal && (bike.carriage==="bagged"&&local.baggedFree || childSmall&&local.childConcession)
       && permission===undefined) permission=localRule?.permission==="allowed"?"confirmed":"uncertain";
-    if(op==="TPG"&&bike.carriage==="folded") {permission="uncertain";guidance.push("TPG's binding conditions require a folded bicycle to be small and bagged for free carriage. Select bagged only after checking and meeting that requirement.");}
     if(op==="BERNMOBIL"&&localRule?.permission==="prohibited") {permission="prohibited";guidance.push("BERNMOBIL also excludes bagged bicycles during its published peak-hour bans.");}
-    if(op==="BLS" && bike.carriage==="folded") {permission="uncertain";guidance.push("BLS describes bagged folding bikes; confirm its packing requirement before boarding.");}
     if(bike.carriage==="bagged" && evidence?.conditions.some(s=>/packaged bicycles are not accepted|verpack.*nicht|emball.*interdit/i.test(s))) permission="prohibited";
     if(op==="SZU" && [leg.from,leg.to].some(s=>/^(Uetliberg|Ringlikon)$/.test(s??""))) permission="prohibited";
     if(evidence?.permission==="prohibited" && permission!=="prohibited") {permission="uncertain";guidance.push("This departure bans ordinary bicycles. Its luggage exception has not been verified; confirm before boarding.");}
@@ -61,7 +58,10 @@ export function profileBikeRule(leg: TransitLeg, profile?: TravelProfile, eviden
     permission="uncertain";
     guidance.push("The bicycle-type rules for this section have not been verified. Ordinary-bicycle information alone cannot establish acceptance of this configuration.");
   }
-  if((luggage || permission==="confirmed") && (!leg.departure || swissDateTimeInput(leg.arrival??leg.departure).slice(0,10)>tariffSource("t600").validThrough)) {permission="uncertain";guidance.push("The reviewed bicycle-type rules have reached their renewal boundary. Confirm current conditions with the operator.");}
+  if(evidence?.handling?.unresolved && permission!=="prohibited") {permission="uncertain";guidance.push("The provider’s packing conditions are unresolved or conflicting. Confirm the accepted preparation for an ordinary bicycle.");}
+  if(evidence?.handling?.foldingOnly) {permission="prohibited";guidance.push("Only folding bicycles are accepted. Folding-bike exceptions are outside the current planning scope.");}
+  if(bike.carriage==="bagged" && evidence?.handling?.bagProhibited) permission="prohibited";
+  if(permission!=="prohibited" && (luggage || permission==="confirmed") && (!leg.departure || swissDateTimeInput(leg.arrival??leg.departure).slice(0,10)>tariffSource("t600").validThrough)) {permission="uncertain";guidance.push("The reviewed bicycle-type rules have reached their renewal boundary. Confirm current conditions with the operator.");}
   return {permission,handLuggage:luggage,reservationExempt:luggage && permission==="confirmed",pricingUncertain:unmeasured || bike.trailer!=="none" && !(currentLocal&&local.detachedTrailerFree&&bike.trailer==="detached") || bike.drive==="other" || !bike.selfLoading,
     guidance,source:currentLocal?local.source:BIKE_PROFILE_SOURCE};
 }

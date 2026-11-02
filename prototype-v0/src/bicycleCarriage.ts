@@ -1,3 +1,4 @@
+import { interpretBicycleHandling, mergeBicycleHandling, type BicycleHandling } from "./bicycleHandling.ts";
 import { childBikeFree, validPassOn } from "./travelProfile.ts";
 import { tariffSource } from "./tariffSources.ts";
 import { swissDateTimeInput } from "./departure.ts";
@@ -16,6 +17,7 @@ import { sobMainlineRule, sbbInterRegioRule, SOB_BICYCLES, SOB_RESERVATIONS, SBB
 export type BicycleAttribute = { code: string; text: string; scope: "service" | "segment" | "stop" };
 export type CarriageRule = {
   permission: "allowed" | "unknown" | "prohibited";
+  handling?: BicycleHandling;
   basis: "ojp-filter" | "service-rule" | "unassessed";
   bikeReservation: "required" | "not-required" | "unknown";
   reservationUnspecified?: boolean;
@@ -30,7 +32,7 @@ const SBB_BICYCLES = {
 
 // Exact service codes and complete explicit sentences only. A generic R is a
 // passenger reservation; missing symbols and conditional prose are not exemptions.
-export const isBicycleAttribute = (a: BicycleAttribute) => /^A__V[A-Z]$/.test(a.code) || /velo|bicycl|bike|fahrr|vélo|biciclett/i.test(a.text);
+export const isBicycleAttribute = (a: BicycleAttribute) => /^A__V[A-Z]$/.test(a.code) || /velo|bicycl|bike|fahrr|faltr|falträ|faltvel|klappvel|klappr|vélo|biciclett/i.test(a.text);
 const wording = (s: string) => normalized(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[.!]$/, "");
 const noReservationText = /^(?:bicycles?: (?:no reservation required|carriage (?:possible |permitted )?without reservation)|velos?: (?:reservation non obligatoire|sans reservation)|velos?: (?:keine reservation erforderlich|mitnahme ohne reservation moglich)|biciclette: (?:prenotazione non obbligatoria|trasporto senza prenotazione))$/;
 const requiredText = /^(?:bicycles?: reservation (?:required|compulsory|mandatory)|velos?: reservation obligatoire|velos?: reservierung obligatorisch|biciclette: prenotazione obbligatoria)$/;
@@ -41,6 +43,7 @@ const observedNoReservation = new Set([
 ]);
 export function interpretBicycleAttributes(attributes: BicycleAttribute[], filtered = false): CarriageRule {
   const relevant = attributes.filter(isBicycleAttribute);
+  const handling = interpretBicycleHandling(relevant);
   const prohibited = relevant.some(a => a.code === "A__VN" || /^(velos?: keine beförderung möglich|bicycles?: carriage (?:prohibited|not possible)|v[ée]los?: transport (?:impossible|interdit)|biciclette: trasporto (?:non possibile|vietato))\.?$/i.test(a.text.trim()));
   const reservation = relevant.some(a => a.code === "A__VR" || requiredText.test(wording(a.text)));
   const noReservation = relevant.some(a => noReservationText.test(wording(a.text)) || observedNoReservation.has(wording(a.text)));
@@ -48,8 +51,11 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
   const limited = relevant.some(a => a.code === "A__VB");
   const staffLoading = relevant.some(a => a.code === "A__VC");
   const internationalOnly = relevant.some(a => a.code === "A__VI");
-  const explicit = prohibited || reservation || noReservation || limited || staffLoading || bicycleSpace;
+  const explicit = prohibited || reservation || noReservation || limited || staffLoading || bicycleSpace || !!handling?.foldingOnly || !!handling?.bagRequired;
   const notes: string[] = [];
+  if (handling?.foldingOnly) notes.push("Only folding bicycles are accepted. Re.route currently plans for ordinary bicycles, so this service is not allowed.", ...handling.instructions);
+  if (handling?.bagRequired && !handling.foldingOnly) notes.push("Bag required before boarding. Follow the provider’s packing, dismantling and size restrictions.", ...handling.instructions);
+  if (handling?.unresolved) notes.push("The provider’s packing or folding conditions are unresolved or conflicting; ordinary-bicycle acceptance needs checking.");
   if (prohibited) notes.push("Bicycles cannot be carried on this service.");
   if (reservation) notes.push("Reserve a bicycle space before boarding. The reservation is separate from the bike ticket.");
   if (noReservation) notes.push("No bicycle reservation is required. Carriage is conditional on sufficient space.");
@@ -61,7 +67,8 @@ export function interpretBicycleAttributes(attributes: BicycleAttribute[], filte
   if (bicycleSpace) notes.push("The service indicates bicycle carriage. Bicycle-type restrictions and available space still apply.");
   if (reservation && noReservation) notes.push("The provider gives conflicting reservation conditions. Confirm with the operator before boarding.");
   return {
-    permission: prohibited ? "prohibited" : !internationalOnly && (explicit || filtered) ? "allowed" : "unknown",
+    permission: prohibited || handling?.foldingOnly ? "prohibited" : !internationalOnly && !handling?.unresolved && (explicit || filtered) ? "allowed" : "unknown",
+    handling,
     basis: explicit ? "service-rule" : filtered ? "ojp-filter" : "unassessed",
     // Contradictory reservation notes require confirmation; do not silently
     // select the less restrictive reading.
@@ -135,11 +142,12 @@ export function bicycleJourneySummary(legs: TransitLeg[], profile?: TravelProfil
   if (rules.some(r => r.permission === "prohibited")) return "Includes a service that prohibits bicycles · comparison only";
   const unknown = services.filter((_, i) => rules[i].permission === "uncertain");
   const names = [...new Set(unknown.map(leg => leg.service))].join(", ");
+  const packing = services.filter((_, i) => rules[i].evidence?.handling?.bagRequired && !rules[i].evidence?.handling?.foldingOnly).map(l => l.service);
   const status = unknown.length === 0 ? "Bikes allowed on every transit leg"
     : `${rules.length - unknown.length} of ${rules.length} services verified · bicycle information incomplete on ${names}`;
   const required = services.filter((_, i) => rules[i].bikeReservation === "required").map(l => l.service);
   const unresolved = services.filter((_, i) => rules[i].bikeReservation === "unknown").map(l => l.service);
-  return status + (required.length ? ` · Reservation required: ${[...new Set(required)].join(", ")}` : "")
+  return status + (packing.length ? ` · Bag required: ${[...new Set(packing)].join(", ")}` : "") + (required.length ? ` · Reservation required: ${[...new Set(required)].join(", ")}` : "")
     + (unresolved.length ? ` · Reservation requirement not verified: ${[...new Set(unresolved)].join(", ")}`
       : !required.length ? " · No reservation required" : "")
     + (rules.some(r => r.bikeTicket === "unknown") ? " · Bicycle ticket requirement not verified" : "");
@@ -156,7 +164,7 @@ export function withTripInfoRule(evidence: BicycleEvidence, rule: CarriageRule, 
     conditions.push("The provider gives conflicting reservation conditions. Confirm with the operator before boarding.");
   const permission = evidence.permission === "prohibited" || rule.permission === "prohibited" ? "prohibited"
     : rule.permission === "allowed" ? "allowed" : evidence.permission;
-  return { ...evidence, permission,
+  return { ...evidence, permission, handling: mergeBicycleHandling(evidence.handling, rule.handling),
     basis: rule.basis === "unassessed" ? evidence.basis : rule.basis,
     conditions,
     source: { title: "OJP service and stop conditions", url: "https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojptripinforequest-2-0/", checked },

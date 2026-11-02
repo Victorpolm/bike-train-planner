@@ -11,7 +11,7 @@ import { solveWaypoints } from "./waypoints.ts";
 
 const fixture = JSON.parse(readFileSync(new URL("./fixtures/renens-epfl-cycling-2026-09-20.json", import.meta.url), "utf8"));
 const response = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status });
-const start = new Date("2026-09-21T08:00:00+02:00"), time = (m: number) => new Date(start.getTime() + m * 60_000);
+const start = new Date("2026-10-12T08:00:00+02:00"), time = (m: number) => new Date(start.getTime() + m * 60_000);
 function geometry(from: Point, to: Point, seconds: number) {
   return { type: "FeatureCollection", features: [{ geometry: { type: "LineString", coordinates: [[from.lon, from.lat, 400], [to.lon, to.lat, 420]] },
     properties: { "track-length": haversineKm(from, to) * 1000, "total-time": seconds } }] };

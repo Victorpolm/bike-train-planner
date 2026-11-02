@@ -1,3 +1,4 @@
+import { mergeBicycleHandling } from "./bicycleHandling.ts";
 import { mergeAccessRules, mergeTransferRules } from "./transferTimes.ts";
 import { normalizeName as normalize } from "./normalization.ts";
 import { haversineKm, type TransitLeg } from "./routing.ts";
@@ -30,7 +31,7 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
     if (!Number.isFinite(leg.departure!.getTime()) || !Number.isFinite(leg.arrival!.getTime())) continue;
     if (input.rule && input.reference) {
       leg.bicycleEvidence = {
-        permission: input.rule.permission, basis: input.rule.basis, formation: input.formation,
+        permission: input.rule.permission, handling: input.rule.handling, basis: input.rule.basis, formation: input.formation,
         fromId: from.id, toId: to.id, departure: input.departure, service: input.service, operator: input.operator,
         source: { title: input.rule.basis === "ojp-filter" ? "OJP bicycle-compatible search" : "OJP dated service conditions", url: SOURCE, checked: data.checked },
         conditions: input.rule.notes, prerequisites: { bikeTicket: "unknown", bikeReservation: input.rule.bikeReservation, reservationUnspecified: input.rule.reservationUnspecified, conditionsChecked: true },
@@ -53,7 +54,7 @@ export function addOjpConnections(network: Network, data: OjpConnections) {
         || previous !== "unknown" && current !== "unknown" && previous !== current;
       if (conflict && !conditions.some(n => /conflicting reservation/i.test(n)))
         conditions.push("The provider gives conflicting reservation conditions. Confirm with the operator before boarding.");
-      leg.bicycleEvidence = { ...fresh, permission, conditions,
+      leg.bicycleEvidence = { ...fresh, permission, conditions, handling: mergeBicycleHandling(old.handling, fresh.handling),
         prerequisites: { ...fresh.prerequisites!, bikeReservation: conflict ? "unknown" : current === "unknown" ? previous : current,
           reservationUnspecified: !conflict && old.prerequisites?.reservationUnspecified === true && fresh.prerequisites?.reservationUnspecified === true } };
       if (old.permission === "allowed" && fresh.permission === "unknown") leg.bicycleEvidence.basis = old.basis;

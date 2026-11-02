@@ -68,7 +68,7 @@ export function transitLegsFromSections(sections?: TransportSection[] | null): T
       const { attributes, source } = service.bicycleData;
       const rule = interpretBicycleAttributes(attributes);
       leg.bicycleAttributes = attributes;
-      leg.bicycleEvidence = { permission: rule.permission, fromId: leg.fromId, toId: leg.toId,
+      leg.bicycleEvidence = { permission: rule.permission, handling: rule.handling, fromId: leg.fromId, toId: leg.toId,
         departure: leg.departure.toISOString(), service: leg.service, operator: leg.operator ?? null,
         source, basis: rule.basis, conditions: rule.notes,
         prerequisites: { bikeTicket: "unknown", bikeReservation: rule.bikeReservation } };

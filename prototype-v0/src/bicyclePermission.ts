@@ -1,3 +1,4 @@
+import type { BicycleHandling } from "./bicycleHandling.ts";
 import { freshFormation, type FormationEvidence } from "./formation.ts";
 import { profileBikeRule } from "./bikeEligibility.ts";
 import { travelProfileKey, type TravelProfile } from "./travelProfile.ts";
@@ -12,6 +13,7 @@ export type BicycleScope = typeof BICYCLE_SCOPES[number];
 export type BicycleEvidence = {
   permission: "allowed" | "prohibited" | "unknown";
   formation?: FormationEvidence;
+  handling?: BicycleHandling;
   fromId: string; toId: string; departure: string; service: string; operator: string | null;
   source: { title: string; url: string; checked: string };
   conditions: string[];
@@ -83,7 +85,7 @@ export function permissionInputs(leg: TransitLeg): unknown[] {
     leg.fromId, leg.toId, leg.departure?.getTime(), leg.arrival?.getTime(),
     leg.fromPoint?.lat, leg.fromPoint?.lon, leg.toPoint?.lat, leg.toPoint?.lon,
     freshFormation(e?.formation), JSON.stringify(e?.formation), !!e, e?.permission, e?.fromId, e?.toId, e?.departure, e?.service, e?.operator,
-    e?.source.title, e?.source.url, e?.source.checked, ...(e?.conditions ?? [])];
+    JSON.stringify(e?.handling), e?.source.title, e?.source.url, e?.source.checked, ...(e?.conditions ?? [])];
 }
 export function bicyclePermission(leg: TransitLeg, profile?: TravelProfile): Permission {
   const inputs = [...permissionInputs(leg), travelProfileKey(profile)], cached = permissionCache.get(leg);

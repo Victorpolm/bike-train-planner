@@ -188,6 +188,7 @@ export default function PersonalSettingsFields({
           )}
           <label>
             <span>Bicycle type</span>
+            <small>Folding-bike exceptions are not included in route or price checks.</small>
             <select
               disabled={disabled}
               value={bike.kind}
@@ -197,7 +198,6 @@ export default function PersonalSettingsFields({
             >
               {Object.entries({
                 ordinary: "Ordinary bicycle · up to 2 m",
-                folding: "Folding bicycle",
                 child: "Child’s bicycle",
                 balance: "Balance bike",
                 cargo: "Cargo bicycle",
@@ -220,12 +220,7 @@ export default function PersonalSettingsFields({
               onChange={(e) => bicycle({ carriage: e.target.value as BicycleProfile["carriage"] })}
             >
               <option value="unfolded">Unfolded</option>
-              {bike.kind === "folding" && <option value="folded">Folded before boarding</option>}
-              <option value="bagged">
-                {bike.kind === "folding"
-                  ? "Folded small and fully enclosed in a bicycle bag"
-                  : "Wheel removed, correctly packed in bicycle bag"}
-              </option>
+              <option value="bagged">Wheel removed, correctly packed in bicycle bag</option>
             </select>
           </label>
           <label>

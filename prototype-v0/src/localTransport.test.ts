@@ -45,7 +45,8 @@ it("applies local child and luggage entitlements without treating every local co
  assert.equal(fareSummary([tram()],{...profile,age:12,accompaniedBy16Plus:true}).totalChf,2);
  assert.equal(fareSummary([tram()],{...profile,age:12,accompaniedBy16Plus:true,childCard:"junior",qualifyingCompanion:true}).totalChf,0);
  const folded={...profile,bicycle:{...DEFAULT_BICYCLE,kind:"folding" as const,carriage:"folded" as const}};
- assert.equal(bicyclePermission(tram(),folded),"uncertain");
+ assert.equal(bicyclePermission(tram(),folded),"confirmed");
+ assert.equal(fareSummary([tram()],folded).bikeChf,2,"Legacy folding profiles use ordinary bicycle fares");
  assert.equal(fareSummary([tram()],{...folded,bicycle:{...folded.bicycle,carriage:"bagged"}}).bikeChf,0);
  assert.equal(fareSummary([tram({operator:"Engadin Bus",category:"B",service:"1"})],{...profile,age:12,accompaniedBy16Plus:true}).bikeChf,null);
 });

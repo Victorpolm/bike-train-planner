@@ -32,6 +32,9 @@ const date = (v: unknown) => validProfileDate(v) ? v : v ? "invalid" : "";
 export function readBicycle(value: unknown): BicycleProfile {
   let p = value as Partial<BicycleProfile> | undefined;
   if(p?.lengthCm!=null && dimension(p.lengthCm)===null || p?.trailerWidthCm!=null && dimension(p.trailerWidthCm)===null) p={...p,kind:"other",drive:"other"};
+  // Retain compatibility with saved profiles while folding-bike exceptions are
+  // outside product scope. Their routes/tickets use ordinary-bicycle rules.
+  if (p?.kind === "folding") p = { ...p, kind: "ordinary", carriage: p.carriage === "bagged" ? "bagged" : "unfolded" };
   return { kind: oneOf(p?.kind, ["ordinary", "folding", "child", "balance", "cargo", "tandem", "recumbent", "adaptive", "other"], p?.kind === undefined ? "ordinary" : "other"),
     carriage: oneOf(p?.carriage, ["unfolded", "folded", "bagged"], "unfolded"), lengthCm: dimension(p?.lengthCm),
     drive: oneOf(p?.drive, ["pedal", "assist25", "speed45", "other"], "pedal"),

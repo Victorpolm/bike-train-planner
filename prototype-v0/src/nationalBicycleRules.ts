@@ -1,3 +1,4 @@
+import { ZVV_BIKE_REVIEW } from "./busCarriage.ts";
 import membership from "./bike-membership.json" with { type: "json" };
 import { operatorIdentity } from "./operatorIdentity.ts";
 import { operatorCode, normalizeCode } from "./normalization.ts";
@@ -30,7 +31,7 @@ export function nationalBicycleReservation(leg: TransitLeg, evidence: BicycleEvi
   // Never resolve membership through the canonical company abbreviation.
   const participating = identity && end <= identity.validThrough && members.has(identity.businessNumber);
   const identifiedCode = /^(OJP:|CH:1:SBOID:)/i.test(leg.operator ?? "");
-  const zvv = ZVV.has(operatorCode(leg.operator)) && (!identifiedCode || !!identity && end <= identity.validThrough);
+  const zvv = start >= ZVV_BIKE_REVIEW.validFrom && end <= ZVV_BIKE_REVIEW.validThrough && ZVV.has(operatorCode(leg.operator)) && (!identifiedCode || !!identity && end <= identity.validThrough);
   if (!participating && !zvv) return null;
   return { reservation: "not-required" as const, source: T600_RESERVATIONS,
     membershipSource: zvv ? ZVV_T600 : membership.source,
