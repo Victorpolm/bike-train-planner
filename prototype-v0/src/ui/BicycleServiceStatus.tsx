@@ -37,6 +37,9 @@ export default function BicycleServiceStatus({
         )}
       </svg>
       <strong>{status.title}</strong>
+      {status.reservationBasis && (
+        <small title={status.reservationBasis.explanation}>ⓘ {status.reservationBasis.label}</small>
+      )}
     </span>
   );
 }

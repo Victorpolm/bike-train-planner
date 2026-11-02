@@ -837,3 +837,12 @@ Use shared D1 admission for actual OJP/OJP Fare calls; preserve owner-private ac
 **Audit follow-up:** Use resolved official identities in the existing IC corridor rule; retain the complete station lookup pipeline rather than inventing SLOID arithmetic. Date the ZVV fallback and explain expired rules. Keep automatic expiry notifications paused.
 
 **Delivery:** Private version 81, source `bae99cb7f2046e57705ca18f0f0b497e99d08b25`; 734 JS tests, 16 Python tests, 69 rendered panels and builds pass. [Evidence and limits](BICYCLE_PACKING_AUDIT_2026-11-02.md).
+
+
+## 2 November 2026 — Published reservation rules, visible partial fares and routing recovery
+
+**Decision:** Use Zentralbahn's all-lines no-bike-reservation policy for its dated ordinary domestic rail scope. Mark published/timetable-rule conclusions explicitly. Do not infer no reservation merely from absence of R: the recorded IC8 Sunday departure supplies a counterexample in our API data. Dated requirements and bans remain stronger.
+
+**Prices and routes:** Display known bike-ticket amounts when passenger pricing is incomplete; do not invent the total or enable integration fares. A failed cycling backup must not suppress the bounded primary retry. Permanent route failures and existing budgets retain their behavior.
+
+**Delivery:** Private version 82, Site source `472cb2ca045c5ba8e21be0be96e8ef6048e7d040`; 741 JS tests, 16 Python tests, 71 rendered panels and builds pass. [Evidence and remaining scope](ZENTRALBAHN_AND_CYCLING_RETRY_2026-11-02.md).

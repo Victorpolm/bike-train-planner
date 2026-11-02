@@ -136,3 +136,13 @@ const settings=render(PersonalSettingsFields,{value:guestSettings(),disabled:fal
 assert.doesNotMatch(settings,/<option value="folding"|<option value="folded"/);
 assert.match(settings,/Folding-bike exceptions are not included/);assert.match(settings,/Wheel removed, correctly packed/);
 console.log(JSON.stringify({packingAuditPanels:4,totalPanels:panels,status:'passed'}));
+
+// Zentralbahn publishes a no-reservation policy even when the API omits VR/VH.
+const zb={...train,operator:'ZB',category:'S',service:'S44',from:'Luzern',to:'Stans',fromId:'8505000',toId:'8508391',departure:new Date('2026-11-03T16:12:00Z'),arrival:new Date('2026-11-03T16:30:00Z')};
+const zbHtml=render(BicycleDetails,{leg:zb,profile:DEFAULT_FARE_PROFILE});panels++;
+assert.match(zbHtml,/No reservation required/);assert.match(zbHtml,/Published rule/);
+assert.match(zbHtml,/rather than a no-reservation statement supplied for this departure/);
+assert.doesNotMatch(zbHtml,/Reservation requirement not verified/);
+const zbFare=render(FareDetails,{journey:{transitLegs:[zb]},profile:DEFAULT_FARE_PROFILE});panels++;
+assert.match(zbFare,/CHF 15.00/);assert.match(zbFare,/Passenger/);
+console.log(JSON.stringify({zentralbahnPanels:2,totalPanels:panels,status:'passed'}));

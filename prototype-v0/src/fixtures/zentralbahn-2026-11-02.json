@@ -1,0 +1,646 @@
+{
+  "query": {
+    "from": {
+      "id": "8505000",
+      "name": "Luzern",
+      "lat": 47.0502,
+      "lon": 8.3102
+    },
+    "to": {
+      "id": "8508391",
+      "name": "Stans",
+      "lat": 46.9584,
+      "lon": 8.3666
+    },
+    "departure": "2026-11-03T07:00:00Z"
+  },
+  "data": {
+    "legs": [
+      {
+        "realtime": {
+          "checkedAt": "2026-11-02T15:10:03.158Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:6:12",
+            "seconds": 180,
+            "departure": "2026-11-03T07:10:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:01.634Z"
+          },
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:6:12",
+            "seconds": 180,
+            "departure": "2026-11-03T07:10:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:03.158Z"
+          }
+        ],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:5000",
+          "name": "Luzern",
+          "lat": 47.04886,
+          "lon": 8.31094
+        },
+        "to": {
+          "id": "ch:1:sloid:8391",
+          "name": "Stans",
+          "lat": 46.95832,
+          "lon": 8.3665
+        },
+        "departure": "2026-11-03T07:10:00.000Z",
+        "arrival": "2026-11-03T07:24:00.000Z",
+        "service": "IRLEX",
+        "transferRules": [],
+        "serviceName": "IRLEX",
+        "category": "IR",
+        "operator": "ojp:86",
+        "direction": "Engelberg",
+        "departurePlatform": "12",
+        "arrivalPlatform": "1",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100064:2962-001",
+          "operatingDay": "2026-11-03",
+          "fromRef": "ch:1:sloid:5000:6:12",
+          "toRef": "ch:1:sloid:8391:0:442459",
+          "fromOrder": 1,
+          "toOrder": 2,
+          "departure": "2026-11-03T07:10:00.000Z",
+          "arrival": "2026-11-03T07:24:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__PA",
+              "text": "Panoramawagen",
+              "scope": "service"
+            },
+            {
+              "code": "A__BL",
+              "text": "GEPÄCK : Transport eingeschränkt",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__PA",
+              "text": "Panoramawagen",
+              "scope": "service"
+            },
+            {
+              "code": "A__BL",
+              "text": "GEPÄCK : Transport eingeschränkt",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        },
+        "formationReference": {
+          "operator": "ojp:86",
+          "evu": "ZB",
+          "trainNumber": "2962",
+          "from": "Luzern",
+          "to": "Stans",
+          "departure": "2026-11-03T07:10:00.000Z",
+          "arrival": "2026-11-03T07:24:00.000Z",
+          "journeyRef": "ch:1:sjyid:100064:2962-001",
+          "operatingDay": "2026-11-03"
+        },
+        "formation": {
+          "status": "no-data",
+          "message": "No usable bicycle coach is confirmed for the whole section. Missing, closed or detached bicycle coaches do not establish a prohibition; service and operator rules still apply.",
+          "checked": "2026-11-02T15:10:03.674Z",
+          "source": "https://opentransportdata.swiss/en/cookbook/realtime-prediction-cookbook/formationsdaten/",
+          "observed": {
+            "symbols": [],
+            "vehicles": [
+              {
+                "number": 0,
+                "position": 1,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Engelberg",
+                  "uic": 8508399
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              },
+              {
+                "number": 0,
+                "position": 2,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Engelberg",
+                  "uic": 8508399
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              },
+              {
+                "number": 0,
+                "position": 3,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Engelberg",
+                  "uic": 8508399
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              }
+            ]
+          },
+          "providerStatus": 200
+        }
+      },
+      {
+        "realtime": {
+          "checkedAt": "2026-11-02T15:10:03.158Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:7:14",
+            "seconds": 180,
+            "departure": "2026-11-03T07:27:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:01.634Z"
+          },
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:7:14",
+            "seconds": 180,
+            "departure": "2026-11-03T07:27:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:03.158Z"
+          }
+        ],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:5000",
+          "name": "Luzern",
+          "lat": 47.04886,
+          "lon": 8.31094
+        },
+        "to": {
+          "id": "ch:1:sloid:8391",
+          "name": "Stans",
+          "lat": 46.95832,
+          "lon": 8.3665
+        },
+        "departure": "2026-11-03T07:27:00.000Z",
+        "arrival": "2026-11-03T07:48:00.000Z",
+        "service": "S4",
+        "transferRules": [],
+        "serviceName": "S4",
+        "category": "S",
+        "operator": "ojp:86",
+        "direction": "Wolfenschiessen",
+        "departurePlatform": "14",
+        "arrivalPlatform": "1",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100064:21430-001",
+          "operatingDay": "2026-11-03",
+          "fromRef": "ch:1:sloid:5000:7:14",
+          "toRef": "ch:1:sloid:8391:0:442459",
+          "fromOrder": 1,
+          "toOrder": 8,
+          "departure": "2026-11-03T07:27:00.000Z",
+          "arrival": "2026-11-03T07:48:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        },
+        "formationReference": {
+          "operator": "ojp:86",
+          "evu": "ZB",
+          "trainNumber": "21430",
+          "from": "Luzern",
+          "to": "Stans",
+          "departure": "2026-11-03T07:27:00.000Z",
+          "arrival": "2026-11-03T07:48:00.000Z",
+          "journeyRef": "ch:1:sjyid:100064:21430-001",
+          "operatingDay": "2026-11-03"
+        },
+        "formation": {
+          "status": "no-data",
+          "message": "No usable bicycle coach is confirmed for the whole section. Missing, closed or detached bicycle coaches do not establish a prohibition; service and operator rules still apply.",
+          "checked": "2026-11-02T15:10:05.417Z",
+          "source": "https://opentransportdata.swiss/en/cookbook/realtime-prediction-cookbook/formationsdaten/",
+          "observed": {
+            "symbols": [],
+            "vehicles": [
+              {
+                "number": 0,
+                "position": 1,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Wolfenschiessen",
+                  "uic": 8508394
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              },
+              {
+                "number": 0,
+                "position": 2,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Wolfenschiessen",
+                  "uic": 8508394
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              },
+              {
+                "number": 0,
+                "position": 3,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Wolfenschiessen",
+                  "uic": 8508394
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              }
+            ]
+          },
+          "providerStatus": 200
+        }
+      },
+      {
+        "realtime": {
+          "checkedAt": "2026-11-02T15:10:03.158Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:7:14",
+            "seconds": 180,
+            "departure": "2026-11-03T07:57:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:01.634Z"
+          },
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:7:14",
+            "seconds": 180,
+            "departure": "2026-11-03T07:57:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:03.158Z"
+          }
+        ],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:5000",
+          "name": "Luzern",
+          "lat": 47.04886,
+          "lon": 8.31094
+        },
+        "to": {
+          "id": "ch:1:sloid:8391",
+          "name": "Stans",
+          "lat": 46.95832,
+          "lon": 8.3665
+        },
+        "departure": "2026-11-03T07:57:00.000Z",
+        "arrival": "2026-11-03T08:18:00.000Z",
+        "service": "S4",
+        "transferRules": [],
+        "serviceName": "S4",
+        "category": "S",
+        "operator": "ojp:86",
+        "direction": "Stans",
+        "departurePlatform": "14",
+        "arrivalPlatform": "2",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100064:21432-001",
+          "operatingDay": "2026-11-03",
+          "fromRef": "ch:1:sloid:5000:7:14",
+          "toRef": "ch:1:sloid:8391:0:326681",
+          "fromOrder": 1,
+          "toOrder": 8,
+          "departure": "2026-11-03T07:57:00.000Z",
+          "arrival": "2026-11-03T08:18:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        },
+        "formationReference": {
+          "operator": "ojp:86",
+          "evu": "ZB",
+          "trainNumber": "21432",
+          "from": "Luzern",
+          "to": "Stans",
+          "departure": "2026-11-03T07:57:00.000Z",
+          "arrival": "2026-11-03T08:18:00.000Z",
+          "journeyRef": "ch:1:sjyid:100064:21432-001",
+          "operatingDay": "2026-11-03"
+        },
+        "formation": {
+          "status": "no-data",
+          "message": "No usable bicycle coach is confirmed for the whole section. Missing, closed or detached bicycle coaches do not establish a prohibition; service and operator rules still apply.",
+          "checked": "2026-11-02T15:10:07.074Z",
+          "source": "https://opentransportdata.swiss/en/cookbook/realtime-prediction-cookbook/formationsdaten/",
+          "observed": {
+            "symbols": [],
+            "vehicles": [
+              {
+                "number": 0,
+                "position": 1,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Stans",
+                  "uic": 8508391
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              },
+              {
+                "number": 0,
+                "position": 2,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Stans",
+                  "uic": 8508391
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              },
+              {
+                "number": 0,
+                "position": 3,
+                "from": {
+                  "name": "Luzern",
+                  "uic": 8505000
+                },
+                "to": {
+                  "name": "Stans",
+                  "uic": 8508391
+                },
+                "closed": false,
+                "bikePicto": false,
+                "hooks": 0
+              }
+            ]
+          },
+          "providerStatus": 200
+        }
+      },
+      {
+        "realtime": {
+          "checkedAt": "2026-11-02T15:10:03.158Z",
+          "providerTimestampVerified": true,
+          "estimatedDeparture": null,
+          "estimatedArrival": null,
+          "departurePlatform": null,
+          "arrivalPlatform": null,
+          "cancelled": false,
+          "departureCancelled": false,
+          "arrivalCancelled": false,
+          "undefinedDelay": false
+        },
+        "accessRules": [
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:6:13",
+            "seconds": 180,
+            "departure": "2026-11-03T08:10:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:01.634Z"
+          },
+          {
+            "point": {
+              "lat": 47.0502,
+              "lon": 8.3102
+            },
+            "toRef": "ch:1:sloid:5000:6:13",
+            "seconds": 180,
+            "departure": "2026-11-03T08:10:00.000Z",
+            "operatingDay": "2026-11-03",
+            "checked": "2026-11-02T15:10:03.158Z"
+          }
+        ],
+        "mode": "transit",
+        "from": {
+          "id": "ch:1:sloid:5000",
+          "name": "Luzern",
+          "lat": 47.04886,
+          "lon": 8.31094
+        },
+        "to": {
+          "id": "ch:1:sloid:8391",
+          "name": "Stans",
+          "lat": 46.95832,
+          "lon": 8.3665
+        },
+        "departure": "2026-11-03T08:10:00.000Z",
+        "arrival": "2026-11-03T08:24:00.000Z",
+        "service": "IRLEX",
+        "transferRules": [],
+        "serviceName": "IRLEX",
+        "category": "IR",
+        "operator": "ojp:86",
+        "direction": "Engelberg",
+        "departurePlatform": "13",
+        "arrivalPlatform": "1",
+        "reference": {
+          "journeyRef": "ch:1:sjyid:100064:2964-001",
+          "operatingDay": "2026-11-03",
+          "fromRef": "ch:1:sloid:5000:6:13",
+          "toRef": "ch:1:sloid:8391:0:442459",
+          "fromOrder": 1,
+          "toOrder": 2,
+          "departure": "2026-11-03T08:10:00.000Z",
+          "arrival": "2026-11-03T08:24:00.000Z",
+          "bikeFiltered": true,
+          "attributes": [
+            {
+              "code": "A__PA",
+              "text": "Panoramawagen",
+              "scope": "service"
+            },
+            {
+              "code": "A__BL",
+              "text": "GEPÄCK : Transport eingeschränkt",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            },
+            {
+              "code": "A__PA",
+              "text": "Panoramawagen",
+              "scope": "service"
+            },
+            {
+              "code": "A__BL",
+              "text": "GEPÄCK : Transport eingeschränkt",
+              "scope": "service"
+            },
+            {
+              "code": "A__NF",
+              "text": "Niederflureinstieg",
+              "scope": "service"
+            }
+          ]
+        },
+        "rule": {
+          "permission": "allowed",
+          "basis": "ojp-filter",
+          "bikeReservation": "unknown",
+          "reservationUnspecified": true,
+          "notes": [],
+          "attributes": []
+        },
+        "formationReference": {
+          "operator": "ojp:86",
+          "evu": "ZB",
+          "trainNumber": "2964",
+          "from": "Luzern",
+          "to": "Stans",
+          "departure": "2026-11-03T08:10:00.000Z",
+          "arrival": "2026-11-03T08:24:00.000Z",
+          "journeyRef": "ch:1:sjyid:100064:2964-001",
+          "operatingDay": "2026-11-03"
+        }
+      }
+    ],
+    "checked": "2026-11-02T15:10:00.584Z",
+    "warnings": []
+  }
+}

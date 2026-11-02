@@ -4,7 +4,7 @@ import { BIKE_PROFILE_SOURCE, CHILD_TARIFF_SOURCE } from "./bikeEligibility.ts";
 import { knownPrice, unknownPrice, priceAmount, priceLabel, priceConditions, sumPrices, type Priced } from "./priced.ts";
 import { normalizeCode, operatorCode } from "./normalization.ts";
 import { carriageForLeg } from "./bicycleCarriage.ts";
-import { domesticSwissLeg, isSbb, sobMainlineRule } from "./operatorBicycleRules.ts";
+import { domesticSwissLeg, isSbb, sobMainlineRule, zentralbahnRail } from "./operatorBicycleRules.ts";
 import { swissDateTimeInput } from "./departure.ts";
 import type { TransitLeg } from "./routing.ts";
 import { publishedRouteFare, routeTariffProblem } from "./fareCatalog.ts";
@@ -30,7 +30,7 @@ export function nationalBikeTariff(leg: TransitLeg) {
   const operator = operatorCode(leg.operator), category = normalizeCode(leg.category);
   if (leg.mode !== "transit" || !domesticSwissLeg(leg)
     || /replacement|ersatz|remplacement/i.test(`${leg.service} ${leg.serviceName ?? ""}`)) return false;
-  return localNationalBikePass(leg) || (isSbb(leg) || sobMainlineRule(leg))
+  return localNationalBikePass(leg) || zentralbahnRail(leg) || (isSbb(leg) || sobMainlineRule(leg))
     && ["IC", "IR", "RE", "S", "R", "EC", "ICE", "RJX", "PE"].includes(category)
     || operator === "BLS" && ["S", "R", "RE", "IR"].includes(category)
     || operator === "RHB" && ["S", "R", "RE", "IR"].includes(category)
@@ -50,7 +50,7 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
   const covered = transit.length > 0 && coverageReviewed && transit.every(nationalBikeTariff);
   // Bike-pass acceptance does not establish passenger GA validity or the
   // reservation tariff of every participating operator/special train.
-  const gaCovered = covered && transit.every(l => isSbb(l) || sobMainlineRule(l) || tpgZone10Leg(l) || ["BLS", "VBZ", "VBG", "VZO", "STBW"].includes(operatorCode(l.operator)));
+  const gaCovered = covered && transit.every(l => isSbb(l) || sobMainlineRule(l) || zentralbahnRail(l) || tpgZone10Leg(l) || ["BLS", "VBZ", "VBG", "VZO", "STBW"].includes(operatorCode(l.operator)));
   const first = transit.find(l => l.departure)?.departure;
   const last = [...transit].reverse().find(l => l.arrival)?.arrival;
   const dayPrice = first ? bikeDayPrice(first) : null;
@@ -144,5 +144,8 @@ export function fareCardSummary(legs: TransitLeg[], profile: FareProfile, quote?
   if(fare.prohibited) return {price:fare.passengerPrice.known?`Passenger · ${priceLabel(fare.passengerPrice)}`:"Bicycle travel not permitted",detail:"Bicycle travel not permitted. "+priceConditions(fare.bicyclePrice)};
   if(fare.totalPrice.known) return {price:`${priceLabel(fare.totalPrice)} ${fare.estimated?"estimated additional cost":"additional cost"}`,detail:fare.estimated?"OJP test fare estimate; confirm price and conditions.":"Reviewed fare and entitlement conditions apply."};
   if(fare.passengerPrice.known) return {price:`Passenger · ${priceLabel(fare.passengerPrice)}${fare.passengerEstimated?" estimated":""}`,detail:priceConditions(fare.passengerPrice)+" · Complete journey total unavailable."};
+  if(takeBikeOnTransit && fare.bicyclePrice.known) return {price:`Bike ticket · ${priceLabel(fare.bicyclePrice)}`,
+    detail:priceConditions(fare.bicyclePrice)+" · Passenger fare needs a quote. "
+      +(fare.reservationPrice.known?`Bicycle reservation: ${priceLabel(fare.reservationPrice)}. `:"Bicycle reservation price is unverified. ")+"Complete journey total unavailable."};
   return {price:"Total needs a fare quote",detail:priceConditions(fare.totalPrice)};
 }

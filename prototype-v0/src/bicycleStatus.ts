@@ -24,6 +24,11 @@ export function bicycleStatus(leg: TransitLeg, profile?: TravelProfile) {
     : rule.bikeReservation === "required" ? "Reservation required"
     : rule.bikeReservation === "not-required" ? "No reservation required"
     : "Reservation requirement not verified";
+  const reservationBasis = rule.bikeReservation === "not-required" && !rule.profileRule.reservationExempt
+    && rule.evidence?.prerequisites?.bikeReservation !== "not-required" && rule.reservationSource
+      ? { label: rule.nationalRule ? "Timetable rule" : "Published rule",
+        explanation: `No reservation is required according to ${rule.reservationSource.title}. This conclusion uses the applicable published rule, rather than a no-reservation statement supplied for this departure.` }
+      : null;
   const permission = rule.permission === "prohibited" ? handling?.foldingOnly ? "Bikes not allowed · Folding bikes only" : "Bikes not allowed on this section"
     : expired ? "Bicycle rule needs updating"
     : profileUnverified ? "Bicycle configuration needs checking"
@@ -50,7 +55,7 @@ export function bicycleStatus(leg: TransitLeg, profile?: TravelProfile) {
     : profileUnverified ? "profile-unverified" : international ? "international-only"
     : rule.permission === "confirmed" || rule.permission === "prohibited" ? null
     : unidentified ? "identifier-unrecognised" : "no-applicable-rule";
-  return { title, permission, reservation, explanation, conflict, reason,
+  return { title, permission, reservation, reservationBasis, explanation, conflict, reason,
     icon: rule.permission === "prohibited" ? "prohibited" as const
       : rule.permission !== "confirmed" || conflict ? "unverified" as const
       : rule.bikeReservation === "required" ? "reservation" as const : "allowed" as const };

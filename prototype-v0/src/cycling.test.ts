@@ -373,3 +373,21 @@ it("reuses a routed cycling link when timetable coordinates change for the same 
   assert.equal(await client.route(revised, b), route); assert.equal(calls, 1);
   assert.equal(client.getCached(b, revised), null, "direction is still binding");
 });
+
+it("retries the primary cycling route after a timeout and an unusable backup", async () => {
+  const from={lat:47.3,lon:9.2},to={lat:46.9,lon:8.3};
+  let primary=0,backup=0;
+  const client=new CyclingClient(new AbortController().signal,async()=>{
+    primary++;return primary===1 ? new Response('operation killed by timeout',{status:400}) : response(geometry(from,to,8*3600));
+  },0,false,async()=>{backup++;return response({code:'Ok',routes:[{legs:[{steps:[{mode:'ferry'}]}]}]});});
+  const route=await client.route(from,to);
+  assert.ok(route);assert.equal(primary,2);assert.equal(backup,1);assert.equal(client.failedLinks.size,0);
+  assert.equal(client.warnings.size,0);assert.equal(client.requests,3);
+});
+it("does not repeat primary routing after a permanent failure merely because a backup exists",async()=>{
+  let primary=0,backup=0;
+  const client=new CyclingClient(new AbortController().signal,async()=>{primary++;return new Response('no track found at pass=0',{status:400});},0,false,
+    async()=>{backup++;throw new Error('Must not run');});
+  assert.equal(await client.route({lat:47.3,lon:9.2},{lat:46.9,lon:8.3}),null);
+  assert.equal(primary,1);assert.equal(backup,0);
+});

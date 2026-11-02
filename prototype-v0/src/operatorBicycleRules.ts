@@ -1,4 +1,5 @@
 import { domesticSwissLeg, swissStopId } from "./transitScope.ts";
+import { swissDateTimeInput } from "./departure.ts";
 export { domesticSwissLeg } from "./transitScope.ts";
 import { normalizeCode as norm, operatorCode } from "./normalization.ts";
 import { localOperatorBicycleRule } from "./localTransport.ts";
@@ -39,6 +40,16 @@ const BLS_BICYCLES: RuleSource = { title: "BLS bicycle tickets and carriage cond
   url: "https://www.bls.ch/en/fahren/fahrgastinformation/velofahrende/velomitnahme", checked: "2026-09-25" };
 const RHB_BICYCLES: RuleSource = { title: "RhB Rail & Bike",
   url: "https://www.rhb.ch/en/transport/rail-bike/", checked: "2026-09-25" };
+const ZB_BICYCLES: RuleSource = { title: "Zentralbahn: bicycles on all train lines, no bicycle reservations",
+  url: "https://www.zentralbahn.ch/de/planen/im-zug/bequem-reisen-1", checked: "2026-11-02" };
+/** Reviewed ordinary rail scope; never applies to replacement buses or foreign legs. */
+export function zentralbahnRail(leg: TransitLeg) {
+  return leg.mode === "transit" && operatorCode(leg.operator) === "ZB" && domesticSwissLeg(leg)
+    && ["S", "R", "RE", "IR", "PE"].includes(norm(leg.category))
+    && !/replacement|ersatz|remplacement/i.test(`${leg.service} ${leg.serviceName ?? ""}`)
+    && !!leg.departure && !!leg.arrival && Number.isFinite(+leg.departure) && Number.isFinite(+leg.arrival) && +leg.arrival >= +leg.departure
+    && swissDateTimeInput(leg.departure).slice(0, 10) >= "2026-11-02" && swissDateTimeInput(leg.arrival).slice(0, 10) <= "2026-12-12";
+}
 export function isSbb(leg: TransitLeg) {
   return operatorCode(leg.operator) === "SBB";
 }
@@ -117,6 +128,9 @@ export function operatorBicycleRule(leg: TransitLeg): OperatorBicycleRule | null
   if (["EV", "SEV"].includes(category) || /replacement|ersatz|remplacement/i.test(`${leg.service} ${leg.serviceName ?? ""}`)) return null;
   const local = localOperatorBicycleRule(leg);
   if (local) return local;
+  if (zentralbahnRail(leg)) return { permission: "allowed", reservation: "not-required", ticket: "required", source: ZB_BICYCLES,
+    instructions: ["Zentralbahn permits self-loaded bicycles on all its train lines. Bicycle spaces cannot be reserved; carriage depends on available room.",
+      "Carry a bicycle ticket, Bike Day Pass or valid annual bike pass. Use the designated bicycle area and load/unload independently."] };
   if (["SZU", "SZU-SZU", "SIHLTAL ZÜRICH UETLIBERG BAHN"].includes(operator)
     && /^S\s*10$/.test(norm(leg.service)) && leg.from !== leg.to
     && [leg.from, leg.to].some(name => /^(Uetliberg|Ringlikon)$/.test(name ?? "")))

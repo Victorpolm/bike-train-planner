@@ -90,6 +90,7 @@ export default function BicycleCarriageDetails({
     <div className={`bicycle-carriage permission-${rule.permission}`}>
       <BicycleServiceStatus leg={displayLeg} profile={profile} />
       <p>{displayStatus.explanation}</p>
+      {displayStatus.reservationBasis && <p>{displayStatus.reservationBasis.explanation}</p>}
       <p className="carriage-source">
         {leg.service} · {leg.from} → {leg.to}
         {leg.departure &&

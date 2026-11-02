@@ -973,3 +973,12 @@ Add nine cases covering positive service bicycle provision and overriding VN/VI,
 **Recorded station pipeline:** All seven rail legs in `ojp-live-2026-10-11/trip.xml`, with changed stop names and no initial station graph, resolve through the official station endpoint to confirmed permission and required reservation. Winter IC4 with Zürich/Schaffhausen SLOIDs changes from unknown reservation before official hydration to required afterward. Unrelated IC4 scope remains unknown.
 
 **Freshness:** VBZ departures before 24 September or after 12 December 2026 do not inherit the general reviewed rule. Missing identity and expired-rule explanations differ. Captured current B31 behavior remains covered by the existing production fixture. [Release and limits](BICYCLE_PACKING_AUDIT_2026-11-02.md).
+
+
+## 2026-11-02 — Zentralbahn no-reservation rule and failed cycling-backup recovery
+
+**Recorded Zentralbahn:** Four 3 November Luzern–Stans IR LEX/S4 departures contain positive OJP bike-filter permission and no bicycle reservation attributes. Official operator86 resolves to ZB. Expected/observed: permission confirmed, ticket required, reservation not required, bike day-pass CHF15, reservation CHF0. An ordinary S44 regression uses the same all-lines policy. Passenger full/half fare and the complete total stay unknown without a quote; the bike-only price is visible.
+
+**Counterexample:** Recorded IC8 Zürich–Bern on Sunday11 October21:44 Swiss time has no VR in OJP attributes but requires reservation under the SBB calendar. Published rules remain necessary.
+
+**Cycling recovery:** Controlled primary timeout, unusable ferry-containing backup, then primary success now returns a checked cycling route after three requests. Permanent no-route failure remains one primary call with no backup. A later live client check between the reported areas found119.818km with two usable route candidates; exact pins and bulk geometry remain private. [Release record and limits](ZENTRALBAHN_AND_CYCLING_RETRY_2026-11-02.md).

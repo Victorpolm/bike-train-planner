@@ -297,7 +297,9 @@ export class CyclingClient {
               try { return remember(await this.terrainCheck(await fallbackCycling(a, b, this.signal, Math.min(CYCLING_LIMITS.timeoutMs, remaining()), this.fallbackFetcher, this.pace))); }
               catch { this.signal.throwIfAborted(); }
             }
-            if (temporary && !this.fallbackFetcher && attempt === 0 && delay <= 10_000 && delay < remaining() && this.requests < CYCLING_LIMITS.requests) {
+            // A failed backup (for example a route containing a ferry) must not
+            // suppress the primary provider's one bounded transient retry.
+            if (temporary && attempt === 0 && delay <= 10_000 && delay < remaining() && this.requests < CYCLING_LIMITS.requests) {
               if (!rateLimited) await waitFor(delay, this.signal);
               continue;
             }

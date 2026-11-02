@@ -2012,7 +2012,9 @@ export default function App() {
                     <p>
                       {session.cyclingStatus === "loading" && loading
                         ? "Finding a route along roads and paths…"
-                        : "A complete cycling route is unavailable. No straight-line route has been substituted."}
+                        : ([...(session.comparisonClient?.failedLinks.values() ?? [])][0]
+                            ?.message ??
+                          "A complete cycling route is unavailable. No straight-line route has been substituted.")}
                     </p>
                   </div>
                 )}
