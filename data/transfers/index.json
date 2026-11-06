@@ -1,26 +1,26 @@
 {
   "version": 1,
-  "checked": "2026-11-03",
+  "checked": "2026-11-06",
   "feeds": [
     {
       "year": 2026,
-      "edition": "20261101",
-      "file": "2026-20261101.json",
-      "sha256": "b69a65d4e87e780dc08a76cb8e1a4d542bad00843bda03e285502765f6a4f711",
-      "bytes": 1707383,
+      "edition": "20261104",
+      "file": "2026-20261104.json",
+      "sha256": "39fe9238508dc58ad6bf169a62ae42cd2b3b8bf28c3496cc57d1c333af165e94",
+      "bytes": 1731750,
       "validFrom": "2025-12-14",
       "validThrough": "2026-12-12",
-      "source": "https://data.opentransportdata.swiss/dataset/3d2c18f9-9ef1-463f-a249-5c67604efd74/resource/dfeca041-1930-4c2e-b404-bff76002e1a8/download/gtfs_fp2026_20261101.zip"
+      "source": "https://data.opentransportdata.swiss/dataset/3d2c18f9-9ef1-463f-a249-5c67604efd74/resource/6cea7273-802a-4f44-9db4-a11d886cc19d/download/gtfs_fp2026_20261104.zip"
     },
     {
       "year": 2027,
-      "edition": "20261101",
-      "file": "2027-20261101.json",
-      "sha256": "63f098869cbdcfc8294dfcb690196d7bd6391f1b5444d887284759a2ea7b9dd4",
-      "bytes": 1418390,
+      "edition": "20261104",
+      "file": "2027-20261104.json",
+      "sha256": "4fe4988cc9a26b68261806a82a94e3a90f7b3e8e30c9d545f0c9d49f3c560c87",
+      "bytes": 1425378,
       "validFrom": "2026-12-13",
       "validThrough": "2027-12-11",
-      "source": "https://data.opentransportdata.swiss/dataset/10155d9d-5625-43a4-988c-88a69b3874ac/resource/da74b6d7-5adf-4be8-a984-934a45e771fb/download/gtfs_fp2027_20261101.zip"
+      "source": "https://data.opentransportdata.swiss/dataset/10155d9d-5625-43a4-988c-88a69b3874ac/resource/8ecc4ccf-20f1-458a-a1b5-966ff4d3dd41/download/gtfs_fp2027_20261104.zip"
     }
   ]
 }
