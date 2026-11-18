@@ -287,7 +287,7 @@ it("preserves a lower-exposure access path through the same train and during ord
 it("keeps the ordinary cycling route and separately retains a feasible low-traffic candidate", async () => {
   const from = { lat: 47, lon: 8 }, to = { lat: 47.01, lon: 8 };
   const data = (quiet: boolean) => ({ features: [{ geometry: { type: "LineString", coordinates: quiet ? [[8,47,400],[8.001,47.005,400],[8,47.01,400]] : [[8,47,400],[8,47.01,400]] },
-    properties: { "track-length": quiet ? 1200 : 1112, "total-time": quiet ? 360 : 300,
+    properties: { "track-length": quiet ? 1200 : 1112, "total-time": quiet ? 340 : 300,
       messages: [["Longitude", "Latitude", "WayTags"], [8000000,47010000,quiet ? "highway=cycleway surface=asphalt" : "highway=primary maxspeed=80 surface=asphalt"]] } }] });
   const client = new CyclingClient(new AbortController().signal, async input => Response.json(data(new URL(String(input)).searchParams.get("profile:avoid_unsafe") === "1")), 0, false, null, undefined, "fastest", null, undefined, true);
   const ordinary = await client.route(from, to), alternative = client.trafficRoutes.get(cyclingKey(from, to));

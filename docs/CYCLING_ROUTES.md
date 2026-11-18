@@ -1,5 +1,8 @@
 # Routed cycling and road profiles
 
+The 18 November rules cover turning decisions, traffic stress and the cycling detour budget. [Current cycling path preferences](CYCLING_PATH_PREFERENCES_2026-11-18.md).
+
+
 **27 September update:** [Terrain checks and candidate preferences](SWISSTOPO_AND_FARES_2026-09-27.md) supersede the earlier single-path behaviour described below. Pushing/carrying and mapped restrictions now affect timing.
 
 _Implemented 2026-09-20; rider profiles and timing updated 2026-09-24. Own-bicycle, Switzerland-first prototype._

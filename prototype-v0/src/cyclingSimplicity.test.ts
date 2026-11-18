@@ -50,7 +50,9 @@ it("uses a bicycle road profile for Simplest while preserving the primary path a
   const selected = await client.route(from, to);
   assert.equal(urls.length, 2);
   assert.equal(urls[0].searchParams.get("profile"), "trekking");
+  assert.equal(urls[0].searchParams.get("profile:consider_traffic"), "1");
   const params = urls[1].searchParams;
+  assert.equal(params.has("profile:consider_traffic"), false);
   assert.equal(params.get("profile"), "fastbike");
   assert.equal(params.get("alternativeidx"), "0");
   for (const flag of ["allow_steps", "allow_motorways", "allow_ferries"]) assert.equal(params.get("profile:" + flag), "0");

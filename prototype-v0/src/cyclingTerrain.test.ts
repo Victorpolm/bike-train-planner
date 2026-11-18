@@ -56,15 +56,15 @@ it("retains short route bends and rejects invalid official geometry", () => {
 });
 it("avoids stairs on a bounded detour and compares distinct time, turn and traffic objectives", () => {
   const stairs = { ...route({ highway: "steps" }), minutes: 10, turnCount: 3 };
-  const detour = { ...route(), minutes: 14, turnCount: 8 };
-  assert.equal(chooseCyclingRoute([stairs, detour], "fastest")!.minutes, 14);
+  const detour = { ...route(), minutes: 11, turnCount: 8 };
+  assert.equal(chooseCyclingRoute([stairs, detour], "fastest")!.minutes, 11);
   assert.equal(chooseCyclingRoute([stairs, { ...detour, minutes: 25 }], "fastest")!.minutes, 10);
-  const fast = { ...route({ highway: "primary", maxspeed: "80" }), minutes: 10, turnCount: 12 };
-  const simple = { ...route({ highway: "residential" }), minutes: 12, turnCount: 4 };
-  const quiet = { ...route(), minutes: 13, turnCount: 7, sections: route().sections.map(s => ({ ...s, infrastructure: "Separated cycleway" as const })) };
-  assert.equal(chooseCyclingRoute([fast, simple, quiet], "fastest")!.minutes, 10);
+  const fast = { ...route({ highway: "primary", maxspeed: "80" }), minutes: 20, turnCount: 12 };
+  const simple = { ...route({ highway: "residential" }), minutes: 22, turnCount: 4 };
+  const quiet = { ...route(), minutes: 23, turnCount: 7, sections: route().sections.map(s => ({ ...s, infrastructure: "Separated cycleway" as const })) };
+  assert.equal(chooseCyclingRoute([fast, simple, quiet], "fastest")!.minutes, 20);
   assert.equal(chooseCyclingRoute([fast, simple, quiet], "simplest")!.turnCount, 4);
-  assert.equal(chooseCyclingRoute([fast, simple, quiet], "lower-stress")!.minutes, 13);
+  assert.equal(chooseCyclingRoute([fast, simple, quiet], "lower-stress")!.minutes, 23);
   assert.equal(chooseCyclingRoute([route({ highway: "via_ferrata" })], "fastest"), null);
 });
 it("bounds the server check, preserves partial results and reports outages instead of certifying access", async () => {

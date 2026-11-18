@@ -1,5 +1,10 @@
 # Decisions
 
+## 18 November 2026 — choose cycling paths within one detour allowance
+
+Use the fewest mapped turning decisions for Easy to follow and break ties by elapsed time. Use mapped motor exposure and crossing evidence for Lower traffic stress. Restrict automatic cycling alternatives to 15% above the quickest checked path, capped at 15 minutes, with no minimum. A smaller rider-supplied hill allowance still applies. Keep stairs and bicycle access checks. These are comfort proxies, with observed traffic volumes and collision calibration still open. [Rules and regression cases](CYCLING_PATH_PREFERENCES_2026-11-18.md).
+
+
 ## 18 November 2026 — implement bounded discounts on the existing Site
 
 **New evidence and owner instruction:** The owner requested implementation on the ChatGPT website and SBB prefilling. Inspection of private Site version 97 (`124aa133a769c9da2bd54c4bf759b42b5edc08b6`) found later, explicit 12 November decisions enabling labelled OJP integration estimates, age/class requests and restricted-total display. The earlier main-only audit below remains accurate for its pinned application snapshot; it does not describe the current Site. Preserve the newer Site behavior and unrelated changes.

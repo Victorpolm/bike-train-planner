@@ -29,7 +29,7 @@ export default function CyclingTerrainSummary({ route }: { route: CyclingRoute }
             {routePreferenceLabels[route.preference]} ·{" "}
             {route.turnCount === undefined
               ? "Turn count unavailable"
-              : route.turnCount + " navigation instructions"}
+              : route.turnCount + (route.turnCount === 1 ? " turning decision" : " turning decisions")}
             . {route.preferenceNote}
           </p>
         )}

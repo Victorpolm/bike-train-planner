@@ -148,7 +148,7 @@ export class CyclingClient {
     if (this.pending.has(key)) return this.pending.get(key)!;
     // Acquisition and terrain checks are preference-independent. Switching the
     // objective ranks the same pool instead of starting a different provider search.
-    const cacheKey = "shared-candidates-v2|" + JSON.stringify(this.hills) + "|" + (this.routePreference ? "ranked" : "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
+    const cacheKey = "shared-candidates-v4|" + JSON.stringify(this.hills) + "|" + (this.routePreference ? "ranked" : "legacy") + "|" + `${key}|${this.pace ? `${this.pace.flatSpeedKmh}:${this.pace.electricAssist}` : "provider"}`;
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
     const ordinaryHills = this.collectHillAlternatives ? DEFAULT_HILLS : this.hills;
     const select = (candidates: CyclingRoute[]) => this.routePreference
@@ -204,6 +204,7 @@ export class CyclingClient {
         params.set("profile:turnInstructionMode", "2");
         params.set("profile:ignore_cycleroutes", "0");
         params.set("profile:avoid_unsafe", "1");
+        params.set("profile:consider_traffic", "1");
       }
       try {
         for (let attempt = 0; attempt < 2; attempt++) {
@@ -245,6 +246,7 @@ export class CyclingClient {
                 alternative.set("profile:considerTurnRestrictions", "1");
                 alternative.delete("profile:ignore_cycleroutes");
                 alternative.delete("profile:avoid_unsafe");
+                alternative.delete("profile:consider_traffic");
                 try {
                   await waitFor(this.gapMs, this.signal); this.lastRequest = Date.now(); this.requests++; this.alternativeRequests++;
                   const timeout = 15000;

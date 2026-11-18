@@ -32,13 +32,13 @@ it("distinguishes total ascent, downhill and adjustable uphill thresholds", () =
   assert.equal(routeClimb(route(origin, destination, 10, [408, 400])).steepM, 0);
 });
 it("chooses gentle paths while preserving the ordinary preference and respecting detour time", () => {
-  const steep = route(origin, destination, 5, [400, 408]);
-  const gentle = route(origin, destination, 8, [400, 405, 410]);
-  const unknown = route(origin, destination, 4, [400, null]);
-  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", DEFAULT_HILLS)?.minutes, 5);
-  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler" })?.minutes, 8);
-  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler", extraMinutes: 2 })?.minutes, 5);
-  assert.equal(chooseCyclingRoute([unknown, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler" })?.minutes, 8);
+  const steep = route(origin, destination, 40, [400, 408]);
+  const gentle = route(origin, destination, 44, [400, 405, 410]);
+  const unknown = route(origin, destination, 39, [400, null]);
+  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", DEFAULT_HILLS)?.minutes, 40);
+  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler" })?.minutes, 44);
+  assert.equal(chooseCyclingRoute([steep, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler", extraMinutes: 2 })?.minutes, 40);
+  assert.equal(chooseCyclingRoute([unknown, gentle], "fastest", { ...DEFAULT_HILLS, mode: "gentler" })?.minutes, 44);
   assert.equal(routeClimb(unknown).unknown, 1);
   assert.equal(routeClimb(undefined, 2).unknown, 1);
   assert.equal(routeClimb(zeroCycling(origin, origin)).unknown, 0);
@@ -175,7 +175,7 @@ it("collects a gentler path beside the ordinary route and preserves both on cach
   const from = { lat: 46.8, lon: 8 }, to = { lat: 46.801, lon: 8 }, calls: URL[] = [];
   const data = (gentle: boolean) => ({ features: [{ geometry: { type: "LineString", coordinates: gentle
     ? [[8, 46.8, 400], [8.0002, 46.8005, 401], [8, 46.801, 402]] : [[8, 46.8, 400], [8, 46.801, 410]] },
-    properties: { "track-length": gentle ? 117 : 111, "total-time": gentle ? 120 : 60 } }] });
+    properties: { "track-length": gentle ? 117 : 111, "total-time": gentle ? 67 : 60 } }] });
   const fetcher: typeof fetch = async input => { const url = new URL(String(input)); calls.push(url); return Response.json(data(url.searchParams.has("profile:uphillcost"))); };
   const hills = { ...DEFAULT_HILLS, mode: "gentler" as const, maxUphillPercent: 4 };
   for (const cached of [false, true]) {

@@ -20,6 +20,7 @@ export type CyclingRoute = {
   sections: CycleSection[]; startGapM: number; endGapM: number; connectorMinutes: number;
   source: "BRouter" | "OSRM" | "same place"; fetchedAt: number; pace?: CyclingPace;
   pushingSeconds?: number; carryingSeconds?: number; blocked?: boolean; topoCheck?: TopoCheck; terrainBaseSeconds?: number;
+  crossingNodes?: { distanceM: number; tags: Record<string, string>; leftTurn?: boolean }[];
   turnCount?: number; preference?: RoutePreference; alternativesChecked?: number; preferenceNote?: string;
   officialRoute?: OfficialRouteEvidence;
 };
@@ -78,6 +79,13 @@ export function cachedCycling(routes: ReadonlyMap<string, CyclingRoute | null>, 
 const validPoint = (p: Point) => Number.isFinite(p.lat) && Number.isFinite(p.lon) && Math.abs(p.lat) <= 90 && Math.abs(p.lon) <= 180;
 const number = (value: unknown): number | null => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
 
+function messageTags(value: string): Record<string, string> {
+  return Object.fromEntries(value.split(/\s+/).filter(s => s.includes("=")).map(s => {
+    const split = s.indexOf("=");
+    return [s.slice(0, split), s.slice(split + 1)];
+  }));
+}
+
 export function classifySurface(tags: Record<string, string>): Surface {
   if (tags.surface === "asphalt") return "Asphalt";
   if (["rock", "stone"].includes(tags.surface)) return "Rock";
@@ -102,7 +110,10 @@ export function classifyInfrastructure(tags: Record<string, string>): Infrastruc
 export function postedSpeedBand(tags: Record<string, string>): string {
   if (Object.keys(tags).some(key => key.startsWith("maxspeed") && key.includes("conditional"))) return "Unknown";
   const directional = tags.reversedirection === "yes" ? "maxspeed:backward" : "maxspeed:forward";
-  const value = tags[directional] ?? tags.maxspeed;
+  const explicit = tags[directional] ?? tags.maxspeed;
+  const zone = tags["zone:maxspeed"] ?? tags["zone:traffic"] ?? tags["maxspeed:type"] ?? tags["source:maxspeed"];
+  const swissZone = (s?: string) => /^CH:(?:zone)?(20|30)$/i.exec(s ?? "")?.[1];
+  const value = explicit ? swissZone(explicit) ?? explicit : swissZone(zone);
   // BRouter's lookup table normalizes OSM limits into groups. Do not present the
   // representative value as an exact posted speed, or use modelled travel speed.
   const bands: Record<string, string> = { "10": "5–15", "20": "16–25", "30": "30–35", "40": "40–45", "50": "48–56",
@@ -185,9 +196,10 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
   const connectorMinutes = (startGapM + endGapM) / 1000 / CONNECTOR_WALKING_SPEED_KMH * 60;
   const unknown = (startM: number, endM: number): CycleSection => ({ startM, endM, surface: "Unknown", infrastructure: "Unknown", speedLimit: "Unknown", tags: {} });
   const sections: CycleSection[] = [];
+  const crossingNodes = new Map<number, Record<string, string>>();
   const messages = properties.messages;
   if (Array.isArray(messages) && Array.isArray(messages[0])) {
-    const header = messages[0] as string[], lonIndex = header.indexOf("Longitude"), latIndex = header.indexOf("Latitude"), tagsIndex = header.indexOf("WayTags");
+    const header = messages[0] as string[], lonIndex = header.indexOf("Longitude"), latIndex = header.indexOf("Latitude"), tagsIndex = header.indexOf("WayTags"), nodeIndex = header.indexOf("NodeTags");
     let cursor = 0, uncertainInterval = false;
     for (const row of messages.slice(1)) {
       if (!Array.isArray(row) || lonIndex < 0 || latIndex < 0 || tagsIndex < 0) { uncertainInterval = true; continue; }
@@ -199,9 +211,14 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
       let end = -1;
       for (let i = cursor; i < points.length; i++) if (haversineKm(points[i], endpoint) < .002) { end = i; break; }
       if (end < cursor) { uncertainInterval = true; continue; }
-      const tags = Object.fromEntries((row[tagsIndex] as string).split(/\s+/).filter(s => s.includes("=")).map(s => {
-        const index = s.indexOf("="); return [s.slice(0, index), s.slice(index + 1)];
-      }));
+      const tags = messageTags(row[tagsIndex] as string);
+      const node = row[nodeIndex];
+      if (typeof node === "string" && node.length) {
+        const nodeTags = messageTags(node);
+        if (nodeTags.highway === "crossing" || /^[1-6]$/.test(nodeTags.estimated_crossing_class ?? "")) {
+          crossingNodes.set(end, { ...crossingNodes.get(end), ...nodeTags });
+        }
+      }
       if (end > cursor) sections.push(uncertainInterval ? unknown(points[cursor].distanceM, points[end].distanceM)
         : { startM: points[cursor].distanceM, endM: points[end].distanceM, tags,
           surface: classifySurface(tags), infrastructure: classifyInfrastructure(tags), speedLimit: postedSpeedBand(tags) });
@@ -220,11 +237,16 @@ export function parseCyclingRoute(data: unknown, from: Point, to: Point, fetched
     && Number.isInteger(h[1]) && (h[1] >= 1 && h[1] <= 18 || h[1] === 100));
   const turnCount = validHints ? new Set((hints as number[][]).filter(h => h[0] > 0 && h[0] < points.length - 1
     && h[1] !== 1 && h[1] !== 12 && h[1] !== 16 && h[1] !== 100).map(h => h[0])).size : undefined;
+  const leftTurns = new Set(validHints ? (hints as number[][]).filter(h => h[0] > 0 && h[0] < points.length - 1
+    && (h[1] === 2 || h[1] === 4)).map(h => h[0]) : []);
+  const crossingEvents = [...new Set([...crossingNodes.keys(), ...leftTurns])].sort((a, b) => a - b)
+    .map(i => ({ distanceM: points[i].distanceM, tags: crossingNodes.get(i) ?? {}, leftTurn: leftTurns.has(i) }));
   const ridingSeconds = Math.max(pace ? pacedRidingSeconds(terrain.elevation, distanceM / 1000, pace) : seconds,
     distanceM / 1000 / maxCyclingSpeed(pace) * 3600);
   return analyseCyclingTerrain({ id: cyclingKey(from, to), from, to, points, distanceKm: distanceM / 1000, ridingSeconds,
     minutes: Math.ceil(ridingSeconds / 60 + connectorMinutes), startGapM, endGapM, connectorMinutes,
-    source: "BRouter", fetchedAt, sections, pace, turnCount, ...terrain });
+    source: "BRouter", fetchedAt, sections, pace, turnCount,
+    crossingNodes: crossingEvents, ...terrain });
 }
 
 export function breakdown(route: CyclingRoute, property: "surface" | "infrastructure" | "speedLimit") {
