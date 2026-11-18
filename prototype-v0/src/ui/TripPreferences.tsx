@@ -229,9 +229,13 @@ export default function TripPreferences({
             ))}
           </select>
           <small>
-            {routePreference === "simplest" ? "Fewest mapped turning decisions, including forks and roundabouts. A stairs-free path takes priority within the allowance. Ties go to the quicker path. "
-              : routePreference === "lower-stress" ? "Prefers separated paths, slower roads and fewer road crossings, including likely turns across opposing traffic. Designated lorry routes count against a road. Rideable forest and waterside paths get priority where motor traffic is excluded. Truck volumes and lane crossings can be unmapped. " : ""}
-            Cycling alternatives can add up to 15% of the quickest checked path, capped at 15 minutes.
+            {routePreference === "simplest"
+              ? "Fewest mapped turning decisions, including forks and roundabouts. A stairs-free path takes priority within the allowance. Ties go to the quicker path. "
+              : routePreference === "lower-stress"
+                ? "Prefers separated paths, slower roads and fewer road crossings, including likely turns across opposing traffic. Designated lorry routes count against a road. Rideable forest and waterside paths get priority where motor traffic is excluded. Truck volumes and lane crossings can be unmapped. "
+                : ""}
+            Cycling alternatives can add up to 15% of the quickest checked path, capped at 15
+            minutes.
           </small>
         </label>
       </div>
@@ -357,7 +361,8 @@ export default function TripPreferences({
                   onChange={(e) => onHills({ ...hills, extraMinutes: e.target.valueAsNumber })}
                 />
                 <small>
-                  This can tighten the cycling-path allowance of 15%, capped at 15 minutes. Your total cycling limit still applies.
+                  This can tighten the cycling-path allowance of 15%, capped at 15 minutes. Your
+                  total cycling limit still applies.
                 </small>
               </label>
             )}

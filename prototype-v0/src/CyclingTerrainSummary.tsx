@@ -26,10 +26,12 @@ export default function CyclingTerrainSummary({ route }: { route: CyclingRoute }
       <InfoDisclosure label="Path choice and swisstopo check">
         {route.preference && (
           <p className="cycle-caption">
-            {routePreferenceLabels[route.preference]}{route.signedNetworkStretchM !== undefined && " + signed routes"} ·{" "}
+            {routePreferenceLabels[route.preference]}
+            {route.signedNetworkStretchM !== undefined && " + signed routes"} ·{" "}
             {route.turnCount === undefined
               ? "Turn count unavailable"
-              : route.turnCount + (route.turnCount === 1 ? " turning decision" : " turning decisions")}
+              : route.turnCount +
+                (route.turnCount === 1 ? " turning decision" : " turning decisions")}
             . {route.preferenceNote}
           </p>
         )}
