@@ -1,5 +1,15 @@
 # Decisions
 
+## 18 November 2026 — implement bounded discounts on the existing Site
+
+**New evidence and owner instruction:** The owner requested implementation on the ChatGPT website and SBB prefilling. Inspection of private Site version 97 (`124aa133a769c9da2bd54c4bf759b42b5edc08b6`) found later, explicit 12 November decisions enabling labelled OJP integration estimates, age/class requests and restricted-total display. The earlier main-only audit below remains accurate for its pinned application snapshot; it does not describe the current Site. Preserve the newer Site behavior and unrelated changes.
+
+**Implemented decision:** Retain the profile-adjusted baseline, reuse cheaper verified same-response products, compare a small fixed national passenger day-pass catalogue locally, and retain provenance/conditions and the baseline alternative. Require verified service identity for new train-bound recommendations. No second percentage, added discount lookup requests, owned passenger ticket inventory or City/school/group optimization. Deferred concessions do not erase a valid ordinary per-person baseline. Preserve flexible-ticket ranking and label it explicitly. Do not manufacture Saver Day Pass offers or promote unclassified Supersaver/Flex variants.
+
+**SBB handoff:** Preserve documented transport stops, Swiss date/time, vias and cycling-section boundaries. Display the actual profile as confirmation details that are not transferred; do not invent public passenger/purchase URL parameters.
+
+**Status:** Published private Site **version 98**, source `af6f20675fa208fa32dd011cb408f2e772029757`. 908 tests, 129 rendered interface panels and production builds pass; live age30/24/12 quotes confirm existing Supersaver/child-day-pass baselines are retained. Browser interaction remains unverified. Source synchronization into this repository's older application directory is separate. [Implementation, primary sources, deployment receipt and live evidence](PASSENGER_DISCOUNTS_AND_SBB_2026-11-18.md).
+
 ## 18 November 2026 — Use a bounded passenger discount check after the baseline fare
 
 **Owner decision:** Balance fare coverage, processing time and interface simplicity. Use the price supplied for the exact itinerary and passenger profile as the baseline, then look only for cheaper eligible tickets. Owned passenger day-ticket tracking is outside the initial scope; a possible optional extension is deferred. City/local passes, school/group products and other specialist discounts are lower priority. This narrows the broader catalogue/owned-ticket proposal from the passenger-fare audit; that proposal was not implemented.
