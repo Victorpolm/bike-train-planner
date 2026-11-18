@@ -110,6 +110,9 @@ export default function OfficialCyclingPanel({
         context.options.cyclingRoutePreference ?? "fastest",
         undefined,
         context.options.hills,
+        false,
+        false,
+        context.options.followSignedRoutes,
       );
       const result = await checkOfficialOption(context, stage, section, client, signal, (bounds) =>
         requestOfficialData("closures", bounds, signal),

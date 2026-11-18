@@ -23,6 +23,8 @@ export default function TripPreferences({
   hasWaypoints,
   bicycleScope,
   routePreference,
+  followSignedRoutes,
+  onFollowSignedRoutes,
   cyclingAmount,
   endpoint,
   cyclingPosition,
@@ -48,6 +50,8 @@ export default function TripPreferences({
   hasWaypoints: boolean;
   bicycleScope: BicycleScope;
   routePreference: RoutePreference;
+  followSignedRoutes: boolean;
+  onFollowSignedRoutes: (enabled: boolean) => void;
   cyclingAmount: CyclingAmount;
   endpoint: EndpointPreference;
   cyclingPosition: CyclingPosition;
@@ -230,6 +234,21 @@ export default function TripPreferences({
             Cycling alternatives can add up to 15% of the quickest checked path, capped at 15 minutes.
           </small>
         </label>
+      </div>
+      <div className="preference-heading">
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={followSignedRoutes}
+            disabled={disabled}
+            onChange={(e) => onFollowSignedRoutes(e.target.checked)}
+          />
+          <span>Follow signed routes</span>
+        </label>
+        <InlineHelp
+          label="About following signed routes"
+          text="Prefers a longer continuous stretch on a mapped cycling network within the same time allowance. Easy to follow keeps its turn count and Lower traffic stress keeps its exposure score. Route numbers can change along a mapped network."
+        />
       </div>
       <CyclingAmountControl value={cyclingAmount} disabled={disabled} onChange={onCyclingAmount} />
       <div className="extra-categories-group">

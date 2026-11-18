@@ -410,6 +410,7 @@ export default function App() {
   const [cycling, setCycling] = useState<CyclingPreference>("commuter");
   const [hills, setHills] = useState<HillPreferences>({ ...DEFAULT_HILLS });
   const [climbOptimization, setClimbOptimization] = useState(false);
+  const [followSignedRoutes, setFollowSignedRoutes] = useState(false);
   const [routePreference, setRoutePreference] = useState<RoutePreference>("simplest");
   const [tripPreset, setTripPreset] = useState<TripPreset>("commuter");
   const [objectives, setObjectives] = useState<readonly JourneyObjective[]>(DEFAULT_OBJECTIVES);
@@ -485,6 +486,7 @@ export default function App() {
     setCycling(next.cycling);
     setCyclingAmount(cyclingAmountForPreset(next.cycling));
     setRoutePreference(next.routePreference);
+    setFollowSignedRoutes(false);
     setBicycleScope(next.bicycleScope);
     setEndpoint(next.endpoint);
     setHills({ ...DEFAULT_HILLS });
@@ -516,6 +518,7 @@ export default function App() {
         cyclingAmount,
       ),
       objectives,
+      followSignedRoutes,
       fareProfile,
     };
     return journeyLibrary.parked ? withoutBicycle({ ...base, maxWalkingMinutes }) : base;
@@ -525,6 +528,7 @@ export default function App() {
     bicycleScope,
     cyclingPace,
     routePreference,
+    followSignedRoutes,
     cyclingPosition,
     hills,
     climbOptimization,
@@ -802,6 +806,7 @@ export default function App() {
     setEndpoint(next.endpointPreference);
     setBicycleScope(next.bicycleScope ?? "allow-uncertain");
     setRoutePreference(next.cyclingRoutePreference ?? "simplest");
+    setFollowSignedRoutes(next.followSignedRoutes ?? false);
     setHills({ ...(next.hills ?? DEFAULT_HILLS) });
     setClimbOptimization(next.climbOptimization ?? false);
     setObjectives(next.objectives ?? DEFAULT_OBJECTIVES);
@@ -1639,6 +1644,12 @@ export default function App() {
                   hasWaypoints={viaInputs.length > 0}
                   bicycleScope={bicycleScope}
                   routePreference={routePreference}
+                  followSignedRoutes={followSignedRoutes}
+                  onFollowSignedRoutes={(enabled) => {
+                    invalidate();
+                    setFollowSignedRoutes(enabled);
+                    setTripPreset("personalized");
+                  }}
                   cyclingAmount={cyclingAmount}
                   endpoint={endpoint}
                   cyclingPosition={cyclingPosition}

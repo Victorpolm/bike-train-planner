@@ -117,7 +117,7 @@ export default function CyclingEditor({
       layer.remove();
     };
   }, [map, points, routes]);
-  const { cyclingPace, cyclingRoutePreference, hills } = context.options;
+  const { cyclingPace, cyclingRoutePreference, hills, followSignedRoutes } = context.options;
   useEffect(() => {
     if (!stage) return;
     if (!points.length) {
@@ -142,6 +142,9 @@ export default function CyclingEditor({
         cyclingRoutePreference,
         undefined,
         hills,
+        false,
+        false,
+        followSignedRoutes,
       );
       void requestEditedCycling(stage, points, client, signal)
         .then((result) => {
@@ -167,7 +170,7 @@ export default function CyclingEditor({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [stage, points, attempt, cyclingPace, cyclingRoutePreference, hills]);
+  }, [stage, points, attempt, cyclingPace, cyclingRoutePreference, hills, followSignedRoutes]);
   const checked = useMemo(() => {
     if (!routes || !stage) return null;
     try {

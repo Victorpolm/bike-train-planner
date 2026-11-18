@@ -25,8 +25,10 @@ const fix = (point = b) => ({ ...point, timestamp: +start, accuracy: 5 });
 
 it("round-trips exact paths, facility duration, Date objects and resume stage without storing GPS or navigation machinery", () => {
   const active = { ...navigationTrip(trip()), fix: { secret: true }, progress: { secret: true } };
+  active.options = { ...active.options, followSignedRoutes: true };
   const library = saveJourney(emptyJourneyLibrary(), active, 1, "My ride", "one", start);
   const raw = encodeJourneyLibrary(library), restored = parseJourneyLibrary(raw);
+  assert.equal(restored.journeys[0].trip.options.followSignedRoutes, true);
   assert.doesNotMatch(raw, /"fix"|"progress"|"stages"|secret/);
   assert.deepEqual(restored, library); assert.ok(restored.journeys[0].trip.cycling!.arrival instanceof Date);
   assert.equal(restored.journeys[0].stage, 1); assert.equal(restored.journeys[0].trip.cycling!.stops![0].visit.minutes, 7);

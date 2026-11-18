@@ -45,6 +45,7 @@ export type Options = {
   bicycleScope?: BicycleScope;
   cyclingPace?: CyclingPace;
   cyclingRoutePreference?: RoutePreference;
+  followSignedRoutes?: boolean;
 };
 export const DEFAULT_OPTIONS: Options = {
   cyclingPosition: "anywhere", takeBikeOnTransit: true, maxWalkingMinutes: DEFAULT_WALKING_MINUTES, maxCyclingTransfers: 2,
@@ -116,6 +117,7 @@ export function validateOptions(o: Options) {
   if (o.maxWalkingMinutes !== undefined && (!Number.isInteger(o.maxWalkingMinutes) || o.maxWalkingMinutes < 0 || o.maxWalkingMinutes > 60)) throw new Error("Walking sections must be between 0 and 60 minutes.");
   if (o.maxCyclingTransfers !== undefined && (!Number.isInteger(o.maxCyclingTransfers) || o.maxCyclingTransfers < 0 || o.maxCyclingTransfers > 2)) throw new Error("Cycling connections must be a whole number from 0 to 2.");
   if (o.cyclingRoutePreference !== undefined && !ROUTE_PREFERENCES.includes(o.cyclingRoutePreference)) throw new Error("Invalid cycling route preference.");
+  if (o.followSignedRoutes !== undefined && typeof o.followSignedRoutes !== "boolean") throw new Error("Invalid signed cycling route preference.");
   if (o.cyclingPace) validateCyclingPace(o.cyclingPace);
   const bounds: [keyof Options, number, number][] = [
     ["maxBikeMinutes", 0, 1440], ["maxAccessMinutes", 0, 1440], ["maxEgressMinutes", 0, 1440],

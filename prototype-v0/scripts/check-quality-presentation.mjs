@@ -146,3 +146,19 @@ assert.doesNotMatch(zbHtml,/Reservation requirement not verified/);
 const zbFare=render(FareDetails,{journey:{transitLegs:[zb]},profile:DEFAULT_FARE_PROFILE});panels++;
 assert.match(zbFare,/CHF 15.00/);assert.match(zbFare,/Passenger/);
 console.log(JSON.stringify({zentralbahnPanels:2,totalPanels:panels,status:'passed'}));
+
+const { default: SignedTripPreferences } = await import('../src/ui/TripPreferences.tsx');
+for (const followSignedRoutes of [false, true]) {
+  const html = render(SignedTripPreferences, {
+    open: true, disabled: false, mode: 'baseline', routePreference: 'simplest', followSignedRoutes,
+    cyclingAmount: { mode:'at-most', minutes:30 }, hills: { mode:'none', extraMinutes:15, maxUphillPercent:6 },
+    bicycleScope:'allow-uncertain', endpoint:'none', cyclingPosition:'anywhere', takeBikeOnTransit:true,
+    maxWalkingMinutes:30, onFollowSignedRoutes() {}
+  });
+  const toggle = html.match(/(<input[^>]*type="checkbox"[^>]*>)<span>Follow signed routes<\/span>/);
+  assert.ok(toggle);
+  assert.equal(toggle[1].includes('checked=""'), followSignedRoutes);
+  assert.ok(html.indexOf('Cycling path') < html.indexOf('Follow signed routes'));
+  panels++;
+}
+console.log(JSON.stringify({signedRoutePanels:2,totalPanels:panels,status:'passed'}));

@@ -65,17 +65,19 @@ export class CyclingClient {
   private topoReplies = new Map<string, TopoReply>();
   private topoCorridors = new Map<string, TopoReply>();
   private terrainFetcher: typeof fetch | null;
+  readonly followSignedRoutes: boolean;
   readonly routePreference?: RoutePreference;
   readonly hills: HillPreferences;
   constructor(signal: AbortSignal, fetcher: typeof fetch = fetch, gapMs = CYCLING_LIMITS.gapMs, useCache = true,
     fallbackFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, pace?: CyclingPace, routePreference?: RoutePreference,
-    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, hills: HillPreferences = DEFAULT_HILLS, collectTrafficAlternatives = false, collectHillAlternatives = false) {
+    terrainFetcher: typeof fetch | null = fetcher === fetch ? fetch : null, hills: HillPreferences = DEFAULT_HILLS, collectTrafficAlternatives = false, collectHillAlternatives = false, followSignedRoutes = false) {
+    this.followSignedRoutes = followSignedRoutes;
     this.collectTrafficAlternatives = collectTrafficAlternatives;
     this.collectHillAlternatives = collectHillAlternatives;
     validateHills(hills); this.hills = { ...hills };
     if (pace) validateCyclingPace(pace);
     this.pace = pace ? { ...pace } : undefined;
-    this.routePreference = routePreference ?? (hills.mode !== "none" ? "fastest" : undefined);
+    this.routePreference = routePreference ?? (hills.mode !== "none" || followSignedRoutes ? "fastest" : undefined);
     this.terrainFetcher = terrainFetcher;
     this.signal = signal; this.fetcher = fetcher; this.gapMs = gapMs; this.useCache = useCache;
     this.fallbackFetcher = fallbackFetcher;
@@ -111,7 +113,7 @@ export class CyclingClient {
   beginPhase() { this.remainingMs = CYCLING_LIMITS.phaseMs; }
   fork(signal: AbortSignal) {
     const next = new CyclingClient(signal, this.fetcher, this.gapMs, this.useCache, this.fallbackFetcher,
-      this.pace, this.routePreference, this.terrainFetcher, this.hills, this.collectTrafficAlternatives, this.collectHillAlternatives);
+      this.pace, this.routePreference, this.terrainFetcher, this.hills, this.collectTrafficAlternatives, this.collectHillAlternatives, this.followSignedRoutes);
     for (const [key, route] of this.routes) if (route) next.routes.set(key, route);
     for (const [key, route] of this.trafficRoutes) next.trafficRoutes.set(key, route);
     for (const [key, route] of this.hillRoutes) next.hillRoutes.set(key, route);
@@ -152,14 +154,14 @@ export class CyclingClient {
     const cached = this.useCache ? cache.get(cacheKey) : undefined;
     const ordinaryHills = this.collectHillAlternatives ? DEFAULT_HILLS : this.hills;
     const select = (candidates: CyclingRoute[]) => this.routePreference
-      ? chooseCyclingRoute(candidates, this.routePreference, ordinaryHills) : candidates[0];
+      ? chooseCyclingRoute(candidates, this.routePreference, ordinaryHills, this.followSignedRoutes) : candidates[0];
     const alternatives = (candidates: CyclingRoute[], chosen: CyclingRoute) => {
       if (this.collectTrafficAlternatives) {
-        const traffic = chooseCyclingRoute(candidates, "lower-stress", ordinaryHills);
+        const traffic = chooseCyclingRoute(candidates, "lower-stress", ordinaryHills, this.followSignedRoutes);
         if (traffic && traffic.points !== chosen.points) this.trafficRoutes.set(key, traffic);
       }
       if (this.collectHillAlternatives && this.hills.mode === "gentler") {
-        const gentle = chooseCyclingRoute(candidates, this.routePreference ?? "fastest", this.hills);
+        const gentle = chooseCyclingRoute(candidates, this.routePreference ?? "fastest", this.hills, this.followSignedRoutes);
         if (gentle && gentle.points !== chosen.points) this.hillRoutes.set(key, gentle);
       }
     };

@@ -1,5 +1,10 @@
 # Re.route — project state
 
+## 18 November 2026 — optional signed cycling routes, private Site v100
+
+**Follow signed routes** is an optional preference for individual cycling sections. It reuses checked paths, applies the existing detour allowance, preserves fewer-turn and lower-stress goals, and reports the longest evidenced network stretch. In the recorded Vevey–Montreux case, Fastest trades two displayed minutes for 1.31 km more continuous mapped network. [Selection and regression evidence](CYCLING_PATH_PREFERENCES_2026-11-18.md).
+
+
 **18 November — cycling path preferences, private Site v99.** Easy to follow minimizes mapped turning decisions. Lower traffic stress accounts for posted speeds, motor separation, lorry designations, crossings and rideable motor-free paths near forest or water. The single-section allowance is 15% of the quickest usable checked path with a 15-minute cap. [Model and replay](CYCLING_PATH_PREFERENCES_2026-11-18.md).
 
 

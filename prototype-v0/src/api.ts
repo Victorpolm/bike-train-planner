@@ -366,7 +366,7 @@ function startCyclingComparison(session: SearchSession, publish: SearchUpdate, f
   if (!session.cyclingClient) return;
   // One separate serial stream keeps a long bicycle-only route from blocking
   // short station access. Transit and cycling cards publish independently.
-  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference, undefined, session.options.hills, false, session.options.hills?.mode === "gentler");
+  const client = new CyclingClient(session.client.signal, fetcher, gapMs, !fetcher, undefined, session.options.cyclingPace, session.options.cyclingRoutePreference, undefined, session.options.hills, false, session.options.hills?.mode === "gentler", session.options.followSignedRoutes);
   session.comparisonClient = client;
   session.cyclingTask = (async () => {
     const routes = [];
@@ -523,7 +523,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   if (!dependencies.previous) client.national = dependencies.nationalClient !== undefined ? dependencies.nationalClient
     : dependencies.fetcher ? null : await measureStage(signal, "setup", () => NationalTimetableClient.connect(signal));
   const cyclingClient = options.walkingOnly || dependencies.cyclingClient === null || dependencies.previous && !dependencies.previous.cyclingClient ? undefined
-    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills, wantsObjective(options, "less-traffic"), options.hills?.mode === "gentler");
+    : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills, wantsObjective(options, "less-traffic"), options.hills?.mode === "gentler", options.followSignedRoutes);
   if (cyclingClient) network.cycling = cyclingClient.routes;
   const walkingClient = !options.walkingOnly && (options.cyclingPosition ?? "anywhere") === "anywhere" ? undefined
     : dependencies.previous?.walkingClient?.fork(signal) ?? dependencies.walkingClient

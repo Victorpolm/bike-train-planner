@@ -50,6 +50,7 @@ export default function DetourPanel({
   onRoutes,
   onClose,
 }: Props) {
+  const followSignedRoutes = context?.options.followSignedRoutes;
   const [stageId, setStageId] = useState(() => nearestDetourStage(stages, facility)?.id);
   const stage = stages.find((s) => s.id === stageId) ?? stages[0];
   const [visit, setVisit] = useState("5");
@@ -82,6 +83,9 @@ export default function DetourPanel({
       preference,
       undefined,
       hills,
+      false,
+      false,
+      followSignedRoutes,
     );
     setResult(null);
     onRoutes(null);
@@ -112,7 +116,7 @@ export default function DetourPanel({
       abort.abort();
       onRoutes(null);
     };
-  }, [stage, facility, pace, preference, hills, attempt, onRoutes]);
+  }, [stage, facility, pace, preference, hills, followSignedRoutes, attempt, onRoutes]);
   const visitMinutes = Number(visit);
   const validVisit =
     visit.trim() !== "" &&

@@ -21,6 +21,7 @@ export type CyclingRoute = {
   source: "BRouter" | "OSRM" | "same place"; fetchedAt: number; pace?: CyclingPace;
   pushingSeconds?: number; carryingSeconds?: number; blocked?: boolean; topoCheck?: TopoCheck; terrainBaseSeconds?: number;
   crossingNodes?: { distanceM: number; tags: Record<string, string>; leftTurn?: boolean }[];
+  signedNetworkStretchM?: number;
   turnCount?: number; preference?: RoutePreference; alternativesChecked?: number; preferenceNote?: string;
   officialRoute?: OfficialRouteEvidence;
 };
