@@ -57,7 +57,7 @@ it("reports cancellation and closes timing even when places have not resolved", 
 });
 it("records a failed action without requiring a published session", async () => {
   const reports: SearchTimingReport[] = [];
-  await assert.rejects(plan(origin, destination, "baseline", { ...options, maxBoardings: 0 }, new AbortController().signal, () => {}, () => {}, { onTiming: r => reports.push(r) }));
+  await assert.rejects(plan(origin, destination, "baseline", { ...options, maxBoardings: -1 }, new AbortController().signal, () => {}, () => {}, { onTiming: r => reports.push(r) }));
   assert.equal(reports.at(-1)?.status, "failed"); assert.equal(reports.at(-1)?.firstTransitMs, null);
 });
 it("records deadline termination and preserves the last completed results", async t => {

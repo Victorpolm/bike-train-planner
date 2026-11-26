@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import { readBicycle, DEFAULT_BICYCLE, validPassOn } from "./travelProfile.ts";
 import type { TransitLeg } from "./routing.ts";
 import type { FareProfile } from "./fares.ts";
@@ -56,6 +57,6 @@ export function fareQuery(legs: TransitLeg[], profile: FareProfile, takeBikeOnTr
   return { segments: transit.map(l => ({ from: l.fromId!, to: l.toId!, departure: l.departure!.toISOString(),
     arrival: l.arrival!.toISOString(), fromName: l.from ?? undefined, toName: l.to ?? undefined,
     fromPoint: point(l.fromPoint), toPoint: point(l.toPoint), ...(l.ojp ? { journeyRef: l.ojp.journeyRef } : {}) })),
-    passenger: profile.passenger, bicycle: takeBikeOnTransit && !profile.annualBikePass
+    passenger: profile.passenger, bicycle: transit.every(l => bicycleOnTransitLeg(l, takeBikeOnTransit)) && !profile.annualBikePass
       && !transit.some(l => bicyclePermission(l, profile) === "prohibited"), ...(sources ? { sources } : {}) };
 }

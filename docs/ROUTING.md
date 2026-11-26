@@ -1,5 +1,7 @@
 # Routing and optimization
 
+**26 November update:** Bicycle possession is constant between explicit Pick up/Leave intermediate-stop actions, independent of riding placement and carriage willingness. Per-stage eligibility is evaluated before dominance; shared resources survive each action. [Current bicycle-stop contract](BICYCLE_STOP_ACTIONS_2026-11-26.md) supersedes older implicit parking/pickup descriptions in this document.
+
 ## Current station timing — 2026-10-06, synchronized 2026-10-07
 
 Exact dated OJP access/interchange evidence takes priority. Otherwise, uniquely matched platform pairs can use the pinned SBB ZIP general minimum within feed validity; incomplete or unavailable evidence retains labelled fallbacks. Both solvers preserve incoming service/platform context during dominance pruning when static records are present. The shared boarding check counts existing walking once and also governs cycling edits and facility detours. Objectives, cycling budgets and bicycle-permission scopes are unchanged. [Data, state, feasibility and regressions](STATION_TRANSFER_RUNTIME_2026-10-06.md).

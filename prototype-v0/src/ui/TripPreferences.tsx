@@ -29,6 +29,7 @@ export default function TripPreferences({
   endpoint,
   cyclingPosition,
   takeBikeOnTransit,
+  bicycleAtOrigin,
   maxWalkingMinutes,
   onMode,
   onScope,
@@ -37,6 +38,7 @@ export default function TripPreferences({
   onEndpoint,
   onPosition,
   onBikeOnTransit,
+  onBicycleAtOrigin,
   onWalkingMinutes,
   hills,
   climbOptimization,
@@ -56,6 +58,7 @@ export default function TripPreferences({
   endpoint: EndpointPreference;
   cyclingPosition: CyclingPosition;
   takeBikeOnTransit: boolean;
+  bicycleAtOrigin: boolean;
   maxWalkingMinutes: number;
   onMode: (mode: ModelMode) => void;
   onScope: (scope: BicycleScope) => void;
@@ -64,6 +67,7 @@ export default function TripPreferences({
   onEndpoint: (endpoint: EndpointPreference) => void;
   onPosition: (position: CyclingPosition) => void;
   onBikeOnTransit: (enabled: boolean) => void;
+  onBicycleAtOrigin: (available: boolean) => void;
   onWalkingMinutes: (minutes: number) => void;
   hills: HillPreferences;
   climbOptimization: boolean;
@@ -112,7 +116,7 @@ export default function TripPreferences({
           <button
             type="button"
             aria-pressed={mode === "extended"}
-            disabled={cyclingPosition !== "anywhere"}
+            disabled={cyclingPosition !== "anywhere" || !takeBikeOnTransit}
             onClick={() => onMode("extended")}
           >
             <strong>Extended</strong>
@@ -120,70 +124,76 @@ export default function TripPreferences({
           </button>
         </div>
       </fieldset>
-      <div className="preference-heading">
-        <label htmlFor="cycling-position">Where would you like to cycle?</label>
-        <InlineHelp
-          label="About where you can cycle"
-          text={
-            "This restricts where cycling is allowed. Extra categories below add comparisons within these rules. " +
-            (cyclingPosition === "start-only"
-              ? "Ride before your first service, then walk from public transport to your destination."
-              : cyclingPosition === "end-only"
-                ? "Walk from your starting point to public transport, then ride after your last service."
-                : "Baseline allows cycling at either end. Extended also explores cycling between services.") +
-            (cyclingPosition !== "anywhere"
-              ? " Cycling between services is disabled. Walking uses pedestrian paths and its own time allowance."
-              : "") +
-            (takeBikeOnTransit
-              ? " Your bicycle travels with you on public transport."
-              : " Bicycle access restrictions and bicycle charges do not apply to your transit journey.")
-          }
+      <label className="check-row">
+        <input
+          type="checkbox"
+          id="bicycle-availability"
+          disabled={disabled}
+          checked={bicycleAtOrigin}
+          onChange={(e) => onBicycleAtOrigin(e.target.checked)}
         />
-      </div>
-      <select
-        id="cycling-position"
-        disabled={disabled}
-        value={cyclingPosition}
-        onChange={(e) => onPosition(e.target.value as CyclingPosition)}
-      >
-        <option value="anywhere">At either end and between services</option>
-        <option value="start-only">Only at the beginning</option>
-        <option value="end-only">Only at the end</option>
-      </select>
-      {cyclingPosition !== "anywhere" && (
-        <>
-          <label className="check-row">
-            <input
-              type="checkbox"
-              disabled={disabled}
-              checked={takeBikeOnTransit}
-              onChange={(e) => onBikeOnTransit(e.target.checked)}
-            />
-            <span>Take my bicycle on public transport</span>
-          </label>
-          <p className="preference-note">
-            {takeBikeOnTransit
-              ? "Walk with your bicycle on the walking sections. Bicycle tickets and carriage rules apply."
-              : cyclingPosition === "start-only"
-                ? "Leave the bicycle at your departure station. Continue by public transport and on foot."
-                : "Start on foot. Use a bicycle already waiting at your arrival station."}
-          </p>
-          <label>
-            <span>Walk to/from public transport · up to (min)</span>
-            <input
-              type="number"
-              min="0"
-              max="60"
-              step="1"
-              required
-              disabled={disabled}
-              value={Number.isFinite(maxWalkingMinutes) ? maxWalkingMinutes : ""}
-              onChange={(e) => onWalkingMinutes(e.target.valueAsNumber)}
-            />
-            <small>Per walking section. Separate from your cycling allowance.</small>
-          </label>
-        </>
-      )}
+        <span>Bike with me at the start</span>
+      </label>
+      <p className="preference-note">
+        Bike status stays the same throughout the journey. To change it, choose Pick up a bike or
+        Leave a bike at an intermediate stop.
+      </p>
+      <label className="check-row">
+        <input
+          type="checkbox"
+          disabled={disabled}
+          checked={takeBikeOnTransit}
+          onChange={(e) => onBikeOnTransit(e.target.checked)}
+        />
+        <span>Allow my bicycle on public transport</span>
+      </label>
+      <p className="preference-note">
+        {takeBikeOnTransit
+          ? "Bicycle tickets and carriage rules apply only on services where a bike is with you."
+          : "Public transport is available only while you have no bike. Choose where to leave it if needed."}
+      </p>
+      <details className="cycling-position-preference">
+        <summary>Where to ride{cyclingPosition !== "anywhere" ? " · restricted" : ""}</summary>
+        <div className="preference-heading">
+          <label htmlFor="cycling-position">Cycling placement</label>
+          <InlineHelp
+            label="About where you can cycle"
+            text={
+              "This restricts where cycling is allowed, independently of whether a bike is with you. " +
+              "Only before means before the first public-transport service; only after means after the last service. " +
+              "Before and after also allows cycling between services in Extended mode when your bicycle can travel with you. " +
+              "Cycling starts only when a bicycle is available. Your journey objectives still determine which complete journeys appear."
+            }
+          />
+        </div>
+        <select
+          id="cycling-position"
+          disabled={disabled}
+          value={cyclingPosition}
+          onChange={(e) => onPosition(e.target.value as CyclingPosition)}
+        >
+          <option value="anywhere">Before and after public transport</option>
+          <option value="start-only">Only before the first service</option>
+          <option value="end-only">Only after the last service</option>
+        </select>
+      </details>
+      <label>
+        <span>Walking and pushing · up to (min)</span>
+        <input
+          type="number"
+          min="0"
+          max="60"
+          step="1"
+          required
+          disabled={disabled}
+          value={Number.isFinite(maxWalkingMinutes) ? maxWalkingMinutes : ""}
+          onChange={(e) => onWalkingMinutes(e.target.valueAsNumber)}
+        />
+        <small>
+          Per walking or cycling section, including pushing or carrying your bicycle. Separate from
+          your cycling allowance.
+        </small>
+      </label>
       {takeBikeOnTransit && (
         <fieldset className="bicycle-access" disabled={disabled}>
           <legend className="preference-heading">

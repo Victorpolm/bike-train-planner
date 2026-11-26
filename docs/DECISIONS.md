@@ -1,5 +1,13 @@
 # Decisions
 
+## 26 November 2026 — constant bicycle status with explicit stop actions
+
+**Owner instruction:** Keep the interface simple. Bicycle status remains unchanged unless the user explicitly changes it.
+
+**Decision:** Start with a bicycle by default; expose an initial-status toggle and optional Pick up/Leave actions on ordinary intermediate stops. Keep is the default. Riding placement and permission to use public transport with a bicycle never change possession. Evaluate the actual status on each leg, retaining shared search resources and explicit navigation confirmation. Reverse updates the action sequence and initial status consistently.
+
+This supersedes implicit parking at first boarding and inferred bicycle availability after transit. On the newer Site, existing explicit legacy pickup locations migrate to visible stops when planning again; historical saved itineraries are retained. No automatic parking selection, new API, engine migration or broader inventory model is included. [Implementation and regression cases](BICYCLE_STOP_ACTIONS_2026-11-26.md).
+
 ## 18 November 2026 — optional signed cycling routes
 
 Use the same checked cycling-path candidates for the signed-route preference. Prioritize a longer, continuous mapped network stretch within the single detour allowance and the rider’s primary cycling objective. Preserve the ordinary result when a gain cannot be established. Named-route identity and closure checks stay with the official route checker. [Rules and evidence](CYCLING_PATH_PREFERENCES_2026-11-18.md).

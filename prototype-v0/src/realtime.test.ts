@@ -97,7 +97,9 @@ it("refreshes bicycle restrictions and reservation requirements on the selected 
  const updates=new Map([[realtimeKey(leg),{bicycleEvidence:changed.bicycleEvidence,bicycleAttributes:changed.bicycleAttributes}]]);
  const checked=realtimeJourney(raw,new Map(),3,undefined,updates,+time(0));
  assert.equal(checked.feasibility,"broken");assert.match(checked.issues.join(" "),/bicycle carriage is prohibited/);
- assert.notEqual(realtimeJourney(raw,new Map(),3,undefined,updates,+time(0),undefined,false).feasibility,"broken");
+ assert.equal(realtimeJourney(raw,new Map(),3,undefined,updates,+time(0),undefined,false).feasibility,"broken", "a fallback preference cannot erase recorded carriage");
+ const passenger={...raw,transitLegs:raw.transitLegs.map(l=>({...l,bicycleOnBoard:false}))};
+ assert.notEqual(realtimeJourney(passenger,new Map(),3,undefined,updates,+time(0)).feasibility,"broken");
  assert.equal(leg.bicycleEvidence,originalEvidence);assert.equal(changed.departure,leg.departure);assert.equal(changed.ojp,leg.ojp);
 });
 it("uses late and early estimates in both solvers and excludes cancelled services in every scope", () => {

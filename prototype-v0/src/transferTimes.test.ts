@@ -49,7 +49,7 @@ it("enforces a station's transfer time, displays it as a step and does not add t
     assert.equal(found.journeys.length, 1);
     const j = found.journeys[0], walk = j.transitLegs.find(l => l.stationTransfer)!;
     assert.equal(+walk.arrival! - +walk.departure!, 420_000); assert.equal(metrics(j).walk, 7);
-    assert.equal(j.transitLegs.find(l => l.service === "Next"), next);
+    assert.deepEqual(j.transitLegs.find(l => l.service === "Next"), { ...next, bicycleOnBoard: true, bicycleWithTraveller: true });
     assert.deepEqual(fareQuery(j.transitLegs, DEFAULT_FARE_PROFILE), fareQuery([first, next], DEFAULT_FARE_PROFILE));
   }
   const early = leg("Too early", x, d, 16, 30); early.transferRules = [rule(first, early, 420)];
@@ -59,7 +59,7 @@ it("keeps a later arriving service whose platform-specific transfer can catch th
   const later = leg("Later", a, x, 6, 11), next = leg("Next", x, d, 16, 30);
   next.transferRules = [rule(first, next, 600), rule(later, next, 300)];
   for (const found of both([first, later, next])) {
-    assert.equal(found.journeys.length, 1); assert.ok(found.journeys[0].transitLegs.includes(later));
+    assert.equal(found.journeys.length, 1); assert.deepEqual(found.journeys[0].transitLegs.find(l => l.service === later.service), { ...later, bicycleOnBoard: true, bicycleWithTraveller: true });
   }
 });
 it("counts an explicit walking transfer once, including its time in connection validation", () => {
@@ -106,7 +106,7 @@ it("keeps a valid seven-minute transfer when applying an access-path edit", () =
   const stage = detourStages(j, null, a, d, start)[0];
   const applied = applyCyclingEdit(context, stage, [{ ...zeroCycling(a, a), minutes: 1 }]).journey!;
   assert.equal(applied.transitLegs.filter(l => l.stationTransfer).length, 1);
-  assert.ok(applied.transitLegs.includes(first)); assert.ok(applied.transitLegs.includes(next));
+  assert.ok(applied.transitLegs.includes(j.transitLegs.find(l => l.service === first.service)!)); assert.ok(applied.transitLegs.includes(j.transitLegs.find(l => l.service === next.service)!));
   assert.deepEqual(fareQuery(applied.transitLegs, DEFAULT_FARE_PROFILE), fareQuery(j.transitLegs, DEFAULT_FARE_PROFILE));
 });
 

@@ -3,6 +3,8 @@ import { haversineKm, type Place, type TransitLeg } from "./routing.ts";
 
 const MAX_REQUIRED_FACILITIES = 5;
 export function validateRequiredStops(stops: readonly (string | Place)[], ordinaryLimit = 4) {
+  for (const point of stops) if (typeof point !== "string" && point.bicycleAction !== undefined && !["park", "collect"].includes(point.bicycleAction))
+    throw new Error("Choose a valid bicycle action at the intermediate stop.");
   const facilities = stops.filter(p => typeof p !== "string" && p.visit);
   if (facilities.length > MAX_REQUIRED_FACILITIES || stops.length - facilities.length > ordinaryLimit)
     throw new Error(`Choose up to ${ordinaryLimit} intermediate places and ${MAX_REQUIRED_FACILITIES} facility visits.`);

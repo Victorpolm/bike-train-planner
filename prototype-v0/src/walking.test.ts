@@ -13,7 +13,7 @@ import { parseWalkingRoute, WalkingClient, zeroWalking, type WalkingRoute } from
 const start = new Date("2026-10-08T06:00:00Z"), at = (m: number) => new Date(+start + m * 60000);
 const a = { id: "A", name: "Station A", lat: 47.301, lon: 8.4 }, b = { id: "B", name: "Station B", lat: 47.305, lon: 8.41 };
 const home = { label: "Home", lat: 47.3, lon: 8.4 }, destination = { label: "Work", lat: 47.306, lon: 8.412 };
-const options: Options = { ...DEFAULT_OPTIONS, cyclingPosition: "start-only", takeBikeOnTransit: false, bicycleScope: "confirmed",
+const options: Options = { ...DEFAULT_OPTIONS, cyclingPosition: "start-only", takeBikeOnTransit: true, bicycleScope: "confirmed",
   maxBikeMinutes: 5, maxAccessMinutes: 5, maxEgressMinutes: 5, maxWalkingMinutes: 15 };
 function bike(n: Network, from: Point, to: Point, minutes: number) {
   n.cycling!.set(cyclingKey(from, to), { ...zeroCycling(from, to), minutes, distanceKm: minutes / 4, source: "BRouter" });
@@ -28,7 +28,7 @@ function fixture(endOnly = false) {
   const leg: TransitLeg = { mode: "transit", from: a.name, to: b.name, fromId: a.id, toId: b.id, fromPoint: a, toPoint: b,
     departure: at(10), arrival: at(30), service: "T4", serviceName: null, direction: null, category: "T", operator: "Test",
     departurePlatform: null, arrivalPlatform: null };
-  leg.bicycleEvidence = { permission: "prohibited", fromId: a.id, toId: b.id, departure: at(10).toISOString(), service: leg.service, operator: "Test",
+  leg.bicycleEvidence = { permission: "allowed", fromId: a.id, toId: b.id, departure: at(10).toISOString(), service: leg.service, operator: "Test",
     conditions: [], source: { title: "Dated test restriction", url: "https://example.test/rule", checked: start.toISOString() } };
   n.edges.set("tram", { id: "tram", from: a.id, to: b.id, leg });
   if (endOnly) { walk(n, home, a, 6); bike(n, b, destination, 5); }
@@ -71,10 +71,12 @@ it("keeps direction, missing paths, walking limits and bicycle carriage separate
   }
   const n = fixture();
   assert.equal(solve(n, home, destination, start, { ...options, maxWalkingMinutes: 11 }, "baseline").journeys.length, 0);
-  assert.equal(solve(n, home, destination, start, { ...options, takeBikeOnTransit: true }, "baseline").journeys.length, 0);
+  assert.equal(solve(n, home, destination, start, { ...options, takeBikeOnTransit: false }, "baseline").journeys.length, 0);
+  n.edges.get("tram")!.leg.bicycleEvidence!.permission = "prohibited";
+  assert.equal(solve(n, home, destination, start, options, "baseline").journeys.length, 0);
   assert.equal(solve(n, home, destination, start, { ...options, takeBikeOnTransit: true, bicycleScope: "all-transit" }, "baseline").journeys.length, 1);
 });
-it("keeps walking through ordered visits and cannot resume cycling after leaving the bicycle", () => {
+it("keeps walking through ordered visits and cannot resume cycling after the first service in start-only placement", () => {
   const n = fixture(), via = { label: "Visit", lat: 47.3055, lon: 8.411 };
   walk(n, b, via, 4); walk(n, via, destination, 8);
   bike(n, via, destination, 1); // Must not turn this tempting cycle into a post-transit option.
@@ -106,7 +108,7 @@ it("retains a real Stadelhofen pedestrian route and rejects non-pedestrian or in
 it("acquires transit to an address via its checked walking path and subtracts walking from arrival queries", async () => {
   for (const endOnly of [false, true]) for (const arrival of [false, true]) {
     const signal = new AbortController().signal, n = fixture(endOnly), bodies: any[] = [];
-    const o = { ...options, cyclingPosition: endOnly ? "end-only" as const : "start-only" as const };
+    const o = { ...options, bicycleScope: "allow-uncertain" as const, cyclingPosition: endOnly ? "end-only" as const : "start-only" as const };
     const cycling = new CyclingClient(signal, async () => Response.json({ features: [] }), 0, false, null);
     for (const [key, route] of n.cycling!) cycling.routes.set(key, route);
     const walking = new WalkingClient(signal, async () => Response.json({ code: "NoRoute" }));
@@ -128,7 +130,7 @@ it("acquires transit to an address via its checked walking path and subtracts wa
     assert.equal(!!bodies[0].arriveBy, arrival);
   }
 });
-it("queries an onward public-transport stage on foot after leaving the bicycle behind", async () => {
+it("queries an onward public-transport stage on foot when start-only riding has finished", async () => {
   const signal = new AbortController().signal, n = fixture(), bodies: any[] = [];
   const via = { label: "Visit", lat: 47.306, lon: 8.415 };
   const c = { id: "C", name: "Stop C", lat: 47.3065, lon: 8.415 };
@@ -147,7 +149,7 @@ it("queries an onward public-transport stage on foot after leaving the bicycle b
       service: onward ? "T5" : "T4", serviceName: null, direction: null, departurePlatform: null, arrivalPlatform: null }],
       checked: start.toISOString(), warnings: [] });
   });
-  const session = await plan(home, finish, "baseline", options, signal, () => {}, () => {}, { start, waypoints: [via],
+  const session = await plan(home, finish, "baseline", { ...options, bicycleScope: "allow-uncertain" }, signal, () => {}, () => {}, { start, waypoints: [via],
     cyclingClient: cycling, walkingClient: walking, ojpClient, gapMs: 0,
     cyclingFetcher: async () => Response.json({ features: [] }), fetcher: async input => {
       const lat = Number(new URL(String(input)).searchParams.get("x"));

@@ -217,7 +217,7 @@ it("never interprets unknown reservation rules or prohibited carriage as no rese
 });
 it("preserves distinct unpriced service sequences and compares their later complete quotes", () => {
   const n = network([leg("fast-expensive", 0, 1, 3, 20), leg("slower-cheap", 0, 1, 4, 25), leg("onward", 1, 2, 30, 60)]);
-  const o: Options = { ...options, objectives: ["fastest", "cheapest"], takeBikeOnTransit: false, cyclingPosition: "start-only" };
+  const o: Options = { ...options, objectives: ["fastest", "cheapest"], bicycleAtOrigin: false, takeBikeOnTransit: false, cyclingPosition: "start-only" };
   for (const via of [false, true]) {
     const result = via ? solveWaypoints(n, points, start, o, "baseline") : solve(n, points[0], points[2], start, o, "baseline");
     const cheap = result.journeys.find(j => j.transitLegs.some(l => l.service === "slower-cheap"))!;

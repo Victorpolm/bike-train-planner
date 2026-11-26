@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import { priceAmount } from "./priced.ts";
 import { carriageForLeg } from "./bicycleCarriage.ts";
 import { fareSummary, type FareProfile } from "./fares.ts";
@@ -22,8 +23,7 @@ export function boardingAllowance(referenceMinutes: number) {
 }
 
 export function reservationMetrics(legs: TransitLeg[], takeBikeOnTransit = true, profile?: FareProfile) {
-  if (!takeBikeOnTransit) return { required: 0, unknown: 0, prohibited: 0 };
-  const rules = legs.filter(l => l.mode === "transit").map(leg => carriageForLeg(leg, profile));
+  const rules = legs.filter(l => bicycleOnTransitLeg(l, takeBikeOnTransit)).map(leg => carriageForLeg(leg, profile));
   return { required: rules.filter(r => r.bikeReservation === "required").length,
     unknown: rules.filter(r => r.bikeReservation === "unknown").length,
     prohibited: rules.filter(r => r.permission === "prohibited").length };
@@ -86,7 +86,7 @@ export function farePathKey(legs: TransitLeg[], options: ObjectiveOptions) {
   // sequence erase a slower sequence which could have a lower complete fare.
   const first = legs.findIndex(l => l.mode === "transit");
   return first < 0 ? "" : JSON.stringify(legs.slice(first).map(l => [l.mode, l.fromId, l.toId,
-    l.serviceName, l.service, l.operator, l.category, l.departure?.toISOString(), l.arrival?.toISOString()]));
+    l.serviceName, l.service, l.operator, l.category, l.bicycleOnBoard, l.bicycleWithTraveller, l.bicycleAction, l.departure?.toISOString(), l.arrival?.toISOString()]));
 }
 
 export type ObjectiveFareContext = { profile: FareProfile; quotes: ReadonlyMap<string, OnlineFare> };

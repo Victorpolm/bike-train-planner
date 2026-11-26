@@ -1,3 +1,4 @@
+import { hasOriginBicycle, hasBicycleStopActions } from "./bicycleAvailability.ts";
 import { cachedWalking, walkingLeg } from "./walking.ts";
 import { requiredVisitLeg } from "./requiredVisits.ts";
 import type { Network, Options } from "./model.ts";
@@ -5,7 +6,8 @@ import type { Journey, Place, TransitLeg } from "./routing.ts";
 
 /** A checked all-walking option while the bicycle is parked; never a bike estimate. */
 export function walkingJourney(network: Network, points: Place[], start: Date, options: Options): Journey | null {
-  if (!options.walkingOnly || points.length < 2) return null;
+  const withBicycle = hasOriginBicycle(options);
+  if (withBicycle && !options.cyclingFinished || hasBicycleStopActions(points) || (options.minBikeMinutes ?? 0) > 0 || points.length < 2) return null;
   const routes = points.slice(1).map((p, i) => cachedWalking(network.walking, points[i], p));
   if (routes.some(r => !r || r.minutes > (options.maxWalkingMinutes ?? 30))) return null;
   const minutes = routes.reduce((n, r) => n + r!.minutes, 0) + points.slice(1, -1).reduce((n, p) => n + (p.visit?.minutes ?? 0), 0);
@@ -13,7 +15,7 @@ export function walkingJourney(network: Network, points: Place[], start: Date, o
   if (departure < +start || minutes > options.horizonMinutes) return null;
   let cursor = departure; const legs: TransitLeg[] = [], visits: NonNullable<Journey["waypoints"]> = [];
   for (const [i, r] of routes.entries()) {
-    const leg = walkingLeg(r!, cursor, points[i], points[i + 1]); legs.push(leg); cursor = +leg.arrival!;
+    const leg = { ...walkingLeg(r!, cursor, points[i], points[i + 1]), bicycleWithTraveller: withBicycle }; legs.push(leg); cursor = +leg.arrival!;
     if (points[i + 1].visit) {
       const visit = requiredVisitLeg(points[i + 1], cursor);
       if (!visit) return null;

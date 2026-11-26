@@ -1,5 +1,7 @@
 # Re.route — Bike + Train Journey Planner
 
+**26 November — explicit bicycle actions at stops.** Bicycle status stays unchanged by default. Intermediate stops offer **Keep current status**, **Pick up a bike** and **Leave a bike**; the planner updates walking/cycling, public-transport eligibility and bicycle charges on the relevant sections. [Behaviour, model and regression journeys](docs/BICYCLE_STOP_ACTIONS_2026-11-26.md).
+
 **18 November — signed cycling routes, private Site v100.** Follow signed routes can use the existing cycling detour allowance to extend a continuous stretch on a mapped cycling network. The Vevey–Montreux replay gains 1.31 km for two displayed minutes. [Cycling path rules and evidence](docs/CYCLING_PATH_PREFERENCES_2026-11-18.md).
 
 

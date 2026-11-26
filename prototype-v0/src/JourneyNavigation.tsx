@@ -11,7 +11,7 @@ import {
 } from "./navigation";
 import { arrivalTime, effectivePlatform, realtimeStale, realtimeUnavailable } from "./realtime";
 import { usableFix } from "./locationTracking";
-import { formatMinutes } from "./routing";
+import { formatMinutes, type Place } from "./routing";
 
 const clock = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Zurich",
@@ -26,6 +26,7 @@ export default function JourneyNavigation({
   onStart,
   onRecalculate,
   onMap,
+  onBicycleAction,
 }: {
   navigation: Navigation;
   canStart: boolean;
@@ -34,6 +35,7 @@ export default function JourneyNavigation({
   onStart: () => void;
   onRecalculate: () => void;
   onMap: () => void;
+  onBicycleAction: (action: "park" | "collect", point: Place) => void;
 }) {
   const active = nav.following;
   if (!active)
@@ -61,6 +63,7 @@ export default function JourneyNavigation({
     );
   const { trip, index, onboard, progress } = active;
   const stage = trip.stages[index];
+  const bicycleAction = stage.leg?.bicycleAction;
   const fresh = usableFix(nav.location.fix, nav.now);
   const onPath = fresh && progress && progress.offSince === null;
   const connection = navigationConnection(
@@ -89,7 +92,11 @@ export default function JourneyNavigation({
         : stage.mode === "walk"
           ? "Walk"
           : stage.mode === "stop"
-            ? "Facility stop"
+            ? bicycleAction === "park"
+              ? "Leave your bicycle"
+              : bicycleAction === "collect"
+                ? "Pick up a bicycle"
+                : "Facility stop"
             : "Follow the itinerary";
   const confirm =
     stage.mode === "transit"
@@ -97,7 +104,11 @@ export default function JourneyNavigation({
         ? "I’ve alighted"
         : "I’m on board"
       : stage.mode === "stop"
-        ? "Stop finished · Continue"
+        ? bicycleAction === "park"
+          ? "I’ve left the bicycle · Continue"
+          : bicycleAction === "collect"
+            ? "I’ve collected the bicycle · Continue"
+            : "Stop finished · Continue"
         : index === trip.stages.length - 1
           ? "I’ve arrived · Finish"
           : "Section completed";
@@ -114,6 +125,12 @@ export default function JourneyNavigation({
       <p className="navigation-destination">
         {stage.mode === "transit" ? `${stage.title} → ${stage.to}` : `To ${stage.to}`}
       </p>
+      {bicycleAction && (
+        <p>
+          Confirm this action at the selected stop. Recalculation keeps your previous bicycle status
+          until you confirm.
+        </p>
+      )}
       <div className="navigation-signal" role="status">
         {nav.location.message ||
           (nav.location.fix
@@ -162,7 +179,20 @@ export default function JourneyNavigation({
         </p>
       )}
       <div className="navigation-actions">
-        <button className="navigation-primary" type="button" disabled={busy} onClick={nav.confirm}>
+        <button
+          className="navigation-primary"
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            if (bicycleAction && stage.leg?.toPoint)
+              onBicycleAction(bicycleAction, {
+                lat: stage.leg.toPoint.lat,
+                lon: stage.leg.toPoint.lon,
+                label: stage.to,
+              });
+            nav.confirm();
+          }}
+        >
           {confirm}
         </button>
         <button
@@ -290,7 +320,10 @@ export default function JourneyNavigation({
       )}
       <details>
         <summary>Adjust current stage</summary>
-        <p>Earlier stages count as completed, including requested stops at their ends.</p>
+        <p>
+          Earlier stages count as completed, including requested stops at their ends. Bicycle
+          actions must be confirmed individually and cannot be skipped here.
+        </p>
         <label>
           Current stage{" "}
           <select
@@ -299,7 +332,7 @@ export default function JourneyNavigation({
             onChange={(e) => nav.setStage(Number(e.target.value))}
           >
             {trip.stages.map((s, i) => (
-              <option key={i} value={i}>
+              <option key={i} value={i} disabled={!nav.canSetStage(i)}>
                 {i + 1}. {s.title} → {s.to}
               </option>
             ))}

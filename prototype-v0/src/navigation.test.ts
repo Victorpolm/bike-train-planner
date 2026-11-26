@@ -146,7 +146,7 @@ it("does not discard a requested visit merely because GPS is near it", () => {
   assert.deepEqual(navigationReplan(trip, 0, false, progress, fix(b), now).waypoints, [b]);
   assert.deepEqual(navigationReplan(trip, 1, false, null, fix(b), now).waypoints, []);
 });
-it("blocks replanning with stale GPS, while boarded, after a passed deadline or after bicycle custody changes", () => {
+it("blocks invalid navigation states without inferring bicycle custody from carriage preferences", () => {
   const trip = mixed();
   assert.throws(() => navigationReplan(trip, 1, true, null, fix(b), now), /alighted/);
   assert.throws(() => navigationReplan(trip, 0, false, null, fix(a, -21000), now), /fresh/);
@@ -154,12 +154,12 @@ it("blocks replanning with stale GPS, while boarded, after a passed deadline or 
   assert.throws(() => navigationReplan(trip, 0, false, null, fix(a), now), /deadline/);
   delete trip.options.arriveBy; trip.options.takeBikeOnTransit = false; trip.options.cyclingPosition = "start-only";
   const passenger = navigationReplan(trip, 1, false, null, fix(b), now);
-  assert.equal(passenger.options.walkingOnly, true); assert.equal(passenger.options.maxBikeMinutes, 0);
+  assert.equal(passenger.options.walkingOnly, undefined); assert.equal(passenger.options.bicycleAtOrigin, true); assert.equal(passenger.options.maxBikeMinutes, 80);
   assert.equal(passenger.options.takeBikeOnTransit, false);
   trip.options.cyclingPosition = "end-only";
-  assert.throws(() => navigationReplan(trip, 1, false, null, fix(b), now), /bicycle/);
+  assert.equal(navigationReplan(trip, 1, false, null, fix(b), now).options.bicycleAtOrigin, true);
   trip.options.takeBikeOnTransit = true; trip.options.maxBoardings = 1;
-  assert.throws(() => navigationReplan(trip, 2, false, null, fix(c), now), /boarding limit/);
+  assert.equal(navigationReplan(trip, 2, false, null, fix(c), now).options.maxBoardings, 0);
 });
 
 function locationHarness() {
@@ -226,8 +226,8 @@ it("recovers from an explicitly confirmed boarding stop with consumed budgets an
  assert.equal(next.options.horizonMinutes,trip.options.horizonMinutes);
  assert.throws(()=>confirmedOnwardRequest(trip,1,true,now+86400000),/another day/);
  trip.options.takeBikeOnTransit=false;trip.options.cyclingPosition="start-only";
- assert.equal(confirmedOnwardRequest(trip,1,true,now).options.walkingOnly,true);
- trip.options.cyclingPosition="end-only";assert.throws(()=>confirmedOnwardRequest(trip,1,true,now),/bicycle/);
+ assert.equal(confirmedOnwardRequest(trip,1,true,now).options.bicycleAtOrigin,true);
+ trip.options.cyclingPosition="end-only";assert.equal(confirmedOnwardRequest(trip,1,true,now).options.bicycleAtOrigin,true);
 });
 it("bounds recovery by imminent boarding rather than excluding onward journeys longer than two hours",()=>{
  const trip=mixed(),stage=trip.stages[1];

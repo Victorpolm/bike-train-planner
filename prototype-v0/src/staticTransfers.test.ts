@@ -120,7 +120,7 @@ it("keeps a later arrival with a faster platform transfer during dominance pruni
   later.arrivalPlatform = "18";
   later.stationArrival = { ...first.stationArrival!, key: transferEndpointKey({ ref: "8503000", stopId: "8503000", platform: "18" }), id: next.stationDeparture!.id, minimums: { [next.stationDeparture!.id!]: 300 } };
   for (const result of both(network)) {
-    assert.equal(result.journeys.length, 1); assert.ok(result.journeys[0].transitLegs.includes(later));
+    assert.equal(result.journeys.length, 1); assert.deepEqual(result.journeys[0].transitLegs.find(l => l.service === later.service), { ...later, bicycleOnBoard: true, bicycleWithTraveller: true });
   }
 });
 it("counts walking already present, preserves exact OJP priority and resets after cycling", async () => {

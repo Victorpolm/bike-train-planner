@@ -1,5 +1,6 @@
 import PlaceInput, { type PlaceValue } from "../PlaceInput";
 import { MAX_WAYPOINTS } from "../places";
+import type { WaypointInput } from "../waypointInputs";
 
 export default function RouteFields({
   from,
@@ -10,6 +11,7 @@ export default function RouteFields({
   onFrom,
   onTo,
   onVia,
+  onBicycleAction,
   onReverse,
   onAdd,
   onRemove,
@@ -19,12 +21,13 @@ export default function RouteFields({
 }: {
   from: PlaceValue;
   to: PlaceValue;
-  vias: { id: string; value: PlaceValue }[];
+  vias: WaypointInput[];
   disabled: boolean;
   notice: string;
   onFrom: (value: PlaceValue) => void;
   onTo: (value: PlaceValue) => void;
   onVia: (id: string, value: PlaceValue) => void;
+  onBicycleAction: (id: string, action: WaypointInput["bicycleAction"]) => void;
   onReverse: () => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
@@ -94,6 +97,26 @@ export default function RouteFields({
                 Remove
               </button>
             </div>
+            <label className="waypoint-bicycle-action">
+              <span>Bike at this stop</span>
+              <select
+                aria-label={`Bike action at intermediate stop ${index + 1}`}
+                disabled={disabled}
+                value={input.bicycleAction ?? ""}
+                onChange={(event) =>
+                  onBicycleAction(
+                    input.id,
+                    event.target.value === "park" || event.target.value === "collect"
+                      ? event.target.value
+                      : undefined,
+                  )
+                }
+              >
+                <option value="">Keep current status</option>
+                <option value="collect">Pick up a bike</option>
+                <option value="park">Leave a bike</option>
+              </select>
+            </label>
           </div>
         ))}
         <PlaceInput label="To" value={to} disabled={disabled} onChange={onTo} />
@@ -109,7 +132,8 @@ export default function RouteFields({
       {!!vias.length && (
         <p className="waypoint-help">
           Visit stops in this order · up to {MAX_WAYPOINTS} stops. Cycling and boarding limits apply
-          to the whole journey. No stopover time is added.
+          to the whole journey. Bike status stays the same unless you pick up or leave a bike. No
+          stopover time is added.
         </p>
       )}
       {notice && (

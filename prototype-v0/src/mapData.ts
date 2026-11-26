@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import type { Stop } from "./model.ts";
 import type { Journey, Point, Station } from "./routing.ts";
 import { busCarriage, busCarriageLabel } from "./busCarriage.ts";
@@ -46,7 +47,7 @@ export function journeyStops(journey: Journey): JourneyStop[] {
     if (leg.mode !== "transit") continue;
     boarding++;
     const rule = busCarriage(leg);
-    const event = { boarding, service: leg.service, bicycle: `${bicyclePermissionLabel(leg)}${rule ? ` · ${rule.operator}: ${busCarriageLabel(rule)}` : ""}` };
+    const event = { boarding, service: leg.service, bicycle: bicycleOnTransitLeg(leg) ? `${bicyclePermissionLabel(leg)}${rule ? ` · ${rule.operator}: ${busCarriageLabel(rule)}` : ""}` : "Travelling without a bicycle" };
     add(leg.fromPoint ?? (leg.fromId === journey.originStation.id ? journey.originStation : undefined),
       leg.fromId, leg.from, { ...event, action: "Board", time: leg.departure, platform: leg.departurePlatform });
     add(leg.toPoint ?? (leg.toId === journey.destinationStation.id ? journey.destinationStation : undefined),

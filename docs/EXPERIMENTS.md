@@ -1,5 +1,9 @@
 # Experiments and golden journeys
 
+## 2026-11-26 — explicit pickup/leave stop regressions
+
+Synthetic golden journeys cover unchanged possession at ordinary stops; no automatic parking when carriage is disabled; passenger-only travel without a bike; ride → Leave → prohibited-bicycle passenger bus → Pick up → bicycle-compatible train; action order and final status; resource-preserving prefixes; arrive-by timing; exact action locations; save/replan confirmation; and reversal. These are deterministic correctness fixtures, not new live-provider or field observations. [Full contract and verification](BICYCLE_STOP_ACTIONS_2026-11-26.md).
+
 ## 2026-10-11 — official route geometry and source safeguards
 
 The current release adds a recorded Zürich Route 32 section: a 5.0006 km official line matches a 5.283 km routed path at 100% under the corridor metric, while an endpoint chord fails. Live direct-source check took 12.318 seconds and returned no intersecting published closure; terrain service was excluded. Tests cover fixed trains, whole-journey bounds, closure uncertainty, stale previews, source suppression and disabled fare quotes. [Contract, test counts, limitations and live evidence](OFFICIAL_CYCLING_AND_LAUNCH_REVIEW_2026-10-11.md).

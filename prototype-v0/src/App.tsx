@@ -1,3 +1,18 @@
+import { haversineKm } from "./routing";
+import {
+  bicycleOnTransitLeg,
+  hasBicycleStopActions,
+  hasOriginBicycle,
+} from "./bicycleAvailability";
+import {
+  bicycleAtDestination,
+  restoreWaypointInputs,
+  resolveWaypointInputs,
+  reverseWaypointInputs,
+  waypointPlace,
+  type WaypointInput,
+} from "./waypointInputs";
+import { geocode } from "./places";
 import { cyclingEffort } from "./cycling";
 import OnwardRecovery, { type RecoveryRequest } from "./OnwardRecovery";
 import { readFareProfile } from "./fares";
@@ -25,7 +40,7 @@ import {
   type SavedJourney,
   type ParkedBicycle,
 } from "./savedJourneys";
-import { withoutBicycle, canFollowWithBicycle } from "./bicycleContinuity";
+import { canFollowWithBicycle } from "./bicycleContinuity";
 import { reopenJourney } from "./reopenJourney";
 import type { BikeParking } from "./bikeParking";
 import { useRealtimeJourney } from "./useRealtimeJourney";
@@ -239,16 +254,16 @@ function JourneyCard({
         win.extraMinutes === wins[0].extraMinutes &&
         win.climbingSaved === wins[0].climbingSaved,
     );
-  const prohibited =
-    takeBikeOnTransit &&
-    j.transitLegs.some(
-      (leg) => leg.mode === "transit" && bicyclePermission(leg, fareProfile) === "prohibited",
-    );
+  const prohibited = j.transitLegs.some(
+    (leg) =>
+      bicycleOnTransitLeg(leg, takeBikeOnTransit) &&
+      bicyclePermission(leg, fareProfile) === "prohibited",
+  );
   const m = metrics(j);
   const timing = journeyTiming(j, boardingMinutes, requestedStart);
-  const busSummary = bicycleJourneySummary(j.transitLegs, fareProfile);
+  const busSummary = bicycleJourneySummary(j.transitLegs, fareProfile, takeBikeOnTransit);
   const verified = j.transitLegs
-    .filter((l) => l.mode === "transit")
+    .filter((l) => bicycleOnTransitLeg(l, takeBikeOnTransit))
     .every((l) => bicyclePermission(l, fareProfile) === "confirmed");
   return (
     <button
@@ -262,7 +277,13 @@ function JourneyCard({
         <span className={`scope-win scope-${win.scope}`} key={win.scope}>
           <span className="category-badges">
             {win.categories.map((c) => (
-              <span key={c}>{c === "Fastest" ? "Earliest arrival with transit" : c}</span>
+              <span key={c}>
+                {c === "Fastest"
+                  ? m.boardings
+                    ? "Earliest arrival with transit"
+                    : "Earliest arrival"
+                  : c}
+              </span>
             ))}
           </span>
           {win.categories.some((c) => c.startsWith("Least cycling")) && (
@@ -292,7 +313,7 @@ function JourneyCard({
           ))}
         </span>
       ))}
-      {takeBikeOnTransit && busSummary && (
+      {busSummary && (
         <span
           className={`journey-permission permission-${prohibited ? "prohibited" : verified ? "confirmed" : "uncertain"}`}
         >
@@ -386,7 +407,7 @@ export default function App() {
   const timingController = useRef<AbortController | null>(null);
   const [locationNotice, setLocationNotice] = useState("");
   const [toInput, setToInput] = useState<PlaceValue>(() => initial("8509786"));
-  const [viaInputs, setViaInputs] = useState<{ id: string; value: PlaceValue }[]>([]);
+  const [viaInputs, setViaInputs] = useState<WaypointInput[]>([]);
   const nextViaId = useRef(0);
   const naming = useRef(new Map<string, AbortController>());
   const [pointNotice, setPointNotice] = useState("");
@@ -497,6 +518,7 @@ export default function App() {
   const [endpoint, setEndpoint] = useState<EndpointPreference>("none");
   const [cyclingPosition, setCyclingPosition] = useState<CyclingPosition>("anywhere");
   const [takeBikeOnTransit, setTakeBikeOnTransit] = useState(true);
+  const [bicycleAtOrigin, setBicycleAtOrigin] = useState(!storedJourneys.library.parked);
   const [maxWalkingMinutes, setMaxWalkingMinutes] = useState(30);
   const [bicycleScope, setBicycleScope] = useState<BicycleScope>("allow-uncertain");
   const [departureMode, setDepartureMode] = useState<"now" | "scheduled" | "arrival">("now");
@@ -516,12 +538,13 @@ export default function App() {
         takeBikeOnTransit,
         maxWalkingMinutes,
         cyclingAmount,
+        bicycleAtOrigin,
       ),
       objectives,
       followSignedRoutes,
       fareProfile,
     };
-    return journeyLibrary.parked ? withoutBicycle({ ...base, maxWalkingMinutes }) : base;
+    return base;
   }, [
     cycling,
     endpoint,
@@ -533,6 +556,7 @@ export default function App() {
     hills,
     climbOptimization,
     takeBikeOnTransit,
+    bicycleAtOrigin,
     maxWalkingMinutes,
     cyclingAmount,
     objectives,
@@ -558,13 +582,17 @@ export default function App() {
   const runId = useRef(0);
   const solution =
     mode === "extended" ? (session?.extended ?? session?.baseline) : session?.baseline;
-  const exclusions = session
-    ? bicycleExclusions(
-        [...session.network.edges.values()].map((e) => e.leg),
-        session.options.bicycleScope ?? "allow-uncertain",
-        session.options.fareProfile,
-      )
-    : null;
+  const exclusions =
+    session &&
+    hasOriginBicycle(session.options) &&
+    session.options.takeBikeOnTransit !== false &&
+    !hasBicycleStopActions(session.waypoints ?? [])
+      ? bicycleExclusions(
+          [...session.network.edges.values()].map((e) => e.leg),
+          session.options.bicycleScope ?? "allow-uncertain",
+          session.options.fareProfile,
+        )
+      : null;
   const confirmedSolution =
     mode === "extended"
       ? (session?.confirmed?.extended ?? session?.confirmed?.baseline)
@@ -750,7 +778,9 @@ export default function App() {
         }
       : null;
   const bicycleAvailable =
-    !selectedTrip || canFollowWithBicycle(selectedTrip, journeyLibrary.parked);
+    !selectedTrip ||
+    !!navigation.following ||
+    canFollowWithBicycle(selectedTrip, journeyLibrary.parked, resumeStage);
   function startNavigation() {
     if (
       !selectedTrip ||
@@ -802,6 +832,7 @@ export default function App() {
     );
     setCyclingPosition(next.cyclingPosition ?? "anywhere");
     setTakeBikeOnTransit(next.takeBikeOnTransit !== false);
+    setBicycleAtOrigin(hasOriginBicycle(next));
     setMaxWalkingMinutes(next.maxWalkingMinutes ?? 30);
     setEndpoint(next.endpointPreference);
     setBicycleScope(next.bicycleScope ?? "allow-uncertain");
@@ -823,12 +854,7 @@ export default function App() {
     setFromInput({ text: trip.origin.label, place: trip.origin });
     setToInput({ text: trip.destination.label, place: trip.destination });
     const stops = fresh ? remainingNavigationStops(navigationTrip(trip), 0) : trip.waypoints;
-    setViaInputs(
-      stops.map((place) => ({
-        id: `via-${++nextViaId.current}`,
-        value: { text: place.label, place },
-      })),
-    );
+    setViaInputs(restoreWaypointInputs(stops, trip.options, () => `via-${++nextViaId.current}`));
     setMode(trip.mode);
     const { arriveBy: _deadline, ...freshOptions } = trip.options;
     restoreRoutingOptions(fresh ? freshOptions : trip.options);
@@ -882,6 +908,7 @@ export default function App() {
     };
     invalidate();
     const saved = rememberParking(parked);
+    setBicycleAtOrigin(false);
     setFromInput({ text: place.label, place });
     setViaInputs([]);
     setDepartureMode("now");
@@ -919,6 +946,7 @@ export default function App() {
     const parked = journeyLibrary.parked;
     if (!parked || loading) return;
     invalidate();
+    setBicycleAtOrigin(false);
     setToInput({ text: parked.place.label, place: parked.place });
     setFromInput({ text: "" });
     setViaInputs([]);
@@ -934,7 +962,13 @@ export default function App() {
     if (!parked || loading) return;
     invalidate();
     rememberParking(null);
-    if (parked.cyclingOptions) restoreRoutingOptions(parked.cyclingOptions);
+    if (parked.cyclingOptions)
+      restoreRoutingOptions({
+        ...parked.cyclingOptions,
+        bicycleAtOrigin: true,
+        walkingOnly: false,
+      });
+    setBicycleAtOrigin(true);
     setFromInput({ text: parked.place.label, place: parked.place });
     if (parked.returnTo) setToInput({ text: parked.returnTo.label, place: parked.returnTo });
     setViaInputs([]);
@@ -955,10 +989,7 @@ export default function App() {
     setFromInput({ text: request.origin.label, place: request.origin });
     setToInput({ text: request.destination.label, place: request.destination });
     setViaInputs(
-      request.waypoints.map((place) => ({
-        id: `via-${++nextViaId.current}`,
-        value: { text: place.label, place },
-      })),
+      restoreWaypointInputs(request.waypoints, request.options, () => `via-${++nextViaId.current}`),
     );
     restoreRoutingOptions(request.options);
     setResumeStage(0);
@@ -1031,10 +1062,11 @@ export default function App() {
       setFromInput({ text: request.origin.label, place: request.origin });
       setToInput({ text: request.destination.label, place: request.destination });
       setViaInputs(
-        request.waypoints.map((place) => ({
-          id: `via-${++nextViaId.current}`,
-          value: { text: place.label, place },
-        })),
+        restoreWaypointInputs(
+          request.waypoints,
+          request.options,
+          () => `via-${++nextViaId.current}`,
+        ),
       );
       setSession(result);
       restoreRoutingOptions(request.options);
@@ -1152,7 +1184,9 @@ export default function App() {
     () =>
       viaInputs.flatMap((input, index) => {
         const place = input.value.place ?? session?.waypoints?.[index];
-        return place ? [{ id: input.id, place, number: index + 1 }] : [];
+        return place
+          ? [{ id: input.id, place: waypointPlace(input, place), number: index + 1 }]
+          : [];
       }),
     [viaInputs, session],
   );
@@ -1263,7 +1297,15 @@ export default function App() {
                 ...current,
                 origin: current.origin === place ? named : current.origin,
                 destination: current.destination === place ? named : current.destination,
-                waypoints: current.waypoints?.map((p) => (p === place ? named : p)),
+                waypoints: current.waypoints?.map((p) =>
+                  p === place
+                    ? {
+                        ...named,
+                        ...(p.bicycleAction ? { bicycleAction: p.bicycleAction } : {}),
+                        ...(p.visit ? { visit: p.visit } : {}),
+                      }
+                    : p,
+                ),
               }
             : current,
         );
@@ -1321,6 +1363,7 @@ export default function App() {
     setLoading(true);
     try {
       const start = departureMode === "now" ? new Date() : parseSwissDateTime(departureInput);
+      bicycleAtDestination(viaInputs, hasOriginBicycle(options));
       const next = await plan(
         fromInput.place ?? fromInput.text.trim(),
         toInput.place ?? toInput.text.trim(),
@@ -1335,7 +1378,7 @@ export default function App() {
         },
         {
           ...(departureMode === "arrival" ? { arriveBy: start } : { start }),
-          waypoints: viaInputs.map((input) => input.value.place ?? input.value.text.trim()),
+          waypoints: await resolveWaypointInputs(viaInputs, (text) => geocode(text, abort.signal)),
           onTiming: (report) => {
             if (timingController.current === abort) setTimingReport(report);
           },
@@ -1573,11 +1616,29 @@ export default function App() {
                       inputs.map((item) => (item.id === id ? { ...item, value } : item)),
                     );
                   }}
-                  onReverse={() => {
+                  onBicycleAction={(id, action) => {
                     invalidate();
-                    setFromInput(toInput);
-                    setToInput(fromInput);
-                    setViaInputs((inputs) => [...inputs].reverse());
+                    setViaInputs((inputs) =>
+                      inputs.map((input) =>
+                        input.id === id ? { ...input, bicycleAction: action } : input,
+                      ),
+                    );
+                  }}
+                  onReverse={() => {
+                    try {
+                      const reversed = reverseWaypointInputs(viaInputs, bicycleAtOrigin);
+                      invalidate();
+                      setFromInput(toInput);
+                      setToInput(fromInput);
+                      setViaInputs(reversed.vias);
+                      setBicycleAtOrigin(reversed.bicycleAtOrigin);
+                    } catch (error) {
+                      setError(
+                        error instanceof Error
+                          ? error.message
+                          : "Check the bicycle actions before reversing.",
+                      );
+                    }
                   }}
                   onAdd={() => addWaypoint()}
                   onRemove={(id) => {
@@ -1614,7 +1675,7 @@ export default function App() {
                 <>
                   <TripPresetPicker
                     value={tripPreset}
-                    disabled={loading || !!journeyLibrary.parked}
+                    disabled={loading}
                     onChange={choosePreset}
                     library={profileLibrary}
                     settings={tripPersonal}
@@ -1639,7 +1700,7 @@ export default function App() {
                 <TripPreferences
                   open={preferencesOpen}
                   onOpenChange={setPreferencesOpen}
-                  disabled={loading || !!journeyLibrary.parked}
+                  disabled={loading}
                   mode={mode}
                   hasWaypoints={viaInputs.length > 0}
                   bicycleScope={bicycleScope}
@@ -1654,6 +1715,12 @@ export default function App() {
                   endpoint={endpoint}
                   cyclingPosition={cyclingPosition}
                   takeBikeOnTransit={takeBikeOnTransit}
+                  bicycleAtOrigin={bicycleAtOrigin}
+                  onBicycleAtOrigin={(available) => {
+                    invalidate();
+                    setBicycleAtOrigin(available);
+                    setTripPreset("personalized");
+                  }}
                   maxWalkingMinutes={maxWalkingMinutes}
                   onBikeOnTransit={(enabled) => {
                     invalidate();
@@ -1680,7 +1747,6 @@ export default function App() {
                   onPosition={(position) => {
                     invalidate();
                     setCyclingPosition(position);
-                    setTakeBikeOnTransit(position === "anywhere");
                     if (position !== "anywhere") setMode("baseline");
                     setTripPreset("personalized");
                   }}
@@ -1909,7 +1975,7 @@ export default function App() {
                 <p className="empty-results">
                   {warnings.length
                     ? "Some timetable or cycling data was unavailable. Please try this journey again."
-                    : `No transit journey was found with your cycling limits, bicycle-access choice and ${session.options.horizonMinutes / 60}-hour arrival window. ${
+                    : `No journey was found with your cycling limits, bicycle-access choice and ${session.options.horizonMinutes / 60}-hour arrival window. ${
                         session.options.maxBikeMinutes < session.options.horizonMinutes ||
                         (session.options.minBikeMinutes ?? 0) > 0
                           ? "Try No preference under How much cycling, or a different departure time."
@@ -1965,10 +2031,11 @@ export default function App() {
                   ))}
                   {session.options.takeBikeOnTransit !== false && (
                     <p className="comparison-caution">
-                      Verified access means bicycles are permitted on every transit leg, based on
-                      service data or applicable published operator rules. Open a journey for ticket
-                      and reservation requirements. Unknown ticket or reservation details do not
-                      change verified permission. Permission does not reserve a place.
+                      Verified access means bicycles are permitted on every service carrying your
+                      bicycle, based on service data or applicable published operator rules. Open a
+                      journey for ticket and reservation requirements. Unknown ticket or reservation
+                      details do not change verified permission. Permission does not reserve a
+                      place.
                     </p>
                   )}
                 </div>
@@ -2177,6 +2244,32 @@ export default function App() {
             busy={loading}
             realtime={realtime}
             onStart={startNavigation}
+            onBicycleAction={(action, point) => {
+              setBicycleAtOrigin(action === "collect");
+              if (action === "park") {
+                if (
+                  !journeyLibrary.parked ||
+                  haversineKm(journeyLibrary.parked.place, point) < 0.02
+                )
+                  rememberParking({
+                    place: point,
+                    parkedAt: new Date(),
+                    cyclingOptions: selectedSource?.options,
+                  });
+                else
+                  setBikeNotice(
+                    "Bicycle left at this stop. The separate saved parked-bicycle location is retained; this journey keeps the new leave stop.",
+                  );
+              } else if (
+                journeyLibrary.parked &&
+                haversineKm(journeyLibrary.parked.place, point) < 0.02
+              )
+                rememberParking(null);
+              else
+                setBikeNotice(
+                  "Bicycle collection confirmed at this stop. Any different parked-bicycle location is retained.",
+                );
+            }}
             onRecalculate={recalculateNavigation}
             onMap={() => showMobileView("map")}
           />

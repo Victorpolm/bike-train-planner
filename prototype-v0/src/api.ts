@@ -1,3 +1,4 @@
+import { bicyclePossessionAtStages, bicycleRoutingPoint, hasBicycleStopActions, hasOriginBicycle } from "./bicycleAvailability.ts";
 import { walkingJourney } from "./walkingJourney.ts";
 import { requiredVisitLeg, validateRequiredStops } from "./requiredVisits.ts";
 import { cyclingDurationFits } from "./cyclingDuration.ts";
@@ -204,7 +205,7 @@ function stationAccessError(session: SearchSession) {
 }
 async function roadCandidates(session: SearchSession, point: Place, maxMinutes: number, direction: "access" | "egress" | "both",
   progress: Progress, expand = false, complete = false): Promise<Station[]> {
-  const walkOnly = !!session.options.walkingOnly || direction !== "both" && endpointIsWalking(session.options, direction);
+  const walkOnly = !hasOriginBicycle(session.options) || !!session.options.cyclingFinished || direction !== "both" && endpointIsWalking(session.options, direction);
   const speed = walkOnly ? WALKING_SPEED_KMH : session.cyclingClient ? maxCyclingSpeed(session.options.cyclingPace) : session.options.cyclingPace?.flatSpeedKmh ?? 15;
   const pools = session.cyclingCandidatePools ??= new Map<string, Station[]>(), key = `${point.lat},${point.lon}:${maxMinutes}:${direction}:${walkOnly}`;
   const candidates = !expand && pools.has(key) ? pools.get(key)!
@@ -244,10 +245,12 @@ async function prepareObservedWalking(session: SearchSession, progress: Progress
   if (!session.walkingClient) return;
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
   const limit = session.options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES;
-  const edges = [...session.network.edges.values()].filter(e => journeyLegAllowed(e.leg, session.options));
+  const possession = bicyclePossessionAtStages(points, session.options);
   for (let index = 0; index < points.length; index++) for (const direction of ["access", "egress"] as const) {
     if (index === 0 && direction === "egress" || index === points.length - 1 && direction === "access") continue;
-    if ((index === 0 || index === points.length - 1) && !endpointIsWalking(session.options, direction)) continue;
+    const stageOptions = { ...session.options, bicycleAtOrigin: possession[direction === "access" ? index : index - 1] };
+    if ((index === 0 || index === points.length - 1) && !endpointIsWalking(stageOptions, direction)) continue;
+    const edges = [...session.network.edges.values()].filter(e => journeyLegAllowed(e.leg, stageOptions));
     const ids = new Set(edges.map(e => direction === "access" ? e.from : e.to));
     const point = points[index];
     const stops = [...session.network.stops.values()].filter(s => ids.has(s.id) && haversineKm(s, point) / WALKING_SPEED_KMH * 60 <= limit)
@@ -262,15 +265,18 @@ async function prepareObservedWalking(session: SearchSession, progress: Progress
 async function prepareObservedCycling(session: SearchSession, progress: Progress) {
   if (!session.cyclingClient) return;
   const { network, cyclingClient, options } = session;
-  const usable = [...network.edges.values()].filter(e => journeyLegAllowed(e.leg, { ...options, bicycleScope: options.bicycleScope ?? "all-transit" }));
-  const boarding = new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from));
-  const arrival = new Set(usable.map(e => e.to));
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
+  const possession = bicyclePossessionAtStages(points, options);
   for (let index = 0; index < points.length; index++) {
     const point = points[index];
     for (const direction of ["access", "egress"] as const) {
       if (index === 0 && direction === "egress" || index === points.length - 1 && direction === "access") continue;
-      const limit = endpointCyclingLimit(options, direction);
+      const stageOptions = { ...options, bicycleAtOrigin: possession[direction === "access" ? index : index - 1] };
+      if (endpointIsWalking(stageOptions, direction)) continue;
+      const usable = [...network.edges.values()].filter(e => journeyLegAllowed(e.leg, { ...stageOptions, bicycleScope: options.bicycleScope ?? "all-transit" }));
+      const boarding = new Set(usable.filter(e => e.leg.mode === "transit").map(e => e.from));
+      const arrival = new Set(usable.map(e => e.to));
+      const limit = endpointCyclingLimit(stageOptions, direction);
       let candidates = [...network.stops.values()].filter(s => (direction === "access" ? boarding : arrival).has(s.id)
         && (samePlace(s, point) || cyclingLowerBound(haversineKm(s, point), options) <= limit))
         .sort((a, b) => haversineKm(a, point) - haversineKm(b, point));
@@ -355,6 +361,21 @@ async function refreshRoads(session: SearchSession, extended: boolean, publish: 
 }
 function startCyclingComparison(session: SearchSession, publish: SearchUpdate, fetcher?: typeof fetch, gapMs?: number) {
   const points = [session.origin, ...session.waypoints ?? [], session.destination];
+  if (hasBicycleStopActions(points) || !hasOriginBicycle(session.options) || session.options.cyclingFinished) {
+    const possession = bicyclePossessionAtStages(points, session.options);
+    session.cyclingStatus = undefined;
+    session.cyclingTask = (async () => {
+      for (let i = 1; i < points.length; i++) {
+        if (possession[i - 1] && !session.options.cyclingFinished)
+          await session.cyclingClient?.route(points[i - 1], points[i]);
+        if ((!possession[i - 1] || session.options.cyclingFinished || session.options.cyclingPosition !== "anywhere")
+          && haversineKm(points[i - 1], points[i]) / WALKING_SPEED_KMH * 60 <= (session.options.maxWalkingMinutes ?? 30))
+          await session.walkingClient?.route(points[i - 1], points[i]);
+      }
+      if (!session.client.signal.aborted) refresh(session, false, publish);
+    })().catch(() => {});
+    return;
+  }
   if (session.options.walkingOnly && session.walkingClient) {
     session.cyclingTask = (async () => {
       for (let i = 1; i < points.length; i++) if (haversineKm(points[i - 1], points[i]) / WALKING_SPEED_KMH * 60 <= (session.options.maxWalkingMinutes ?? 30))
@@ -505,6 +526,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
     previous?: SearchSession; reuseRouting?: boolean; timingClock?: () => number; onTiming?: (report: SearchTimingReport) => void } = {}): Promise<SearchSession> {
   if (dependencies.arriveBy) options = { ...options, arriveBy: dependencies.arriveBy.toISOString() };
   validateOptions(options);
+  options = { ...options, bicycleAtOrigin: hasOriginBicycle(options) };
   validateRequiredStops(dependencies.waypoints ?? [], MAX_WAYPOINTS);
   const now = Date.now(), deadline = options.arriveBy ? Date.parse(options.arriveBy) : undefined;
   // Historical searches remain possible. Future searches cannot require leaving
@@ -513,7 +535,9 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
     : Math.max(deadline - options.horizonMinutes * 60_000, deadline >= now ? now : -Infinity));
   progress("Finding both places…");
   const resolve = (value: string | Place) => typeof value === "string" ? geocode(value, signal, dependencies.fetcher) : value;
-  const [origin, destination, ...waypoints] = await measureStage(signal, "places", () => Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]));
+  const [origin, destination, ...resolvedWaypoints] = await measureStage(signal, "places", () => Promise.all([resolve(from), resolve(to), ...(dependencies.waypoints ?? []).map(resolve)]));
+  const waypoints = resolvedWaypoints.map(bicycleRoutingPoint);
+  const possession = bicyclePossessionAtStages([origin, ...waypoints, destination], options);
   signal.throwIfAborted();
   const client = dependencies.previous?.client.fork(signal) ?? new TimetableClient(signal, dependencies.gapMs ?? 400, dependencies.fetcher), network = emptyNetwork();
   if (!dependencies.previous && (!dependencies.fetcher || dependencies.stationTransferFetcher)) client.stationTransfers = new StationTransferClient(dependencies.stationTransferFetcher);
@@ -525,7 +549,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   const cyclingClient = options.walkingOnly || dependencies.cyclingClient === null || dependencies.previous && !dependencies.previous.cyclingClient ? undefined
     : dependencies.previous?.cyclingClient?.fork(signal) ?? dependencies.cyclingClient ?? new CyclingClient(signal, dependencies.cyclingFetcher, dependencies.gapMs, !dependencies.cyclingFetcher, undefined, options.cyclingPace, options.cyclingRoutePreference, undefined, options.hills, wantsObjective(options, "less-traffic"), options.hills?.mode === "gentler", options.followSignedRoutes);
   if (cyclingClient) network.cycling = cyclingClient.routes;
-  const walkingClient = !options.walkingOnly && (options.cyclingPosition ?? "anywhere") === "anywhere" ? undefined
+  const walkingClient = possession.every(Boolean) && !options.cyclingFinished && (options.cyclingPosition ?? "anywhere") === "anywhere" ? undefined
     : dependencies.previous?.walkingClient?.fork(signal) ?? dependencies.walkingClient
       ?? new WalkingClient(signal, dependencies.walkingFetcher ?? dependencies.cyclingFetcher ?? dependencies.fetcher);
   if (walkingClient) network.walking = walkingClient.routes;
@@ -537,7 +561,7 @@ async function planInternal(from: string | Place, to: string | Place, mode: Mode
   // Show the cycling-only reference as soon as the places resolve, including
   // while stop/timetable requests are pending or ultimately fail.
   publish({ ...session });
-  if (dependencies.previous?.cyclingComparison) {
+  if (dependencies.previous?.cyclingComparison && hasOriginBicycle(options) && !options.cyclingFinished && !hasBicycleStopActions(waypoints)) {
     session.cyclingComparison = timeCyclingComparison(session, dependencies.previous.cyclingComparison);
     session.cyclingStatus = "ready";
   } else startCyclingComparison(session, publish, dependencies.cyclingFetcher, dependencies.gapMs);
@@ -716,11 +740,17 @@ async function extendInternal(session: SearchSession, progress: Progress, publis
 async function planWaypointStages(session: SearchSession, mode: ModelMode, progress: Progress, publish: SearchUpdate): Promise<SearchSession> {
   const { origin, destination, waypoints = [], network, client, options, start } = session;
   const points = [origin, ...waypoints, destination], candidates: Station[][] = [];
+  const possession = bicyclePossessionAtStages(points, options);
+  session.cyclingCandidatePools ??= new Map();
   for (let index = 0; index < points.length; index++) {
-    const limit = index === 0 ? endpointTravelLimit(options, "access") : index === points.length - 1 ? endpointTravelLimit(options, "egress")
-      : Math.max(endpointTravelLimit(options, "access"), endpointTravelLimit(options, "egress"));
-    const stops = await roadCandidates(session, points[index], limit,
-      index === 0 ? "access" : index === points.length - 1 ? "egress" : "both", progress);
+    const byId = new Map<string, Station>();
+    for (const direction of ["access", "egress"] as const) {
+      if (index === 0 && direction === "egress" || index === points.length - 1 && direction === "access") continue;
+      const stageOptions = { ...options, bicycleAtOrigin: possession[direction === "access" ? index : index - 1] };
+      const found = await roadCandidates({ ...session, options: stageOptions }, points[index], endpointTravelLimit(stageOptions, direction), direction, progress);
+      for (const stop of found) byId.set(stop.id, stop);
+    }
+    const stops = [...byId.values()];
     client.signal.throwIfAborted();
     candidates.push(stops);
     for (const stop of stops) network.stops.set(stop.id, stop);
@@ -747,17 +777,18 @@ async function queryWaypointStages(session: SearchSession, mode: ModelMode, prog
   // Two station pairs per available access mode share the SAME request/time budget. Query an
   // onward stage from an actually reachable waypoint time, never from the
   // original departure or an independently optimized route.
+  const possession = bicyclePossessionAtStages(points, options);
   const stages = Array.from({ length: points.length - 1 }, (_, i) => i);
   if (options.arriveBy) stages.reverse();
   for (const stage of stages) {
-    // After leaving a bicycle at the first boarding stop, a later stage can
-    // reach another service on foot. Preserve that state's actual ready time.
-    const accessModes: ("bike" | "walk")[] = options.walkingOnly || options.cyclingPosition === "end-only" ? ["walk"]
+    // Riding placement and possession both affect access; no custody action is inferred.
+    const accessModes: ("bike" | "walk")[] = !possession[stage] || options.cyclingFinished || options.walkingOnly || options.cyclingPosition === "end-only" ? ["walk"]
       : options.cyclingPosition === "start-only" && stage > 0 ? ["bike", "walk"] : ["bike"];
     for (const accessMode of accessModes) {
-      const accessOptions: Options = { ...options, cyclingPosition: accessMode === "walk" ? "end-only" : "anywhere" };
+      const stageOptions = { ...options, bicycleAtOrigin: possession[stage] };
+      const accessOptions: Options = { ...stageOptions, cyclingPosition: accessMode === "walk" ? "end-only" : "anywhere" };
       const from = (candidates[stage] ?? []).map(s => atEndpoint(s, points[stage], network, "access", accessOptions)).filter(s => endpointFits(s, accessOptions, "access"));
-      const to = (candidates[stage + 1] ?? []).map(s => atEndpoint(s, points[stage + 1], network, "egress", options)).filter(s => endpointFits(s, options, "egress"));
+      const to = (candidates[stage + 1] ?? []).map(s => atEndpoint(s, points[stage + 1], network, "egress", stageOptions)).filter(s => endpointFits(s, stageOptions, "egress"));
       const pairs = selectStationPairs(from, to, options.maxBikeMinutes, new Set(), 2, hillSearch(options));
       for (const [a, b] of pairs) {
         // Preserve independently reachable stage times. An earlier prohibited ride
@@ -782,26 +813,31 @@ async function queryWaypointStages(session: SearchSession, mode: ModelMode, prog
 // permissions and transfer rules across the whole ordered journey.
 function waypointArrivalBounds(session: SearchSession, next: number, mode: ModelMode): number[] {
   const { network, options, start } = session;
-  const points = [session.origin, ...session.waypoints ?? [], session.destination].slice(next);
+  const full = [session.origin, ...session.waypoints ?? [], session.destination];
+  const possession = bicyclePossessionAtStages(full, options);
+  const points = full.slice(next).map((point, index) => index ? point : { ...point, bicycleAction: undefined });
+  const suffixOptions = { ...options, bicycleAtOrigin: possession[next], minBikeMinutes: 0 };
   const deadline = Date.parse(options.arriveBy!);
   if (points.length === 1) return [deadline];
   const bounds = BICYCLE_SCOPES.flatMap(bicycleScope => {
-    // A suffix need not supply cycling already available in earlier stages.
-    // The final whole-journey search enforces the requested minimum.
-    const journeys = timedSolve(session.client.signal, () => solveWaypoints(network, points, start, { ...options, bicycleScope, minBikeMinutes: 0 }, mode)).journeys;
+    const journeys = timedSolve(session.client.signal, () => solveWaypoints(network, points, start, { ...suffixOptions, bicycleScope }, mode)).journeys;
     return journeys.length ? [Math.max(...journeys.map(j => +j.startTime)) - (points[0].visit?.minutes ?? 0) * 60000] : [];
   });
-  const cycling = points.slice(1).map((point, i) => cyclingLink(network, points[i], point));
-  const visits = points.slice(0, -1).reduce((sum, p) => sum + (p.visit?.minutes ?? 0), 0);
-  const total = cycling.reduce((sum, link) => sum + link.minutes, 0), riding = cycling.reduce((sum, link) => sum + cyclingEffort(link.route, link.minutes).bike, 0);
-  if (!options.walkingOnly && options.cyclingPosition !== "start-only" && cycling.every(link => cyclingFits(link.route, Math.max(options.maxAccessMinutes, options.maxEgressMinutes), options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES, link.minutes))
-    && riding <= options.maxBikeMinutes && deadline - (total + visits) * 60_000 >= +start) bounds.push(deadline - (total + visits) * 60_000);
-  if (options.walkingOnly || options.cyclingPosition === "start-only") {
-    const walks = points.slice(1).map((point, i) => cachedWalking(network.walking, points[i], point)?.minutes ?? Infinity);
-    const minutes = walks.reduce((sum, value) => sum + value, 0);
-    if (walks.every(value => value <= (options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES)) && deadline - (minutes + visits) * 60_000 >= +start)
-      bounds.push(deadline - (minutes + visits) * 60_000);
+  // A direct suffix still respects every explicit custody switch. After an
+  // incoming service, start-only riding has finished and end-only may begin.
+  let total = points.slice(0, -1).reduce((sum, point) => sum + (point.visit?.minutes ?? 0), 0), riding = 0, feasible = true;
+  for (let i = 1; i < points.length; i++) {
+    const walking = !possession[next + i - 1] || options.walkingOnly || options.cyclingFinished || options.cyclingPosition === "start-only";
+    if (walking) {
+      const minutes = cachedWalking(network.walking, points[i - 1], points[i])?.minutes ?? Infinity;
+      feasible &&= minutes <= (options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES); total += minutes;
+    } else {
+      const link = cyclingLink(network, points[i - 1], points[i], options.cyclingPace);
+      feasible &&= cyclingFits(link.route, Math.max(options.maxAccessMinutes, options.maxEgressMinutes), options.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES, link.minutes);
+      total += link.minutes; riding += cyclingEffort(link.route, link.minutes).bike;
+    }
   }
+  if (feasible && riding <= options.maxBikeMinutes && deadline - total * 60_000 >= +start) bounds.push(deadline - total * 60_000);
   return [...new Set(bounds.filter(Number.isFinite))];
 }
 

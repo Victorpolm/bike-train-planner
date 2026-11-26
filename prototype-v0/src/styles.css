@@ -565,3 +565,6 @@ button:disabled { cursor: default; opacity: .65; }
 .broken-journey { color:#943616; background:#fff4ec; padding:.6rem; border-radius:.4rem; }
 .profile-transport { margin-block:.8rem; padding:.75rem; border:1px solid var(--line,#ccd6dd); border-radius:.5rem; }
 .profile-transport label { margin-block:.65rem; }
+
+.waypoint-bicycle-action { grid-column: 1 / -1; display: grid; gap: 5px; font-size: .85rem; }
+.waypoint-bicycle-action select { width: 100%; min-height: 40px; }

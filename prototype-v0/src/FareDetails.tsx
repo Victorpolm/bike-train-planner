@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability";
 import { isSbb } from "./operatorBicycleRules";
 import { carriageForLeg } from "./bicycleCarriage";
 import JourneyDataQuality from "./JourneyDataQuality";
@@ -26,7 +27,7 @@ export default function FareDetails({
           override the restriction.
         </p>
       )}
-      {!takeBikeOnTransit && (
+      {!fare.takeBikeOnTransit && (
         <p>
           Your bicycle stays off public transport. No bicycle ticket or reservation is included.
         </p>
@@ -44,7 +45,7 @@ export default function FareDetails({
             <PriceValue price={fare.passengerPrice} />
           </dd>
         </div>
-        {takeBikeOnTransit && (
+        {fare.takeBikeOnTransit && (
           <>
             <div>
               <dt>Bicycle ticket</dt>
@@ -118,14 +119,17 @@ export default function FareDetails({
       </p>
       {fare.required > 0 &&
         journey.transitLegs.some(
-          (l) => isSbb(l) && carriageForLeg(l, profile).bikeReservation === "required",
+          (l) =>
+            bicycleOnTransitLeg(l, takeBikeOnTransit) &&
+            isSbb(l) &&
+            carriageForLeg(l, profile).bikeReservation === "required",
         ) && (
           <p>
             Reserve before departure. SBB publishes a CHF 10 surcharge for missing a compulsory
             bicycle reservation; it does not guarantee transport.
           </p>
         )}
-      {takeBikeOnTransit && (
+      {fare.takeBikeOnTransit && (
         <details>
           <summary>Bicycle travel on several days</summary>
           <PriceValue price={fare.multipleDayPrice} />

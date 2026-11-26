@@ -4,7 +4,8 @@ import { cyclingEffort, type CyclingRoute } from "./cycling.ts";
 import { cyclingSteps, journeySteps } from "./itinerary.ts";
 import { earlierJourneyStart, journeyTiming } from "./journeyTiming.ts";
 import { visitHours } from "./facilityHours.ts";
-import { metrics, validateOptions, type Options } from "./model.ts";
+import { bicycleActionLinkChecked, metrics, validateOptions, type Options } from "./model.ts";
+import { bicycleStopAction } from "./bicycleAvailability.ts";
 import { haversineKm, type CyclingComparison, type FacilityVisit, type Journey, type Place, type TransitLeg } from "./routing.ts";
 
 export const MAX_SHAPING_POINTS = 6;
@@ -51,7 +52,7 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   // A suggested later departure must not discard time the user has available
   // at the origin. Rebase only our flexible access prefix before editing; the
   // presentation layer will calculate a new feasible departure afterwards.
-  if (journey && !options.arriveBy && +context.start < +journey.startTime) {
+  if (journey && journey.transitLegs.some(leg => leg.mode === "transit") && !options.arriveBy && +context.start < +journey.startTime) {
     const earlier = earlierJourneyStart(journey, context.start);
     if (earlier !== journey) {
       const index = detourStages(journey, null, origin, destination, start).findIndex(s => s.id === stage.id);
@@ -62,11 +63,19 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   }
   if (!routes.length || routes.length > MAX_SHAPING_POINTS + 1 || routes.some(r => r.blocked || !Number.isFinite(r.minutes) || r.minutes < 0))
     throw new Error("A complete usable cycling path is required.");
+  if (options.cyclingFinished && routes.some(r => r.minutes > 0))
+    throw new Error("Cycling has already finished for this journey. Replan to change that restriction.");
   if (routes.reduce((sum, route) => sum + cyclingEffort(route).walk, 0) > (options.maxWalkingMinutes ?? 30))
     throw new Error("The walking/pushing portions exceed your separate walking allowance.");
   const equal = (a: Place | CyclingRoute["from"], b: Place | CyclingRoute["from"]) => haversineKm(a, b) < .001;
   if (!equal(routes[0].from, stage.from) || !equal(routes.at(-1)!.to, stage.to)
     || routes.slice(1).some((r, i) => !equal(routes[i].to, r.from))) throw new Error("The edited path must keep this section’s endpoints and remain connected.");
+  const actionPoints = journey?.waypoints?.map(visit => visit.place).filter(point => bicycleStopAction(point)) ?? [];
+  const fixedFrom = actionPoints.find(point => equal(point, stage.from)) ?? stage.from;
+  const fixedTo = actionPoints.find(point => equal(point, stage.to)) ?? stage.to;
+  if (!bicycleActionLinkChecked(routes[0], fixedFrom, { ...routes[0].to, label: "Route point" })
+    || !bicycleActionLinkChecked(routes.at(-1)!, { ...routes.at(-1)!.from, label: "Route point" }, fixedTo))
+    throw new Error("The edited path must reach the exact bicycle pickup and leave locations.");
 
   if (!journey) {
     if (!cycling?.routes) throw new Error("No cycling route is selected.");
@@ -90,12 +99,12 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
   const target = Number(stage.id.slice(0, stage.id.indexOf(":")));
   const firstTransit = steps.findIndex(s => s.mode === "transit");
   const lastTransit = steps.reduce((found, s, i) => s.mode === "transit" ? i : found, -1);
-  if (firstTransit < 0) throw new Error("No public-transport service is present; edit the cycling-only route instead.");
-  if (routes.some(r => r.minutes > 0) && (options.cyclingPosition === "start-only" && target > firstTransit
+  if (firstTransit >= 0 && routes.some(r => r.minutes > 0) && (options.cyclingPosition === "start-only" && target > firstTransit
     || options.cyclingPosition === "end-only" && target < lastTransit))
     throw new Error("This edit conflicts with where you chose to cycle. Change Preferences and search again.");
   const original = steps[target];
-  const cap = original.leg?.cyclingSectionLimit ?? (target < firstTransit ? options.maxAccessMinutes : target > lastTransit ? options.maxEgressMinutes
+  const cap = original.leg?.cyclingSectionLimit ?? (firstTransit < 0 ? Math.max(options.maxAccessMinutes, options.maxEgressMinutes)
+    : target < firstTransit ? options.maxAccessMinutes : target > lastTransit ? options.maxEgressMinutes
     : original.title.includes("intermediate stop") || original.title.includes("destination") ? options.maxEgressMinutes
       : original.title.includes("station") ? options.maxAccessMinutes : options.maxIntermediateMinutes);
   const group = original.leg?.cyclingSectionId ?? stage.id;
@@ -131,7 +140,8 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
           cyclingSectionId: group, cyclingSectionLimit: cap });
         if (visit && part === 0) {
           const departure = new Date(cursor); cursor += visit.minutes * 60_000;
-          legs.push({ mode: "stop", facilityVisit: visit, from: visit.name, to: visit.name, fromPoint: visit, toPoint: visit,
+          legs.push({ mode: "stop", bicycleWithTraveller: previous.bicycleWithTraveller ?? true,
+            facilityVisit: visit, from: visit.name, to: visit.name, fromPoint: visit, toPoint: visit,
             departure, arrival: new Date(cursor), departurePlatform: null, arrivalPlatform: null,
             service: `Stop at ${visit.name}`, serviceName: null, direction: null });
         }
@@ -151,13 +161,26 @@ export function applyCyclingEdit(context: EditContext, stage: DetourStage, route
     arrivalByStep.set(i, new Date(cursor));
   }
   const rides = legs.filter(l => l.mode === "transit");
+  let effectiveStart = start;
+  if (!rides.length && options.arriveBy) {
+    // With no fixed service, all movements and stop actions can move together.
+    // Preserve each dwell and use the latest departure meeting the deadline.
+    const shift = Date.parse(options.arriveBy) - cursor;
+    effectiveStart = new Date(+start + shift);
+    if (+effectiveStart < +context.start)
+      throw new Error("This edited journey would require leaving before the search time window. Choose a later arrival or a shorter ride.");
+    for (let i = 0; i < legs.length; i++) legs[i] = { ...legs[i], movementOffsetMs: undefined,
+      departure: new Date(+legs[i].departure! + shift), arrival: new Date(+legs[i].arrival! + shift) };
+    for (const [index, arrival] of arrivalByStep) arrivalByStep.set(index, new Date(+arrival + shift));
+    cursor += shift;
+  }
   let previousVisitStep = 0;
-  const result: Journey = { ...journey, legsIncludeEndpoints: true, transitLegs: legs,
+  const result: Journey = { ...journey, startTime: effectiveStart, legsIncludeEndpoints: true, transitLegs: legs,
     originStation: { ...journey.originStation, bikeMinutes: 0, walkMinutes: 0, walkingRoute: undefined, distanceKm: 0, cyclingRoute: undefined },
     destinationStation: { ...journey.destinationStation, bikeMinutes: 0, walkMinutes: 0, walkingRoute: undefined, distanceKm: 0, cyclingRoute: undefined },
-    departure: legs[0].departure!, arrival: new Date(cursor), totalMinutes: (cursor - +start) / 60_000,
-    trainMinutes: (+rides.at(-1)!.arrival! - +rides[0].departure!) / 60_000,
-    waitMinutes: legs.reduce((sum, l, i) => sum + Math.max(0, (+l.departure! - +(legs[i - 1]?.arrival ?? start)) / 60_000), 0),
+    departure: legs[0].departure!, arrival: new Date(cursor), totalMinutes: (cursor - +effectiveStart) / 60_000,
+    trainMinutes: rides.length ? (+rides.at(-1)!.arrival! - +rides[0].departure!) / 60_000 : 0,
+    waitMinutes: legs.reduce((sum, l, i) => sum + Math.max(0, (+l.departure! - +(legs[i - 1]?.arrival ?? effectiveStart)) / 60_000), 0),
     waypoints: journey.waypoints?.map(visit => {
       const index = steps.findIndex((step, i) => i >= previousVisitStep && step.arrival && +step.arrival === +visit.arrival
         && (step.leg?.toPoint || step.cyclingRoute?.to) && equal((step.leg?.toPoint ?? step.cyclingRoute!.to), visit.place));

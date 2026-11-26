@@ -1,3 +1,4 @@
+import { bicyclePossessionAtStages, bicycleRoutingPoint, bicycleStopAction, hasBicycleStopActions, hasOriginBicycle } from "./bicycleAvailability.ts";
 import { validTravelProfile } from "./travelProfile.ts";
 import type { FareProfile } from "./fares.ts";
 import { arrivalTime, departureTime, moveAfter, realtimeUnavailable } from "./realtime.ts";
@@ -20,6 +21,11 @@ export type Options = {
   fareProfile?: FareProfile;
   /** Continuation while the bicycle is stored elsewhere. */
   walkingOnly?: boolean;
+  bicycleAtOrigin?: boolean;
+  /** Confirmed pickup retained when a continuation is planned. */
+  bicycleCollectedAt?: Place;
+  /** Internal continuation state for a completed start-only riding phase. */
+  cyclingFinished?: boolean;
   objectives?: readonly JourneyObjective[];
   /** Destination deadline, including the final cycling/walking sections. */
   arriveBy?: string;
@@ -48,34 +54,46 @@ export type Options = {
   followSignedRoutes?: boolean;
 };
 export const DEFAULT_OPTIONS: Options = {
-  cyclingPosition: "anywhere", takeBikeOnTransit: true, maxWalkingMinutes: DEFAULT_WALKING_MINUTES, maxCyclingTransfers: 2,
+  bicycleAtOrigin: true, cyclingPosition: "anywhere", takeBikeOnTransit: true, maxWalkingMinutes: DEFAULT_WALKING_MINUTES, maxCyclingTransfers: 2,
   maxBikeMinutes: 90, maxAccessMinutes: 60, maxEgressMinutes: 60,
   maxIntermediateMinutes: 20, maxBoardings: 4, horizonMinutes: 1440,
   boardingMinutes: 3, extraTimeMinutes: 60, endpointPreference: "none", busPreference: "include-unknown",
 };
 export function cyclingTransferLimit(o: Options, mode: ModelMode): number {
-  return !o.walkingOnly && mode === "extended" && (o.cyclingPosition ?? "anywhere") === "anywhere"
-    ? Math.min(o.maxCyclingTransfers ?? 2, o.maxBoardings - 1) : 0;
+  return !o.walkingOnly && !o.cyclingFinished && mode === "extended" && (o.cyclingPosition ?? "anywhere") === "anywhere"
+    ? Math.max(0, Math.min(o.maxCyclingTransfers ?? 2, o.maxBoardings - 1)) : 0;
 }
 export function endpointCyclingLimit(o: Options, direction: "access" | "egress"): number {
+  if (!hasOriginBicycle(o) || o.cyclingFinished) return 0;
   if (direction === "access" && o.cyclingPosition === "end-only" || direction === "egress" && o.cyclingPosition === "start-only") return 0;
   return Math.min(o.maxBikeMinutes, direction === "access" ? o.maxAccessMinutes : o.maxEgressMinutes);
 }
 export const endpointIsWalking = (o: Options, direction: "access" | "egress") =>
-  !!o.walkingOnly || direction === "access" && o.cyclingPosition === "end-only" || direction === "egress" && o.cyclingPosition === "start-only";
+  !hasOriginBicycle(o) || !!o.cyclingFinished || direction === "access" && o.cyclingPosition === "end-only" || direction === "egress" && o.cyclingPosition === "start-only";
 export const endpointMinutes = (station: Station) => station.bikeMinutes + (station.walkMinutes ?? 0);
 export const endpointTravelLimit = (o: Options, direction: "access" | "egress") => endpointIsWalking(o, direction)
   ? o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES : endpointCyclingLimit(o, direction);
 export const endpointFits = (station: Station, o: Options, direction: "access" | "egress") =>
   Number.isFinite(endpointMinutes(station)) && station.bikeMinutes <= endpointCyclingLimit(o, direction) + 1e-9
     && (station.walkMinutes ?? 0) <= (o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES) + 1e-9;
-export const journeyLegAllowed = (leg: TransitLeg, o: Options) => !realtimeUnavailable(leg) && bicycleLegAllowed(leg, o.busPreference,
-  o.takeBikeOnTransit === false ? "all-transit" : o.bicycleScope, o.takeBikeOnTransit === false ? undefined : o.fareProfile);
+export const journeyLegAllowed = (leg: TransitLeg, o: Options, withBicycle = leg.bicycleOnBoard ?? hasOriginBicycle(o)) =>
+  !realtimeUnavailable(leg) && !(leg.mode === "transit" && withBicycle && o.takeBikeOnTransit === false)
+  && bicycleLegAllowed(leg, o.busPreference, withBicycle ? o.bicycleScope : "all-transit", withBicycle ? o.fareProfile : undefined);
 export type Stop = { id: string; name: string; lat: number; lon: number; kind?: string };
 export type Edge = { id: string; from: string; to: string; leg: TransitLeg };
 export type Network = { stops: Map<string, Stop>; edges: Map<string, Edge>; cycling?: Map<string, CyclingRoute | null>;
   walking?: Map<string, WalkingRoute | null> };
 export const emptyNetwork = (): Network => ({ stops: new Map(), edges: new Map() });
+/** A fixed bicycle action needs an actual path to its coordinates. The 20 m
+ * tolerance covers coordinate matching; larger provider snaps are not paths. */
+export function bicycleActionLinkChecked(route: CyclingRoute | WalkingRoute | null | undefined, from: Place | Stop, to: Place | Stop) {
+  if (!("label" in from && bicycleStopAction(from)) && !("label" in to && bicycleStopAction(to))) return true;
+  if (!route) return false;
+  const first = route.points[0], last = route.points.at(-1);
+  if (!first || !last) return route.minutes === 0 && haversineKm(from, to) < .0005;
+  return Math.max(route.startGapM, route.endGapM) <= 20
+    && Math.max(haversineKm(from, first), haversineKm(last, to)) * 1000 <= 20;
+}
 export function cyclingLink(network: Network, from: Point & { id?: string; stopId?: string }, to: Point & { id?: string; stopId?: string }, pace?: CyclingPace) {
   if (network.cycling) {
     const route = cachedCycling(network.cycling, from, to);
@@ -99,6 +117,10 @@ export const atEndpoint = (stop: Stop, point: Place, network?: Network, directio
 
 export function validateOptions(o: Options) {
   if (o.fareProfile && (!validTravelProfile(o.fareProfile) || !["full","half-fare","ga"].includes(o.fareProfile.passenger) || typeof o.fareProfile.annualBikePass!=="boolean")) throw new Error("Invalid passenger or bicycle profile.");
+  if (o.bicycleCollectedAt !== undefined && (!o.bicycleCollectedAt || !o.bicycleCollectedAt.label?.trim() || !Number.isFinite(o.bicycleCollectedAt.lat) || !Number.isFinite(o.bicycleCollectedAt.lon)
+    || Math.abs(o.bicycleCollectedAt.lat) > 90 || Math.abs(o.bicycleCollectedAt.lon) > 180)) throw new Error("Invalid confirmed bicycle pickup.");
+  if (o.bicycleAtOrigin !== undefined && typeof o.bicycleAtOrigin !== "boolean") throw new Error("Invalid starting bicycle status.");
+  if (o.cyclingFinished !== undefined && typeof o.cyclingFinished !== "boolean") throw new Error("Invalid cycling continuation status.");
   if (o.walkingOnly !== undefined && typeof o.walkingOnly !== "boolean") throw new Error("Invalid bicycle availability.");
   if (o.walkingOnly && (o.takeBikeOnTransit !== false || o.maxBikeMinutes !== 0 || (o.minBikeMinutes ?? 0) !== 0))
     throw new Error("A parked bicycle cannot be used before collection.");
@@ -113,7 +135,6 @@ export function validateOptions(o: Options) {
   if (o.climbOptimization !== undefined && typeof o.climbOptimization !== "boolean") throw new Error("Invalid climbing optimization.");
   if (o.cyclingPosition !== undefined && !["anywhere", "start-only", "end-only"].includes(o.cyclingPosition)) throw new Error("Invalid cycling position.");
   if (o.takeBikeOnTransit !== undefined && typeof o.takeBikeOnTransit !== "boolean") throw new Error("Invalid bicycle carriage choice.");
-  if (o.takeBikeOnTransit === false && (o.cyclingPosition ?? "anywhere") === "anywhere") throw new Error("Choose cycling only at the beginning or end when your bike stays off public transport.");
   if (o.maxWalkingMinutes !== undefined && (!Number.isInteger(o.maxWalkingMinutes) || o.maxWalkingMinutes < 0 || o.maxWalkingMinutes > 60)) throw new Error("Walking sections must be between 0 and 60 minutes.");
   if (o.maxCyclingTransfers !== undefined && (!Number.isInteger(o.maxCyclingTransfers) || o.maxCyclingTransfers < 0 || o.maxCyclingTransfers > 2)) throw new Error("Cycling connections must be a whole number from 0 to 2.");
   if (o.cyclingRoutePreference !== undefined && !ROUTE_PREFERENCES.includes(o.cyclingRoutePreference)) throw new Error("Invalid cycling route preference.");
@@ -121,7 +142,7 @@ export function validateOptions(o: Options) {
   if (o.cyclingPace) validateCyclingPace(o.cyclingPace);
   const bounds: [keyof Options, number, number][] = [
     ["maxBikeMinutes", 0, 1440], ["maxAccessMinutes", 0, 1440], ["maxEgressMinutes", 0, 1440],
-    ["maxIntermediateMinutes", 0, 1440], ["maxBoardings", 1, 8], ["horizonMinutes", 30, 1440],
+    ["maxIntermediateMinutes", 0, 1440], ["maxBoardings", 0, 8], ["horizonMinutes", 30, 1440],
     ["boardingMinutes", 0, 15], ["extraTimeMinutes", 0, 1440],
   ];
   for (const [key, min, max] of bounds) {
@@ -169,7 +190,8 @@ export function pareto(journeys: Journey[], endpoint: EndpointPreference = "none
 }
 export type Proposal = { journey: Journey; categories: string[]; extraMinutes: number; cyclingSaved: number; activeSaved: number; climbingSaved?: number; explanations?: string[] };
 export function objectiveCandidatePool(journeys: Journey[], o: Options) {
-  const mixed = [...new Map(journeys.filter(j => j.transitLegs.some(leg => leg.mode === "transit")
+  const mixed = [...new Map(journeys.filter(j => (j.transitLegs.some(leg => leg.mode === "transit") || j.transitLegs.some(leg => leg.bicycleAction)
+    || j.legsIncludeEndpoints && j.transitLegs.length > 0 && j.transitLegs.every(leg => leg.mode === "walk" || leg.mode === "stop"))
     && ((o.minBikeMinutes ?? 0) <= 0 || metrics(j).bike + 1e-9 >= o.minBikeMinutes!)
     && (!o.arriveBy || +j.startTime + j.totalMinutes * 60_000 <= Date.parse(o.arriveBy))).map(j => [j.id, j])).values()];
   const best = Math.min(...mixed.map(j => o.arriveBy ? -+j.startTime / 60_000 : j.totalMinutes));
@@ -295,12 +317,18 @@ function accessDepartureTimes(edges: readonly Edge[], stop: Stop, cyclingMinutes
  * checked cycling prefix; all complete paths still undergo the usual solver. */
 export function arrivalDepartureSeeds(network: Network, points: Place[], earliest: Date, o: Options): number[] {
   const times = new Set<number>();
+  const possession = bicyclePossessionAtStages(points, o);
+  points = points.map(bicycleRoutingPoint);
   let prefix = 0, prefixBike = 0, visits = 0;
-  for (let stage = 0; stage < points.length - 1; stage++) {
+  for (let stage = 0; stage < points.length; stage++) {
     if (stage) {
-      const minutes = endpointIsWalking(o, "access") ? cachedWalking(network.walking, points[stage - 1], points[stage])?.minutes ?? Infinity
-        : cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).minutes;
-      if (endpointIsWalking(o, "access")) { if (minutes > (o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES)) break; }
+      const before = { ...o, bicycleAtOrigin: possession[stage - 1] };
+      const asWalk = endpointIsWalking(before, "access");
+      const link = asWalk ? cachedWalking(network.walking, points[stage - 1], points[stage])
+        : cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).route;
+      if (!bicycleActionLinkChecked(link, points[stage - 1], points[stage])) break;
+      const minutes = asWalk ? link?.minutes ?? Infinity : cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).minutes;
+      if (endpointIsWalking(before, "access")) { if (minutes > (o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES)) break; }
       else {
         const route = cyclingLink(network, points[stage - 1], points[stage], o.cyclingPace).route;
         if (!cyclingFits(route, Math.max(o.maxAccessMinutes, o.maxEgressMinutes), o.maxWalkingMinutes ?? DEFAULT_WALKING_MINUTES, minutes)) break;
@@ -309,13 +337,22 @@ export function arrivalDepartureSeeds(network: Network, points: Place[], earlies
       prefix += minutes; visits += points[stage].visit?.minutes ?? 0;
     }
     if (!Number.isFinite(prefix) || prefixBike > o.maxBikeMinutes) break;
+    if (stage === points.length - 1) {
+      if ((hasBicycleStopActions(points) || o.cyclingFinished) && cyclingDurationFits(prefixBike, o)) {
+        const time = Date.parse(o.arriveBy!) - (prefix + visits) * 60_000;
+        if (time >= Math.max(+earliest, Date.parse(o.arriveBy!) - o.horizonMinutes * 60_000)) times.add(time);
+      }
+      continue;
+    }
+    const stageOptions = { ...o, bicycleAtOrigin: possession[stage] };
     for (const stop of network.stops.values()) {
-      const station = atEndpoint(stop, points[stage], network, "access", o), access = endpointMinutes(station);
-      if (!endpointFits(station, o, "access") || prefixBike + station.bikeMinutes > o.maxBikeMinutes) continue;
+      const station = atEndpoint(stop, points[stage], network, "access", stageOptions), access = endpointMinutes(station);
+      if (!endpointFits(station, stageOptions, "access") || prefixBike + station.bikeMinutes > o.maxBikeMinutes
+        || !bicycleActionLinkChecked(station.walkingRoute ?? station.cyclingRoute, points[stage], stop)) continue;
       const edges = [...network.edges.values()].filter(e => e.from === stop.id && e.leg.departure && e.leg.arrival
         && arrivalTime(e.leg)! >= departureTime(e.leg)! && ["transit", "walk"].includes(e.leg.mode)
-        && journeyLegAllowed(e.leg, o));
-      for (const time of accessDepartureTimes(edges, stop, prefix + visits + access, earliest, o)) times.add(time);
+        && journeyLegAllowed(e.leg, stageOptions, possession[stage]));
+      for (const time of accessDepartureTimes(edges, stop, prefix + visits + access, earliest, stageOptions)) times.add(time);
     }
   }
   return [...times].sort((a, b) => b - a);
@@ -327,6 +364,8 @@ export function arrivalDepartureSeeds(network: Network, points: Place[], earlies
 export function solve(network: Network, origin: Place, destination: Place, start: Date,
   o: Options, mode: ModelMode, labelLimit = 50_000): Solution {
   validateOptions(o);
+  bicyclePossessionAtStages([origin, destination], o);
+  const withBicycle = hasOriginBicycle(o);
   if (!Number.isFinite(start.getTime())) throw new Error("Invalid departure time.");
   const horizon = o.arriveBy ? Date.parse(o.arriveBy) : start.getTime() + o.horizonMinutes * 60_000;
   const transferLimit = cyclingTransferLimit(o, mode);
@@ -338,7 +377,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     const l = edge.leg;
     if (!l.departure || !l.arrival || !Number.isFinite(l.departure.getTime()) ||
       !Number.isFinite(l.arrival.getTime()) || arrivalTime(l)! < departureTime(l)! ||
-      !["transit", "walk"].includes(l.mode) || !journeyLegAllowed(l, o)) continue;
+      !["transit", "walk"].includes(l.mode) || !journeyLegAllowed(l, o, withBicycle)) continue;
     if (!network.stops.has(edge.from) || !network.stops.has(edge.to)) continue;
     if (l.mode === "transit") vehicleTimes.set(l, { departure: +departureTime(l)!, arrival: +arrivalTime(l)! });
     const list = outgoing.get(edge.from) ?? [];
@@ -393,7 +432,9 @@ export function solve(network: Network, origin: Place, destination: Place, start
       const edge = { ...original, leg: moveAfter(original.leg, current.time) };
       const departure = vehicle?.departure ?? +departureTime(edge.leg)!, arrival = vehicle?.arrival ?? +arrivalTime(edge.leg)!;
       if (departure < current.time || arrival > horizon) continue;
-      if (wantsObjective(o, "cheapest") && current.legs.includes(edge.leg)) continue;
+      if (wantsObjective(o, "cheapest") && current.legs.some(leg => leg.mode === edge.leg.mode && leg.fromId === edge.from && leg.toId === edge.to
+        && leg.service === edge.leg.service && leg.operator === edge.leg.operator
+        && +leg.departure! === +edge.leg.departure! && +leg.arrival! === +edge.leg.arrival!)) continue;
       const ride = edge.leg.mode === "transit";
       const boarding = ride ? boardingCheck(current.legs, edge.leg, current.time, o.boardingMinutes, network.stops.get(current.stop)) : null;
       const ready = boarding?.readyAt ?? current.time;
@@ -404,9 +445,10 @@ export function solve(network: Network, origin: Place, destination: Place, start
         accessActive: current.accessActive + (current.boardings === 0 ? walking : 0),
         egressWalk: ride ? 0 : current.egressWalk + walking,
         boardings: current.boardings + Number(ride), needsTransit: ride ? false : current.needsTransit,
-        legs: [...current.legs, ...(boarding?.transferLeg ? [boarding.transferLeg] : []), edge.leg], alive: true });
+        legs: [...current.legs, ...(boarding?.transferLeg ? [{ ...boarding.transferLeg, bicycleWithTraveller: withBicycle }] : []),
+          { ...edge.leg, bicycleWithTraveller: withBicycle, ...(ride ? { bicycleOnBoard: withBicycle } : {}) }], alive: true });
     }
-    if (current.middle >= transferLimit || current.needsTransit || !current.boardings || current.boardings >= o.maxBoardings) continue;
+    if (!withBicycle || o.cyclingFinished || current.middle >= transferLimit || current.needsTransit || !current.boardings || current.boardings >= o.maxBoardings) continue;
     const from = network.stops.get(current.stop)!;
     let neighbors = cycling.get(from.id);
     if (!neighbors) {
@@ -416,7 +458,7 @@ export function solve(network: Network, origin: Place, destination: Place, start
     }
     for (const { stop, minutes, route } of neighbors) {
       const arrival = current.time + minutes * 60_000;
-      const leg: TransitLeg = { mode: "bike", from: from.name, to: stop.name,
+      const leg: TransitLeg = { mode: "bike", bicycleWithTraveller: withBicycle, from: from.name, to: stop.name,
         departure: new Date(current.time), arrival: new Date(arrival), departurePlatform: null, arrivalPlatform: null,
         service: "Cycle between stops", serviceName: null, direction: null,
         fromId: from.id, toId: stop.id, fromPoint: from, toPoint: stop, cyclingRoute: route, geometry: route?.points };
@@ -443,11 +485,11 @@ export function solve(network: Network, origin: Place, destination: Place, start
       transitLegs: label.legs };
     // Explicit endpoint legs keep walking visible in metrics, fares, map,
     // editing and arrival timing, using the same representation as waypoints.
-    if ((label.access.walkMinutes ?? 0) > 0 || (egress.walkMinutes ?? 0) > 0) {
+    if (!withBicycle || o.cyclingFinished || (label.access.walkMinutes ?? 0) > 0 || (egress.walkMinutes ?? 0) > 0) {
       const endpointLeg = (station: Station, from: Place | Stop, to: Place | Stop, time: number): TransitLeg[] => {
         if (!endpointMinutes(station)) return [];
-        if (station.walkingRoute) return [walkingLeg(station.walkingRoute, time, from, to)];
-        return [{ mode: "bike", from: "label" in from ? from.label : from.name, to: "label" in to ? to.label : to.name,
+        if (station.walkingRoute) return [{ ...walkingLeg(station.walkingRoute, time, from, to), bicycleWithTraveller: withBicycle }];
+        return [{ mode: "bike", bicycleWithTraveller: withBicycle, from: "label" in from ? from.label : from.name, to: "label" in to ? to.label : to.name,
           fromPoint: from, toPoint: to, departure: new Date(time), arrival: new Date(time + endpointMinutes(station) * 60_000),
           departurePlatform: null, arrivalPlatform: null, service: "Cycle", serviceName: null, direction: null,
           cyclingRoute: station.cyclingRoute, geometry: station.cyclingRoute?.points }];

@@ -1,5 +1,9 @@
 # Re.route — project state
 
+## 26 November 2026 — bicycle status changes only at explicit stops
+
+Bicycle possession is constant by default, including ordinary intermediate visits. Pick up/Leave actions are visible, ordered stops; cycling placement and carriage willingness no longer imply parking or availability. The request, per-leg rules/fares, saved plans and navigation use the same status. [Current contract and verification](BICYCLE_STOP_ACTIONS_2026-11-26.md). This replaces historical implicit-custody descriptions below. The repository prototype passes **801 tests** and its production build; private Site **v106** passes **1,051 tests**, 51 rendered panels and production builds. The same feature is implemented separately in both source versions, preserving their existing work.
+
 ## 18 November 2026 — optional signed cycling routes, private Site v100
 
 **Follow signed routes** is an optional preference for individual cycling sections. It reuses checked paths, applies the existing detour allowance, preserves fewer-turn and lower-stress goals, and reports the longest evidenced network stretch. In the recorded Vevey–Montreux case, Fastest trades two displayed minutes for 1.31 km more continuous mapped network. [Selection and regression evidence](CYCLING_PATH_PREFERENCES_2026-11-18.md).

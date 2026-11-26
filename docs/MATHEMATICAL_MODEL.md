@@ -1,5 +1,7 @@
 # Implemented baseline and extended model
 
+**26 November update:** Bicycle possession is constant between explicit Pick up/Leave intermediate-stop actions, independent of riding placement and carriage willingness. Per-stage eligibility is evaluated before dominance; shared resources survive each action. [Current bicycle-stop contract](BICYCLE_STOP_ACTIONS_2026-11-26.md) supersedes older implicit parking/pickup descriptions in this document.
+
 ## 10 October 2026 — lower cycling bound
 
 Options may carry a whole-journey lower bound on the existing cycling-section time resource. Both label solvers preserve `-min(b, lower_bound)` in addition to their existing upper-bound/time resources, then require the total cycling resource to lie within the bounds at completion. This prevents a shorter prefix from pruning one needed to reach the minimum. The resource saturates at the minimum. Visit time, transit, waiting and walk-only sections do not count; short pushing/access connectors within a cycling section remain included. Independent beginning/end categories can both contribute their endpoint resource to final dominance. See the release for tests and bounded-acquisition limits. [Release record](PREFERENCE_CONTROLS_2026-10-10.md).

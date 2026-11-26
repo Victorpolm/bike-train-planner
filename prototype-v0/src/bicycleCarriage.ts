@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import { interpretBicycleHandling, mergeBicycleHandling, type BicycleHandling } from "./bicycleHandling.ts";
 import { childBikeFree, validPassOn } from "./travelProfile.ts";
 import { tariffSource } from "./tariffSources.ts";
@@ -135,15 +136,15 @@ export function carriageForLeg(leg: TransitLeg, profile?: TravelProfile) {
   return value;
 }
 
-export function bicycleJourneySummary(legs: TransitLeg[], profile?: TravelProfile) {
-  const services = legs.filter(l => l.mode === "transit");
+export function bicycleJourneySummary(legs: TransitLeg[], profile?: TravelProfile, takeBikeOnTransit = true) {
+  const services = legs.filter(l => bicycleOnTransitLeg(l, takeBikeOnTransit));
   const rules = services.map(leg => carriageForLeg(leg, profile));
   if (!rules.length) return null;
   if (rules.some(r => r.permission === "prohibited")) return "Includes a service that prohibits bicycles · comparison only";
   const unknown = services.filter((_, i) => rules[i].permission === "uncertain");
   const names = [...new Set(unknown.map(leg => leg.service))].join(", ");
   const packing = services.filter((_, i) => rules[i].evidence?.handling?.bagRequired && !rules[i].evidence?.handling?.foldingOnly).map(l => l.service);
-  const status = unknown.length === 0 ? "Bikes allowed on every transit leg"
+  const status = unknown.length === 0 ? services.length === legs.filter(l => l.mode === "transit").length ? "Bikes allowed on every transit leg" : "Bikes allowed on every service carrying your bicycle"
     : `${rules.length - unknown.length} of ${rules.length} services verified · bicycle information incomplete on ${names}`;
   const required = services.filter((_, i) => rules[i].bikeReservation === "required").map(l => l.service);
   const unresolved = services.filter((_, i) => rules[i].bikeReservation === "unknown").map(l => l.service);

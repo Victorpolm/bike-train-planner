@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability";
 import TransitTime from "./ui/TransitTime";
 import BicycleServiceStatus from "./ui/BicycleServiceStatus";
 import { departureTiming, arrivalTiming, type Timing } from "./realtime";
@@ -35,8 +36,6 @@ export default function JourneyPlan({
   fareProfile = DEFAULT_FARE_PROFILE,
   boardingMinutes = 3,
   takeBikeOnTransit = true,
-  cyclingPosition = "anywhere",
-  walkingOnly = false,
 }: {
   id: string;
   realtime?: RealtimeJourneyState;
@@ -56,14 +55,11 @@ export default function JourneyPlan({
       <div className="plan-heading">
         <h3 id={`${id}-heading`}>Your travel plan</h3>
         <p>{day.format(journey.startTime)} · Swiss local time</p>
-        {!takeBikeOnTransit && (
+        {journey.transitLegs.some((leg) => leg.bicycleAction) && (
           <p>
-            {walkingOnly
-              ? "Your bicycle stays at its recorded location. This journey uses walking and passenger transport."
-              : cyclingPosition === "start-only"
-                ? `Leave your bicycle at ${journey.originStation.name}; continue by public transport and on foot.`
-                : `Walk to public transport, then use the bicycle you have at ${journey.destinationStation.name}.`}{" "}
-            Parking availability and the path from a rack to the platform are not verified.
+            Pick up or leave your bicycle only at the explicit stops below. Parking availability and
+            the path between a rack and platform are not verified. Confirm each action while
+            following the journey.
           </p>
         )}
         {!!journey.waypoints?.length && (
@@ -164,9 +160,18 @@ export default function JourneyPlan({
                   )}
                 </p>
               )}
+              {leg?.bicycleAction && (
+                <p>
+                  Confirm when you have {leg.bicycleAction === "park" ? "left" : "collected"} the
+                  bicycle at this point. No handling time is included.
+                </p>
+              )}
+              {leg?.mode === "transit" && !bicycleOnTransitLeg(leg, takeBikeOnTransit) && (
+                <p>Travelling without a bicycle on this service.</p>
+              )}
               {extraServiceName && <p className="plan-service">Service {leg.serviceName}</p>}
               {leg?.operator && <p className="plan-service">Operator {leg.operator}</p>}
-              {takeBikeOnTransit && leg?.mode === "transit" && (
+              {leg && bicycleOnTransitLeg(leg, takeBikeOnTransit) && (
                 <p>
                   <BicycleServiceStatus leg={leg} profile={fareProfile} />
                 </p>
@@ -315,7 +320,9 @@ export default function JourneyPlan({
               )}
               {step.mode === "walk" && (
                 <p className="plan-note">
-                  {takeBikeOnTransit ? "Push your bicycle while walking. " : "Continue on foot. "}
+                  {(leg?.bicycleWithTraveller ?? takeBikeOnTransit)
+                    ? "Push your bicycle while walking. "
+                    : "Continue on foot. "}
                   {leg?.walkingRoute
                     ? "The checked pedestrian route is shown; step-free access is not verified."
                     : "The timetable allowance includes any provider buffer; the continuous path, lifts and steps are not verified."}
@@ -325,14 +332,14 @@ export default function JourneyPlan({
           );
         })}
       </ol>
-      {takeBikeOnTransit && (
+      {journey.transitLegs.some((leg) => bicycleOnTransitLeg(leg, takeBikeOnTransit)) && (
         <section className="journey-bicycle-requirements" aria-labelledby={`${id}-bicycle-heading`}>
           <h3 id={`${id}-bicycle-heading`}>Bicycle on public transport</h3>
           <p>
             Check each service below. Permission does not guarantee space or complete a reservation.
           </p>
           {journey.transitLegs
-            .filter((leg) => leg.mode === "transit")
+            .filter((leg) => bicycleOnTransitLeg(leg, takeBikeOnTransit))
             .map((leg, index) => (
               <section className="service-requirements" key={`${journey.id}:${index}`}>
                 <h4>

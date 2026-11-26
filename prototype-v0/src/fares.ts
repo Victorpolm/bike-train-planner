@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import { readTravelProfile, childBikeFree, validPassOn, type TravelProfile } from "./travelProfile.ts";
 import { tariffSource } from "./tariffSources.ts";
 import { BIKE_PROFILE_SOURCE, CHILD_TARIFF_SOURCE } from "./bikeEligibility.ts";
@@ -44,13 +45,23 @@ export function chooseBikeTicket(reduced: number | null, dayPass: number | null,
   return { chf: null, product: "Bicycle ticket to check", minimumVerified: false };
 }
 export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: OnlineFare, takeBikeOnTransit = true) {
-  const transit = legs.filter(l => l.mode === "transit"), rules = transit.map(leg => carriageForLeg(leg, profile));
+  const passengerTransit = legs.filter(l => l.mode === "transit");
+  const transit = passengerTransit.filter(l => bicycleOnTransitLeg(l, takeBikeOnTransit)), rules = transit.map(leg => carriageForLeg(leg, profile));
+  const wholeBicycleJourney = transit.length === passengerTransit.length;
+  const noPublicTransport = passengerTransit.length === 0 && !legs.some(leg => leg.mode === "unknown");
+  if (!passengerTransit.length) quote = undefined;
+  takeBikeOnTransit = transit.length > 0;
+  // Passenger prices cover all services. A whole-journey bicycle quote cannot
+  // price a passenger-only prefix/suffix or bridge a custody interruption.
+  if (!wholeBicycleJourney && quote) quote = { ...quote, bicycle: null };
+  const passengerFirstDay = passengerTransit.find(l => l.departure)?.departure;
+  const passengerLastDay = [...passengerTransit].reverse().find(l => l.arrival)?.arrival;
   const prohibited = takeBikeOnTransit && rules.some(r => r.permission === "prohibited");
   const coverageReviewed = transit.every(l => !!l.departure && !!l.arrival && swissDateTimeInput(l.arrival).slice(0,10) <= tariffSource("bike-coverage").validThrough);
   const covered = transit.length > 0 && coverageReviewed && transit.every(nationalBikeTariff);
   // Bike-pass acceptance does not establish passenger GA validity or the
   // reservation tariff of every participating operator/special train.
-  const gaCovered = covered && transit.every(l => isSbb(l) || sobMainlineRule(l) || zentralbahnRail(l) || tpgZone10Leg(l) || ["BLS", "VBZ", "VBG", "VZO", "STBW"].includes(operatorCode(l.operator)));
+  const gaCovered = passengerTransit.length > 0 && passengerTransit.every(l => !!l.departure && !!l.arrival && swissDateTimeInput(l.arrival).slice(0,10) <= tariffSource("bike-coverage").validThrough && nationalBikeTariff(l)) && passengerTransit.every(l => isSbb(l) || sobMainlineRule(l) || zentralbahnRail(l) || tpgZone10Leg(l) || ["BLS", "VBZ", "VBG", "VZO", "STBW"].includes(operatorCode(l.operator)));
   const first = transit.find(l => l.departure)?.departure;
   const last = [...transit].reverse().find(l => l.arrival)?.arrival;
   const dayPrice = first ? bikeDayPrice(first) : null;
@@ -77,7 +88,8 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
   const published = publishedRouteFare(legs);
   const online = quote && (quote.passenger || quote.bicycle) ? quote : undefined;
   const passengerEstimated = profile.passenger !== "ga" && !published && !!online?.passenger;
-  const bicycleEstimated = !published && !!online?.bicycle;
+  const bicyclePublished = wholeBicycleJourney ? published : null;
+  const bicycleEstimated = !bicyclePublished && !!online?.bicycle;
   const existingDay = covered && singleDayPass && ["day","multi-day"].includes(profile.existingBikePass ?? "") && profile.bikePassDate === firstDay;
   const annualValid = covered && profile.bikePassValidThrough !== "invalid" && (profile.annualBikePass || profile.existingBikePass === "mobility") && (!profile.bikePassValidThrough || profile.bikePassValidThrough >= lastWall.slice(0,10));
   const lakeFare=transit.length>0&&transit.every(l=>localPolicy(l)?.fixedBikeDay===5&&localPolicyCurrent(l))&&firstDay===lastWall.slice(0,10)
@@ -88,33 +100,34 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
     : freeChild ? {chf:0,product:"Eligible child bicycle · free carriage",minimumVerified:true}
     : existingDay ? {chf:0,product:profile.existingBikePass === "day" ? "Existing dated Bike Day Pass" : "Validated multi-day bike pass field",minimumVerified:true}
     : lakeFare!==null ? {chf:lakeFare,product:"Local lake bicycle day ticket",minimumVerified:false}
-    : chooseBikeTicket(published?.bicycle ?? online?.bicycle?.chf ?? null, covered && singleDayPass ? dayPrice : null, annualValid);
-  if(published?.bicycleMinimumVerified===false&&bike.product==="Reduced bicycle ticket")bike.minimumVerified=false;
+    : chooseBikeTicket(bicyclePublished?.bicycle ?? online?.bicycle?.chf ?? null, covered && singleDayPass ? dayPrice : null, annualValid);
+  if(bicyclePublished?.bicycleMinimumVerified===false&&bike.product==="Reduced bicycle ticket")bike.minimumVerified=false;
   const bikeChf = bike.chf;
   let passengerChf = profile.passenger === "ga" ? gaCovered ? 0 : null : published
     ? profile.passenger === "half-fare" ? published.passengerHalf : published.passengerFull : online?.passenger?.chf ?? null;
   const estimated = passengerEstimated || bicycleEstimated && bike.product === "Reduced bicycle ticket";
-  const passenger = profile.passenger === "ga" ? gaCovered ? "Covered by your valid GA on this reviewed journey, in its travel class." : "GA coverage must be checked for every operator and route."
+  const passenger = noPublicTransport ? "No public transport ticket is required for this journey." : profile.passenger === "ga" ? gaCovered ? "Covered by your valid GA on this reviewed journey, in its travel class." : "GA coverage must be checked for every operator and route."
     : profile.passenger === "half-fare" ? "Request the Half Fare (Halbtax) passenger price. The exact fare depends on the route and offer."
       : "Request the full-fare passenger price. Supersaver offers may differ.";
-  const links = [...new Map(transit.map((leg,i)=>[operatorCode(leg.operator), {operator:leg.operator ?? "Transport operator",url:rules[i].ticketSource?.url ?? BIKE_DAY_SOURCE.url}])).values()];
+  const links = [...new Map(passengerTransit.map(leg=>[operatorCode(leg.operator), {operator:leg.operator ?? "Transport operator",url:carriageForLeg(leg, profile).ticketSource?.url ?? BIKE_DAY_SOURCE.url}])).values()];
   const localProblem = routeTariffProblem(legs);
   const classMismatch = profile.travelClass === "first" && !(profile.passenger === "ga" && profile.gaClass === "first");
-  const passInvalid = !validPassOn(profile, firstDay) || !validPassOn(profile, lastWall.slice(0,10));
+  const passInvalid = !validPassOn(profile, passengerFirstDay ? swissDateTimeInput(passengerFirstDay).slice(0,10) : firstDay) || !validPassOn(profile, passengerLastDay ? swissDateTimeInput(passengerLastDay).slice(0,10) : lastWall.slice(0,10));
   const child = profile.age != null && profile.age < 16;
   const childPassengerFree = child && !profile.organizedGroup && !passInvalid && gaCovered &&
     (profile.childCard === "child-ga" || profile.accompaniedBy16Plus && (profile.age! < 6 || profile.qualifyingCompanion && ["junior","co-travel"].includes(profile.childCard ?? "")));
   if (classMismatch || profile.organizedGroup || (profile.otherPass?.name && !(profile.passenger === "ga" && gaCovered)) || (profile.passenger !== "full" || profile.childCard && profile.childCard !== "none") && passInvalid) passengerChf=null;
   else if (childPassengerFree || profile.passenger === "ga" && gaCovered) passengerChf=0;
   else if (child) passengerChf=profile.age! >= 6 ? published?.passengerHalf ?? null : null;
+  if (noPublicTransport) passengerChf = 0;
   const source = published ? {...published.source,validThrough:published.validTo} : BIKE_DAY_SOURCE;
   const onlinePrice = (offer: NonNullable<OnlineFare["passenger"]>): Priced => knownPrice(offer.chf,offer.product,{title:"OJP integration fare",url:"https://opentransportdata.swiss/en/cookbook/open-journey-planner-ojp-landing-page/ojp-fare/",checked:online!.checked},
     {id:offer.productId,environment:"test",basis:"quoted",checkedAt:online!.checked,flexibility:offer.flexibility ?? (offer.productId === "125" ? "flexible" : offer.productId === "84004" || /sparbillett|supersaver/i.test(offer.product) ? "train-bound" : "unknown"),availability:offer.productId === "125" ? "unknown" : "capacity-limited"});
   const passengerPrice: Priced = passengerChf===null ? unknownPrice(localProblem ?? (classMismatch ? "First-class fare or class upgrade is not in the reviewed tariff. Request an operator quote." : passInvalid ? "The passenger travelcard is outside its entered validity dates." : profile.otherPass?.name ? `Coverage of ${profile.otherPass.name} has not been verified for this route; confirm its zones, class and date.` : profile.organizedGroup ? "Organized group concessions require a separate operator quote." : profile.passenger === "ga" ? "Check GA coverage for every operator, route, class and travel date." : "No reviewed fare for this passenger, class and complete route."),localProblem?"expired":"unreviewed",links)
-    : passengerEstimated && !child && online?.passenger ? onlinePrice(online.passenger) : knownPrice(passengerChf,childPassengerFree ? "Eligible child passenger entitlement" : child ? "Child fare · no additional Half Fare discount" : profile.passenger === "ga" ? "Existing GA Travelcard" : published?.passengerProduct??"Published passenger ticket",source,{basis:passengerChf===0?"entitlement":"published",conditions:[...(profile.age==null?["Adult fare assumed; enter age on the travel date for child concessions"]:[]),...(published?.conditions??[])]});
+    : passengerEstimated && !child && online?.passenger ? onlinePrice(online.passenger) : knownPrice(passengerChf,noPublicTransport ? "No public transport" : childPassengerFree ? "Eligible child passenger entitlement" : child ? "Child fare · no additional Half Fare discount" : profile.passenger === "ga" ? "Existing GA Travelcard" : published?.passengerProduct??"Published passenger ticket",source,{basis:passengerChf===0?"entitlement":"published",conditions:[...(profile.age==null?["Adult fare assumed; enter age on the travel date for child concessions"]:[]),...(published?.conditions??[])]});
   let bicyclePrice: Priced = prohibited ? unknownPrice("This bicycle cannot be carried on at least one selected service. A ticket or pass does not override the restriction.","prohibited")
     : bikeChf===null ? unknownPrice(covered && dayPrice===null ? `The reviewed bicycle day-pass price covers 2026-01-01 through ${tariffSource("bike-day").validThrough}; obtain a current quote.` : "Bicycle ticket coverage or reduced route fare has not been verified for every service.",covered&&dayPrice===null?"expired":"unreviewed",links)
-    : knownPrice(bikeChf,bike.product,lakeFare!==null?localPolicy(transit[0])!.source:luggage?rules[0].profileRule.source:freeChild?CHILD_TARIFF_SOURCE:bike.product==="Reduced bicycle ticket" && published ? source : tariffSource("bike-day"),{basis:bikeChf===0?"entitlement":"published",conditions:lakeFare!==null?["CHF 5 per bicycle or trailer, per lake, per day. National bicycle passes are not accepted."]:freeChild?["Child concession depends on the saved accompaniment/travelcard and private-journey conditions"]:!bike.minimumVerified?["cheapest option not verified; another eligible local or reduced ticket may cost less.",...(published?.conditions??[])]:[]});
+    : knownPrice(bikeChf,bike.product,lakeFare!==null?localPolicy(transit[0])!.source:luggage?rules[0].profileRule.source:freeChild?CHILD_TARIFF_SOURCE:bike.product==="Reduced bicycle ticket" && bicyclePublished ? source : tariffSource("bike-day"),{basis:bikeChf===0?"entitlement":"published",conditions:lakeFare!==null?["CHF 5 per bicycle or trailer, per lake, per day. National bicycle passes are not accepted."]:freeChild?["Child concession depends on the saved accompaniment/travelcard and private-journey conditions"]:!bike.minimumVerified?["cheapest option not verified; another eligible local or reduced ticket may cost less.",...(published?.conditions??[])]:[]});
   if (!prohibited && bike.product === "Reduced bicycle ticket" && bicycleEstimated && online?.bicycle) bicyclePrice=onlinePrice(online.bicycle);
   if (!prohibited && takeBikeOnTransit && rules.some(r=>r.profileRule.pricingUncertain)) bicyclePrice=unknownPrice("Bicycle dimensions, trailer or loading requirements need operator confirmation before a complete bicycle price can be quoted.","unreviewed",links);
   if (!prohibited && takeBikeOnTransit && !luggage && childBikeFree(profile) && !childCoverage && transit.some(l=>localPolicy(l))) bicyclePrice=unknownPrice("This operator's child-bicycle concession has not been verified for the entered accompaniment/card. Check before buying a paid bicycle ticket.","unreviewed",links);
@@ -122,7 +135,7 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
   const reservationPrice: Priced = prohibited ? unknownPrice("Reservation cannot make a prohibited bicycle journey valid.","prohibited") : reservationChf===null ? unknownPrice("Reservation conditions or a through-booking price remain unverified.","incomplete",links) : knownPrice(reservationChf,reservationChf===0?"No bicycle reservation required":"Through bicycle reservation",reservationChf===0&&sameReservationSource?rules[0].reservationSource??rules[0].ticketSource??RESERVATION_PRICE_SOURCE:RESERVATION_PRICE_SOURCE,{conditions:reservationChf>0?["Connecting services must be booked together; no space is reserved by this app"]:[]});
   const totalPrice = takeBikeOnTransit && rules.some(r=>r.profileRule.permission === "uncertain") ? unknownPrice("Confirm that this bicycle configuration is accepted before treating these components as a complete journey price.","incomplete",links) : sumPrices([passengerPrice,bicyclePrice,reservationPrice],source);
   return { covered, gaCovered, prohibited, takeBikeOnTransit, passenger, passengerChf:priceAmount(passengerPrice), published, online, estimated, passengerEstimated,
-    passengerPrice,bicyclePrice,reservationPrice,totalPrice, tariffProblem:localProblem, localGuidance:localTicketGuidance(transit),
+    passengerPrice,bicyclePrice,reservationPrice,totalPrice, tariffProblem:localProblem, localGuidance:localTicketGuidance(passengerTransit),
     multipleDayPrice:dayPrice===null?unknownPrice("Current six-day pack price requires a publisher quote."):knownPrice(dayPrice*6,"Multiple-day bike pass · six travel days",tariffSource("bike-day"),{conditions:["Validate one field for each travel day; reservations are separate. This pack is not added to the journey total."]}),
     bikeProduct: bike.product === "Reduced bicycle ticket" && bicycleEstimated ? online!.bicycle!.product + " · OJP test estimate" : bike.product,
     minimumVerified: !bicycleEstimated && bike.minimumVerified,
@@ -136,7 +149,7 @@ export function fareSummary(legs: TransitLeg[], profile: FareProfile, quote?: On
 export function fareRows(legs: TransitLeg[], profile: FareProfile, quote?: OnlineFare, takeBikeOnTransit = true) {
   const fare = fareSummary(legs, profile, quote, takeBikeOnTransit);
   return {fare,rows:[{label:"Passenger",value:priceLabel(fare.passengerPrice),detail:priceConditions(fare.passengerPrice)},
-    ...(takeBikeOnTransit?[{label:"Bicycle ticket",value:priceLabel(fare.bicyclePrice),detail:priceConditions(fare.bicyclePrice)},
+    ...(fare.takeBikeOnTransit?[{label:"Bicycle ticket",value:priceLabel(fare.bicyclePrice),detail:priceConditions(fare.bicyclePrice)},
       {label:"Bicycle reservation",value:priceLabel(fare.reservationPrice),detail:priceConditions(fare.reservationPrice)}]:[])]};
 }
 export function fareCardSummary(legs: TransitLeg[], profile: FareProfile, quote?: OnlineFare, takeBikeOnTransit = true): {price:string;detail:string} {
@@ -144,7 +157,7 @@ export function fareCardSummary(legs: TransitLeg[], profile: FareProfile, quote?
   if(fare.prohibited) return {price:fare.passengerPrice.known?`Passenger · ${priceLabel(fare.passengerPrice)}`:"Bicycle travel not permitted",detail:"Bicycle travel not permitted. "+priceConditions(fare.bicyclePrice)};
   if(fare.totalPrice.known) return {price:`${priceLabel(fare.totalPrice)} ${fare.estimated?"estimated additional cost":"additional cost"}`,detail:fare.estimated?"OJP test fare estimate; confirm price and conditions.":"Reviewed fare and entitlement conditions apply."};
   if(fare.passengerPrice.known) return {price:`Passenger · ${priceLabel(fare.passengerPrice)}${fare.passengerEstimated?" estimated":""}`,detail:priceConditions(fare.passengerPrice)+" · Complete journey total unavailable."};
-  if(takeBikeOnTransit && fare.bicyclePrice.known) return {price:`Bike ticket · ${priceLabel(fare.bicyclePrice)}`,
+  if(fare.takeBikeOnTransit && fare.bicyclePrice.known) return {price:`Bike ticket · ${priceLabel(fare.bicyclePrice)}`,
     detail:priceConditions(fare.bicyclePrice)+" · Passenger fare needs a quote. "
       +(fare.reservationPrice.known?`Bicycle reservation: ${priceLabel(fare.reservationPrice)}. `:"Bicycle reservation price is unverified. ")+"Complete journey total unavailable."};
   return {price:"Total needs a fare quote",detail:priceConditions(fare.totalPrice)};

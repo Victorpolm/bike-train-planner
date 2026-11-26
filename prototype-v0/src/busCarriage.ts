@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import { swissDateTimeInput } from "./departure.ts";
 import { replacementService } from "./transitScope.ts";
 import { normalizeCode as normalize, operatorCode } from "./normalization.ts";
@@ -98,7 +99,7 @@ export function transitAllowed(leg: TransitLeg, preference: BusPreference): bool
 }
 
 export function busJourneySummary(legs: TransitLeg[]): string | null {
-  const rules = legs.map(busCarriage).filter((rule): rule is BusCarriage => !!rule);
+  const rules = legs.filter(l => bicycleOnTransitLeg(l)).map(busCarriage).filter((rule): rule is BusCarriage => !!rule);
   if (!rules.length) return null;
   return rules.some(rule => rule.permission === "unknown") ? "Includes a bus with unverified bicycle rules"
     : "Bus bicycle rules found · check departure, reservation and space";

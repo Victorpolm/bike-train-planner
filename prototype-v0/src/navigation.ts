@@ -1,5 +1,6 @@
+import { bicycleContinuityIssue } from "./bicycleContinuity.ts";
 import { cyclingEffort } from "./cycling.ts";
-import { withoutBicycle } from "./bicycleContinuity.ts";
+import { bicycleStopAction, hasBicycleStopActions, hasOriginBicycle } from "./bicycleAvailability.ts";
 import { cyclingSteps, journeySteps } from "./itinerary.ts";
 import { arrivalTime, departureTime, realtimeKey, realtimeStale, realtimeUnavailable, effectivePlatform } from "./realtime.ts";
 import { boardingCheck } from "./transferTimes.ts";
@@ -45,7 +46,9 @@ export function navigationTrip(input: NavigationInput): NavigationTrip {
       const end = route?.to ?? step.leg?.toPoint;
       const visit = input.journey.waypoints?.[visits];
       if (visit && step.arrival && +step.arrival >= +visit.arrival && end && distance(end, visit.place) < 100
-        && (!visit.place.visit || step.leg?.facilityVisit?.id === visit.place.visit.id)) visits++;
+        && (!visit.place.visit || step.leg?.facilityVisit?.id === visit.place.visit.id
+          || bicycleStopAction(visit.place) && steps.slice(0, index).some(s => s.leg?.facilityVisit?.id === visit.place.visit?.id))
+        && (!bicycleStopAction(visit.place) || step.leg?.bicycleAction === bicycleStopAction(visit.place))) visits++;
     }
     return { mode: step.mode as TransitLeg["mode"], title: step.title, from: step.from ?? "Starting point", to: step.to ?? "Destination",
       ridingMinutes: step.mode === "bike" ? cyclingEffort(step.cyclingRoute ?? step.leg?.cyclingRoute, route?.minutes ?? (step.arrival && step.departure ? (+step.arrival - +step.departure) / minute : 0)).bike : 0,
@@ -157,15 +160,41 @@ export function navigationConnection(trip: NavigationTrip, index: number, onboar
 /** Merge ordinary waypoints and added facilities in their actual itinerary order.
  * A stop is completed only after its stage has been explicitly confirmed. */
 export function remainingNavigationStops(trip: NavigationTrip, index: number): Place[] {
-  const result: Place[] = [];
-  let completed = trip.stages[index - 1]?.completedVisits ?? 0;
-  for (const stage of trip.stages.slice(index)) {
-    for (let i = completed; i < stage.completedVisits; i++) {
-      const point = trip.waypoints[i];
-      if (point && !point.visit) result.push(point);
+  const result: Place[] = [], emitted = new Set<number>();
+  const dwellOccurrence = new Map<number, number>();
+  const dwellStage = new Map<number, number>();
+  let completed = 0, previousCompletion = -1;
+  // Match a facility to this occurrence of the requested stop. Facility IDs
+  // identify places, so they cannot distinguish a later return to the same rack.
+  for (const [stageIndex, stage] of trip.stages.entries()) {
+    for (let occurrence = completed; occurrence < stage.completedVisits; occurrence++) {
+      const point = trip.waypoints[occurrence];
+      if (point?.visit) for (let s = stageIndex; s > previousCompletion; s--) {
+        const visit = trip.stages[s].leg?.facilityVisit;
+        if (visit?.id === point.visit.id && distance(visit, point) < 100) {
+          dwellOccurrence.set(s, occurrence); dwellStage.set(occurrence, s); break;
+        }
+      }
+      previousCompletion = stageIndex;
     }
-    const visit = stage.leg?.facilityVisit;
-    if (visit) result.push({ lat: visit.lat, lon: visit.lon, label: visit.name, visit: { ...visit } });
+    completed = stage.completedVisits;
+  }
+  completed = trip.stages[index - 1]?.completedVisits ?? 0;
+  for (let stageIndex = index; stageIndex < trip.stages.length; stageIndex++) {
+    const stage = trip.stages[stageIndex], visit = stage.leg?.facilityVisit;
+    if (visit) {
+      const occurrence = dwellOccurrence.get(stageIndex);
+      const point = occurrence === undefined ? undefined : trip.waypoints[occurrence];
+      result.push({ ...point, lat: visit.lat, lon: visit.lon, label: visit.name, visit: { ...visit } });
+      if (occurrence !== undefined) emitted.add(occurrence);
+    }
+    for (let occurrence = completed; occurrence < stage.completedVisits; occurrence++) {
+      const point = trip.waypoints[occurrence];
+      if (!point || emitted.has(occurrence)) continue;
+      const completedDwell = point.visit && (dwellStage.get(occurrence) ?? Infinity) < index;
+      result.push(completedDwell ? { ...point, visit: { ...point.visit!, minutes: 0 } } : point);
+      emitted.add(occurrence);
+    }
     completed = stage.completedVisits;
   }
   return result;
@@ -180,14 +209,18 @@ export function navigationReplan(trip: NavigationTrip, index: number, onboard: b
 }
 function replanFromStage(trip: NavigationTrip,index:number,onboard:boolean,progress:RouteProgress|null,origin:Place,now:number) {
   if(!Number.isInteger(index)||index<0||index>=trip.stages.length)throw new Error("Choose a valid remaining stage.");
+  const custodyIssue = bicycleContinuityIssue(trip);
+  if (custodyIssue) throw new Error(custodyIssue);
   if (onboard || trip.stages[index]?.mode === "unknown") throw new Error("Confirm that you have alighted before recalculating from here.");
   const previous = trip.stages.slice(0, index);
   const boardings = previous.filter(s => s.mode === "transit").length;
+  let withBicycle = hasOriginBicycle(trip.options), collectedAt = trip.options.bicycleCollectedAt;
+  for (const stage of previous) {
+    if (stage.leg?.bicycleAction === "park") { withBicycle = false; collectedAt = undefined; }
+    if (stage.leg?.bicycleAction === "collect") { withBicycle = true; collectedAt = stage.leg.toPoint as Place | undefined; }
+  }
   const firstTransit = trip.stages.findIndex(s => s.mode === "transit");
   const lastTransit = trip.stages.reduce((last, s, i) => s.mode === "transit" ? i : last, -1);
-  if (trip.options.takeBikeOnTransit === false && trip.options.cyclingPosition === "end-only" && lastTransit >= 0)
-    throw new Error("Your bicycle’s location has changed. Stop following and choose a new journey in Plan so its bicycle placement is explicit.");
-  if (boardings >= trip.options.maxBoardings) throw new Error("Your original boarding limit has been used. Choose a new journey in Plan to change that limit.");
   if (trip.options.arriveBy && Date.parse(trip.options.arriveBy) <= now) throw new Error("Your arrival deadline has passed. Choose a new time in Plan.");
   const current = trip.stages[index];
   const fraction = current?.lengthM && progress ? Math.min(1, progress.highWaterM / current.lengthM) : 0;
@@ -210,12 +243,18 @@ function replanFromStage(trip: NavigationTrip,index:number,onboard:boolean,progr
     maxAccessMinutes: boardings ? Math.max(0, Math.floor(Math.min(trip.options.maxAccessMinutes,
       trip.options.maxIntermediateMinutes - usedIntermediate, trip.options.maxEgressMinutes - usedEgress)))
       : Math.max(0, Math.floor(trip.options.maxAccessMinutes - usedAccess)) };
-  if (trip.options.walkingOnly || trip.options.takeBikeOnTransit === false && trip.options.cyclingPosition === "start-only" && firstTransit >= 0 && index >= firstTransit) {
-    if ((options.minBikeMinutes ?? 0) > 0) throw new Error("Your remaining cycling minimum requires collecting your bicycle first.");
-    options = { ...options, ...withoutBicycle(options) };
-  }
+  const remaining = remainingNavigationStops(trip, index);
+  options = { ...options, bicycleAtOrigin: withBicycle, bicycleCollectedAt: collectedAt,
+    maxBoardings: Math.max(0, options.maxBoardings),
+    cyclingFinished: !!options.cyclingFinished || trip.options.cyclingPosition === "start-only" && boardings > 0 };
+  if (trip.options.cyclingPosition === "end-only" && usedBike > 0) options.maxBoardings = 0;
+  if (options.cyclingFinished && (options.minBikeMinutes ?? 0) > 0)
+    throw new Error("Your remaining cycling minimum conflicts with cycling only before public transport.");
   return { origin, destination: trip.destination,
-    waypoints: remainingNavigationStops(trip, index), options, start: new Date(now), mode: trip.mode, bikeOnly: !trip.journey };
+    waypoints: remaining, options, start: new Date(now), mode: trip.mode,
+    bikeOnly: !trip.journey || withBicycle && !options.cyclingFinished && !hasBicycleStopActions(remaining)
+      && (options.takeBikeOnTransit === false || options.maxBoardings === 0) };
+
 }
 
 /** Explicit station confirmation is distinct from a measured GPS fix. */

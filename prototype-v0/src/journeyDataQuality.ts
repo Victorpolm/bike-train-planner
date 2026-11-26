@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability.ts";
 import { departureTiming, arrivalTiming } from "./realtime.ts";
 import { carriageForLeg } from "./bicycleCarriage.ts";
 import { fareSummary, type FareProfile } from "./fares.ts";
@@ -12,8 +13,8 @@ export function journeyDataReport(journey: Journey, profile: FareProfile, quote?
     const rule = carriageForLeg(leg, profile);
     return { service: leg.service, operator: leg.operator, from: leg.from, to: leg.to, fromId: leg.fromId, toId: leg.toId,
       departure: leg.departure?.toISOString(), arrival: leg.arrival?.toISOString(), journeyRef: leg.ojp?.journeyRef,
-      operatingDay: leg.ojp?.operatingDay, permission: takeBikeOnTransit ? rule.permission : "bicycle-off-transit",
-      reservation: takeBikeOnTransit ? rule.bikeReservation : "not-applicable", datedEvidence: rule.evidence ? { permission: rule.evidence.permission, basis: rule.evidence.basis,
+      operatingDay: leg.ojp?.operatingDay, bicycleOnBoard: bicycleOnTransitLeg(leg, takeBikeOnTransit), permission: bicycleOnTransitLeg(leg, takeBikeOnTransit) ? rule.permission : "bicycle-off-transit",
+      reservation: bicycleOnTransitLeg(leg, takeBikeOnTransit) ? rule.bikeReservation : "not-applicable", datedEvidence: rule.evidence ? { permission: rule.evidence.permission, basis: rule.evidence.basis,
         source: rule.evidence.source, conditions: [...rule.evidence.conditions],
         bikeTicket: rule.evidence.prerequisites?.bikeTicket, bikeReservation: rule.evidence.prerequisites?.bikeReservation } : null,
       operatorSource: rule.permissionSource, reservationSource: rule.reservationSource, ticketSource:rule.ticketSource,
@@ -26,7 +27,7 @@ export function journeyDataReport(journey: Journey, profile: FareProfile, quote?
       bikeProduct: fare.bikeProduct, estimated: fare.estimated, published: fare.published, localGuidance:fare.localGuidance, online: quote ?? null }, services,
     cycling: journey.transitLegs.filter(l => l.cyclingRoute).map(l => ({ from: l.from, to: l.to, estimatedMinutes: l.cyclingRoute!.minutes,
       distanceKm: l.cyclingRoute!.distanceKm })),
-    operatorQuestions:services.map(s=>({operator:s.operator,service:s.service,from:s.from,to:s.to,departure:s.departure,missing:[...(takeBikeOnTransit&&s.permission==="uncertain"?["bicycle type/vehicle/segment acceptance"]:[]),...(takeBikeOnTransit&&s.reservation==="unknown"?["reservation requirement and booking method"]:[]),...(!fare.passengerPrice.known?["passenger class/age/pass/zone price"]:[]),...(takeBikeOnTransit&&!fare.bicyclePrice.known?["bicycle/trailer fare and pass coverage"]:[])],requestedEvidence:["official URL or machine-readable feed","effective from/through dates","direction, service and vehicle scope","update notification channel","reuse permission"]})),
+    operatorQuestions:services.map(s=>({operator:s.operator,service:s.service,from:s.from,to:s.to,departure:s.departure,missing:[...(s.bicycleOnBoard&&s.permission==="uncertain"?["bicycle type/vehicle/segment acceptance"]:[]),...(s.bicycleOnBoard&&s.reservation==="unknown"?["reservation requirement and booking method"]:[]),...(!fare.passengerPrice.known?["passenger class/age/pass/zone price"]:[]),...(s.bicycleOnBoard&&!fare.bicyclePrice.known?["bicycle/trailer fare and pass coverage"]:[])],requestedEvidence:["official URL or machine-readable feed","effective from/through dates","direction, service and vehicle scope","update notification channel","reuse permission"]})),
     observation: observation.slice(0,2000),
     ...(Number.isFinite(actualCyclingMinutes) && actualCyclingMinutes! > 0 && actualCyclingMinutes! <= 1440 ? { actualCyclingMinutes } : {}),
   };

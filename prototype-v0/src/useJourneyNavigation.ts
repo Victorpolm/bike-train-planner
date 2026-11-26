@@ -1,3 +1,4 @@
+import { navigationStageAdjustmentAllowed } from "./navigationStageSelection.ts";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LocationWatch, ScreenAwake, idleLocation, usableFix, type AwakeState } from "./locationTracking.ts";
 import { advanceProgress, navigationTrip, remainingPath, type NavigationInput, type NavigationTrip, type RouteProgress } from "./navigation.ts";
@@ -79,14 +80,18 @@ export function useJourneyNavigation(selectionKey: string) {
     },
     stop,
     isFollowing: (expected: NavigationTrip) => activeTrip.current === expected,
-    setStage: (index: number) => setFollowing(old => old && index >= 0 && index < old.trip.stages.length
+    canSetStage: (index: number) => !!following && navigationStageAdjustmentAllowed(following.trip.stages, following.index, index),
+    setStage: (index: number) => setFollowing(old => old && navigationStageAdjustmentAllowed(old.trip.stages, old.index, index)
       ? { ...old, index, onboard: false, progress: null } : old),
     confirm: () => {
       if (!following) return;
+      // A stale second click cannot skip the newly displayed bicycle action.
+      const unchanged = (old: Following | null): old is Following => !!old && old.trip === following.trip
+        && old.index === following.index && old.onboard === following.onboard;
       if (following.trip.stages[following.index].mode === "transit" && !following.onboard)
-        setFollowing(old => old ? { ...old, onboard: true } : old);
+        setFollowing(old => unchanged(old) ? { ...old, onboard: true } : old);
       else if (following.index + 1 === following.trip.stages.length) stop("Journey completed. Location tracking is off.");
-      else setFollowing(old => old ? { ...old, index: old.index + 1, onboard: false, progress: null } : old);
+      else setFollowing(old => unchanged(old) ? { ...old, index: old.index + 1, onboard: false, progress: null } : old);
     },
   };
 }

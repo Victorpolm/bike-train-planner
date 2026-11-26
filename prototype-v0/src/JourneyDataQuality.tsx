@@ -1,3 +1,4 @@
+import { bicycleOnTransitLeg } from "./bicycleAvailability";
 import { useId, useState } from "react";
 import { carriageForLeg } from "./bicycleCarriage";
 import { journeyDataReport } from "./journeyDataQuality";
@@ -19,7 +20,7 @@ export default function JourneyDataQuality({
   const id = useId(),
     [observation, setObservation] = useState(""),
     [minutes, setMinutes] = useState("");
-  const services = journey.transitLegs.filter((l) => l.mode === "transit"),
+  const services = journey.transitLegs.filter((l) => bicycleOnTransitLeg(l, takeBikeOnTransit)),
     rules = services.map((leg) => carriageForLeg(leg, profile));
   const missing = services.filter((_, i) => rules[i].permission === "uncertain");
   const report = () => {
@@ -50,7 +51,7 @@ export default function JourneyDataQuality({
   return (
     <details className="journey-data-quality">
       <summary>Data quality and corrections</summary>
-      {takeBikeOnTransit && (
+      {services.length > 0 && (
         <p>
           {missing.length
             ? `Bicycle permission needs checking on ${missing.map((l) => l.service).join(", ")}.`

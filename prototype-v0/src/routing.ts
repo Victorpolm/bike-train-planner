@@ -13,6 +13,7 @@ export type Point = {
 };
 
 export type Place = Point & {
+  bicycleAction?: "park" | "collect";
   label: string;
   /** A required timed facility visit, carried through subsequent searches. */
   visit?: FacilityVisit;
@@ -59,6 +60,9 @@ export type FacilityVisit = Point & {
 type CyclingStop = { afterRoute: number; visit: FacilityVisit };
 
 export type TransitLeg = {
+  bicycleAction?: "park" | "collect";
+  bicycleOnBoard?: boolean;
+  bicycleWithTraveller?: boolean;
   facilityVisit?: FacilityVisit;
   /** Published departure/arrival stay unchanged for fare and service identity. */
   realtime?: import("./realtime.ts").TransitRealtime;

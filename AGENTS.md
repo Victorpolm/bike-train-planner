@@ -15,7 +15,7 @@ The repository is the durable source of truth. Distinguish facts, decisions, hyp
 
 - Switzerland-first bicycle + public-transport journey planner
 - Responsive web prototype and an existing owner-private Site; source and publication are separate
-- Bicycle accompanies the traveller by default; beginning/end-only placement also supports leaving it at the departure station or using one already at the arrival station, with explicit passenger-only transit
+- Bicycle accompanies the traveller by default and status stays constant unless an explicit Pick up/Leave action is attached to an intermediate stop. Riding placement and carriage willingness never imply parking or pickup; evaluate actual presence per leg.
 - Bounded multi-label Baseline/Extended routing with road-routed cycling; preserve raw route attributes
 - When carrying a bicycle, use one all-public-transport bicycle-access selector with three nested feasibility scopes; apply the selected scope before routing/pruning. Prohibited services appear only when explicitly included, with a warning. When the bicycle stays off transit, bicycle restrictions/charges do not apply; retain any explicit bus-avoidance choice.
 - TripInfo evidence investigation is active; bicycle-space availability and booking integration are deferred

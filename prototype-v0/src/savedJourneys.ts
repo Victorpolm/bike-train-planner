@@ -1,3 +1,4 @@
+import { bicyclePossessionAtStages, hasBicycleStopActions, hasOriginBicycle } from "./bicycleAvailability.ts";
 import { navigationTrip, type NavigationInput } from "./navigation.ts";
 import { validateOptions, type Options } from "./model.ts";
 import { validateRequiredStops } from "./requiredVisits.ts";
@@ -26,10 +27,15 @@ export function validateSavedTrip(trip: NavigationInput) {
   if (!trip || !place(trip.origin) || !place(trip.destination) || !date(trip.start) || !["baseline", "extended"].includes(trip.mode)
     || !Array.isArray(trip.waypoints) || !trip.waypoints.every(place) || (!!trip.journey === !!trip.cycling)) throw new Error("Invalid saved journey");
   validateOptions(trip.options); validateRequiredStops(trip.waypoints);
+  bicyclePossessionAtStages([trip.origin, ...trip.waypoints, trip.destination], trip.options);
   const checkLeg = (leg: TransitLeg) => {
     if (!leg || !["bike", "walk", "stop", "transit", "unknown"].includes(leg.mode) || typeof leg.service !== "string"
       || leg.departure !== null && !date(leg.departure) || leg.arrival !== null && !date(leg.arrival)
       || leg.departure && leg.arrival && +leg.arrival < +leg.departure) throw new Error("Invalid saved section");
+    if (leg.bicycleOnBoard !== undefined && typeof leg.bicycleOnBoard !== "boolean"
+      || leg.bicycleWithTraveller !== undefined && typeof leg.bicycleWithTraveller !== "boolean"
+      || leg.bicycleAction !== undefined && (leg.mode !== "stop" || !["park", "collect"].includes(leg.bicycleAction) || !point(leg.toPoint)))
+      throw new Error("Invalid saved bicycle status");
     if (leg.cyclingRoute) route(leg.cyclingRoute); if (leg.walkingRoute) route(leg.walkingRoute);
     if (leg.geometry && (!Array.isArray(leg.geometry) || !leg.geometry.every(point))) throw new Error("Invalid saved geometry");
     if (leg.facilityVisit) validateRequiredStops([{ ...leg.facilityVisit, label: leg.facilityVisit.name, visit: leg.facilityVisit }]);
@@ -43,10 +49,28 @@ export function validateSavedTrip(trip: NavigationInput) {
       if (s.cyclingRoute) route(s.cyclingRoute); if (s.walkingRoute) route(s.walkingRoute);
     }
     j.transitLegs.forEach(checkLeg);
+    if (hasBicycleStopActions(trip.waypoints) || j.transitLegs.some(leg => leg.bicycleAction)) {
+      const actions = trip.waypoints.filter(point => point.bicycleAction);
+      let actionIndex = 0, withBicycle = hasOriginBicycle(trip.options);
+      for (const leg of j.transitLegs) {
+        if (leg.bicycleAction) {
+          const requested = actions[actionIndex++];
+          if (!requested || leg.bicycleAction !== requested.bicycleAction || !leg.toPoint
+            || Math.abs(leg.toPoint.lat - requested.lat) > 1e-7 || Math.abs(leg.toPoint.lon - requested.lon) > 1e-7)
+            throw new Error("Saved bicycle actions do not match the requested stops");
+          withBicycle = leg.bicycleAction === "collect";
+        }
+        if (leg.mode === "transit" && leg.bicycleOnBoard !== withBicycle
+          || leg.mode === "bike" && !withBicycle && leg.departure && leg.arrival && +leg.arrival > +leg.departure)
+          throw new Error("Saved journey uses a bicycle before pickup or after leaving it");
+      }
+      if (actionIndex !== actions.length) throw new Error("Saved journey is missing a bicycle action");
+    }
     if(j.recovery && (typeof j.recovery.originalJourneyId!=="string" || typeof j.recovery.from!=="string" || !Number.isFinite(Date.parse(j.recovery.confirmedAt)) || j.recovery.originalPriceReusable!==false || !Array.isArray(j.recovery.completed) || j.recovery.completed.length>100 || j.recovery.completed.some(s=>!s||!number(s.minutes)||typeof s.title!=="string"||typeof s.from!=="string"||typeof s.to!=="string"))) throw new Error("Invalid onward recovery history");
     if (j.waypoints && (!Array.isArray(j.waypoints) || !j.waypoints.every(v => place(v.place) && date(v.arrival)))) throw new Error("Invalid saved stops");
   }
   if (trip.cycling) {
+    if (!hasOriginBicycle(trip.options) || hasBicycleStopActions(trip.waypoints)) throw new Error("A cycling-only journey cannot change bicycle status.");
     const c = trip.cycling;
     if (!date(c.arrival) || c.departure !== undefined && !date(c.departure) || !number(c.minutes) || !number(c.distanceKm)
       || !Array.isArray(c.routes) || !c.routes.length) throw new Error("Invalid saved cycling journey");
