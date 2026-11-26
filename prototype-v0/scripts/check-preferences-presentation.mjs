@@ -33,12 +33,15 @@ const [TripPreferences, JourneyObjectives, CyclingAmountControl] = await Promise
 ].map(async path => (await import(path)).default));
 const { DEFAULT_HILLS } = await import('../src/hills.ts');
 const { cyclingAmountForPreset } = await import('../src/cyclingDuration.ts');
+const { DEFAULT_OPTIONS } = await import('../src/model.ts');
+const { preferenceOptions } = await import('../src/preferences.ts');
 const noop = () => {}, render = (component, props) => renderToStaticMarkup(h(component, props));
 const defaults = { open: true, onOpenChange: noop, disabled: false, mode: 'baseline', hasWaypoints: false,
   bicycleScope: 'allow-uncertain', routePreference: 'simplest', cyclingAmount: cyclingAmountForPreset('commuter'), endpoint: 'none',
-  cyclingPosition: 'anywhere', takeBikeOnTransit: true, maxWalkingMinutes: 30, hills: DEFAULT_HILLS, climbOptimization: false,
+  cyclingPosition: 'anywhere', takeBikeOnTransit: true, bicycleAtOrigin: DEFAULT_OPTIONS.bicycleAtOrigin,
+  followSignedRoutes: false, onFollowSignedRoutes: noop, maxWalkingMinutes: 30, hills: DEFAULT_HILLS, climbOptimization: false,
   onMode: noop, onScope: noop, onRoute: noop, onCyclingAmount: noop, onEndpoint: noop, onPosition: noop,
-  onBikeOnTransit: noop, onWalkingMinutes: noop, onHills: noop, onClimbOptimization: noop };
+  onBikeOnTransit: noop, onBicycleAtOrigin: noop, onWalkingMinutes: noop, onHills: noop, onClimbOptimization: noop };
 let panels = 0;
 for (const profile of ['commuter', 'bikepacking', 'personalized']) {
   const html = render(JourneyObjectives, { value: ['fastest', 'fewer-boardings', 'least-cycling'], personalized: profile === 'personalized', disabled: false, onChange: noop });
@@ -57,7 +60,9 @@ for (const mode of ['at-most', 'at-least', 'none']) {
   assert.doesNotMatch(html, /I would like to cycle|How much cycling\?/);
   assert.equal((html.match(/How much cycling/g) ?? []).length, 1);
   assert.match(html, /do not forbid cycling elsewhere/);
-  assert.equal((html.match(/type="checkbox" checked=""/g) ?? []).length, 4);
+  const extras = html.match(/<fieldset class="extra-categories"[^>]*>([\s\S]*?)<\/fieldset>/)?.[1];
+  assert.ok(extras, 'The four independent extra categories remain grouped');
+  assert.equal((extras.match(/type="checkbox" checked=""/g) ?? []).length, 4);
   assert.match(html, /Prefer to avoid uphill slopes above/);
   for (const label of ['At most', 'At least', 'No preference']) assert.ok(html.includes(label));
   if (mode === 'none') assert.doesNotMatch(html, /Cycling duration presets|value="73"/);
@@ -71,6 +76,41 @@ assert.match(disabled, /class="cycling-amount" disabled=""/); assert.match(disab
 // Exercise the pure component callbacks; these are not browser event tests.
 const nodes = element => !element || typeof element !== 'object' ? []
   : Array.isArray(element) ? element.flatMap(nodes) : [element, ...nodes(element.props?.children)];
+const bicycleControls = props => {
+  const tree = nodes(TripPreferences(props));
+  const carriageLabel = tree.find(el => el.type === 'label'
+    && nodes(el).some(child => child.type === 'span' && child.props.children === 'Allow my bicycle on public transport'));
+  const start = tree.find(el => el.type === 'input' && el.props.id === 'bicycle-availability');
+  const carriage = nodes(carriageLabel).find(el => el.type === 'input' && el.props.type === 'checkbox');
+  const placement = tree.find(el => el.type === 'select' && el.props.id === 'cycling-position');
+  assert.ok(start && carriage && placement, 'Starting possession, carriage and riding placement have separate controls');
+  return { start, carriage, placement };
+};
+assert.equal(DEFAULT_OPTIONS.bicycleAtOrigin, true);
+assert.equal(preferenceOptions('commuter', 'none').bicycleAtOrigin, true);
+assert.equal(bicycleControls(defaults).start.props.checked, true, 'An ordinary new plan starts with the bicycle');
+for (const cyclingPosition of ['anywhere', 'start-only', 'end-only']) {
+  for (const takeBikeOnTransit of [false, true]) for (const bicycleAtOrigin of [false, true]) {
+    const calls = [], props = { ...defaults, cyclingPosition, takeBikeOnTransit, bicycleAtOrigin,
+      onBicycleAtOrigin: value => calls.push(['start', value]), onBikeOnTransit: value => calls.push(['carriage', value]),
+      onPosition: value => calls.push(['placement', value]) };
+    const html = render(TripPreferences, props); panels++;
+    assert.match(html, /Bike with me at the start/);
+    assert.match(html, /Bike status stays the same throughout the journey/);
+    const control = bicycleControls(props);
+    assert.equal(control.start.props.checked, bicycleAtOrigin);
+    assert.equal(control.carriage.props.checked, takeBikeOnTransit);
+    assert.equal(control.placement.props.value, cyclingPosition);
+    control.start.props.onChange({ target: { checked: !bicycleAtOrigin } });
+    assert.deepEqual(calls.splice(0), [['start', !bicycleAtOrigin]], 'Starting status does not toggle carriage or placement');
+    control.carriage.props.onChange({ target: { checked: !takeBikeOnTransit } });
+    assert.deepEqual(calls.splice(0), [['carriage', !takeBikeOnTransit]], 'Carriage does not park or collect a bicycle');
+    control.placement.props.onChange({ target: { value: 'end-only' } });
+    assert.deepEqual(calls.splice(0), [['placement', 'end-only']], 'Riding placement does not change possession');
+    if (!takeBikeOnTransit) assert.match(html, /Choose where to leave it if needed/);
+  }
+}
+for (const control of Object.values(bicycleControls({ ...defaults, disabled: true }))) assert.equal(control.props.disabled, true);
 const endpointBoxes = endpoint => nodes(TripPreferences({ ...defaults, endpoint, onEndpoint: next => { chosenEndpoint = next; } }))
   .filter(el => el.type === 'fieldset' && el.props.className === 'extra-categories')
   .flatMap(el => nodes(el.props.children)).filter(el => el.type === 'input' && el.props.type === 'checkbox').slice(0, 2);
@@ -94,15 +134,39 @@ const [RouteFields, JourneyNavigation, PlannerForm, TripPresetPicker] = await Pr
 ].map(async path => (await import(path)).default));
 const { guestSettings } = await import('../src/travellerProfiles.ts');
 const routeProps = { from: { text: 'Start' }, to: { text: 'Finish' }, vias: [], disabled: false, notice: '',
-  onFrom: noop, onTo: noop, onVia: noop, onReverse: noop, onAdd: noop, onRemove: noop, onMove: noop, onChooseMap: noop };
+  onFrom: noop, onTo: noop, onVia: noop, onBicycleAction: noop, onReverse: noop, onAdd: noop, onRemove: noop, onMove: noop, onChooseMap: noop,
+  currentLocation: { onClick: noop, loading: false, notice: '' } };
 for (const loading of [false, true]) {
   const html = render(RouteFields, { ...routeProps, currentLocation: { onClick: noop, loading, notice: loading ? '' : 'Using your location · accuracy ±12 m.' } }); panels++;
   if (loading) assert.match(html, /disabled="" aria-busy="true"/);
   else { assert.equal((html.match(/From your location/g) ?? []).length, 1); assert.match(html, /role="status"/); }
 }
+const vias = [undefined, 'collect', 'park'].map((bicycleAction, index) => ({ id: `stop-${index}`, bicycleAction,
+  value: { text: `Stop ${index + 1}`, place: { label: `Stop ${index + 1}`, lat: 47, lon: 8 + index / 100 } } }));
+const originalVias = structuredClone(vias);
+for (const disabled of [false, true]) {
+  const calls = [], props = { ...routeProps, vias, disabled, onBicycleAction: (id, action) => calls.push([id, action]),
+    onVia: () => { throw new Error('Changing a bicycle action must not replace the stop location'); } };
+  const html = render(RouteFields, props); panels++;
+  assert.match(html, /Bike status stays the same unless you pick up or leave a bike/);
+  const selects = nodes(RouteFields(props)).filter(el => el.type === 'select');
+  assert.equal(selects.length, vias.length, 'Every intermediate stop has one action selector');
+  for (const [index, select] of selects.entries()) {
+    assert.equal(select.props['aria-label'], `Bike action at intermediate stop ${index + 1}`);
+    assert.equal(select.props.disabled, disabled);
+    assert.equal(select.props.value, vias[index].bicycleAction ?? '');
+    assert.deepEqual(nodes(select.props.children).map(el => [el.props.value, el.props.children]),
+      [['', 'Keep current status'], ['collect', 'Pick up a bike'], ['park', 'Leave a bike']]);
+    if (!disabled) for (const value of ['collect', 'park', '']) {
+      select.props.onChange({ target: { value } });
+      assert.deepEqual(calls.splice(0), [[vias[index].id, value || undefined]], 'Keep clears the action without inventing a transition');
+    }
+  }
+  assert.deepEqual(vias, originalVias, 'Rendering and action callbacks preserve the location values');
+}
 const form = render(PlannerForm, { sections: { locations: null, departure: null, trip: null, preferences: null }, loading: false, locating: true, onSubmit: noop }); panels++;
 assert.match(form, /type="submit" disabled="">Finding your location/);
-const nav = render(JourneyNavigation, { navigation: { following: null, notice: '' }, canStart: true, busy: false, realtime: {}, onStart: noop, onRecalculate: noop, onMap: noop }); panels++;
+const nav = render(JourneyNavigation, { navigation: { following: null, notice: '' }, canStart: true, busy: false, realtime: {}, onStart: noop, onRecalculate: noop, onMap: noop, onBicycleAction: noop }); panels++;
 assert.match(nav, /Follow your journey/); assert.match(nav, /About following your journey/);
 assert.match(nav, /class="inline-help-content" hidden="">Start asks for/);
 assert.doesNotMatch(nav, /<details>|<p>Start asks/);
@@ -117,4 +181,4 @@ for (const status of ['running', 'complete', 'limited', 'cancelled', 'failed']) 
   assert.match(html, /2 of 4 result updates reused/); assert.match(html, /Stages overlap/); assert.match(html, /before screen rendering/);
   assert.doesNotMatch(html, /<details[^>]* open=/);
 }
-console.log(JSON.stringify({ passed: true, panels, checks: 'Preset visibility and 30-minute Commuter; 20/45/90/150 quick choices; all cycling modes; hidden question-mark help; collapsed multi-select extras; From-location and pending submission states; compact navigation help; pure callback transitions; all search-timing states and overlapping-stage disclosure', limitation: 'Server rendering and callback checks only; interactive browser and physical-phone acceptance remain unverified.' }, null, 2));
+console.log(JSON.stringify({ passed: true, panels, checks: 'Preset visibility and 30-minute Commuter; 20/45/90/150 quick choices; all cycling modes; hidden question-mark help; four independent extras; default starting bicycle and independent possession/carriage/placement controls; Keep/collect/park stop selectors and callbacks; From-location and pending submission states; compact navigation help; all search-timing states and overlapping-stage disclosure', limitation: 'Server rendering and callback checks only; interactive browser and physical-phone acceptance remain unverified.' }, null, 2));

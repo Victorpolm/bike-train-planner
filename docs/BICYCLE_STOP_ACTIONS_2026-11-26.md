@@ -62,6 +62,14 @@ Published owner-private Site **version 106** successfully from exact source `11e
 
 Browser preview in this workspace reports `preview relay unavailable`; interactive desktop/phone acceptance is not claimed. No new live-provider or field-validation claim is made.
 
+## Post-push CI correction — 26 November 2026
+
+GitHub commit `7eb7c0c3a424405025516c5c2435e0ad238f1251` passed formatting, unused-code checks, all 801 JavaScript tests and 16 Python tests in Actions. Its preference-presentation gate then failed because the older fixture omitted the new starting-status prop and a global checked-checkbox count included an unrelated control.
+
+The presentation harness now supplies the explicit starting status, scopes existing extra-category checks to their own fieldset, verifies that starting possession and carriage/riding preferences are independent, and checks the Keep/Pick up/Leave controls and callbacks. Continuity assertions use the actual recorded per-leg state and explicit actions. Application behaviour and the published Site are unchanged by this test-harness correction.
+
+Local presentation rechecks passed: **33 preference, 13 continuity, 6 facility, 35 quality and 6 source panels**. These are rendered-component and callback checks; they do not replace interactive browser or physical-phone acceptance.
+
 ## Remaining limits and next check
 
 Search and provider candidate bounds remain unchanged; no exhaustive-network claim is added. Pickup/leave handling currently has no invented fixed duration; an explicit visit duration is retained. The model tracks whether a bicycle accompanies one traveller, not a general multi-vehicle inventory optimizer.
